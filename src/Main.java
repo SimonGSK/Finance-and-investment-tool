@@ -24,25 +24,41 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
+        Scanner sc = new Scanner(System.in).useLocale(DK);
 
         System.out.println("");
         System.out.println("Hvor mange penge investerer du fra start? (grænsen på aktiesparekontoen er i 2026 på 174.200kr)");
         int startCash = sc.nextInt();
 
+        while (startCash <=0 || startCash > 174200) {
+            System.out.println("Du kan ikke investere et negativ beløb eller mere end 174.200 kr. Prøv igen");
+            startCash = sc.nextInt();
+        }
+
         System.out.println("Hvor mange år ønsker du at investere pengene?");
         int years = sc.nextInt();
 
+        while (years <=0) {
+            System.out.println("Du kan ikke investere i et negativ antal år. Prøv igen");
+            years = sc.nextInt();
+        }
+
         System.out.println("Hvad forventer du det gennemsnitlige årlige afkast i procent vil være? (det gennemsnitlige afkast på det globale aktiemarked er omkring 7-9%)");
         double yearlyReturnPercent = sc.nextDouble();
+
+        while (yearlyReturnPercent <=0) {
+            System.out.println("Du kan ikke have et negativt årligt afkast. Prøv igen");
+            yearlyReturnPercent = sc.nextDouble();
+        }
+
         double yearlyReturnFactor = (yearlyReturnPercent / 100.0) + 1.0;
 
-        System.out.println("Vil du se hvad det kan give på en Aktiesparekonto?");
+        System.out.println("Vil du se resultatet fra en Aktiesparekonto? (ja/nej)");
         String runAsk = sc.next();
         boolean payTaxExternally = false;
         Result askResult = null;
 
-        if (runAsk.equals("ja")) {
+        if (runAsk.equalsIgnoreCase("ja")) {
             System.out.println("Vil du betale den årlige lagerskat ved indbetaling af frie midler? (ja/nej)");
             String payTaxExternallyInput = sc.next();
             payTaxExternally = payTaxExternallyInput.equalsIgnoreCase("ja");
@@ -50,24 +66,13 @@ public class Main {
         }
 
         System.out.println();
-        System.out.println("Vil du også se hvad det kan give på et almindeligt aktiedepot?");
+        System.out.println("Vil du også se resultatet fra et almindeligt aktiedepot? (ja/nej)");
         String runAkt = sc.next();
         Result aktResult = null;
 
-        if (runAkt.equals("ja")) {
-
-            boolean investSavedAskTax = false;
-            if (payTaxExternally) {
-                System.out.println("Vil du løbende investere de penge på depotet, som du ellers ville have brugt på ASK-skat? (ja/nej)");
-                String investSavedInput = sc.next();
-                investSavedAskTax = investSavedInput.equalsIgnoreCase("ja");
-            }
-
-            System.out.println("Vil du udnytte den lave 27%-skattegrænse ved kun at sælge/genkøbe i sidste øjeblik, når det er nødvendigt for at nå det,");
-            System.out.println("eller helt undlade at sælge undervejs og betale skat af det hele i sidste år (evt. 42% af det, der overstiger grænsen)? (ja = udnyt grænsen når nødvendigt / nej = sælg alt til sidst)");
-            String harvestInput = sc.next();
-            boolean harvestGains = harvestInput.equalsIgnoreCase("ja");
-
+        if (runAkt.equalsIgnoreCase("ja")) {
+            boolean investSavedAskTax = payTaxExternally; //Vi går ud fra at hvis man har tænkt sig at indskyde penge til betaling af skat på ASK, vil man i stedet investere de penge her
+            boolean harvestGains = true; //Man vil altid bruge den optimale realiserings-strategi
             aktResult = akt(years, yearlyReturnFactor, startCash, investSavedAskTax, harvestGains);
         }
 
@@ -139,7 +144,7 @@ public class Main {
         // Procenten regnes ift. den SAMLEDE kapital du har puttet i - ellers bliver den
         // kunstigt høj, hvis du løbende har tilført ekstra penge til at betale skatten
         percentageIncrease = nettogevinst / totalCapitalInvested * 100;
-        System.out.printf(DK, "Det er en stigning på %.1f%% ift. den samlede kapital, du har investeret (%,.0f kr.)%n", percentageIncrease, totalCapitalInvested);
+        System.out.printf(DK, "Det er en stigning på +%.1f%% ift. den samlede kapital, du har investeret (%,.0f kr.)%n", percentageIncrease, totalCapitalInvested);
 
         return new Result("Aktiesparekonto", money, nettogevinst, percentageIncrease);
     }
@@ -319,44 +324,30 @@ public class Main {
         double percentageIncrease = (netProfit / totalInvested) * 100;
 
         System.out.println("============RESULTAT PÅ ALMINDELIGT DEPOT============");
-        if (harvestGains) {
-            System.out.println("(Strategi: prøvede alle mulige startår og valgte det, der reelt gav højest slutformue)");
-            if (harvestStartYear < years) {
-                System.out.println("Bedste resultat: begynd realisering af afkast i år " + harvestStartYear + " (ud af " + years + " år i alt).");
-            } else {
-                System.out.println("Bedste resultat: slet ingen realisering undervejs var bedst - det kunne bedre betale sig at lade det hele vokse og betale evt. 42% til sidst.");
-            }
-        } else {
-            System.out.println("(Strategi: intet salg undervejs, alt sælges i sidste år)");
-        }
+
         System.out.printf(DK, "Samlet værdi (alt solgt og beskattet): %,.0f kr.%n", totalFinalValue);
-        System.out.printf(DK, "Herunder startindskud: %,d kr.%n", startCash);
+
+        System.out.println();
+        System.out.printf(DK, "Startindskud: %,d kr.%n", startCash);
         if (investSavedAskTax) {
             System.out.printf(DK, "Løbende ekstra investeret (svarende til ASK-skat): %,.0f kr.%n", totalExtraInvested);
         }
         System.out.printf(DK, "Samlet betalt skat over alle år: %,.0f kr.%n", totalTaxPaid);
-        System.out.printf(DK, "Din reelle nettogevinst efter skat: %,.0f kr.%n", netProfit);
-        System.out.printf(DK, "Det er en samlet stigning på %.1f%%%n", percentageIncrease);
 
-        // Sammenlign direkte med den modsatte strategi for samme tal - det er den
-        // eneste sikre måde at vide hvilken der reelt vinder, da det afhænger af
-        // jeres konkrete afkast, tidshorisont og startbeløb.
-        double oppositeFinalValue = computeAktFinalValue(years, yearlyReturn, startCash, investSavedAskTax, !harvestGains);
         System.out.println();
-        System.out.println("---- Sammenligning med den modsatte strategi ----");
-        if (harvestGains) {
-            System.out.printf(DK, "Hvis du i stedet slet ikke havde solgt undervejs (alt beskattet progressivt i sidste år): %,.0f kr.%n", oppositeFinalValue);
-        } else {
-            System.out.printf(DK, "Hvis du i stedet havde brugt løbende (optimeret) realisering af afkast for at undgå 42%% hvor muligt: %,.0f kr.%n", oppositeFinalValue);
-        }
+        System.out.printf(DK, "Din reelle nettogevinst efter skat: %,.0f kr.%n", netProfit);
+        System.out.printf(DK, "Det er en samlet stigning på +%.1f%%%n", percentageIncrease);
+
+        System.out.println();
+        System.out.println("----BEDSTE STRATEGI----");
+        System.out.println("Bedste strategi: begynd realisering af afkast i år " + harvestStartYear + " (ud af " + years + " år i alt).");
+
+        //Udregner resultatet, hvis man bare sælger det hele i sidste år
+        double oppositeFinalValue = computeAktFinalValue(years, yearlyReturn, startCash, investSavedAskTax, !harvestGains);
+        System.out.printf(DK, "Hvis du i stedet slet ikke sælger undervejs (alt beskattet progressivt i sidste år): %,.0f kr.%n", oppositeFinalValue);
+
         double diff = totalFinalValue - oppositeFinalValue;
-        if (diff > 0) {
-            System.out.printf(DK, "-> Din valgte strategi gav %,.0f kr. mere.%n", diff);
-        } else if (diff < 0) {
-            System.out.printf(DK, "-> Den modsatte strategi ville have givet %,.0f kr. mere her.%n", -diff);
-        } else {
-            System.out.println("-> De to strategier giver samme resultat her.");
-        }
+        System.out.printf(DK, "-> Din strategi gav %,.0f kr. mere.%n", diff);
 
         return new Result("Aktiedepot", totalFinalValue, netProfit, percentageIncrease);
     }
