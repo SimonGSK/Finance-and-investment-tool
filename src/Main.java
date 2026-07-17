@@ -26,54 +26,53 @@ public class Main {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in).useLocale(DK);
 
-        System.out.println("");
-        System.out.println("Hvor mange penge investerer du fra start? (grænsen på aktiesparekontoen er i 2026 på 174.200kr)");
-        int startCash = sc.nextInt();
+        boolean runAgain = true;
+        while (runAgain) {
+            runSimulation(sc);
 
-        while (startCash <=0 || startCash > 174200) {
-            System.out.println("Du kan ikke investere et negativ beløb eller mere end 174.200 kr. Prøv igen");
-            startCash = sc.nextInt();
+            System.out.println();
+            runAgain = readBooleanInput(sc, "Vil du prøve igen med andre tal? (ja/nej)", "Du skal enten svare ja eller nej");
+            System.out.println();
         }
 
-        System.out.println("Hvor mange år ønsker du at investere pengene?");
-        int years = sc.nextInt();
+        sc.close();
+        System.out.println("Farvel!");
+    }
 
-        while (years <=0) {
-            System.out.println("Du kan ikke investere i et negativ antal år. Prøv igen");
-            years = sc.nextInt();
-        }
+    private static void runSimulation(Scanner sc) {
+        System.out.println();
+        int startCash = readPositiveInt(sc, "Hvor mange penge investerer du fra start? (grænsen på aktiesparekontoen er i 2026 på 174.200kr)",
+                174200, "Du kan ikke investere et negativ beløb eller mere end 174.200 kr. Prøv igen");
 
-        System.out.println("Hvad forventer du det gennemsnitlige årlige afkast i procent vil være? (det gennemsnitlige afkast på det globale aktiemarked er omkring 7-9%)");
-        double yearlyReturnPercent = sc.nextDouble();
+        int years = readPositiveInt(sc, "Hvor mange år ønsker du at investere pengene?",
+                Integer.MAX_VALUE, "Du kan ikke investere i et negativ antal år. Prøv igen");
 
-        while (yearlyReturnPercent <=0) {
-            System.out.println("Du kan ikke have et negativt årligt afkast. Prøv igen");
-            yearlyReturnPercent = sc.nextDouble();
-        }
-
+        double yearlyReturnPercent = readPositiveDouble(sc, "Hvad forventer du det gennemsnitlige årlige afkast i procent vil være? (det gennemsnitlige afkast på det globale aktiemarked er omkring 7-9%)",
+                "Du kan ikke have et negativt årligt afkast. Prøv igen");
         double yearlyReturnFactor = (yearlyReturnPercent / 100.0) + 1.0;
 
-        System.out.println("Vil du se resultatet fra en Aktiesparekonto? (ja/nej)");
-        String runAsk = sc.next();
+        boolean runAsk = readBooleanInput(sc, "Vil du se resultatet fra en Aktiesparekonto? (ja/nej)",
+                "Du skal enten svare ja eller nej");
+
         boolean payTaxExternally = false;
         Result askResult = null;
 
-        if (runAsk.equalsIgnoreCase("ja")) {
-            System.out.println("Vil du betale den årlige lagerskat ved indbetaling af frie midler? (ja/nej)");
-            String payTaxExternallyInput = sc.next();
-            payTaxExternally = payTaxExternallyInput.equalsIgnoreCase("ja");
+        if (runAsk) {
+            payTaxExternally = readBooleanInput(sc, "Vil du betale den årlige lagerskat ved indbetaling af frie midler? (ja/nej)",
+                    "Du skal enten svare ja eller nej");
             askResult = ask(years, yearlyReturnFactor, startCash, payTaxExternally);
         }
 
         System.out.println();
-        System.out.println("Vil du også se resultatet fra et almindeligt aktiedepot? (ja/nej)");
-        String runAkt = sc.next();
+        boolean runAkt = readBooleanInput(sc, "Vil du se resultatet fra et almindeligt aktiedepot? (ja/nej)",
+                "Du skal enten svare ja eller nej");
         Result aktResult = null;
 
-        if (runAkt.equalsIgnoreCase("ja")) {
-            boolean investSavedAskTax = payTaxExternally; //Vi går ud fra at hvis man har tænkt sig at indskyde penge til betaling af skat på ASK, vil man i stedet investere de penge her
-            boolean harvestGains = true; //Man vil altid bruge den optimale realiserings-strategi
-            aktResult = akt(years, yearlyReturnFactor, startCash, investSavedAskTax, harvestGains);
+        if (runAkt) {
+            //Vi går ud fra at hvis man har tænkt sig at indskyde penge til betaling af skat på ASK,
+            //vil man i stedet investere de penge her (payTaxExternally)
+            //Man vil altid bruge den optimale realiserings-strategi (harvestGains: true)
+            aktResult = akt(years, yearlyReturnFactor, startCash, payTaxExternally, true);
         }
 
         // Endelig sammenligning, hvis begge blev kørt
@@ -350,5 +349,46 @@ public class Main {
         System.out.printf(DK, "-> Din strategi gav %,.0f kr. mere.%n", diff);
 
         return new Result("Aktiedepot", totalFinalValue, netProfit, percentageIncrease);
+    }
+
+    private static int readPositiveInt(Scanner sc, String prompt, int max, String errorMsg) {
+        System.out.println(prompt);
+        int value = sc.nextInt();
+        while (value <= 0 || value > max) {
+            System.out.println(errorMsg);
+            value = sc.nextInt();
+        }
+        return value;
+    }
+
+    private static double readPositiveDouble(Scanner sc, String prompt, String errorMsg) {
+        System.out.println(prompt);
+        double value = sc.nextDouble();
+        while (value <= 0) {
+            System.out.println(errorMsg);
+            value = sc.nextDouble();
+        }
+        return value;
+    }
+
+    private static boolean readBooleanInput(Scanner sc, String prompt, String errorMsg) {
+        System.out.println(prompt);
+        boolean value = false;
+        boolean found = false;
+
+        while (!found) {
+            String input = sc.next();
+
+            if (input.equalsIgnoreCase("ja")){
+                value = true;
+                found = true;
+            } else if (input.equalsIgnoreCase("nej")){
+                found = true;
+            } else {
+                System.out.println(errorMsg);
+            }
+        }
+
+        return value;
     }
 }
