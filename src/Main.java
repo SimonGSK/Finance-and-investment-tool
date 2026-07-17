@@ -1,0 +1,363 @@
+import java.util.Locale;
+import java.util.Scanner;
+
+public class Main {
+    // Skattegrænsen for 27% aktieskat (79.400 kr. i 2026 for enlige)
+    private static final double TAX_LIMIT_27 = 79400.0;
+    // Dansk talformat: punktum som tusindtalsseparator, komma som decimaltegn
+    private static final Locale DK = Locale.of("da", "DK");
+
+    // Simpel klasse til at bære slutresultatet fra hver metode, så vi kan
+    // lave en samlet sammenligning til sidst.
+    static class Result {
+        final String navn;
+        final double slutvaerdi;
+        final double nettogevinst;
+        final double procentStigning;
+
+        Result(String navn, double slutvaerdi, double nettogevinst, double procentStigning) {
+            this.navn = navn;
+            this.slutvaerdi = slutvaerdi;
+            this.nettogevinst = nettogevinst;
+            this.procentStigning = procentStigning;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        System.out.println("");
+        System.out.println("Hvor mange penge investerer du fra start? (grænsen på aktiesparekontoen er i 2026 på 174.200kr)");
+        int startCash = sc.nextInt();
+
+        System.out.println("Hvor mange år ønsker du at investere pengene?");
+        int years = sc.nextInt();
+
+        System.out.println("Hvad forventer du det gennemsnitlige årlige afkast i procent vil være? (det gennemsnitlige afkast på det globale aktiemarked er omkring 7-9%)");
+        double yearlyReturnPercent = sc.nextDouble();
+        double yearlyReturnFactor = (yearlyReturnPercent / 100.0) + 1.0;
+
+        System.out.println("Vil du se hvad det kan give på en Aktiesparekonto?");
+        String runAsk = sc.next();
+        boolean payTaxExternally = false;
+        Result askResult = null;
+
+        if (runAsk.equals("ja")) {
+            System.out.println("Vil du betale den årlige lagerskat ved indbetaling af frie midler? (ja/nej)");
+            String payTaxExternallyInput = sc.next();
+            payTaxExternally = payTaxExternallyInput.equalsIgnoreCase("ja");
+            askResult = ask(years, yearlyReturnFactor, startCash, payTaxExternally);
+        }
+
+        System.out.println();
+        System.out.println("Vil du også se hvad det kan give på et almindeligt aktiedepot?");
+        String runAkt = sc.next();
+        Result aktResult = null;
+
+        if (runAkt.equals("ja")) {
+
+            boolean investSavedAskTax = false;
+            if (payTaxExternally) {
+                System.out.println("Vil du løbende investere de penge på depotet, som du ellers ville have brugt på ASK-skat? (ja/nej)");
+                String investSavedInput = sc.next();
+                investSavedAskTax = investSavedInput.equalsIgnoreCase("ja");
+            }
+
+            System.out.println("Vil du udnytte den lave 27%-skattegrænse ved kun at sælge/genkøbe i sidste øjeblik, når det er nødvendigt for at nå det,");
+            System.out.println("eller helt undlade at sælge undervejs og betale skat af det hele i sidste år (evt. 42% af det, der overstiger grænsen)? (ja = udnyt grænsen når nødvendigt / nej = sælg alt til sidst)");
+            String harvestInput = sc.next();
+            boolean harvestGains = harvestInput.equalsIgnoreCase("ja");
+
+            aktResult = akt(years, yearlyReturnFactor, startCash, investSavedAskTax, harvestGains);
+        }
+
+        // Endelig sammenligning, hvis begge blev kørt
+        if (askResult != null && aktResult != null) {
+            System.out.println();
+            System.out.println("============SAMLET SAMMENLIGNING============");
+            System.out.printf(DK, "%-20s %18s %18s %10s%n", "Model", "Slutværdi", "Nettogevinst", "Stigning");
+            System.out.printf(DK, "%-20s %,18.0f %,18.0f %9.1f%%%n", askResult.navn, askResult.slutvaerdi, askResult.nettogevinst, askResult.procentStigning);
+            System.out.printf(DK, "%-20s %,18.0f %,18.0f %9.1f%%%n", aktResult.navn, aktResult.slutvaerdi, aktResult.nettogevinst, aktResult.procentStigning);
+
+            if (askResult.slutvaerdi > aktResult.slutvaerdi) {
+                double diff = askResult.slutvaerdi - aktResult.slutvaerdi;
+                System.out.printf(DK, "%n-> Aktiesparekontoen vinder med %,.0f kr. mere i slutværdi.%n", diff);
+            } else if (aktResult.slutvaerdi > askResult.slutvaerdi) {
+                double diff = aktResult.slutvaerdi - askResult.slutvaerdi;
+                System.out.printf(DK, "%n-> Det almindelige aktiedepot vinder med %,.0f kr. mere i slutværdi.%n", diff);
+            } else {
+                System.out.println();
+                System.out.println("-> De to modeller giver præcis samme slutværdi.");
+            }
+        }
+    }
+
+    public static Result ask(int years, double yearlyReturn, int startCash, boolean payTaxExternally) {
+        double money = startCash;
+        double tax;
+        double totalTax = 0;
+
+        for (int i = 1; i <= years; i++) {
+            double startOfYearValue = money;
+            double endOfYearValueBeforeTax = money * yearlyReturn;
+
+            double profit = endOfYearValueBeforeTax - startOfYearValue;
+
+            tax = profit * 0.17; //17% skat af værdistigningen hvert år
+            totalTax += tax;
+
+            if (payTaxExternally) {
+                // Skatten betales "udefra" – værdien af aktierne får lov at stige ubeskåret
+                money = endOfYearValueBeforeTax;
+            } else {
+                // Skatten trækkes direkte fra kontoen
+                money = endOfYearValueBeforeTax - tax;
+            }
+
+            System.out.println("--------- År: " + i + " --------");
+            System.out.printf(DK, "Værdi af aktier: %,.0f kr.%n", money);
+            System.out.printf(DK, "Skat betalt i år: %,.0f kr.%n", tax);
+            System.out.println();
+        }
+
+        System.out.println("============RESULTAT PÅ AKTIESPAREKONTO============");
+        System.out.printf(DK, "Efter %d år, er de %,d kr. vokset til %,.0f kr.%n", years, startCash, money);
+
+        double percentageIncrease;
+        double nettogevinst;
+        // Samlet kapital du reelt har puttet i - inkl. evt. løbende skattebetalinger udefra
+        double totalCapitalInvested = startCash + (payTaxExternally ? totalTax : 0);
+
+        if (payTaxExternally) {
+            System.out.printf(DK, "OBS: Du har løbende indbetalt i alt %,.0f kr. fra andre midler for at dække skatten.%n", totalTax);
+            nettogevinst = money - startCash - totalTax;
+            System.out.printf(DK, "Din reelle nettogevinst er: %,.0f kr.%n", nettogevinst);
+        } else {
+            nettogevinst = money - startCash;
+            System.out.printf(DK, "Din reelle nettogevinst (værdi - startindskud) er: %,.0f kr.%n", nettogevinst);
+        }
+        // Procenten regnes ift. den SAMLEDE kapital du har puttet i - ellers bliver den
+        // kunstigt høj, hvis du løbende har tilført ekstra penge til at betale skatten
+        percentageIncrease = nettogevinst / totalCapitalInvested * 100;
+        System.out.printf(DK, "Det er en stigning på %.1f%% ift. den samlede kapital, du har investeret (%,.0f kr.)%n", percentageIncrease, totalCapitalInvested);
+
+        return new Result("Aktiesparekonto", money, nettogevinst, percentageIncrease);
+    }
+
+    // Regner (uden print) den faktiske slutformue EFTER skat for et givent startår for
+    // høsten. Fra og med 'harvestStartYear' og indtil sidste år, høstes der maksimalt
+    // (op til 79.400 kr.) hvert år. Sidste år sælges alt, med korrekt progressiv skat.
+    private static double computeFinalValueForStartYear(int years, double yearlyReturn, int startCash,
+                                                        boolean investSavedAskTax, int harvestStartYear) {
+        double shareValue = startCash;
+        double costBasis = startCash;
+        double shadowAskMoney = startCash;
+
+        for (int i = 1; i <= years; i++) {
+            if (investSavedAskTax) {
+                double shadowAskProfit = (shadowAskMoney * yearlyReturn) - shadowAskMoney;
+                double askTaxThisYear = shadowAskProfit > 0 ? shadowAskProfit * 0.17 : 0;
+                shadowAskMoney = shadowAskMoney * yearlyReturn;
+                if (askTaxThisYear > 0) {
+                    shareValue += askTaxThisYear;
+                    costBasis += askTaxThisYear;
+                }
+            }
+
+            shareValue = shareValue * yearlyReturn;
+
+            if (i < years) {
+                if (i >= harvestStartYear) {
+                    double unrealizedProfit = shareValue - costBasis;
+                    if (unrealizedProfit > 0) {
+                        double profitToRealize = Math.min(unrealizedProfit, TAX_LIMIT_27);
+                        double tax = profitToRealize * 0.27;
+                        shareValue -= tax;
+                        costBasis += (profitToRealize - tax);
+                    }
+                }
+            } else {
+                double finalUnrealizedProfit = shareValue - costBasis;
+                if (finalUnrealizedProfit > 0) {
+                    double tax;
+                    if (finalUnrealizedProfit <= TAX_LIMIT_27) {
+                        tax = finalUnrealizedProfit * 0.27;
+                    } else {
+                        tax = (TAX_LIMIT_27 * 0.27) + (finalUnrealizedProfit - TAX_LIMIT_27) * 0.42;
+                    }
+                    shareValue -= tax;
+                }
+            }
+        }
+        return shareValue;
+    }
+
+    // Finder det startår, der reelt giver den HØJESTE slutformue - ved at afprøve alle
+    // mulige startår (år 1, 2, 3, ... helt op til "aldrig") og sammenligne det faktiske
+    // resultat. I modsætning til den gamle metode antager denne IKKE at det er bedst at
+    // undgå 42%-skat for enhver pris - hvis det rent faktisk kan betale sig at vente og
+    // betale lidt 42% til sidst, vil søgningen selv opdage det.
+    private static int findBestHarvestStartYear(int years, double yearlyReturn, int startCash, boolean investSavedAskTax) {
+        int bestStart = years; // "years" = ingen tidlig høst overhovedet, alt sælges i sidste år
+        double bestValue = computeFinalValueForStartYear(years, yearlyReturn, startCash, investSavedAskTax, bestStart);
+
+        for (int candidateStart = years - 1; candidateStart >= 1; candidateStart--) {
+            double value = computeFinalValueForStartYear(years, yearlyReturn, startCash, investSavedAskTax, candidateStart);
+            if (value > bestValue) {
+                bestValue = value;
+                bestStart = candidateStart;
+            }
+        }
+        return bestStart;
+    }
+
+    // Regner (uden print) slutværdien for en given strategi, så vi kan sammenligne
+    // "optimeret høst" direkte med "vent til sidste år" for de samme tal.
+    private static double computeAktFinalValue(int years, double yearlyReturn, int startCash,
+                                               boolean investSavedAskTax, boolean harvestGains) {
+        int harvestStartYear = harvestGains
+                ? findBestHarvestStartYear(years, yearlyReturn, startCash, investSavedAskTax)
+                : years;
+        return computeFinalValueForStartYear(years, yearlyReturn, startCash, investSavedAskTax, harvestStartYear);
+    }
+
+    public static Result akt(int years, double yearlyReturn, int startCash, boolean investSavedAskTax, boolean harvestGains) {
+        double shareValue = startCash;   // Værdi bundet i aktier (ALT er investeret hele tiden)
+        double costBasis = startCash;    // Anskaffelsessum (hvad vi "har betalt" for aktierne i alt)
+        double totalTaxPaid = 0;         // Samlet betalt skat over årene
+        double totalExtraInvested = 0;   // Ekstra indbetalinger (hvis man investerer "ASK-skatten")
+
+        // Hjælpevariabel til at simulere "hvad ASK-skatten ville have været"
+        double shadowAskMoney = startCash;
+
+        // Find det startår, der reelt giver den højeste slutformue (ikke bare undgår 42%)
+        int harvestStartYear = harvestGains
+                ? findBestHarvestStartYear(years, yearlyReturn, startCash, investSavedAskTax)
+                : years; // "years" betyder: høst aldrig undervejs
+
+        for (int i = 1; i <= years; i++) {
+            // 1. Eventuel ekstra investering (svarende til det man ville betale i ASK-skat) i starten af året
+            if (investSavedAskTax) {
+                double shadowAskProfit = (shadowAskMoney * yearlyReturn) - shadowAskMoney;
+                double askTaxThisYear = shadowAskProfit > 0 ? shadowAskProfit * 0.17 : 0;
+
+                shadowAskMoney = shadowAskMoney * yearlyReturn;
+
+                if (askTaxThisYear > 0) {
+                    shareValue += askTaxThisYear;
+                    costBasis += askTaxThisYear; // Ny indbetaling hæver anskaffelsessummen
+                    totalExtraInvested += askTaxThisYear;
+                }
+            }
+
+            // 2. Årets afkast på aktierne
+            shareValue = shareValue * yearlyReturn;
+
+            // 3a. Skatteoptimering (kun FØR sidste år): høst kun fra og med det på forhånd
+            //     udregnede startår (harvestStartYear), som er fundet ved reelt at afprøve
+            //     alle mulige startår og vælge det, der giver højest slutformue. Sælg og
+            //     køb straks tilbage - alle pengene forbliver investeret, kun skatten
+            //     forlader depotet.
+            // 3b. Sidste år: her sælges ALT, og der beregnes progressiv skat (27%/42%)
+            //     ÉN gang på hele den resterende urealiserede gevinst.
+            double realizedAt27 = 0;
+            double realizedAt42 = 0;
+
+            if (i < years) {
+                if (harvestGains && i >= harvestStartYear) {
+                    double unrealizedProfit = shareValue - costBasis;
+
+                    if (unrealizedProfit > 0) {
+                        double profitToRealize = Math.min(unrealizedProfit, TAX_LIMIT_27);
+                        double tax = profitToRealize * 0.27;
+                        totalTaxPaid += tax;
+
+                        shareValue -= tax;                          // kun skatten forsvinder fra depotet
+                        costBasis += (profitToRealize - tax);       // resten geninvesteres til ny anskaffelsessum
+                        realizedAt27 = profitToRealize;
+                    }
+                }
+            } else {
+                // Sidste år: sælg alt, betal progressiv skat én gang
+                double finalUnrealizedProfit = shareValue - costBasis;
+                if (finalUnrealizedProfit > 0) {
+                    double tax;
+                    if (finalUnrealizedProfit <= TAX_LIMIT_27) {
+                        tax = finalUnrealizedProfit * 0.27;
+                        realizedAt27 = finalUnrealizedProfit;
+                    } else {
+                        double taxLow = TAX_LIMIT_27 * 0.27;
+                        double taxHigh = (finalUnrealizedProfit - TAX_LIMIT_27) * 0.42;
+                        tax = taxLow + taxHigh;
+                        realizedAt27 = TAX_LIMIT_27;
+                        realizedAt42 = finalUnrealizedProfit - TAX_LIMIT_27;
+                    }
+                    totalTaxPaid += tax;
+                    shareValue -= tax;
+                }
+                costBasis = shareValue; // alt er nu realiseret og beskattet
+            }
+
+            System.out.println("--------- År: " + i + " (Alm. Depot) --------");
+            System.out.printf(DK, "Værdi af aktier: %,.0f kr.%n", shareValue);
+            if (realizedAt27 > 0) {
+                System.out.printf(DK, "* %,.0f kr. afkast blev realiseret med en skattesats på 27%%%n", realizedAt27);
+            }
+            if (realizedAt42 > 0) {
+                System.out.printf(DK, "* %,.0f kr. afkast blev realiseret med en skattesats på 42%%%n", realizedAt42);
+            }
+            if (realizedAt27 == 0 && realizedAt42 == 0) {
+                System.out.println("(Intet realiseret i år)");
+            }
+            System.out.println();
+        }
+
+        // Alt er allerede realiseret og beskattet i loopets sidste iteration (sidste år)
+        double totalFinalValue = shareValue;
+        double totalInvested = startCash + totalExtraInvested;
+        double netProfit = totalFinalValue - totalInvested;
+        double percentageIncrease = (netProfit / totalInvested) * 100;
+
+        System.out.println("============RESULTAT PÅ ALMINDELIGT DEPOT============");
+        if (harvestGains) {
+            System.out.println("(Strategi: prøvede alle mulige startår og valgte det, der reelt gav højest slutformue)");
+            if (harvestStartYear < years) {
+                System.out.println("Bedste resultat: begynd realisering af afkast i år " + harvestStartYear + " (ud af " + years + " år i alt).");
+            } else {
+                System.out.println("Bedste resultat: slet ingen realisering undervejs var bedst - det kunne bedre betale sig at lade det hele vokse og betale evt. 42% til sidst.");
+            }
+        } else {
+            System.out.println("(Strategi: intet salg undervejs, alt sælges i sidste år)");
+        }
+        System.out.printf(DK, "Samlet værdi (alt solgt og beskattet): %,.0f kr.%n", totalFinalValue);
+        System.out.printf(DK, "Herunder startindskud: %,d kr.%n", startCash);
+        if (investSavedAskTax) {
+            System.out.printf(DK, "Løbende ekstra investeret (svarende til ASK-skat): %,.0f kr.%n", totalExtraInvested);
+        }
+        System.out.printf(DK, "Samlet betalt skat over alle år: %,.0f kr.%n", totalTaxPaid);
+        System.out.printf(DK, "Din reelle nettogevinst efter skat: %,.0f kr.%n", netProfit);
+        System.out.printf(DK, "Det er en samlet stigning på %.1f%%%n", percentageIncrease);
+
+        // Sammenlign direkte med den modsatte strategi for samme tal - det er den
+        // eneste sikre måde at vide hvilken der reelt vinder, da det afhænger af
+        // jeres konkrete afkast, tidshorisont og startbeløb.
+        double oppositeFinalValue = computeAktFinalValue(years, yearlyReturn, startCash, investSavedAskTax, !harvestGains);
+        System.out.println();
+        System.out.println("---- Sammenligning med den modsatte strategi ----");
+        if (harvestGains) {
+            System.out.printf(DK, "Hvis du i stedet slet ikke havde solgt undervejs (alt beskattet progressivt i sidste år): %,.0f kr.%n", oppositeFinalValue);
+        } else {
+            System.out.printf(DK, "Hvis du i stedet havde brugt løbende (optimeret) realisering af afkast for at undgå 42%% hvor muligt: %,.0f kr.%n", oppositeFinalValue);
+        }
+        double diff = totalFinalValue - oppositeFinalValue;
+        if (diff > 0) {
+            System.out.printf(DK, "-> Din valgte strategi gav %,.0f kr. mere.%n", diff);
+        } else if (diff < 0) {
+            System.out.printf(DK, "-> Den modsatte strategi ville have givet %,.0f kr. mere her.%n", -diff);
+        } else {
+            System.out.println("-> De to strategier giver samme resultat her.");
+        }
+
+        return new Result("Aktiedepot", totalFinalValue, netProfit, percentageIncrease);
+    }
+}
