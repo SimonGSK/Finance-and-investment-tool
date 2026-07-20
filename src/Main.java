@@ -1,11 +1,15 @@
 import java.util.Locale;
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
-    // Skattegrænsen for 27% aktieskat (79.400 kr. i 2026 for enlige)
-    private static final double TAX_LIMIT_27 = 79400.0;
-    // Dansk talformat: punktum som tusindtalsseparator, komma som decimaltegn
-    private static final Locale DK = Locale.of("da", "DK");
+    private static final double TAX_LIMIT_27 = 79400.0;                      // Skattegrænsen for 27% aktieskat (79.400 kr. i 2026 for enlige)
+    private static final double AKT_TAX_LOW = 0.27;
+    private static final double AKT_TAX_HIGH = 0.42;
+    private static final int ASK_LIMIT_2026 = 174200;
+    private static final double ASK_TAX = 0.17;
+    private static final Locale DK = Locale.of("da", "DK"); // Dansk talformat: punktum som tusindtalsseparator, komma som decimaltegn
 
     // Simpel klasse til at bære slutresultatet fra hver metode, så vi kan
     // lave en samlet sammenligning til sidst.
@@ -22,6 +26,9 @@ public class Main {
             this.procentStigning = procentStigning;
         }
     }
+
+    private record AskYearData(int year, double value, double taxThisYear) {}
+    private record AktYearData(int year, double value, double realizedAt27, double realizedAt42) {}
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in).useLocale(DK);
@@ -42,10 +49,10 @@ public class Main {
     private static void runSimulation(Scanner sc) {
         System.out.println();
         int startCash = readPositiveInt(sc, "Hvor mange penge investerer du fra start? (grænsen på aktiesparekontoen er i 2026 på 174.200kr)",
-                174200, "Du kan ikke investere et negativ beløb eller mere end 174.200 kr. Prøv igen");
+                Integer.MAX_VALUE, "Du kan ikke investere et negativ beløb. Prøv igen");
 
         int years = readPositiveInt(sc, "Hvor mange år ønsker du at investere pengene?",
-                Integer.MAX_VALUE, "Du kan ikke investere i et negativ antal år. Prøv igen");
+                100, "Antal år skal være mellem 1 og 100. Prøv igen");
 
         double yearlyReturnPercent = readPositiveDouble(sc, "Hvad forventer du det gennemsnitlige årlige afkast i procent vil være? (det gennemsnitlige afkast på det globale aktiemarked er omkring 7-9%)",
                 "Du kan ikke have et negativt årligt afkast. Prøv igen");
@@ -58,6 +65,11 @@ public class Main {
         Result askResult = null;
 
         if (runAsk) {
+            while (startCash > ASK_LIMIT_2026) {
+                startCash = readPositiveInt(sc, "Dit startbeløb overstiger ASK-grænsen på 174.200 kr. Indtast et lavere beløb for ASK-beregningen:",
+                        ASK_LIMIT_2026, "Beløbet er ikke gyldigt. Prøv igen.");
+            }
+
             payTaxExternally = readBooleanInput(sc, "Vil du betale den årlige lagerskat ved indbetaling af frie midler? (ja/nej)",
                     "Du skal enten svare ja eller nej");
             askResult = ask(years, yearlyReturnFactor, startCash, payTaxExternally);
@@ -100,14 +112,14 @@ public class Main {
         double money = startCash;
         double tax;
         double totalTax = 0;
+        List<AskYearData> yearData = new ArrayList<>();
 
         for (int i = 1; i <= years; i++) {
             double startOfYearValue = money;
             double endOfYearValueBeforeTax = money * yearlyReturn;
-
             double profit = endOfYearValueBeforeTax - startOfYearValue;
 
-            tax = profit * 0.17; //17% skat af værdistigningen hvert år
+            tax = profit * ASK_TAX; //17% skat af værdistigningen hvert år
             totalTax += tax;
 
             if (payTaxExternally) {
@@ -118,13 +130,12 @@ public class Main {
                 money = endOfYearValueBeforeTax - tax;
             }
 
-            System.out.println("--------- År: " + i + " --------");
-            System.out.printf(DK, "Værdi af aktier: %,.0f kr.%n", money);
-            System.out.printf(DK, "Skat betalt i år: %,.0f kr.%n", tax);
-            System.out.println();
+            yearData.add(new AskYearData(i, money, tax));
         }
 
         System.out.println("============RESULTAT PÅ AKTIESPAREKONTO============");
+        printAskTable(yearData);
+        System.out.println();
         System.out.printf(DK, "Efter %d år, er de %,d kr. vokset til %,.0f kr.%n", years, startCash, money);
 
         double percentageIncrease;
@@ -148,6 +159,14 @@ public class Main {
         return new Result("Aktiesparekonto", money, nettogevinst, percentageIncrease);
     }
 
+    private static void printAskTable(List<AskYearData> yearData) {
+        System.out.printf(DK, "%-6s %18s %18s%n", "År", "Værdi", "Skat betalt");
+        System.out.println("-".repeat(45));
+        for (AskYearData d : yearData) {
+            System.out.printf(DK, "%-6d %,18.0f %,18.0f%n", d.year(), d.value(), d.taxThisYear());
+        }
+    }
+
     // Regner (uden print) den faktiske slutformue EFTER skat for et givent startår for
     // høsten. Fra og med 'harvestStartYear' og indtil sidste år, høstes der maksimalt
     // (op til 79.400 kr.) hvert år. Sidste år sælges alt, med korrekt progressiv skat.
@@ -160,7 +179,7 @@ public class Main {
         for (int i = 1; i <= years; i++) {
             if (investSavedAskTax) {
                 double shadowAskProfit = (shadowAskMoney * yearlyReturn) - shadowAskMoney;
-                double askTaxThisYear = shadowAskProfit > 0 ? shadowAskProfit * 0.17 : 0;
+                double askTaxThisYear = shadowAskProfit > 0 ? shadowAskProfit * ASK_TAX : 0;
                 shadowAskMoney = shadowAskMoney * yearlyReturn;
                 if (askTaxThisYear > 0) {
                     shareValue += askTaxThisYear;
@@ -175,7 +194,7 @@ public class Main {
                     double unrealizedProfit = shareValue - costBasis;
                     if (unrealizedProfit > 0) {
                         double profitToRealize = Math.min(unrealizedProfit, TAX_LIMIT_27);
-                        double tax = profitToRealize * 0.27;
+                        double tax = profitToRealize * AKT_TAX_LOW;
                         shareValue -= tax;
                         costBasis += (profitToRealize - tax);
                     }
@@ -185,9 +204,9 @@ public class Main {
                 if (finalUnrealizedProfit > 0) {
                     double tax;
                     if (finalUnrealizedProfit <= TAX_LIMIT_27) {
-                        tax = finalUnrealizedProfit * 0.27;
+                        tax = finalUnrealizedProfit * AKT_TAX_LOW;
                     } else {
-                        tax = (TAX_LIMIT_27 * 0.27) + (finalUnrealizedProfit - TAX_LIMIT_27) * 0.42;
+                        tax = (TAX_LIMIT_27 * AKT_TAX_LOW) + (finalUnrealizedProfit - TAX_LIMIT_27) * AKT_TAX_HIGH;
                     }
                     shareValue -= tax;
                 }
@@ -226,13 +245,12 @@ public class Main {
     }
 
     public static Result akt(int years, double yearlyReturn, int startCash, boolean investSavedAskTax, boolean harvestGains) {
-        double shareValue = startCash;   // Værdi bundet i aktier (ALT er investeret hele tiden)
-        double costBasis = startCash;    // Anskaffelsessum (hvad vi "har betalt" for aktierne i alt)
-        double totalTaxPaid = 0;         // Samlet betalt skat over årene
-        double totalExtraInvested = 0;   // Ekstra indbetalinger (hvis man investerer "ASK-skatten")
-
-        // Hjælpevariabel til at simulere "hvad ASK-skatten ville have været"
-        double shadowAskMoney = startCash;
+        double shareValue = startCash;      // Værdi bundet i aktier (ALT er investeret hele tiden)
+        double costBasis = startCash;       // Anskaffelsessum (hvad vi "har betalt" for aktierne i alt)
+        double totalTaxPaid = 0;            // Samlet betalt skat over årene
+        double totalExtraInvested = 0;      // Ekstra indbetalinger (hvis man investerer "ASK-skatten")
+        double shadowAskMoney = startCash;  // Hjælpevariabel til at simulere "hvad ASK-skatten ville have været"
+        List<AktYearData> yearData = new ArrayList<>();
 
         // Find det startår, der reelt giver den højeste slutformue (ikke bare undgår 42%)
         int harvestStartYear = harvestGains
@@ -243,7 +261,7 @@ public class Main {
             // 1. Eventuel ekstra investering (svarende til det man ville betale i ASK-skat) i starten af året
             if (investSavedAskTax) {
                 double shadowAskProfit = (shadowAskMoney * yearlyReturn) - shadowAskMoney;
-                double askTaxThisYear = shadowAskProfit > 0 ? shadowAskProfit * 0.17 : 0;
+                double askTaxThisYear = shadowAskProfit > 0 ? shadowAskProfit * ASK_TAX : 0;
 
                 shadowAskMoney = shadowAskMoney * yearlyReturn;
 
@@ -273,7 +291,7 @@ public class Main {
 
                     if (unrealizedProfit > 0) {
                         double profitToRealize = Math.min(unrealizedProfit, TAX_LIMIT_27);
-                        double tax = profitToRealize * 0.27;
+                        double tax = profitToRealize * AKT_TAX_LOW;
                         totalTaxPaid += tax;
 
                         shareValue -= tax;                          // kun skatten forsvinder fra depotet
@@ -287,11 +305,11 @@ public class Main {
                 if (finalUnrealizedProfit > 0) {
                     double tax;
                     if (finalUnrealizedProfit <= TAX_LIMIT_27) {
-                        tax = finalUnrealizedProfit * 0.27;
+                        tax = finalUnrealizedProfit * AKT_TAX_LOW;
                         realizedAt27 = finalUnrealizedProfit;
                     } else {
-                        double taxLow = TAX_LIMIT_27 * 0.27;
-                        double taxHigh = (finalUnrealizedProfit - TAX_LIMIT_27) * 0.42;
+                        double taxLow = TAX_LIMIT_27 * AKT_TAX_LOW;
+                        double taxHigh = (finalUnrealizedProfit - TAX_LIMIT_27) * AKT_TAX_HIGH;
                         tax = taxLow + taxHigh;
                         realizedAt27 = TAX_LIMIT_27;
                         realizedAt42 = finalUnrealizedProfit - TAX_LIMIT_27;
@@ -302,27 +320,18 @@ public class Main {
                 costBasis = shareValue; // alt er nu realiseret og beskattet
             }
 
-            System.out.println("--------- År: " + i + " (Alm. Depot) --------");
-            System.out.printf(DK, "Værdi af aktier: %,.0f kr.%n", shareValue);
-            if (realizedAt27 > 0) {
-                System.out.printf(DK, "* %,.0f kr. afkast blev realiseret med en skattesats på 27%%%n", realizedAt27);
-            }
-            if (realizedAt42 > 0) {
-                System.out.printf(DK, "* %,.0f kr. afkast blev realiseret med en skattesats på 42%%%n", realizedAt42);
-            }
-            if (realizedAt27 == 0 && realizedAt42 == 0) {
-                System.out.println("(Intet realiseret i år)");
-            }
-            System.out.println();
+            yearData.add(new AktYearData(i, shareValue, realizedAt27, realizedAt42));
         }
+
+        System.out.println("============RESULTAT PÅ ALMINDELIGT DEPOT============");
+        printAktTable(yearData);
+        System.out.println();
 
         // Alt er allerede realiseret og beskattet i loopets sidste iteration (sidste år)
         double totalFinalValue = shareValue;
         double totalInvested = startCash + totalExtraInvested;
         double netProfit = totalFinalValue - totalInvested;
         double percentageIncrease = (netProfit / totalInvested) * 100;
-
-        System.out.println("============RESULTAT PÅ ALMINDELIGT DEPOT============");
 
         System.out.printf(DK, "Samlet værdi (alt solgt og beskattet): %,.0f kr.%n", totalFinalValue);
 
@@ -349,6 +358,16 @@ public class Main {
         System.out.printf(DK, "-> Din strategi gav %,.0f kr. mere.%n", diff);
 
         return new Result("Aktiedepot", totalFinalValue, netProfit, percentageIncrease);
+    }
+
+    private static void printAktTable(List<AktYearData> yearData) {
+        System.out.printf(DK, "%-6s %18s %16s %16s%n", "År", "Værdi", "Realis. @27%", "Realis. @42%");
+        System.out.println("-".repeat(70));
+        for (AktYearData d : yearData) {
+            String r27 = d.realizedAt27() > 0 ? String.format(DK, "%,.0f", d.realizedAt27()) : "-";
+            String r42 = d.realizedAt42() > 0 ? String.format(DK, "%,.0f", d.realizedAt42()) : "-";
+            System.out.printf(DK, "%-6d %,18.0f %16s %16s%n", d.year(), d.value(), r27, r42);
+        }
     }
 
     private static int readPositiveInt(Scanner sc, String prompt, int max, String errorMsg) {
