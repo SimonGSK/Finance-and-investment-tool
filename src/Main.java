@@ -33,20 +33,42 @@ public class Main {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in).useLocale(DK);
 
-        boolean runAgain = true;
-        while (runAgain) {
-            runSimulation(sc);
+        boolean exitProgram = false;
+        while (!exitProgram) {
+            System.out.println();
+            System.out.println("=========== VÆLG VÆRKTØJ ===========");
+            System.out.println("1) Aktiesparekonto vs. aktiedepot (engangsindskud)");
+            System.out.println("2) Aktiedepot med fast månedlig investering");
+            System.out.println("3) Afslut");
+            int choice = readMenuChoice(sc, "Vælg et tal (1-3):", 1, 3);
 
-            System.out.println();
-            runAgain = readBooleanInput(sc, "Vil du prøve igen med andre tal? (ja/nej)", "Du skal enten svare ja eller nej");
-            System.out.println();
+            switch (choice) {
+                case 1 -> runTool(sc, Main::runAskVsAktSimulation);
+                case 2 -> runTool(sc, Main::runMonthlyAktSimulation);
+                case 3 -> exitProgram = true;
+            }
         }
 
         sc.close();
         System.out.println("Farvel!");
     }
 
-    private static void runSimulation(Scanner sc) {
+    // Fælles "kør igen med nye tal, eller tilbage til værktøjs-oversigten"-loop,
+// som virker for begge værktøjer.
+    private static void runTool(Scanner sc, java.util.function.Consumer<Scanner> tool) {
+        boolean runAgain = true;
+        while (runAgain) {
+            tool.accept(sc);
+
+            System.out.println();
+            System.out.println("1) Kør værktøjet igen med andre tal");
+            System.out.println("2) Tilbage til værktøjs-oversigten");
+            int choice = readMenuChoice(sc, "Vælg et tal (1-2):", 1, 2);
+            runAgain = (choice == 1);
+        }
+    }
+
+    private static void runAskVsAktSimulation(Scanner sc) {
         System.out.println();
         int startCash = readPositiveInt(sc, "Hvor mange penge investerer du fra start? (grænsen på aktiesparekontoen er i 2026 på 174.200kr)",
                 Integer.MAX_VALUE, "Du kan ikke investere et negativ beløb. Prøv igen");
@@ -54,7 +76,7 @@ public class Main {
         int years = readPositiveInt(sc, "Hvor mange år ønsker du at investere pengene?",
                 100, "Antal år skal være mellem 1 og 100. Prøv igen");
 
-        double yearlyReturnPercent = readPositiveDouble(sc, "Hvad forventer du det gennemsnitlige årlige afkast i procent vil være? (det gennemsnitlige afkast på det globale aktiemarked er omkring 7-9%)",
+        double yearlyReturnPercent = readPositiveDouble(sc, "Hvad forventer du det gennemsnitlige årlige afkast i procent vil være? (7-9% er typisk for det globale aktiemarked)",
                 "Du kan ikke have et negativt årligt afkast. Prøv igen");
         double yearlyReturnFactor = (yearlyReturnPercent / 100.0) + 1.0;
 
@@ -165,83 +187,6 @@ public class Main {
         for (AskYearData d : yearData) {
             System.out.printf(DK, "%-6d %,18.0f %,18.0f%n", d.year(), d.value(), d.taxThisYear());
         }
-    }
-
-    // Regner (uden print) den faktiske slutformue EFTER skat for et givent startår for
-    // høsten. Fra og med 'harvestStartYear' og indtil sidste år, høstes der maksimalt
-    // (op til 79.400 kr.) hvert år. Sidste år sælges alt, med korrekt progressiv skat.
-    private static double computeFinalValueForStartYear(int years, double yearlyReturn, int startCash,
-                                                        boolean investSavedAskTax, int harvestStartYear) {
-        double shareValue = startCash;
-        double costBasis = startCash;
-        double shadowAskMoney = startCash;
-
-        for (int i = 1; i <= years; i++) {
-            if (investSavedAskTax) {
-                double shadowAskProfit = (shadowAskMoney * yearlyReturn) - shadowAskMoney;
-                double askTaxThisYear = shadowAskProfit > 0 ? shadowAskProfit * ASK_TAX : 0;
-                shadowAskMoney = shadowAskMoney * yearlyReturn;
-                if (askTaxThisYear > 0) {
-                    shareValue += askTaxThisYear;
-                    costBasis += askTaxThisYear;
-                }
-            }
-
-            shareValue = shareValue * yearlyReturn;
-
-            if (i < years) {
-                if (i >= harvestStartYear) {
-                    double unrealizedProfit = shareValue - costBasis;
-                    if (unrealizedProfit > 0) {
-                        double profitToRealize = Math.min(unrealizedProfit, TAX_LIMIT_27);
-                        double tax = profitToRealize * AKT_TAX_LOW;
-                        shareValue -= tax;
-                        costBasis += (profitToRealize - tax);
-                    }
-                }
-            } else {
-                double finalUnrealizedProfit = shareValue - costBasis;
-                if (finalUnrealizedProfit > 0) {
-                    double tax;
-                    if (finalUnrealizedProfit <= TAX_LIMIT_27) {
-                        tax = finalUnrealizedProfit * AKT_TAX_LOW;
-                    } else {
-                        tax = (TAX_LIMIT_27 * AKT_TAX_LOW) + (finalUnrealizedProfit - TAX_LIMIT_27) * AKT_TAX_HIGH;
-                    }
-                    shareValue -= tax;
-                }
-            }
-        }
-        return shareValue;
-    }
-
-    // Finder det startår, der reelt giver den HØJESTE slutformue - ved at afprøve alle
-    // mulige startår (år 1, 2, 3, ... helt op til "aldrig") og sammenligne det faktiske
-    // resultat. I modsætning til den gamle metode antager denne IKKE at det er bedst at
-    // undgå 42%-skat for enhver pris - hvis det rent faktisk kan betale sig at vente og
-    // betale lidt 42% til sidst, vil søgningen selv opdage det.
-    private static int findBestHarvestStartYear(int years, double yearlyReturn, int startCash, boolean investSavedAskTax) {
-        int bestStart = years; // "years" = ingen tidlig høst overhovedet, alt sælges i sidste år
-        double bestValue = computeFinalValueForStartYear(years, yearlyReturn, startCash, investSavedAskTax, bestStart);
-
-        for (int candidateStart = years - 1; candidateStart >= 1; candidateStart--) {
-            double value = computeFinalValueForStartYear(years, yearlyReturn, startCash, investSavedAskTax, candidateStart);
-            if (value > bestValue) {
-                bestValue = value;
-                bestStart = candidateStart;
-            }
-        }
-        return bestStart;
-    }
-
-    // Regner (uden print) slutværdien for en given strategi, så vi kan sammenligne
-    // "optimeret høst" direkte med "vent til sidste år" for de samme tal.
-    private static double computeAktFinalValue(int years, double yearlyReturn, int startCash,
-                                               boolean investSavedAskTax, boolean harvestGains) {
-        int harvestStartYear = harvestGains
-                ? findBestHarvestStartYear(years, yearlyReturn, startCash, investSavedAskTax)
-                : years;
-        return computeFinalValueForStartYear(years, yearlyReturn, startCash, investSavedAskTax, harvestStartYear);
     }
 
     public static Result akt(int years, double yearlyReturn, int startCash, boolean investSavedAskTax, boolean harvestGains) {
@@ -370,6 +315,230 @@ public class Main {
         }
     }
 
+    // Regner (uden print) den faktiske slutformue EFTER skat for et givent startår for
+    // høsten. Fra og med 'harvestStartYear' og indtil sidste år, høstes der maksimalt
+    // (op til 79.400 kr.) hvert år. Sidste år sælges alt, med korrekt progressiv skat.
+    private static double computeFinalValueForStartYear(int years, double yearlyReturn, int startCash,
+                                                        boolean investSavedAskTax, int harvestStartYear) {
+        double shareValue = startCash;
+        double costBasis = startCash;
+        double shadowAskMoney = startCash;
+
+        for (int i = 1; i <= years; i++) {
+            if (investSavedAskTax) {
+                double shadowAskProfit = (shadowAskMoney * yearlyReturn) - shadowAskMoney;
+                double askTaxThisYear = shadowAskProfit > 0 ? shadowAskProfit * ASK_TAX : 0;
+                shadowAskMoney = shadowAskMoney * yearlyReturn;
+                if (askTaxThisYear > 0) {
+                    shareValue += askTaxThisYear;
+                    costBasis += askTaxThisYear;
+                }
+            }
+
+            shareValue = shareValue * yearlyReturn;
+
+            if (i < years) {
+                if (i >= harvestStartYear) {
+                    double unrealizedProfit = shareValue - costBasis;
+                    if (unrealizedProfit > 0) {
+                        double profitToRealize = Math.min(unrealizedProfit, TAX_LIMIT_27);
+                        double tax = profitToRealize * AKT_TAX_LOW;
+                        shareValue -= tax;
+                        costBasis += (profitToRealize - tax);
+                    }
+                }
+            } else {
+                double finalUnrealizedProfit = shareValue - costBasis;
+                if (finalUnrealizedProfit > 0) {
+                    double tax;
+                    if (finalUnrealizedProfit <= TAX_LIMIT_27) {
+                        tax = finalUnrealizedProfit * AKT_TAX_LOW;
+                    } else {
+                        tax = (TAX_LIMIT_27 * AKT_TAX_LOW) + (finalUnrealizedProfit - TAX_LIMIT_27) * AKT_TAX_HIGH;
+                    }
+                    shareValue -= tax;
+                }
+            }
+        }
+        return shareValue;
+    }
+
+    // Finder det startår, der reelt giver den HØJESTE slutformue - ved at afprøve alle
+    // mulige startår (år 1, 2, 3, ... helt op til "aldrig") og sammenligne det faktiske
+    // resultat. I modsætning til den gamle metode antager denne IKKE at det er bedst at
+    // undgå 42%-skat for enhver pris - hvis det rent faktisk kan betale sig at vente og
+    // betale lidt 42% til sidst, vil søgningen selv opdage det.
+    private static int findBestHarvestStartYear(int years, double yearlyReturn, int startCash, boolean investSavedAskTax) {
+        int bestStart = years; // "years" = ingen tidlig høst overhovedet, alt sælges i sidste år
+        double bestValue = computeFinalValueForStartYear(years, yearlyReturn, startCash, investSavedAskTax, bestStart);
+
+        for (int candidateStart = years - 1; candidateStart >= 1; candidateStart--) {
+            double value = computeFinalValueForStartYear(years, yearlyReturn, startCash, investSavedAskTax, candidateStart);
+            if (value > bestValue) {
+                bestValue = value;
+                bestStart = candidateStart;
+            }
+        }
+        return bestStart;
+    }
+
+    // Regner (uden print) slutværdien for en given strategi, så vi kan sammenligne
+    // "optimeret høst" direkte med "vent til sidste år" for de samme tal.
+    private static double computeAktFinalValue(int years, double yearlyReturn, int startCash,
+                                               boolean investSavedAskTax, boolean harvestGains) {
+        int harvestStartYear = harvestGains
+                ? findBestHarvestStartYear(years, yearlyReturn, startCash, investSavedAskTax)
+                : years;
+        return computeFinalValueForStartYear(years, yearlyReturn, startCash, investSavedAskTax, harvestStartYear);
+    }
+
+    private static void runMonthlyAktSimulation(Scanner sc) {
+        System.out.println();
+        int monthlyAmount = readPositiveInt(sc, "Hvor mange penge investerer du hver måned?",
+                Integer.MAX_VALUE, "Beløbet skal være positivt. Prøv igen");
+
+        int years = readPositiveInt(sc, "Hvor mange år ønsker du at investere pengene?",
+                100, "Antal år skal være mellem 1 og 100. Prøv igen");
+
+        double yearlyReturnPercent = readPositiveDouble(sc,
+                "Hvad forventer du det gennemsnitlige årlige afkast i procent vil være? (7-9% er typisk for det globale aktiemarked)",
+                "Afkastet skal være positivt. Prøv igen");
+        double yearlyReturnFactor = (yearlyReturnPercent / 100.0) + 1.0;
+
+        aktMonthly(years, yearlyReturnFactor, monthlyAmount);
+    }
+
+    public static Result aktMonthly(int years, double yearlyReturn, int monthlyAmount) {
+        double shareValue = 0;
+        double costBasis = 0;
+        double totalTaxPaid = 0;
+        double monthlyFactor = monthlyReturnFactor(yearlyReturn);
+        List<AktYearData> yearData = new ArrayList<>();
+
+        int harvestStartYear = findBestMonthlyHarvestStartYear(years, yearlyReturn, monthlyAmount);
+
+        for (int i = 1; i <= years; i++) {
+            for (int m = 1; m <= 12; m++) {
+                shareValue += monthlyAmount;
+                costBasis += monthlyAmount;
+                shareValue = shareValue * monthlyFactor;
+            }
+
+            double realizedAt27 = 0;
+            double realizedAt42 = 0;
+
+            if (i < years) {
+                if (i >= harvestStartYear) {
+                    double unrealizedProfit = shareValue - costBasis;
+                    if (unrealizedProfit > 0) {
+                        double profitToRealize = Math.min(unrealizedProfit, TAX_LIMIT_27);
+                        double tax = profitToRealize * AKT_TAX_LOW;
+                        totalTaxPaid += tax;
+                        shareValue -= tax;
+                        costBasis += (profitToRealize - tax);
+                        realizedAt27 = profitToRealize;
+                    }
+                }
+            } else {
+                double finalUnrealizedProfit = shareValue - costBasis;
+                if (finalUnrealizedProfit > 0) {
+                    double tax;
+                    if (finalUnrealizedProfit <= TAX_LIMIT_27) {
+                        tax = finalUnrealizedProfit * AKT_TAX_LOW;
+                        realizedAt27 = finalUnrealizedProfit;
+                    } else {
+                        tax = (TAX_LIMIT_27 * AKT_TAX_LOW) + (finalUnrealizedProfit - TAX_LIMIT_27) * AKT_TAX_HIGH;
+                        realizedAt27 = TAX_LIMIT_27;
+                        realizedAt42 = finalUnrealizedProfit - TAX_LIMIT_27;
+                    }
+                    totalTaxPaid += tax;
+                    shareValue -= tax;
+                }
+                costBasis = shareValue;
+            }
+
+            yearData.add(new AktYearData(i, shareValue, realizedAt27, realizedAt42));
+        }
+
+        System.out.println("============RESULTAT: AKTIEDEPOT MED MÅNEDLIG INVESTERING============");
+        printAktTable(yearData);
+        System.out.println();
+
+        double totalFinalValue = shareValue;
+        double totalInvested = (double) monthlyAmount * 12 * years;
+        double netProfit = totalFinalValue - totalInvested;
+        double percentageIncrease = (netProfit / totalInvested) * 100;
+
+        System.out.printf(DK, "Samlet værdi (alt solgt og beskattet): %,.0f kr.%n", totalFinalValue);
+        System.out.println();
+        System.out.printf(DK, "Samlet indbetalt over %d år (%,d kr./md.): %,.0f kr.%n", years, monthlyAmount, totalInvested);
+        System.out.printf(DK, "Samlet betalt skat over alle år: %,.0f kr.%n", totalTaxPaid);
+        System.out.println();
+        System.out.printf(DK, "Din reelle nettogevinst efter skat: %,.0f kr.%n", netProfit);
+        System.out.printf(DK, "Det er en samlet stigning på +%.1f%%%n", percentageIncrease);
+        System.out.println();
+        System.out.println("----BEDSTE STRATEGI----");
+        System.out.println("Bedste strategi: begynd realisering af afkast i år " + harvestStartYear + " (ud af " + years + " år i alt).");
+
+        return new Result("Aktiedepot (månedlig)", totalFinalValue, netProfit, percentageIncrease);
+    }
+
+    private static double monthlyReturnFactor(double yearlyReturn) {
+        return Math.pow(yearlyReturn, 1.0 / 12.0);
+    }
+
+    // Samme princip som computeFinalValueForStartYear, men med 12 månedlige
+    // indbetalinger + vækst pr. år, i stedet for ét engangsbeløb.
+    private static double computeMonthlyFinalValueForStartYear(int years, double yearlyReturn,
+                                                               int monthlyAmount, int harvestStartYear) {
+        double shareValue = 0;
+        double costBasis = 0;
+        double monthlyFactor = monthlyReturnFactor(yearlyReturn);
+
+        for (int i = 1; i <= years; i++) {
+            for (int m = 1; m <= 12; m++) {
+                shareValue += monthlyAmount;
+                costBasis += monthlyAmount;
+                shareValue = shareValue * monthlyFactor;
+            }
+
+            if (i < years) {
+                if (i >= harvestStartYear) {
+                    double unrealizedProfit = shareValue - costBasis;
+                    if (unrealizedProfit > 0) {
+                        double profitToRealize = Math.min(unrealizedProfit, TAX_LIMIT_27);
+                        double tax = profitToRealize * AKT_TAX_LOW;
+                        shareValue -= tax;
+                        costBasis += (profitToRealize - tax);
+                    }
+                }
+            } else {
+                double finalUnrealizedProfit = shareValue - costBasis;
+                if (finalUnrealizedProfit > 0) {
+                    double tax = finalUnrealizedProfit <= TAX_LIMIT_27
+                            ? finalUnrealizedProfit * AKT_TAX_LOW
+                            : (TAX_LIMIT_27 * AKT_TAX_LOW) + (finalUnrealizedProfit - TAX_LIMIT_27) * AKT_TAX_HIGH;
+                    shareValue -= tax;
+                }
+            }
+        }
+        return shareValue;
+    }
+
+    private static int findBestMonthlyHarvestStartYear(int years, double yearlyReturn, int monthlyAmount) {
+        int bestStart = years;
+        double bestValue = computeMonthlyFinalValueForStartYear(years, yearlyReturn, monthlyAmount, bestStart);
+
+        for (int candidateStart = years - 1; candidateStart >= 1; candidateStart--) {
+            double value = computeMonthlyFinalValueForStartYear(years, yearlyReturn, monthlyAmount, candidateStart);
+            if (value > bestValue) {
+                bestValue = value;
+                bestStart = candidateStart;
+            }
+        }
+        return bestStart;
+    }
+
     private static int readPositiveInt(Scanner sc, String prompt, int max, String errorMsg) {
         System.out.println(prompt);
         int value = sc.nextInt();
@@ -408,6 +577,16 @@ public class Main {
             }
         }
 
+        return value;
+    }
+
+    private static int readMenuChoice(Scanner sc, String prompt, int min, int max) {
+        System.out.println(prompt);
+        int value = sc.nextInt();
+        while (value < min || value > max) {
+            System.out.println("Ugyldigt valg. Prøv igen (" + min + "-" + max + "):");
+            value = sc.nextInt();
+        }
         return value;
     }
 }
