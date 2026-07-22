@@ -2,6 +2,7 @@ import java.util.Locale;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class Main {
     private static final double TAX_LIMIT_27 = 79400.0;                      // Skattegrænsen for 27% aktieskat (79.400 kr. i 2026 for enlige)
@@ -29,6 +30,8 @@ public class Main {
 
     private record AskYearData(int year, double value, double taxThisYear) {}
     private record AktYearData(int year, double value, double realizedAt27, double realizedAt42) {}
+    private record AktMonthlyYearData(int year, double value, double cumulativeInvested,
+                                      double realizedAt27, double realizedAt42) {}
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in).useLocale(DK);
@@ -55,7 +58,7 @@ public class Main {
 
     // Fælles "kør igen med nye tal, eller tilbage til værktøjs-oversigten"-loop,
 // som virker for begge værktøjer.
-    private static void runTool(Scanner sc, java.util.function.Consumer<Scanner> tool) {
+    private static void runTool(Scanner sc, Consumer<Scanner> tool) {
         boolean runAgain = true;
         while (runAgain) {
             tool.accept(sc);
@@ -80,8 +83,7 @@ public class Main {
                 "Du kan ikke have et negativt årligt afkast. Prøv igen");
         double yearlyReturnFactor = (yearlyReturnPercent / 100.0) + 1.0;
 
-        boolean runAsk = readBooleanInput(sc, "Vil du se resultatet fra en Aktiesparekonto? (ja/nej)",
-                "Du skal enten svare ja eller nej");
+        boolean runAsk = readBooleanInput(sc, "Vil du se resultatet fra en Aktiesparekonto? (ja/nej)");
 
         boolean payTaxExternally = false;
         Result askResult = null;
@@ -92,14 +94,12 @@ public class Main {
                         ASK_LIMIT_2026, "Beløbet er ikke gyldigt. Prøv igen.");
             }
 
-            payTaxExternally = readBooleanInput(sc, "Vil du betale den årlige lagerskat ved indbetaling af frie midler? (ja/nej)",
-                    "Du skal enten svare ja eller nej");
+            payTaxExternally = readBooleanInput(sc, "Vil du betale den årlige lagerskat ved indbetaling af frie midler? (ja/nej)");
             askResult = ask(years, yearlyReturnFactor, startCash, payTaxExternally);
         }
 
         System.out.println();
-        boolean runAkt = readBooleanInput(sc, "Vil du se resultatet fra et almindeligt aktiedepot? (ja/nej)",
-                "Du skal enten svare ja eller nej");
+        boolean runAkt = readBooleanInput(sc, "Vil du se resultatet fra et almindeligt aktiedepot? (ja/nej)");
         Result aktResult = null;
 
         if (runAkt) {
@@ -394,12 +394,24 @@ public class Main {
 
     private static void runMonthlyAktSimulation(Scanner sc) {
         System.out.println();
-        int startCash = readNonNegativeInt(sc,
-                "Hvor mange penge investerer du med det samme? (0 hvis du kun vil starte med de månedlige indbetalinger)",
-                "Beløbet kan ikke være negativt. Prøv igen");
 
-        int monthlyAmount = readPositiveInt(sc, "Hvor mange penge investerer du hver måned?",
-                Integer.MAX_VALUE, "Beløbet skal være positivt. Prøv igen");
+        int startCash;
+        int monthlyAmount;
+
+        //Tjek til at sikre at startCash og monthlyAmount ikke begge er 0
+        while (true){
+            startCash = readNonNegativeInt(sc,
+                    "Hvor mange penge investerer du med det samme? (0 hvis du kun vil starte med de månedlige indbetalinger)",
+                    "Beløbet kan ikke være negativt. Prøv igen");
+
+            monthlyAmount = readNonNegativeInt(sc, "Hvor mange penge investerer du hver måned?",
+                     "Beløbet kan ikke være negativt. Prøv igen");
+
+            if (startCash > 0 || monthlyAmount > 0) {
+                break;
+            }
+            System.out.println("Du skal investere mindst ét beløb - enten et engangsbeløb eller et månedligt beløb (eller begge). Prøv igen.");
+        }
 
         int years = readPositiveInt(sc, "Hvor mange år ønsker du at investere pengene?",
                 100, "Antal år skal være mellem 1 og 100. Prøv igen");
@@ -417,7 +429,8 @@ public class Main {
         double costBasis = startCash;
         double totalTaxPaid = 0;
         double monthlyFactor = monthlyReturnFactor(yearlyReturn);
-        List<AktYearData> yearData = new ArrayList<>();
+        double cumulativeInvested = startCash; // løbende indbetalt kapital, til tabellen
+        List<AktMonthlyYearData> yearData = new ArrayList<>();
 
         int harvestStartYear = findBestMonthlyHarvestStartYear(years, yearlyReturn, startCash, monthlyAmount);
 
@@ -425,6 +438,7 @@ public class Main {
             for (int m = 1; m <= 12; m++) {
                 shareValue += monthlyAmount;
                 costBasis += monthlyAmount;
+                cumulativeInvested += monthlyAmount;
                 shareValue = shareValue * monthlyFactor;
             }
 
@@ -461,7 +475,7 @@ public class Main {
                 costBasis = shareValue;
             }
 
-            yearData.add(new AktYearData(i, shareValue, realizedAt27, realizedAt42));
+            yearData.add(new AktMonthlyYearData(i, shareValue, cumulativeInvested, realizedAt27, realizedAt42));
         }
 
         double totalFinalValue = shareValue;
@@ -470,7 +484,7 @@ public class Main {
         double percentageIncrease = (netProfit / totalInvested) * 100;
 
         System.out.println("============RESULTAT: AKTIEDEPOT MED MÅNEDLIG INVESTERING============");
-        printAktTable(yearData);
+        printAktMonthlyTable(yearData);
         System.out.println();
 
         System.out.printf(DK, "Samlet værdi (alt solgt og beskattet): %,.0f kr.%n", totalFinalValue);
@@ -492,6 +506,16 @@ public class Main {
         System.out.println("Bedste strategi: begynd realisering af afkast i år " + harvestStartYear + " (ud af " + years + " år i alt).");
 
         return new Result("Aktiedepot (månedlig)", totalFinalValue, netProfit, percentageIncrease);
+    }
+
+    private static void printAktMonthlyTable(List<AktMonthlyYearData> yearData) {
+        System.out.printf(DK, "%-6s %16s %16s %14s %14s%n", "År", "Værdi", "Indbetalt i alt", "Realis. @27%", "Realis. @42%");
+        System.out.println("-".repeat(74));
+        for (AktMonthlyYearData d : yearData) {
+            String r27 = d.realizedAt27() > 0 ? String.format(DK, "%,.0f", d.realizedAt27()) : "-";
+            String r42 = d.realizedAt42() > 0 ? String.format(DK, "%,.0f", d.realizedAt42()) : "-";
+            System.out.printf(DK, "%-6d %,16.0f %,16.0f %14s %14s%n", d.year(), d.value(), d.cumulativeInvested(), r27, r42);
+        }
     }
 
     private static double monthlyReturnFactor(double yearlyReturn) {
@@ -580,7 +604,7 @@ public class Main {
         return value;
     }
 
-    private static boolean readBooleanInput(Scanner sc, String prompt, String errorMsg) {
+    private static boolean readBooleanInput(Scanner sc, String prompt) {
         System.out.println(prompt);
         boolean value = false;
         boolean found = false;
@@ -594,7 +618,7 @@ public class Main {
             } else if (input.equalsIgnoreCase("nej")){
                 found = true;
             } else {
-                System.out.println(errorMsg);
+                System.out.println("Du skal enten svare ja eller nej");
             }
         }
 
