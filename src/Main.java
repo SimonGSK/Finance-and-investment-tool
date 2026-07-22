@@ -394,6 +394,10 @@ public class Main {
 
     private static void runMonthlyAktSimulation(Scanner sc) {
         System.out.println();
+        int startCash = readNonNegativeInt(sc,
+                "Hvor mange penge investerer du med det samme? (0 hvis du kun vil starte med de månedlige indbetalinger)",
+                "Beløbet kan ikke være negativt. Prøv igen");
+
         int monthlyAmount = readPositiveInt(sc, "Hvor mange penge investerer du hver måned?",
                 Integer.MAX_VALUE, "Beløbet skal være positivt. Prøv igen");
 
@@ -405,17 +409,17 @@ public class Main {
                 "Afkastet skal være positivt. Prøv igen");
         double yearlyReturnFactor = (yearlyReturnPercent / 100.0) + 1.0;
 
-        aktMonthly(years, yearlyReturnFactor, monthlyAmount);
+        aktMonthly(years, yearlyReturnFactor, startCash, monthlyAmount);
     }
 
-    public static Result aktMonthly(int years, double yearlyReturn, int monthlyAmount) {
-        double shareValue = 0;
-        double costBasis = 0;
+    public static Result aktMonthly(int years, double yearlyReturn, int startCash, int monthlyAmount) {
+        double shareValue = startCash;
+        double costBasis = startCash;
         double totalTaxPaid = 0;
         double monthlyFactor = monthlyReturnFactor(yearlyReturn);
         List<AktYearData> yearData = new ArrayList<>();
 
-        int harvestStartYear = findBestMonthlyHarvestStartYear(years, yearlyReturn, monthlyAmount);
+        int harvestStartYear = findBestMonthlyHarvestStartYear(years, yearlyReturn, startCash, monthlyAmount);
 
         for (int i = 1; i <= years; i++) {
             for (int m = 1; m <= 12; m++) {
@@ -460,24 +464,31 @@ public class Main {
             yearData.add(new AktYearData(i, shareValue, realizedAt27, realizedAt42));
         }
 
+        double totalFinalValue = shareValue;
+        double totalInvested = startCash + (double) monthlyAmount * 12 * years;
+        double netProfit = totalFinalValue - totalInvested;
+        double percentageIncrease = (netProfit / totalInvested) * 100;
+
         System.out.println("============RESULTAT: AKTIEDEPOT MED MÅNEDLIG INVESTERING============");
         printAktTable(yearData);
         System.out.println();
 
-        double totalFinalValue = shareValue;
-        double totalInvested = (double) monthlyAmount * 12 * years;
-        double netProfit = totalFinalValue - totalInvested;
-        double percentageIncrease = (netProfit / totalInvested) * 100;
-
         System.out.printf(DK, "Samlet værdi (alt solgt og beskattet): %,.0f kr.%n", totalFinalValue);
         System.out.println();
-        System.out.printf(DK, "Samlet indbetalt over %d år (%,d kr./md.): %,.0f kr.%n", years, monthlyAmount, totalInvested);
+
+        System.out.println("----------Investeret i alt----------");
+        System.out.printf(DK, "Startindskud: %,d kr.%n", startCash);
+        System.out.printf(DK, "Samlet indbetalt via månedlig opsparing (%,d kr./md. i %d år): %,.0f kr.%n",
+                monthlyAmount, years, (double) monthlyAmount * 12 * years);
         System.out.printf(DK, "Samlet betalt skat over alle år: %,.0f kr.%n", totalTaxPaid);
         System.out.println();
+
+        System.out.println("----------Gevinst----------");
         System.out.printf(DK, "Din reelle nettogevinst efter skat: %,.0f kr.%n", netProfit);
         System.out.printf(DK, "Det er en samlet stigning på +%.1f%%%n", percentageIncrease);
         System.out.println();
-        System.out.println("----BEDSTE STRATEGI----");
+
+        System.out.println("----------BEDSTE STRATEGI----------");
         System.out.println("Bedste strategi: begynd realisering af afkast i år " + harvestStartYear + " (ud af " + years + " år i alt).");
 
         return new Result("Aktiedepot (månedlig)", totalFinalValue, netProfit, percentageIncrease);
@@ -490,9 +501,9 @@ public class Main {
     // Samme princip som computeFinalValueForStartYear, men med 12 månedlige
     // indbetalinger + vækst pr. år, i stedet for ét engangsbeløb.
     private static double computeMonthlyFinalValueForStartYear(int years, double yearlyReturn,
-                                                               int monthlyAmount, int harvestStartYear) {
-        double shareValue = 0;
-        double costBasis = 0;
+                                                               int startCash, int monthlyAmount, int harvestStartYear) {
+        double shareValue = startCash;
+        double costBasis = startCash;
         double monthlyFactor = monthlyReturnFactor(yearlyReturn);
 
         for (int i = 1; i <= years; i++) {
@@ -525,12 +536,12 @@ public class Main {
         return shareValue;
     }
 
-    private static int findBestMonthlyHarvestStartYear(int years, double yearlyReturn, int monthlyAmount) {
+    private static int findBestMonthlyHarvestStartYear(int years, double yearlyReturn, int startCash, int monthlyAmount) {
         int bestStart = years;
-        double bestValue = computeMonthlyFinalValueForStartYear(years, yearlyReturn, monthlyAmount, bestStart);
+        double bestValue = computeMonthlyFinalValueForStartYear(years, yearlyReturn, startCash, monthlyAmount, bestStart);
 
         for (int candidateStart = years - 1; candidateStart >= 1; candidateStart--) {
-            double value = computeMonthlyFinalValueForStartYear(years, yearlyReturn, monthlyAmount, candidateStart);
+            double value = computeMonthlyFinalValueForStartYear(years, yearlyReturn, startCash, monthlyAmount, candidateStart);
             if (value > bestValue) {
                 bestValue = value;
                 bestStart = candidateStart;
@@ -543,6 +554,16 @@ public class Main {
         System.out.println(prompt);
         int value = sc.nextInt();
         while (value <= 0 || value > max) {
+            System.out.println(errorMsg);
+            value = sc.nextInt();
+        }
+        return value;
+    }
+
+    private static int readNonNegativeInt(Scanner sc, String prompt, String errorMsg) {
+        System.out.println(prompt);
+        int value = sc.nextInt();
+        while (value < 0) {
             System.out.println(errorMsg);
             value = sc.nextInt();
         }
