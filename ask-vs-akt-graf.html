@@ -147,7 +147,7 @@
 
         <div class="field">
             <label>Startbeløb <span class="val" id="startCashVal">100.000 kr.</span></label>
-            <input type="range" id="startCash" min="1000" max="500000" step="1000" value="100000">
+            <input type="range" id="startCash" min="1000" max="174200" step="1000" value="100000">
         </div>
 
         <div class="field">
@@ -364,11 +364,15 @@
         chart.data.datasets[1].data = aktSeries.map(p => p.value);
 
         chart.update();
+        const noHarvestValue = computeAktFinalValueForStartYear(years, yearlyReturn, startCash, payTaxExternally, years);
+        const harvestAdvantage = aktSeries[aktSeries.length-1].value - noHarvestValue;
+
         const strategyEl = document.getElementById('strategyText');
         if(harvestStartYear < years){
-            strategyEl.innerHTML = `Start med at realisere gevinst i <strong style="color:var(--akt)">år ${harvestStartYear}</strong> (ud af ${years} år i alt) – sælg og genkøb årligt op til 27%-grænsen, indtil sidste år, hvor resten sælges og beskattes progressivt.`;
+            strategyEl.innerHTML = `Start med at realisere gevinst i <strong style="color:var(--akt)">år ${harvestStartYear}</strong> (ud af ${years} år i alt) – sælg og genkøb årligt op til 27%-grænsen, indtil sidste år, hvor resten sælges og beskattes progressivt.<br><br>
+                Det giver <strong style="color:var(--akt)">${DK.format(harvestAdvantage)} kr. mere</strong> end hvis du havde ventet og solgt det hele i sidste år.`;
         } else {
-            strategyEl.innerHTML = `Bedst er slet ikke at realisere undervejs – vent til sidste år, og betal den progressive skat (27%/42%) af hele gevinsten på én gang.`;
+            strategyEl.innerHTML = `Bedst er slet ikke at realisere undervejs – vent til sidste år, og betal den progressive skat (27%/42%) af hele gevinsten på én gang. Her giver tidlig realisering ingen fordel.`;
         }
         const finalAsk = askSeries[askSeries.length-1].value;
         const finalAkt = aktSeries[aktSeries.length-1].value;
