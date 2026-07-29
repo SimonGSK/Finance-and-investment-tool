@@ -41,7 +41,7 @@ public class Main {
             System.out.println();
             System.out.println("=========== VÆLG VÆRKTØJ ===========");
             System.out.println("1) Aktiesparekonto vs. aktiedepot (engangsindskud)");
-            System.out.println("2) Aktiedepot med fast månedlig investering");
+            System.out.println("2) Aktiedepot med startbeløb + fast månedlig investering");
             System.out.println("3) Afslut");
             int choice = readMenuChoice(sc, "Vælg et tal (1-3):", 1, 3);
 
@@ -57,7 +57,7 @@ public class Main {
     }
 
     // Fælles "kør igen med nye tal, eller tilbage til værktøjs-oversigten"-loop,
-// som virker for begge værktøjer.
+    // som virker for begge værktøjer.
     private static void runTool(Scanner sc, Consumer<Scanner> tool) {
         boolean runAgain = true;
         while (runAgain) {
