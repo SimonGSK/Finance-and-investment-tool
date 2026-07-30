@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <title>ASK vs. AKT — hvornår krydser de?</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <style>
+        :root{
+            --bg:#0F1720;
+            --panel:#161F2A;
+            --border:#26323F;
+            --text:#EDEAE3;
+            --muted:#8B96A3;
+            --ask:#45C4B0;
+            --akt:#E3A548;
+            --cross:#E85C4A;
+        }
+        *{box-sizing:border-box;}
+        body{
+            margin:0;
+            background:var(--bg);
+            color:var(--text);
+            font-family:'Inter',sans-serif;
+            padding:28px;
+        }
+        h1{
+            font-family:'Space Grotesk',sans-serif;
+            font-weight:600;
+            font-size:24px;
+            letter-spacing:-0.01em;
+            margin:0 0 4px 0;
+        }
+        .subtitle{
+            color:var(--muted);
+            font-size:14px;
+            margin:0 0 24px 0;
+        }
+        .layout{
+            display:grid;
+            grid-template-columns:280px 1fr;
+            gap:20px;
+            max-width:1180px;
+        }
+        @media (max-width:820px){
+            .layout{grid-template-columns:1fr;}
+        }
+        .panel{
+            background:var(--panel);
+            border:1px solid var(--border);
+            border-radius:10px;
+            padding:20px;
+        }
+        .eyebrow{
+            font-family:'IBM Plex Mono',monospace;
+            font-size:11px;
+            letter-spacing:0.08em;
+            text-transform:uppercase;
+            color:var(--muted);
+            margin-bottom:16px;
+        }
+        .field{
+            margin-bottom:22px;
+        }
+        .field label{
+            display:flex;
+            justify-content:space-between;
+            font-size:13px;
+            color:var(--muted);
+            margin-bottom:8px;
+        }
+        .field label .val{
+            font-family:'IBM Plex Mono',monospace;
+            color:var(--text);
+            font-weight:500;
+        }
+        input[type=range]{
+            width:100%;
+            accent-color:var(--akt);
+            height:4px;
+        }
+        .toggle-row{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            font-size:13px;
+            color:var(--text);
+            cursor:pointer;
+            user-select:none;
+        }
+        .toggle-row input{
+            accent-color:var(--akt);
+            width:15px;height:15px;
+        }
+        .legend{
+            display:flex;
+            gap:22px;
+            margin-bottom:14px;
+            font-family:'IBM Plex Mono',monospace;
+            font-size:12px;
+        }
+        .legend span{display:flex;align-items:center;gap:6px;}
+        .dot{width:10px;height:10px;border-radius:2px;display:inline-block;}
+        .stats{
+            display:grid;
+            grid-template-columns:repeat(auto-fit, minmax(190px,1fr));
+            gap:14px;
+        }
+        .stat{
+            background:var(--panel);
+            border:1px solid var(--border);
+            border-radius:10px;
+            padding:16px 18px;
+        }
+        .stat .label{
+            font-size:11px;
+            color:var(--muted);
+            text-transform:uppercase;
+            letter-spacing:0.06em;
+            margin-bottom:6px;
+        }
+        .stat .value{
+            font-family:'IBM Plex Mono',monospace;
+            font-size:20px;
+            font-weight:600;
+        }
+        .stat .value.ask{color:var(--ask);}
+        .stat .value.akt{color:var(--akt);}
+        .stat .value.cross{color:var(--cross);}
+        .stat .sub{
+            font-size:12px;
+            color:var(--muted);
+            margin-top:4px;
+            font-family:'IBM Plex Mono',monospace;
+        }
+        .limit-hint{
+            font-family:'IBM Plex Mono',monospace;
+            font-size:11px;
+            color:var(--muted);
+            margin-top:6px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>ASK vs. AKT</h1>
+<p class="subtitle">Skub i skyderne og se, hvornår aktiedepotet overhaler aktiesparekontoen (eller omvendt).</p>
+<div class="layout">
+
+    <div class="panel">
+        <div class="eyebrow">Parametre</div>
+
+        <div class="field">
+            <label>Startbeløb <span class="val" id="startCashVal">100.000 kr.</span></label>
+            <input type="range" id="startCash" min="1000" max="500000" step="100" value="100000" list="askLimitMark">
+            <datalist id="askLimitMark">
+                <option value="174200"></option>
+            </datalist>
+            <div class="limit-hint">▲ ASK-grænsen er 174.200 kr.</div>
+        </div>
+
+        <div class="field">
+            <label>Antal år <span class="val" id="yearsVal">25</span></label>
+            <input type="range" id="years" min="1" max="60" step="1" value="25">
+        </div>
+
+        <div class="field">
+            <label>Forventet årligt afkast <span class="val" id="returnVal">8,0%</span></label>
+            <input type="range" id="yearlyReturn" min="1" max="15" step="0.1" value="8">
+        </div>
+
+        <label class="toggle-row">
+            <input type="checkbox" id="payTaxExternally">
+            Betal ASK-skatten udefra (og investér det tilsvarende beløb i depotet)
+        </label>
+    </div>
+
+    <div>
+        <div class="panel" style="margin-bottom:16px;">
+            <div class="legend">
+                <span><i class="dot" style="background:var(--ask)"></i>Aktiesparekonto</span>
+                <span><i class="dot" style="background:var(--akt)"></i>Aktiedepot (optimal realiseringsstrategi)</span>
+            </div>
+            <canvas id="chart"></canvas>
+        </div>
+        <div class="stats">
+            <div class="stat">
+                <div class="label">Slutværdi - Aktiesparekonto</div>
+                <div class="value ask" id="finalAsk">–</div>
+            </div>
+            <div class="stat">
+                <div class="label">Slutværdi - Aktiedepot</div>
+                <div class="value akt" id="finalAkt">–</div>
+            </div>
+            <div class="stat">
+                <div class="label">Vinder til sidst</div>
+                <div class="value" id="winner">–</div>
+                <div class="sub" id="winnerDetail"></div>
+            </div>
+        </div>
+        <div class="panel" style="margin-top:16px;">
+            <div class="eyebrow">Optimal realiseringsstrategi</div>
+            <p id="strategyText" style="margin:0; font-size:14px; line-height:1.5;"></p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const TAX_LIMIT_27 = 79400;
+    const ASK_TAX = 0.17;
+    const AKT_TAX_LOW = 0.27;
+    const AKT_TAX_HIGH = 0.42;
+    const DK = new Intl.NumberFormat('da-DK', {maximumFractionDigits:0});
+
+    // ---- Porteret fra Main.java: ask() ----
+    function computeAskSeries(years, yearlyReturn, startCash, payTaxExternally){
+        let money = startCash;
+        const series = [{year:0, value:startCash}];
+        for(let i=1;i<=years;i++){
+            const before = money*yearlyReturn;
+            const tax = (before-money)*ASK_TAX;
+            money = payTaxExternally ? before : before-tax;
+            series.push({year:i, value:money});
+        }
+        return series;
+    }
+
+    // ---- Importeret fra Main.java: computeFinalValueForStartYear() ----
+    function computeAktFinalValueForStartYear(years, yearlyReturn, startCash, investSavedAskTax, harvestStartYear){
+        let shareValue = startCash, costBasis = startCash, shadowAskMoney = startCash;
+        for(let i=1;i<=years;i++){
+            if(investSavedAskTax){
+                const shadowProfit = shadowAskMoney*yearlyReturn - shadowAskMoney;
+                const askTax = shadowProfit>0 ? shadowProfit*ASK_TAX : 0;
+                shadowAskMoney = shadowAskMoney*yearlyReturn;
+                if(askTax>0){ shareValue+=askTax; costBasis+=askTax; }
+            }
+            shareValue *= yearlyReturn;
+            if(i<years){
+                if(i>=harvestStartYear){
+                    const unrealized = shareValue-costBasis;
+                    if(unrealized>0){
+                        const realize = Math.min(unrealized, TAX_LIMIT_27);
+                        const tax = realize*AKT_TAX_LOW;
+                        shareValue -= tax;
+                        costBasis += (realize-tax);
+                    }
+                }
+            } else {
+                const finalUnrealized = shareValue-costBasis;
+                if(finalUnrealized>0){
+                    const tax = finalUnrealized<=TAX_LIMIT_27
+                        ? finalUnrealized*AKT_TAX_LOW
+                        : TAX_LIMIT_27*AKT_TAX_LOW + (finalUnrealized-TAX_LIMIT_27)*AKT_TAX_HIGH;
+                    shareValue -= tax;
+                }
+            }
+        }
+        return shareValue;
+    }
+
+    // ---- Importeret fra Main.java: findBestHarvestStartYear() ----
+    function findBestHarvestStartYear(years, yearlyReturn, startCash, investSavedAskTax){
+        let bestStart = years;
+        let bestValue = computeAktFinalValueForStartYear(years, yearlyReturn, startCash, investSavedAskTax, bestStart);
+        for(let c=years-1;c>=1;c--){
+            const v = computeAktFinalValueForStartYear(years, yearlyReturn, startCash, investSavedAskTax, c);
+            if(v>bestValue){ bestValue=v; bestStart=c; }
+        }
+        return bestStart;
+    }
+
+    // ---- Importeret fra Main.java: akt() (år-for-år-serie, med den optimale strategi) ----
+    function computeAktSeries(years, yearlyReturn, startCash, investSavedAskTax){
+        const harvestStartYear = findBestHarvestStartYear(years, yearlyReturn, startCash, investSavedAskTax);
+        let shareValue = startCash, costBasis = startCash, shadowAskMoney = startCash;
+        const series = [{year:0, value:startCash}];
+        for(let i=1;i<=years;i++){
+            if(investSavedAskTax){
+                const shadowProfit = shadowAskMoney*yearlyReturn - shadowAskMoney;
+                const askTax = shadowProfit>0 ? shadowProfit*ASK_TAX : 0;
+                shadowAskMoney = shadowAskMoney*yearlyReturn;
+                if(askTax>0){ shareValue+=askTax; costBasis+=askTax; }
+            }
+            shareValue *= yearlyReturn;
+            if(i<years){
+                if(i>=harvestStartYear){
+                    const unrealized = shareValue-costBasis;
+                    if(unrealized>0){
+                        const realize = Math.min(unrealized, TAX_LIMIT_27);
+                        const tax = realize*AKT_TAX_LOW;
+                        shareValue -= tax;
+                        costBasis += (realize-tax);
+                    }
+                }
+            } else {
+                const finalUnrealized = shareValue-costBasis;
+                if(finalUnrealized>0){
+                    const tax = finalUnrealized<=TAX_LIMIT_27
+                        ? finalUnrealized*AKT_TAX_LOW
+                        : TAX_LIMIT_27*AKT_TAX_LOW + (finalUnrealized-TAX_LIMIT_27)*AKT_TAX_HIGH;
+                    shareValue -= tax;
+                }
+            }
+            series.push({year:i, value:shareValue});
+        }
+        return {series, harvestStartYear};
+    }
+
+    const ctx = document.getElementById('chart').getContext('2d');
+    let chart = new Chart(ctx, {
+        type:'line',
+        data:{labels:[], datasets:[
+                {label:'Aktiesparekonto', data:[], borderColor:'#45C4B0', backgroundColor:'#45C4B0', tension:0.15, pointRadius:0, borderWidth:2.5},
+                {label:'Aktiedepot', data:[], borderColor:'#E3A548', backgroundColor:'#E3A548', tension:0.15, pointRadius:0, borderWidth:2.5}
+            ]},
+        options:{
+            responsive:true,
+            animation:{duration:250},
+            interaction:{mode:'index', intersect:false},
+            plugins:{
+                legend:{display:false},
+                tooltip:{
+                    backgroundColor:'#1C2733',
+                    borderColor:'#26323F',
+                    borderWidth:1,
+                    titleColor:'#EDEAE3',
+                    bodyColor:'#EDEAE3',
+                    callbacks:{
+                        label: c => `${c.dataset.label}: ${DK.format(c.raw)} kr.`
+                    }
+                }
+            },
+            scales:{
+                x:{
+                    grid:{color:'#202B36'},
+                    ticks:{color:'#8B96A3', font:{family:'IBM Plex Mono', size:11}},
+                    title:{display:true, text:'År', color:'#8B96A3', font:{family:'Inter', size:12}}
+                },
+                y:{
+                    grid:{color:'#202B36'},
+                    ticks:{
+                        color:'#8B96A3', font:{family:'IBM Plex Mono', size:11},
+                        callback: v => DK.format(v)
+                    }
+                }
+            }
+        }
+    });
+
+    const startCashInput = document.getElementById('startCash');
+    const yearsInput = document.getElementById('years');
+    const returnInput = document.getElementById('yearlyReturn');
+    const payTaxInput = document.getElementById('payTaxExternally');
+    const ASK_LIMIT = 174200;
+    const SNAP_TOLERANCE = 4000;
+
+    startCashInput.addEventListener('input', () => {
+        const val = parseInt(startCashInput.value);
+        if(Math.abs(val - ASK_LIMIT) < SNAP_TOLERANCE){
+            startCashInput.value = ASK_LIMIT;
+        }
+    });
+
+    function update(){
+        const startCash = parseInt(startCashInput.value);
+        const years = parseInt(yearsInput.value);
+        const returnPercent = parseFloat(returnInput.value);
+        const payTaxExternally = payTaxInput.checked;
+        const yearlyReturn = 1 + returnPercent/100;
+
+        document.getElementById('startCashVal').textContent = DK.format(startCash) + ' kr.';
+        document.getElementById('yearsVal').textContent = years;
+        document.getElementById('returnVal').textContent = returnPercent.toFixed(1).replace('.',',') + '%';
+
+        const askSeries = computeAskSeries(years, yearlyReturn, startCash, payTaxExternally);
+        const {series: aktSeries, harvestStartYear} = computeAktSeries(years, yearlyReturn, startCash, payTaxExternally);
+
+        chart.data.labels = askSeries.map(p => p.year);
+        chart.data.datasets[0].data = askSeries.map(p => p.value);
+        chart.data.datasets[1].data = aktSeries.map(p => p.value);
+
+        chart.update();
+        const noHarvestValue = computeAktFinalValueForStartYear(years, yearlyReturn, startCash, payTaxExternally, years);
+        const harvestAdvantage = aktSeries[aktSeries.length-1].value - noHarvestValue;
+
+        const strategyEl = document.getElementById('strategyText');
+        if(harvestStartYear < years){
+            strategyEl.innerHTML = `Start med at realisere gevinst i <strong style="color:var(--akt)">år ${harvestStartYear}</strong> (ud af ${years} år i alt) – sælg og genkøb årligt op til 27%-grænsen, indtil sidste år, hvor resten sælges og beskattes progressivt.<br><br>
+                Det giver <strong style="color:var(--akt)">${DK.format(harvestAdvantage)} kr. mere</strong> end hvis du havde ventet og solgt det hele i sidste år.`;
+        } else {
+            strategyEl.innerHTML = `Bedst er slet ikke at realisere undervejs – vent til sidste år, og betal den progressive skat (27%/42%) af hele gevinsten på én gang. Her giver tidlig realisering ingen fordel.`;
+        }
+        const finalAsk = askSeries[askSeries.length-1].value;
+        const finalAkt = aktSeries[aktSeries.length-1].value;
+
+        document.getElementById('finalAsk').textContent = DK.format(finalAsk) + ' kr.';
+        document.getElementById('finalAkt').textContent = DK.format(finalAkt) + ' kr.';
+
+        const winnerEl = document.getElementById('winner');
+        const winnerDetail = document.getElementById('winnerDetail');
+        if(finalAsk > finalAkt){
+            winnerEl.textContent = 'Aktiesparekonto';
+            winnerEl.className = 'value ask';
+            winnerDetail.textContent = '+' + DK.format(finalAsk-finalAkt) + ' kr. mere';
+        } else if(finalAkt > finalAsk){
+            winnerEl.textContent = 'Aktiedepot';
+            winnerEl.className = 'value akt';
+            winnerDetail.textContent = '+' + DK.format(finalAkt-finalAsk) + ' kr. mere';
+        } else {
+            winnerEl.textContent = 'Uafgjort';
+            winnerEl.className = 'value';
+            winnerDetail.textContent = '';
+        }
+    }
+    [startCashInput, yearsInput, returnInput, payTaxInput].forEach(el => el.addEventListener('input', update));
+    update();
+</script>
+
+</body>
+</html>
