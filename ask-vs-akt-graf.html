@@ -134,6 +134,12 @@
             margin-top:4px;
             font-family:'IBM Plex Mono',monospace;
         }
+        .limit-hint{
+            font-family:'IBM Plex Mono',monospace;
+            font-size:11px;
+            color:var(--muted);
+            margin-top:6px;
+        }
     </style>
 </head>
 <body>
@@ -147,7 +153,11 @@
 
         <div class="field">
             <label>Startbeløb <span class="val" id="startCashVal">100.000 kr.</span></label>
-            <input type="range" id="startCash" min="1000" max="174200" step="1000" value="100000">
+            <input type="range" id="startCash" min="1000" max="500000" step="100" value="100000" list="askLimitMark">
+            <datalist id="askLimitMark">
+                <option value="174200"></option>
+            </datalist>
+            <div class="limit-hint">▲ ASK-grænsen er 174.200 kr.</div>
         </div>
 
         <div class="field">
@@ -176,11 +186,11 @@
         </div>
         <div class="stats">
             <div class="stat">
-                <div class="label">Slutværdi ASK</div>
+                <div class="label">Slutværdi - Aktiesparekonto</div>
                 <div class="value ask" id="finalAsk">–</div>
             </div>
             <div class="stat">
-                <div class="label">Slutværdi AKT</div>
+                <div class="label">Slutværdi - Aktiedepot</div>
                 <div class="value akt" id="finalAkt">–</div>
             </div>
             <div class="stat">
@@ -344,6 +354,15 @@
     const yearsInput = document.getElementById('years');
     const returnInput = document.getElementById('yearlyReturn');
     const payTaxInput = document.getElementById('payTaxExternally');
+    const ASK_LIMIT = 174200;
+    const SNAP_TOLERANCE = 4000;
+
+    startCashInput.addEventListener('input', () => {
+        const val = parseInt(startCashInput.value);
+        if(Math.abs(val - ASK_LIMIT) < SNAP_TOLERANCE){
+            startCashInput.value = ASK_LIMIT;
+        }
+    });
 
     function update(){
         const startCash = parseInt(startCashInput.value);
@@ -396,7 +415,6 @@
             winnerDetail.textContent = '';
         }
     }
-
     [startCashInput, yearsInput, returnInput, payTaxInput].forEach(el => el.addEventListener('input', update));
     update();
 </script>
