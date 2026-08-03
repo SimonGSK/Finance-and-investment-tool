@@ -14,8 +14,12 @@ Danish investors can hold stocks either in an **ASK** (flat 17% yearly tax on ga
 **Tool 1 — ASK vs. Aktiedepot**
 Compares a lump-sum investment in an ASK against the same lump sum in a regular depot, using the tax-optimal realization strategy for the depot (see below).
 
+![Tool 1 screenshot](docs/ASK-VS-AKT.png)
+
 **Tool 2 — Aktiedepot with a lump sum + monthly contributions**
 Models a regular depot with an optional starting amount plus a fixed monthly contribution, again using the optimal realization strategy — since a regular depot has no deposit limit, this covers scenarios an ASK can't.
+
+![Tool 2 screenshot](docs/Aktiedepot.png)
 
 **Optimal realization strategy**
 For the regular depot, the tool searches every possible year to start "harvesting" gains (selling and immediately re-buying, up to the 79,400 kr. 27%-tax threshold each year) and picks whichever start year actually produces the highest final value — rather than assuming earlier is always better. It also shows how much this strategy saves compared to never selling until the final year.
