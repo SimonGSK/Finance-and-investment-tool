@@ -2,7 +2,7 @@
 <html lang="da">
 <head>
     <meta charset="UTF-8">
-    <title>ASK vs. AKT — hvornår krydser de?</title>
+    <title>Afkastberegner. Udregn potentiel aktieafkast.</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
@@ -166,11 +166,19 @@
             color:var(--akt);
             border-bottom:2px solid var(--akt);
         }
+        .explainer{
+            margin:12px 0 0 0;
+            padding-top:12px;
+            border-top:1px solid var(--border);
+            font-size:12.5px;
+            line-height:1.6;
+            color:var(--muted);
+        }
     </style>
 </head>
 <body>
 
-<h1>ASK vs. AKT</h1>
+<h1>Afkastberegner</h1>
 <p class="subtitle">Skub i skyderne og se, hvornår aktiedepotet overhaler aktiesparekontoen (eller omvendt).</p>
 
 <div class="tabs">
@@ -235,6 +243,9 @@
         <div class="panel" style="margin-top:16px;">
             <div class="eyebrow">Optimal realiseringsstrategi</div>
             <p id="strategyText" style="margin:0; font-size:14px; line-height:1.5;"></p>
+            <p class="explainer">
+                Der er en afvejning: sælger du for tidligt, mister du renters rente på de kroner, der forlader depotet som skat, før det er nødvendigt. Venter du for længe, risikerer du i stedet, at en stor del af gevinsten bliver beskattet med den høje sats på 42% i sidste øjeblik. Værktøjet finder det optimale startår ved simpelthen at afprøve alle mulige år og vælge det, der reelt giver den højeste slutværdi. Jo højere det forventede afkast er, jo dyrere er det at betale skat tidligt (de kroner går glip af mere vækst), så høje afkast trækker det optimale startår tættere på sidste år. Ved lave afkast koster tidlig realisering til gengæld mindre i tabt vækst, så det kan bedre betale sig at sprede realiseringen ud over flere år.
+            </p>
         </div>
     </div>
 
@@ -295,6 +306,9 @@
             <div class="panel" style="margin-top:16px;">
                 <div class="eyebrow">Optimal realiseringsstrategi</div>
                 <p id="strategyText2" style="margin:0; font-size:14px; line-height:1.5;"></p>
+                <p class="explainer">
+                    Der er en afvejning: sælger du for tidligt, mister du renters rente på de kroner, der forlader depotet som skat, før det er nødvendigt. Venter du for længe, risikerer du i stedet, at en stor del af gevinsten bliver beskattet med den høje sats på 42% i sidste øjeblik. Værktøjet finder det optimale startår ved simpelthen at afprøve alle mulige år og vælge det, der reelt giver den højeste slutværdi. Jo højere det forventede afkast er, jo dyrere er det at betale skat tidligt (de kroner går glip af mere vækst), så høje afkast trækker det optimale startår tættere på sidste år. Ved lave afkast koster tidlig realisering til gengæld mindre i tabt vækst, så det kan bedre betale sig at sprede realiseringen ud over flere år.
+                </p>
             </div>
         </div>
 
