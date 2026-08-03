@@ -140,13 +140,46 @@
             color:var(--muted);
             margin-top:6px;
         }
+        .tabs{
+            display:flex;
+            gap:8px;
+            margin-bottom:24px;
+            border-bottom:1px solid var(--border);
+            padding-bottom:0;
+        }
+        .tab-btn{
+            background:transparent;
+            border:none;
+            color:var(--muted);
+            font-family:'Inter',sans-serif;
+            font-size:14px;
+            font-weight:500;
+            padding:10px 4px;
+            margin-bottom:-1px;
+            border-bottom:2px solid transparent;
+            cursor:pointer;
+        }
+        .tab-btn:hover{
+            color:var(--text);
+        }
+        .tab-btn.active{
+            color:var(--akt);
+            border-bottom:2px solid var(--akt);
+        }
     </style>
 </head>
 <body>
 
 <h1>ASK vs. AKT</h1>
 <p class="subtitle">Skub i skyderne og se, hvornår aktiedepotet overhaler aktiesparekontoen (eller omvendt).</p>
-<div class="layout">
+
+<div class="tabs">
+    <button class="tab-btn active" id="tabBtn1" onclick="showTool(1)">ASK vs. Aktiedepot</button>
+    <button class="tab-btn" id="tabBtn2" onclick="showTool(2)">Aktiedepot: fast + månedligt</button>
+</div>
+
+<div id="tool1">
+    <div class="layout">
 
     <div class="panel">
         <div class="eyebrow">Parametre</div>
@@ -205,6 +238,67 @@
         </div>
     </div>
 
+    </div>
+</div>
+
+<div id="tool2" style="display:none;">
+    <div class="layout">
+
+        <div class="panel">
+            <div class="eyebrow">Parametre</div>
+
+            <div class="field">
+                <label>Startbeløb <span class="val" id="startCash2Val">0 kr.</span></label>
+                <input type="range" id="startCash2" min="0" max="1000000" step="5000" value="0">
+            </div>
+
+            <div class="field">
+                <label>Månedlig investering <span class="val" id="monthlyAmount2Val">3.000 kr.</span></label>
+                <input type="range" id="monthlyAmount2" min="0" max="20000" step="100" value="3000">
+            </div>
+
+            <div class="field">
+                <label>Antal år <span class="val" id="years2Val">25</span></label>
+                <input type="range" id="years2" min="1" max="60" step="1" value="25">
+            </div>
+
+            <div class="field">
+                <label>Forventet årligt afkast <span class="val" id="return2Val">8,0%</span></label>
+                <input type="range" id="yearlyReturn2" min="1" max="15" step="0.1" value="8">
+            </div>
+        </div>
+
+        <div>
+            <div class="panel" style="margin-bottom:16px;">
+                <div class="legend">
+                    <span><i class="dot" style="background:var(--akt)"></i>Aktiedepot (værdi)</span>
+                    <span><i class="dot" style="background:#5B6B7A"></i>Indbetalt kapital</span>
+                </div>
+                <canvas id="chart2"></canvas>
+            </div>
+            <div class="stats">
+                <div class="stat">
+                    <div class="label">Slutværdi</div>
+                    <div class="value akt" id="finalValue2">–</div>
+                </div>
+                <div class="stat">
+                    <div class="label">Indbetalt i alt</div>
+                    <div class="value" id="totalInvested2">–</div>
+                </div>
+                <div class="stat">
+                    <div class="label">Nettogevinst</div>
+                    <div class="value ask" id="netProfit2">–</div>
+                    <div class="sub" id="percentIncrease2"></div>
+                </div>
+            </div>
+
+            <div class="panel" style="margin-top:16px;">
+                <div class="eyebrow">Optimal realiseringsstrategi</div>
+                <p id="strategyText2" style="margin:0; font-size:14px; line-height:1.5;"></p>
+            </div>
+        </div>
+
+    </div>
 </div>
 
 <script>
@@ -309,12 +403,143 @@
         return {series, harvestStartYear};
     }
 
+    // ---- Porteret fra Main.java: monthlyReturnFactor() ----
+    function monthlyReturnFactor(yearlyReturn){
+        return Math.pow(yearlyReturn, 1/12);
+    }
+
+    // ---- Porteret fra Main.java: computeMonthlyFinalValueForStartYear() ----
+    function computeMonthlyFinalValueForStartYear(years, yearlyReturn, startCash, monthlyAmount, harvestStartYear){
+        let shareValue = startCash, costBasis = startCash;
+        const monthlyFactor = monthlyReturnFactor(yearlyReturn);
+
+        for(let i=1;i<=years;i++){
+            for(let m=1;m<=12;m++){
+                shareValue += monthlyAmount;
+                costBasis += monthlyAmount;
+                shareValue *= monthlyFactor;
+            }
+
+            if(i<years){
+                if(i>=harvestStartYear){
+                    const unrealized = shareValue-costBasis;
+                    if(unrealized>0){
+                        const realize = Math.min(unrealized, TAX_LIMIT_27);
+                        const tax = realize*AKT_TAX_LOW;
+                        shareValue -= tax;
+                        costBasis += (realize-tax);
+                    }
+                }
+            } else {
+                const finalUnrealized = shareValue-costBasis;
+                if(finalUnrealized>0){
+                    const tax = finalUnrealized<=TAX_LIMIT_27
+                        ? finalUnrealized*AKT_TAX_LOW
+                        : TAX_LIMIT_27*AKT_TAX_LOW + (finalUnrealized-TAX_LIMIT_27)*AKT_TAX_HIGH;
+                    shareValue -= tax;
+                }
+            }
+        }
+        return shareValue;
+    }
+
+    // ---- Porteret fra Main.java: findBestMonthlyHarvestStartYear() ----
+    function findBestMonthlyHarvestStartYear(years, yearlyReturn, startCash, monthlyAmount){
+        let bestStart = years;
+        let bestValue = computeMonthlyFinalValueForStartYear(years, yearlyReturn, startCash, monthlyAmount, bestStart);
+        for(let c=years-1;c>=1;c--){
+            const v = computeMonthlyFinalValueForStartYear(years, yearlyReturn, startCash, monthlyAmount, c);
+            if(v>bestValue){ bestValue=v; bestStart=c; }
+        }
+        return bestStart;
+    }
+
+    // ---- Porteret fra Main.java: aktMonthly() (år-for-år-serie) ----
+    function computeMonthlySeries(years, yearlyReturn, startCash, monthlyAmount){
+        const harvestStartYear = findBestMonthlyHarvestStartYear(years, yearlyReturn, startCash, monthlyAmount);
+        let shareValue = startCash, costBasis = startCash, cumulativeInvested = startCash;
+        const monthlyFactor = monthlyReturnFactor(yearlyReturn);
+        const series = [{year:0, value:startCash, invested:startCash}];
+
+        for(let i=1;i<=years;i++){
+            for(let m=1;m<=12;m++){
+                shareValue += monthlyAmount;
+                costBasis += monthlyAmount;
+                cumulativeInvested += monthlyAmount;
+                shareValue *= monthlyFactor;
+            }
+
+            if(i<years){
+                if(i>=harvestStartYear){
+                    const unrealized = shareValue-costBasis;
+                    if(unrealized>0){
+                        const realize = Math.min(unrealized, TAX_LIMIT_27);
+                        const tax = realize*AKT_TAX_LOW;
+                        shareValue -= tax;
+                        costBasis += (realize-tax);
+                    }
+                }
+            } else {
+                const finalUnrealized = shareValue-costBasis;
+                if(finalUnrealized>0){
+                    const tax = finalUnrealized<=TAX_LIMIT_27
+                        ? finalUnrealized*AKT_TAX_LOW
+                        : TAX_LIMIT_27*AKT_TAX_LOW + (finalUnrealized-TAX_LIMIT_27)*AKT_TAX_HIGH;
+                    shareValue -= tax;
+                }
+            }
+            series.push({year:i, value:shareValue, invested:cumulativeInvested});
+        }
+        return {series, harvestStartYear};
+    }
+
     const ctx = document.getElementById('chart').getContext('2d');
     let chart = new Chart(ctx, {
         type:'line',
         data:{labels:[], datasets:[
                 {label:'Aktiesparekonto', data:[], borderColor:'#45C4B0', backgroundColor:'#45C4B0', tension:0.15, pointRadius:0, borderWidth:2.5},
                 {label:'Aktiedepot', data:[], borderColor:'#E3A548', backgroundColor:'#E3A548', tension:0.15, pointRadius:0, borderWidth:2.5}
+            ]},
+        options:{
+            responsive:true,
+            animation:{duration:250},
+            interaction:{mode:'index', intersect:false},
+            plugins:{
+                legend:{display:false},
+                tooltip:{
+                    backgroundColor:'#1C2733',
+                    borderColor:'#26323F',
+                    borderWidth:1,
+                    titleColor:'#EDEAE3',
+                    bodyColor:'#EDEAE3',
+                    callbacks:{
+                        label: c => `${c.dataset.label}: ${DK.format(c.raw)} kr.`
+                    }
+                }
+            },
+            scales:{
+                x:{
+                    grid:{color:'#202B36'},
+                    ticks:{color:'#8B96A3', font:{family:'IBM Plex Mono', size:11}},
+                    title:{display:true, text:'År', color:'#8B96A3', font:{family:'Inter', size:12}}
+                },
+                y:{
+                    grid:{color:'#202B36'},
+                    ticks:{
+                        color:'#8B96A3', font:{family:'IBM Plex Mono', size:11},
+                        callback: v => DK.format(v)
+                    }
+                }
+            }
+        }
+    });
+
+    const ctx2 = document.getElementById('chart2').getContext('2d');
+    let chart2 = new Chart(ctx2, {
+        type:'line',
+        data:{labels:[], datasets:[
+                {label:'Aktiedepot (værdi)', data:[], borderColor:'#E3A548', backgroundColor:'#E3A548', tension:0.15, pointRadius:0, borderWidth:2.5},
+                {label:'Indbetalt kapital', data:[], borderColor:'#5B6B7A', backgroundColor:'#5B6B7A', tension:0.15, pointRadius:0, borderWidth:2, borderDash:[4,4]}
             ]},
         options:{
             responsive:true,
@@ -417,6 +642,64 @@
     }
     [startCashInput, yearsInput, returnInput, payTaxInput].forEach(el => el.addEventListener('input', update));
     update();
+
+    const startCash2Input = document.getElementById('startCash2');
+    const monthlyAmount2Input = document.getElementById('monthlyAmount2');
+    const years2Input = document.getElementById('years2');
+    const return2Input = document.getElementById('yearlyReturn2');
+
+    function update2(){
+        const startCash = parseInt(startCash2Input.value);
+        const monthlyAmount = parseInt(monthlyAmount2Input.value);
+        const years = parseInt(years2Input.value);
+        const returnPercent = parseFloat(return2Input.value);
+        const yearlyReturn = 1 + returnPercent/100;
+
+        document.getElementById('startCash2Val').textContent = DK.format(startCash) + ' kr.';
+        document.getElementById('monthlyAmount2Val').textContent = DK.format(monthlyAmount) + ' kr.';
+        document.getElementById('years2Val').textContent = years;
+        document.getElementById('return2Val').textContent = returnPercent.toFixed(1).replace('.',',') + '%';
+
+        const {series, harvestStartYear} = computeMonthlySeries(years, yearlyReturn, startCash, monthlyAmount);
+
+        chart2.data.labels = series.map(p => p.year);
+        chart2.data.datasets[0].data = series.map(p => p.value);
+        chart2.data.datasets[1].data = series.map(p => p.invested);
+        chart2.update();
+
+        const finalValue = series[series.length-1].value;
+        const totalInvested = series[series.length-1].invested;
+        const netProfit = finalValue - totalInvested;
+        const percentIncrease = totalInvested > 0 ? (netProfit/totalInvested)*100 : 0;
+
+        document.getElementById('finalValue2').textContent = DK.format(finalValue) + ' kr.';
+        document.getElementById('totalInvested2').textContent = DK.format(totalInvested) + ' kr.';
+        document.getElementById('netProfit2').textContent = DK.format(netProfit) + ' kr.';
+        document.getElementById('percentIncrease2').textContent = '+' + percentIncrease.toFixed(1).replace('.',',') + '%';
+
+        const noHarvestValue = computeMonthlyFinalValueForStartYear(years, yearlyReturn, startCash, monthlyAmount, years);
+        const harvestAdvantage = finalValue - noHarvestValue;
+
+        const strategyEl2 = document.getElementById('strategyText2');
+        if(harvestStartYear < years){
+            strategyEl2.innerHTML = `Start med at realisere gevinst i <strong style="color:var(--akt)">år ${harvestStartYear}</strong> (ud af ${years} år i alt).<br><br>
+      Det giver <strong style="color:var(--akt)">${DK.format(harvestAdvantage)} kr. mere</strong> end hvis du havde ventet og solgt det hele i sidste år.`;
+        } else {
+            strategyEl2.innerHTML = `Bedst er slet ikke at realisere undervejs – vent til sidste år, og betal den progressive skat (27%/42%) af hele gevinsten på én gang. Her giver tidlig realisering ingen fordel.`;
+        }
+    }
+
+    [startCash2Input, monthlyAmount2Input, years2Input, return2Input].forEach(el => el.addEventListener('input', update2));
+    update2();
+
+    function showTool(n){
+        document.getElementById('tool1').style.display = n===1 ? 'block' : 'none';
+        document.getElementById('tool2').style.display = n===2 ? 'block' : 'none';
+        document.getElementById('tabBtn1').classList.toggle('active', n===1);
+        document.getElementById('tabBtn2').classList.toggle('active', n===2);
+        if(n===1) chart.resize();
+        if(n===2) chart2.resize();
+    }
 </script>
 
 </body>
