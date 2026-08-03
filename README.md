@@ -5,7 +5,7 @@ A pair of calculators for comparing Danish investment account types — a **Dani
 The project has two parts:
 
 1. **A Java console application** (`src/Main.java`) — the original command-line version, with a small tool menu.
-2. **An interactive web dashboard** (`ask-vs-akt-graf.html`) — a browser-based version of the same calculations, with sliders and live charts. (https://simongsk.github.io/Stock-portfolio-tool/).
+2. **An interactive web dashboard** (`index.html`) — a browser-based version of the same calculations, with sliders and live charts. (https://simongsk.github.io/Stock-portfolio-tool/).
 
 ## What it does
 
@@ -34,7 +34,7 @@ You'll get a menu to choose between the two tools, enter your numbers, and re-ru
 
 ## Using the web dashboard
 
-`ask-vs-akt-graf.html` is a single, self-contained file — no build step, no server required.
+`index.html` is a single, self-contained file — no build step, no server required.
 
 ```bash
 open ask-vs-akt-graf.html   # macOS
