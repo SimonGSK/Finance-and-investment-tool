@@ -53,3 +53,7 @@ It uses [Chart.js](https://www.chartjs.org/) (loaded from a CDN) and needs an in
 
 - Java 21 (console app)
 - Vanilla HTML/CSS/JavaScript + Chart.js (web dashboard) — no framework, no build tooling
+
+## License
+
+This project is licensed under the [MIT License](LICENSE) — see the LICENSE file for details. In short: you're free to use, copy, modify, and distribute this code, including commercially, as long as the original copyright notice is included.
