@@ -174,19 +174,95 @@
             line-height:1.6;
             color:var(--muted);
         }
+
+        .topbar{
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            gap:16px;
+            max-width:1180px;
+        }
+        .settings-btn{
+            background:var(--panel);
+            border:1px solid var(--border);
+            color:var(--text);
+            font-size:18px;
+            width:40px;
+            height:40px;
+            border-radius:8px;
+            cursor:pointer;
+            flex-shrink:0;
+        }
+        .settings-btn:hover{
+            border-color:var(--akt);
+        }
+        .settings-panel{
+            background:var(--panel);
+            border:1px solid var(--border);
+            border-radius:10px;
+            padding:18px 20px;
+            margin:12px 0 20px 0;
+            max-width:1180px;
+        }
+        .top-tabs{
+            display:flex;
+            gap:10px;
+            margin-bottom:24px;
+        }
+        .top-tab-btn{
+            background:var(--panel);
+            border:1px solid var(--border);
+            color:var(--muted);
+            font-family:'Space Grotesk',sans-serif;
+            font-weight:600;
+            font-size:14px;
+            padding:10px 22px;
+            border-radius:8px;
+            cursor:pointer;
+        }
+        .top-tab-btn:hover{
+            color:var(--text);
+        }
+        .top-tab-btn.active{
+            background:var(--akt);
+            color:#0F1720;
+            border-color:var(--akt);
+        }
     </style>
 </head>
 <body>
 
-<h1>Afkastberegner</h1>
-<p class="subtitle">Brug sliderne og se, hvilket depot der giver den største slutværdi.</p>
+<body>
 
-<div class="tabs">
-    <button class="tab-btn active" id="tabBtn1" onclick="showTool(1)">ASK vs. Aktiedepot</button>
-    <button class="tab-btn" id="tabBtn2" onclick="showTool(2)">Aktiedepot: indskud + månedlig investering</button>
+<div class="topbar">
+    <div>
+        <h1>Afkastberegner</h1>
+        <p class="subtitle">Skub i skyderne og udforsk dine investeringer.</p>
+    </div>
+    <button class="settings-btn" id="settingsBtn" onclick="toggleSettings()">⚙️</button>
 </div>
 
-<div id="tool1">
+<div class="settings-panel" id="settingsPanel" style="display:none;">
+    <div class="eyebrow" style="margin-bottom:12px;">Indstillinger</div>
+    <label class="toggle-row">
+        <input type="checkbox" id="doubleDeduction">
+        Dobbelt fradrag (du er gift med en, der ikke selv investerer, og kan derfor udnytte begges 27%-grænse)
+    </label>
+</div>
+
+<div class="top-tabs">
+    <button class="top-tab-btn active" id="topTabBtn1" onclick="showSection('tools')">Tools</button>
+    <button class="top-tab-btn" id="topTabBtn2" onclick="showSection('budget')">Budget</button>
+</div>
+
+<div id="section-tools">
+
+    <div class="tabs">
+        <button class="tab-btn active" id="tabBtn1" onclick="showTool(1)">ASK vs. Aktiedepot</button>
+        <button class="tab-btn" id="tabBtn2" onclick="showTool(2)">Aktiedepot: fast + månedligt</button>
+    </div>
+
+    <div id="tool1">
     <div class="layout">
 
     <div class="panel">
@@ -213,18 +289,29 @@
 
         <label class="toggle-row">
             <input type="checkbox" id="payTaxExternally">
-            Betal ASK-skatten udefra (og investér det tilsvarende beløb på aktiedepotet)
+            Betal ASK-skatten udefra (og investér det tilsvarende beløb i depotet)
+        </label>
+
+        <div class="field" style="margin-top:22px;">
+            <label>Forventet inflation <span class="val" id="inflationVal">2,0%</span></label>
+            <input type="range" id="inflation" min="0" max="8" step="0.1" value="2">
+        </div>
+
+        <label class="toggle-row">
+            <input type="checkbox" id="showRealValue">
+            Vis i nutidens købekraft (inflationsjusteret)
         </label>
     </div>
 
-    <div>
-        <div class="panel" style="margin-bottom:16px;">
-            <div class="legend">
-                <span><i class="dot" style="background:var(--ask)"></i>Aktiesparekonto</span>
-                <span><i class="dot" style="background:var(--akt)"></i>Aktiedepot (optimal realiseringsstrategi)</span>
+        <div>
+            <div class="panel" style="margin-bottom:16px;">
+                <div class="legend">
+                    <span><i class="dot" style="background:var(--ask)"></i>Aktiesparekonto</span>
+                    <span><i class="dot" style="background:var(--akt)"></i>Aktiedepot (optimal realiseringsstrategi)</span>
+                </div>
+                <canvas id="chart"></canvas>
+                <div class="explainer" id="inflationNote" style="display:none; margin-top:10px; padding-top:10px;">Alle beløb er vist i nutidens købekraft – dvs. hvad de fremtidige kroner reelt kan købe for, når man har trukket den forventede inflation fra.</div>
             </div>
-            <canvas id="chart"></canvas>
-        </div>
         <div class="stats">
             <div class="stat">
                 <div class="label">Slutværdi - Aktiesparekonto</div>
@@ -315,12 +402,23 @@
     </div>
 </div>
 
+</div>
+
+<div id="section-budget" style="display:none;">
+    <p style="color:var(--muted);">Budget-fanen er under udvikling.</p>
+</div>
+
 <script>
     const TAX_LIMIT_27 = 79400;
     const ASK_TAX = 0.17;
     const AKT_TAX_LOW = 0.27;
     const AKT_TAX_HIGH = 0.42;
     const DK = new Intl.NumberFormat('da-DK', {maximumFractionDigits:0});
+    let doubleDeductionEnabled = false;
+
+    function effectiveTaxLimit(){
+        return doubleDeductionEnabled ? TAX_LIMIT_27 * 2 : TAX_LIMIT_27;
+    }
 
     // ---- Porteret fra Main.java: ask() ----
     function computeAskSeries(years, yearlyReturn, startCash, payTaxExternally){
@@ -338,6 +436,7 @@
     // ---- Importeret fra Main.java: computeFinalValueForStartYear() ----
     function computeAktFinalValueForStartYear(years, yearlyReturn, startCash, investSavedAskTax, harvestStartYear){
         let shareValue = startCash, costBasis = startCash, shadowAskMoney = startCash;
+        const taxLimit = effectiveTaxLimit();
         for(let i=1;i<=years;i++){
             if(investSavedAskTax){
                 const shadowProfit = shadowAskMoney*yearlyReturn - shadowAskMoney;
@@ -350,7 +449,7 @@
                 if(i>=harvestStartYear){
                     const unrealized = shareValue-costBasis;
                     if(unrealized>0){
-                        const realize = Math.min(unrealized, TAX_LIMIT_27);
+                        const realize = Math.min(unrealized, taxLimit);
                         const tax = realize*AKT_TAX_LOW;
                         shareValue -= tax;
                         costBasis += (realize-tax);
@@ -359,9 +458,9 @@
             } else {
                 const finalUnrealized = shareValue-costBasis;
                 if(finalUnrealized>0){
-                    const tax = finalUnrealized<=TAX_LIMIT_27
+                    const tax = finalUnrealized<=taxLimit
                         ? finalUnrealized*AKT_TAX_LOW
-                        : TAX_LIMIT_27*AKT_TAX_LOW + (finalUnrealized-TAX_LIMIT_27)*AKT_TAX_HIGH;
+                        : taxLimit*AKT_TAX_LOW + (finalUnrealized-taxLimit)*AKT_TAX_HIGH;
                     shareValue -= tax;
                 }
             }
@@ -384,6 +483,7 @@
     function computeAktSeries(years, yearlyReturn, startCash, investSavedAskTax){
         const harvestStartYear = findBestHarvestStartYear(years, yearlyReturn, startCash, investSavedAskTax);
         let shareValue = startCash, costBasis = startCash, shadowAskMoney = startCash;
+        const taxLimit = effectiveTaxLimit();
         const series = [{year:0, value:startCash}];
         for(let i=1;i<=years;i++){
             if(investSavedAskTax){
@@ -397,7 +497,7 @@
                 if(i>=harvestStartYear){
                     const unrealized = shareValue-costBasis;
                     if(unrealized>0){
-                        const realize = Math.min(unrealized, TAX_LIMIT_27);
+                        const realize = Math.min(unrealized, taxLimit);
                         const tax = realize*AKT_TAX_LOW;
                         shareValue -= tax;
                         costBasis += (realize-tax);
@@ -406,9 +506,9 @@
             } else {
                 const finalUnrealized = shareValue-costBasis;
                 if(finalUnrealized>0){
-                    const tax = finalUnrealized<=TAX_LIMIT_27
+                    const tax = finalUnrealized<=taxLimit
                         ? finalUnrealized*AKT_TAX_LOW
-                        : TAX_LIMIT_27*AKT_TAX_LOW + (finalUnrealized-TAX_LIMIT_27)*AKT_TAX_HIGH;
+                        : taxLimit*AKT_TAX_LOW + (finalUnrealized-taxLimit)*AKT_TAX_HIGH;
                     shareValue -= tax;
                 }
             }
@@ -426,6 +526,7 @@
     function computeMonthlyFinalValueForStartYear(years, yearlyReturn, startCash, monthlyAmount, harvestStartYear){
         let shareValue = startCash, costBasis = startCash;
         const monthlyFactor = monthlyReturnFactor(yearlyReturn);
+        const taxLimit = effectiveTaxLimit();
 
         for(let i=1;i<=years;i++){
             for(let m=1;m<=12;m++){
@@ -438,7 +539,7 @@
                 if(i>=harvestStartYear){
                     const unrealized = shareValue-costBasis;
                     if(unrealized>0){
-                        const realize = Math.min(unrealized, TAX_LIMIT_27);
+                        const realize = Math.min(unrealized, taxLimit);
                         const tax = realize*AKT_TAX_LOW;
                         shareValue -= tax;
                         costBasis += (realize-tax);
@@ -447,9 +548,9 @@
             } else {
                 const finalUnrealized = shareValue-costBasis;
                 if(finalUnrealized>0){
-                    const tax = finalUnrealized<=TAX_LIMIT_27
+                    const tax = finalUnrealized<=taxLimit
                         ? finalUnrealized*AKT_TAX_LOW
-                        : TAX_LIMIT_27*AKT_TAX_LOW + (finalUnrealized-TAX_LIMIT_27)*AKT_TAX_HIGH;
+                        : taxLimit*AKT_TAX_LOW + (finalUnrealized-taxLimit)*AKT_TAX_HIGH;
                     shareValue -= tax;
                 }
             }
@@ -473,6 +574,7 @@
         const harvestStartYear = findBestMonthlyHarvestStartYear(years, yearlyReturn, startCash, monthlyAmount);
         let shareValue = startCash, costBasis = startCash, cumulativeInvested = startCash;
         const monthlyFactor = monthlyReturnFactor(yearlyReturn);
+        const taxLimit = effectiveTaxLimit();
         const series = [{year:0, value:startCash, invested:startCash}];
 
         for(let i=1;i<=years;i++){
@@ -487,7 +589,7 @@
                 if(i>=harvestStartYear){
                     const unrealized = shareValue-costBasis;
                     if(unrealized>0){
-                        const realize = Math.min(unrealized, TAX_LIMIT_27);
+                        const realize = Math.min(unrealized, taxLimit);
                         const tax = realize*AKT_TAX_LOW;
                         shareValue -= tax;
                         costBasis += (realize-tax);
@@ -496,9 +598,9 @@
             } else {
                 const finalUnrealized = shareValue-costBasis;
                 if(finalUnrealized>0){
-                    const tax = finalUnrealized<=TAX_LIMIT_27
+                    const tax = finalUnrealized<=taxLimit
                         ? finalUnrealized*AKT_TAX_LOW
-                        : TAX_LIMIT_27*AKT_TAX_LOW + (finalUnrealized-TAX_LIMIT_27)*AKT_TAX_HIGH;
+                        : taxLimit*AKT_TAX_LOW + (finalUnrealized-taxLimit)*AKT_TAX_HIGH;
                     shareValue -= tax;
                 }
             }
@@ -593,6 +695,13 @@
     const yearsInput = document.getElementById('years');
     const returnInput = document.getElementById('yearlyReturn');
     const payTaxInput = document.getElementById('payTaxExternally');
+    const inflationInput = document.getElementById('inflation');
+    const showRealInput = document.getElementById('showRealValue');
+
+    // Regner et fremtidigt (nominelt) beløb om til nutidens købekraft.
+    function toRealValue(nominalValue, year, inflationFactor){
+        return nominalValue / Math.pow(inflationFactor, year);
+    }
     const ASK_LIMIT = 174200;
     const SNAP_TOLERANCE = 4000;
 
@@ -614,15 +723,30 @@
         document.getElementById('yearsVal').textContent = years;
         document.getElementById('returnVal').textContent = returnPercent.toFixed(1).replace('.',',') + '%';
 
-        const askSeries = computeAskSeries(years, yearlyReturn, startCash, payTaxExternally);
-        const {series: aktSeries, harvestStartYear} = computeAktSeries(years, yearlyReturn, startCash, payTaxExternally);
+        const inflationPercent = parseFloat(inflationInput.value);
+        const inflationFactor = 1 + inflationPercent/100;
+        const showReal = showRealInput.checked;
+        document.getElementById('inflationVal').textContent = inflationPercent.toFixed(1).replace('.',',') + '%';
+        document.getElementById('inflationNote').style.display = showReal ? 'block' : 'none';
+
+        const askSeriesNominal = computeAskSeries(years, yearlyReturn, startCash, payTaxExternally);
+        const {series: aktSeriesNominal, harvestStartYear} = computeAktSeries(years, yearlyReturn, startCash, payTaxExternally);
+
+        // Vis enten de rå (nominelle) tal, eller de samme tal regnet om til nutidens købekraft
+        const askSeries = showReal
+            ? askSeriesNominal.map(p => ({year:p.year, value: toRealValue(p.value, p.year, inflationFactor)}))
+            : askSeriesNominal;
+        const aktSeries = showReal
+            ? aktSeriesNominal.map(p => ({year:p.year, value: toRealValue(p.value, p.year, inflationFactor)}))
+            : aktSeriesNominal;
 
         chart.data.labels = askSeries.map(p => p.year);
         chart.data.datasets[0].data = askSeries.map(p => p.value);
         chart.data.datasets[1].data = aktSeries.map(p => p.value);
 
         chart.update();
-        const noHarvestValue = computeAktFinalValueForStartYear(years, yearlyReturn, startCash, payTaxExternally, years);
+        const noHarvestValueNominal = computeAktFinalValueForStartYear(years, yearlyReturn, startCash, payTaxExternally, years);
+        const noHarvestValue = showReal ? toRealValue(noHarvestValueNominal, years, inflationFactor) : noHarvestValueNominal;
         const harvestAdvantage = aktSeries[aktSeries.length-1].value - noHarvestValue;
 
         const strategyEl = document.getElementById('strategyText');
@@ -654,7 +778,7 @@
             winnerDetail.textContent = '';
         }
     }
-    [startCashInput, yearsInput, returnInput, payTaxInput].forEach(el => el.addEventListener('input', update));
+    [startCashInput, yearsInput, returnInput, payTaxInput, inflationInput, showRealInput].forEach(el => el.addEventListener('input', update));
     update();
 
     const startCash2Input = document.getElementById('startCash2');
@@ -714,6 +838,29 @@
         if(n===1) chart.resize();
         if(n===2) chart2.resize();
     }
+
+    function showSection(name){
+        document.getElementById('section-tools').style.display = name==='tools' ? 'block' : 'none';
+        document.getElementById('section-budget').style.display = name==='budget' ? 'block' : 'none';
+        document.getElementById('topTabBtn1').classList.toggle('active', name==='tools');
+        document.getElementById('topTabBtn2').classList.toggle('active', name==='budget');
+
+        if(name==='tools'){
+            const tool1Visible = document.getElementById('tool1').style.display !== 'none';
+            if(tool1Visible){ chart.resize(); } else { chart2.resize(); }
+        }
+    }
+
+    function toggleSettings(){
+        const panel = document.getElementById('settingsPanel');
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    }
+
+    document.getElementById('doubleDeduction').addEventListener('change', () => {
+        doubleDeductionEnabled = document.getElementById('doubleDeduction').checked;
+        update();
+        update2();
+    });
 </script>
 
 </body>
