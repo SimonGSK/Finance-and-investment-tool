@@ -419,7 +419,7 @@
                 <div class="eyebrow">Parametre</div>
 
                 <div class="field">
-                    <label>Årligt forbrug ved FIRE <span class="val" id="expenses3Val">300.000 kr.</span></label>
+                    <label>Årligt forbrug (i dagens penge) <span class="val" id="expenses3Val">300.000 kr.</span></label>
                     <input type="range" id="expenses3" min="50000" max="1000000" step="5000" value="300000">
                 </div>
 
@@ -436,11 +436,6 @@
                 <div class="field">
                     <label>Forventet årligt afkast <span class="val" id="return3Val">7,0%</span></label>
                     <input type="range" id="yearlyReturn3" min="1" max="15" step="0.1" value="7">
-                </div>
-
-                <div class="field">
-                    <label>Hæverate <span class="val" id="withdrawalRateVal">4,0%</span></label>
-                    <input type="range" id="withdrawalRate" min="2.5" max="6" step="0.1" value="4">
                 </div>
 
                 <div class="field" style="margin-top:22px;">
@@ -465,9 +460,9 @@
                 </div>
                 <div class="stats">
                     <div class="stat">
-                        <div class="label">Dit FIRE-beløb</div>
-                        <div class="value" id="fireNumber3">–</div>
-                        <div class="sub" id="fireNumberSub3"></div>
+                        <div class="label">Formue ved FIRE</div>
+                        <div class="value ask" id="valueAtFire3">–</div>
+                        <div class="sub" id="valueAtFireSub3"></div>
                     </div>
                     <div class="stat">
                         <div class="label">Antal år til FIRE</div>
@@ -475,8 +470,9 @@
                         <div class="sub" id="yearsToFireSub3"></div>
                     </div>
                     <div class="stat">
-                        <div class="label">Formue ved FIRE</div>
-                        <div class="value ask" id="valueAtFire3">–</div>
+                        <div class="label">Årligt forbrug ved FIRE</div>
+                        <div class="value" id="consumptionAtFire3">–</div>
+                        <div class="sub" id="consumptionAtFireSub3"></div>
                     </div>
                 </div>
 
@@ -698,6 +694,23 @@
         return {series, harvestStartYear};
     }
 
+    // FIRE-opsparing: rent vækst-loop uden skatteoptimering (der er intet at "høste"
+    // på en opsparing, man endnu ikke har rørt). Genbruger monthlyReturnFactor() fra
+    // det månedlige aktiedepot-værktøj.
+    function computeFireSeries(startCash, monthlyAmount, yearlyReturn, maxYears){
+        const monthlyFactor = monthlyReturnFactor(yearlyReturn);
+        let value = startCash;
+        const series = [{year:0, value:startCash}];
+        for(let i=1;i<=maxYears;i++){
+            for(let m=1;m<=12;m++){
+                value += monthlyAmount;
+                value *= monthlyFactor;
+            }
+            series.push({year:i, value});
+        }
+        return series;
+    }
+
     const ctx = document.getElementById('chart').getContext('2d');
     let chart = new Chart(ctx, {
         type:'line',
@@ -745,6 +758,47 @@
         data:{labels:[], datasets:[
                 {label:'Aktiedepot (værdi)', data:[], borderColor:'#E3A548', backgroundColor:'#E3A548', tension:0.15, pointRadius:0, borderWidth:2.5},
                 {label:'Indbetalt kapital', data:[], borderColor:'#5B6B7A', backgroundColor:'#5B6B7A', tension:0.15, pointRadius:0, borderWidth:2, borderDash:[4,4]}
+            ]},
+        options:{
+            responsive:true,
+            animation:{duration:250},
+            interaction:{mode:'index', intersect:false},
+            plugins:{
+                legend:{display:false},
+                tooltip:{
+                    backgroundColor:'#1C2733',
+                    borderColor:'#26323F',
+                    borderWidth:1,
+                    titleColor:'#EDEAE3',
+                    bodyColor:'#EDEAE3',
+                    callbacks:{
+                        label: c => `${c.dataset.label}: ${DK.format(c.raw)} kr.`
+                    }
+                }
+            },
+            scales:{
+                x:{
+                    grid:{color:'#202B36'},
+                    ticks:{color:'#8B96A3', font:{family:'IBM Plex Mono', size:11}},
+                    title:{display:true, text:'År', color:'#8B96A3', font:{family:'Inter', size:12}}
+                },
+                y:{
+                    grid:{color:'#202B36'},
+                    ticks:{
+                        color:'#8B96A3', font:{family:'IBM Plex Mono', size:11},
+                        callback: v => DK.format(v)
+                    }
+                }
+            }
+        }
+    });
+
+    const ctx3 = document.getElementById('chart3').getContext('2d');
+    let chart3 = new Chart(ctx3, {
+        type:'line',
+        data:{labels:[], datasets:[
+                {label:'Formue', data:[], borderColor:'#E3A548', backgroundColor:'#E3A548', tension:0.15, pointRadius:0, borderWidth:2.5},
+                {label:'FIRE-mål', data:[], borderColor:'#5B6B7A', backgroundColor:'#5B6B7A', tension:0.15, pointRadius:0, borderWidth:2, borderDash:[4,4]}
             ]},
         options:{
             responsive:true,
@@ -938,13 +992,101 @@
     [startCash2Input, monthlyAmount2Input, years2Input, return2Input, inflation2Input, showReal2Input].forEach(el => el.addEventListener('input', update2));
     update2();
 
+    const expenses3Input = document.getElementById('expenses3');
+    const startCash3Input = document.getElementById('startCash3');
+    const monthlyAmount3Input = document.getElementById('monthlyAmount3');
+    const return3Input = document.getElementById('yearlyReturn3');
+    const inflation3Input = document.getElementById('inflation3');
+    const showReal3Input = document.getElementById('showRealValue3');
+
+    const FIRE_MAX_YEARS = 60;
+    const FIRE_WITHDRAWAL_RATE = 4; // 4%-reglen - fast, ikke justerbar
+
+    function update3(){
+        const expenses = parseInt(expenses3Input.value);
+        const startCash = parseInt(startCash3Input.value);
+        const monthlyAmount = parseInt(monthlyAmount3Input.value);
+        const returnPercent = parseFloat(return3Input.value);
+        const yearlyReturn = 1 + returnPercent/100;
+        const inflationPercent3 = parseFloat(inflation3Input.value);
+        const inflationFactor3 = 1 + inflationPercent3/100;
+        const showReal3 = showReal3Input.checked;
+
+        document.getElementById('expenses3Val').textContent = DK.format(expenses) + ' kr.';
+        document.getElementById('startCash3Val').textContent = DK.format(startCash) + ' kr.';
+        document.getElementById('monthlyAmount3Val').textContent = DK.format(monthlyAmount) + ' kr.';
+        document.getElementById('return3Val').textContent = returnPercent.toFixed(1).replace('.',',') + '%';
+        document.getElementById('inflation3Val').textContent = inflationPercent3.toFixed(1).replace('.',',') + '%';
+        document.getElementById('inflationNote3').style.display = showReal3 ? 'block' : 'none';
+
+        // Dit FIRE-beløb, udtrykt i dagens købekraft - det er jo netop det, "expenses" allerede er.
+        const fireNumberBase = expenses / (FIRE_WITHDRAWAL_RATE/100);
+
+        const portfolioNominal = computeFireSeries(startCash, monthlyAmount, yearlyReturn, FIRE_MAX_YEARS);
+        // FIRE-målet vokser år for år med inflationen, i nominelle kroner.
+        const fireTargetNominal = portfolioNominal.map(p => fireNumberBase * Math.pow(inflationFactor3, p.year));
+
+        // Find det første år, hvor formuen (nominelt) når det (nominelt voksende) mål.
+        let yearsToFire = null;
+        for(let i=0;i<portfolioNominal.length;i++){
+            if(portfolioNominal[i].value >= fireTargetNominal[i]){ yearsToFire = i; break; }
+        }
+
+        // Hvor langt skal grafen vise? Lidt luft efter målet er nået, ellers hele horisonten.
+        const chartEndYear = yearsToFire !== null ? Math.min(yearsToFire + 5, FIRE_MAX_YEARS) : FIRE_MAX_YEARS;
+        const portfolioTrimmed = portfolioNominal.slice(0, chartEndYear+1);
+        const targetTrimmed = fireTargetNominal.slice(0, chartEndYear+1);
+
+        const portfolioDisplay = showReal3
+            ? portfolioTrimmed.map(p => toRealValue(p.value, p.year, inflationFactor3))
+            : portfolioTrimmed.map(p => p.value);
+        const targetDisplay = showReal3
+            ? targetTrimmed.map((v,i) => toRealValue(v, i, inflationFactor3))
+            : targetTrimmed;
+
+        chart3.data.labels = portfolioTrimmed.map(p => p.year);
+        chart3.data.datasets[0].data = portfolioDisplay;
+        chart3.data.datasets[1].data = targetDisplay;
+        chart3.update();
+
+        if(yearsToFire !== null){
+            document.getElementById('yearsToFire3').textContent = yearsToFire + ' år';
+            document.getElementById('yearsToFireSub3').textContent = '';
+
+            // Formue ved FIRE: det nominelle (fremtidige) beløb, I faktisk vil have på det tidspunkt.
+            const valueAtFireNominal = portfolioNominal[yearsToFire].value;
+            const valueAtFireReal = toRealValue(valueAtFireNominal, yearsToFire, inflationFactor3);
+            document.getElementById('valueAtFire3').textContent = DK.format(valueAtFireNominal) + ' kr.';
+            document.getElementById('valueAtFireSub3').textContent = 'svarer til ' + DK.format(valueAtFireReal) + ' kr. i dagens købekraft';
+
+            // Årligt forbrug ved FIRE: hvad de 300.000 kr. (i dagens penge) rent faktisk
+            // koster i nominelle kroner det år, I når FIRE.
+            const consumptionAtFireNominal = expenses * Math.pow(inflationFactor3, yearsToFire);
+            document.getElementById('consumptionAtFire3').textContent = DK.format(consumptionAtFireNominal) + ' kr./år';
+            document.getElementById('consumptionAtFireSub3').textContent = 'svarer til ' + DK.format(expenses) + ' kr./år i dagens købekraft';
+        } else {
+            document.getElementById('yearsToFire3').textContent = FIRE_MAX_YEARS + '+ år';
+            document.getElementById('yearsToFireSub3').textContent = 'Ikke nået inden for ' + FIRE_MAX_YEARS + ' år med disse tal';
+            document.getElementById('valueAtFire3').textContent = '–';
+            document.getElementById('valueAtFireSub3').textContent = '';
+            document.getElementById('consumptionAtFire3').textContent = '–';
+            document.getElementById('consumptionAtFireSub3').textContent = '';
+        }
+    }
+
+    [expenses3Input, startCash3Input, monthlyAmount3Input, return3Input, inflation3Input, showReal3Input].forEach(el => el.addEventListener('input', update3));
+    update3();
+
     function showTool(n){
         document.getElementById('tool1').style.display = n===1 ? 'block' : 'none';
         document.getElementById('tool2').style.display = n===2 ? 'block' : 'none';
+        document.getElementById('tool3').style.display = n===3 ? 'block' : 'none';
         document.getElementById('tabBtn1').classList.toggle('active', n===1);
         document.getElementById('tabBtn2').classList.toggle('active', n===2);
+        document.getElementById('tabBtn3').classList.toggle('active', n===3);
         if(n===1) chart.resize();
         if(n===2) chart2.resize();
+        if(n===3) chart3.resize();
     }
 
     function showSection(name){
