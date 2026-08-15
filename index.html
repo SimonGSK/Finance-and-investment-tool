@@ -260,6 +260,7 @@
     <div class="tabs">
         <button class="tab-btn active" id="tabBtn1" onclick="showTool(1)">ASK vs. Aktiedepot</button>
         <button class="tab-btn" id="tabBtn2" onclick="showTool(2)">Aktiedepot: fast + månedligt</button>
+        <button class="tab-btn" id="tabBtn3" onclick="showTool(3)">FIRE-beregner (4%-reglen)</button>
     </div>
 
     <div id="tool1">
@@ -364,6 +365,16 @@
                 <label>Forventet årligt afkast <span class="val" id="return2Val">8,0%</span></label>
                 <input type="range" id="yearlyReturn2" min="1" max="15" step="0.1" value="8">
             </div>
+
+            <div class="field" style="margin-top:22px;">
+                <label>Forventet inflation <span class="val" id="inflation2Val">2,0%</span></label>
+                <input type="range" id="inflation2" min="0" max="8" step="0.1" value="2">
+            </div>
+
+            <label class="toggle-row">
+                <input type="checkbox" id="showRealValue2">
+                Vis i nutidens købekraft (inflationsjusteret)
+            </label>
         </div>
 
         <div>
@@ -373,6 +384,7 @@
                     <span><i class="dot" style="background:#5B6B7A"></i>Indbetalt kapital</span>
                 </div>
                 <canvas id="chart2"></canvas>
+                <div class="explainer" id="inflationNote2" style="display:none; margin-top:10px; padding-top:10px;">Alle beløb er vist i nutidens købekraft – dvs. hvad de fremtidige kroner reelt kan købe for, når man har trukket den forventede inflation fra.</div>
             </div>
             <div class="stats">
                 <div class="stat">
@@ -401,6 +413,85 @@
 
     </div>
 </div>
+
+    <div id="tool3" style="display:none;">
+        <div class="layout">
+
+            <div class="panel">
+                <div class="eyebrow">Parametre</div>
+
+                <div class="field">
+                    <label>Årligt forbrug ved FIRE <span class="val" id="expenses3Val">300.000 kr.</span></label>
+                    <input type="range" id="expenses3" min="50000" max="1000000" step="5000" value="300000">
+                </div>
+
+                <div class="field">
+                    <label>Nuværende opsparing <span class="val" id="startCash3Val">100.000 kr.</span></label>
+                    <input type="range" id="startCash3" min="0" max="2000000" step="10000" value="100000">
+                </div>
+
+                <div class="field">
+                    <label>Månedlig investering <span class="val" id="monthlyAmount3Val">5.000 kr.</span></label>
+                    <input type="range" id="monthlyAmount3" min="0" max="30000" step="500" value="5000">
+                </div>
+
+                <div class="field">
+                    <label>Forventet årligt afkast <span class="val" id="return3Val">7,0%</span></label>
+                    <input type="range" id="yearlyReturn3" min="1" max="15" step="0.1" value="7">
+                </div>
+
+                <div class="field">
+                    <label>Hæverate <span class="val" id="withdrawalRateVal">4,0%</span></label>
+                    <input type="range" id="withdrawalRate" min="2.5" max="6" step="0.1" value="4">
+                </div>
+
+                <div class="field" style="margin-top:22px;">
+                    <label>Forventet inflation <span class="val" id="inflation3Val">2,0%</span></label>
+                    <input type="range" id="inflation3" min="0" max="8" step="0.1" value="2">
+                </div>
+
+                <label class="toggle-row">
+                    <input type="checkbox" id="showRealValue3">
+                    Vis i nutidens købekraft (inflationsjusteret)
+                </label>
+            </div>
+
+            <div>
+                <div class="panel" style="margin-bottom:16px;">
+                    <div class="legend">
+                        <span><i class="dot" style="background:var(--akt)"></i>Formue</span>
+                        <span><i class="dot" style="background:#5B6B7A"></i>FIRE-mål</span>
+                    </div>
+                    <canvas id="chart3"></canvas>
+                    <div class="explainer" id="inflationNote3" style="display:none; margin-top:10px; padding-top:10px;">Alle beløb er vist i nutidens købekraft – dvs. hvad de fremtidige kroner reelt kan купe for, når man har trukket den forventede inflation fra.</div>
+                </div>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="label">Dit FIRE-beløb</div>
+                        <div class="value" id="fireNumber3">–</div>
+                        <div class="sub" id="fireNumberSub3"></div>
+                    </div>
+                    <div class="stat">
+                        <div class="label">Antal år til FIRE</div>
+                        <div class="value akt" id="yearsToFire3">–</div>
+                        <div class="sub" id="yearsToFireSub3"></div>
+                    </div>
+                    <div class="stat">
+                        <div class="label">Formue ved FIRE</div>
+                        <div class="value ask" id="valueAtFire3">–</div>
+                    </div>
+                </div>
+
+                <div class="panel" style="margin-top:16px;">
+                    <div class="eyebrow">Om 4%-reglen</div>
+                    <p class="explainer" style="margin:0; padding-top:0; border-top:none;">
+                        4%-reglen siger, at man kan hæve 4% af sin formue om året uden statistisk set at løbe tør for penge over en lang tidshorisont (oprindeligt baseret på det amerikanske "Trinity study"). Omvendt betyder det, at dit "FIRE-beløb" er dit ønskede årlige forbrug ganget med 25 (dvs. divideret med 4%). Reglen er en tommelfingerregel, ikke en garanti — den er baseret på historiske afkast og tager fx ikke højde for skat på løbende udbetalinger.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
 
 </div>
 
@@ -785,6 +876,8 @@
     const monthlyAmount2Input = document.getElementById('monthlyAmount2');
     const years2Input = document.getElementById('years2');
     const return2Input = document.getElementById('yearlyReturn2');
+    const inflation2Input = document.getElementById('inflation2');
+    const showReal2Input = document.getElementById('showRealValue2');
 
     function update2(){
         const startCash = parseInt(startCash2Input.value);
@@ -798,7 +891,23 @@
         document.getElementById('years2Val').textContent = years;
         document.getElementById('return2Val').textContent = returnPercent.toFixed(1).replace('.',',') + '%';
 
-        const {series, harvestStartYear} = computeMonthlySeries(years, yearlyReturn, startCash, monthlyAmount);
+        const inflationPercent2 = parseFloat(inflation2Input.value);
+        const inflationFactor2 = 1 + inflationPercent2/100;
+        const showReal2 = showReal2Input.checked;
+        document.getElementById('inflation2Val').textContent = inflationPercent2.toFixed(1).replace('.',',') + '%';
+        document.getElementById('inflationNote2').style.display = showReal2 ? 'block' : 'none';
+
+        const {series: seriesNominal, harvestStartYear} = computeMonthlySeries(years, yearlyReturn, startCash, monthlyAmount);
+
+        // Deflatér BÅDE værdi og indbetalt kapital, så de to linjer i grafen
+        // fortsat kan sammenlignes ærligt med hinanden.
+        const series = showReal2
+            ? seriesNominal.map(p => ({
+                year: p.year,
+                value: toRealValue(p.value, p.year, inflationFactor2),
+                invested: toRealValue(p.invested, p.year, inflationFactor2)
+            }))
+            : seriesNominal;
 
         chart2.data.labels = series.map(p => p.year);
         chart2.data.datasets[0].data = series.map(p => p.value);
@@ -815,7 +924,8 @@
         document.getElementById('netProfit2').textContent = DK.format(netProfit) + ' kr.';
         document.getElementById('percentIncrease2').textContent = '+' + percentIncrease.toFixed(1).replace('.',',') + '%';
 
-        const noHarvestValue = computeMonthlyFinalValueForStartYear(years, yearlyReturn, startCash, monthlyAmount, years);
+        const noHarvestValueNominal = computeMonthlyFinalValueForStartYear(years, yearlyReturn, startCash, monthlyAmount, years);
+        const noHarvestValue = showReal2 ? toRealValue(noHarvestValueNominal, years, inflationFactor2) : noHarvestValueNominal;
         const harvestAdvantage = finalValue - noHarvestValue;
 
         const strategyEl2 = document.getElementById('strategyText2');
@@ -827,7 +937,7 @@
         }
     }
 
-    [startCash2Input, monthlyAmount2Input, years2Input, return2Input].forEach(el => el.addEventListener('input', update2));
+    [startCash2Input, monthlyAmount2Input, years2Input, return2Input, inflation2Input, showReal2Input].forEach(el => el.addEventListener('input', update2));
     update2();
 
     function showTool(n){
