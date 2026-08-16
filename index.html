@@ -228,6 +228,39 @@
             color:#0F1720;
             border-color:var(--akt);
         }
+
+        .data-table-wrap{
+            max-height:340px;
+            overflow-y:auto;
+            border:1px solid var(--border);
+            border-radius:8px;
+        }
+        table.data-table{
+            width:100%;
+            border-collapse:collapse;
+            font-family:'IBM Plex Mono',monospace;
+            font-size:12.5px;
+        }
+        table.data-table thead th{
+            position:sticky;
+            top:0;
+            background:#1C2733;
+            color:var(--muted);
+            text-align:right;
+            font-weight:500;
+            padding:8px 12px;
+            border-bottom:1px solid var(--border);
+            white-space:nowrap;
+        }
+        table.data-table thead th:first-child{ text-align:left; }
+        table.data-table td{
+            text-align:right;
+            padding:6px 12px;
+            border-bottom:1px solid #1C2733;
+            color:var(--text);
+        }
+        table.data-table td:first-child{ text-align:left; color:var(--muted); }
+        table.data-table tbody tr:hover{ background:#1A2430; }
     </style>
 </head>
 <body>
@@ -291,15 +324,15 @@
             Betal ASK-skatten udefra (og investér det tilsvarende beløb i depotet)
         </label>
 
-        <div class="field" style="margin-top:22px;">
-            <label>Forventet inflation <span class="val" id="inflationVal">2,0%</span></label>
-            <input type="range" id="inflation" min="0" max="8" step="0.1" value="2">
-        </div>
-
         <label class="toggle-row">
             <input type="checkbox" id="showRealValue">
             Vis i nutidens købekraft (inflationsjusteret)
         </label>
+
+        <div class="field" id="inflationField" style="margin-top:16px; display:none;">
+            <label>Forventet inflation <span class="val" id="inflationVal">2,0%</span></label>
+            <input type="range" id="inflation" min="0" max="8" step="0.1" value="2">
+        </div>
     </div>
 
         <div>
@@ -326,19 +359,38 @@
                 <div class="sub" id="winnerDetail"></div>
             </div>
         </div>
-        <div class="panel" style="margin-top:16px;">
-            <div class="eyebrow">Optimal realiseringsstrategi</div>
-            <p id="strategyText" style="margin:0; font-size:14px; line-height:1.5;"></p>
-            <p class="explainer">
-                Der er en afvejning: sælger du for tidligt, mister du renters rente på de kroner, der forlader depotet som skat, før det er nødvendigt. Venter du for længe, risikerer du i stedet, at en stor del af gevinsten bliver beskattet med den høje sats på 42% i sidste øjeblik. Værktøjet finder det optimale startår ved simpelthen at afprøve alle mulige år og vælge det, der reelt giver den højeste slutværdi. Jo højere det forventede afkast er, jo dyrere er det at betale skat tidligt (de kroner går glip af mere vækst), så høje afkast trækker det optimale startår tættere på sidste år. Ved lave afkast koster tidlig realisering til gengæld mindre i tabt vækst, så det kan bedre betale sig at sprede realiseringen ud over flere år.
-            </p>
+            <div class="panel" style="margin-top:16px;">
+                <div class="eyebrow">Optimal realiseringsstrategi</div>
+                <p id="strategyText" style="margin:0; font-size:14px; line-height:1.5;"></p>
+                <p class="explainer">
+                    Der er en afvejning: sælger du for tidligt, mister du renters rente på de kroner, der forlader depotet som skat, før det er nødvendigt. Venter du for længe, risikerer du i stedet, at en stor del af gevinsten bliver beskattet med den høje sats på 42% i sidste øjeblik. Værktøjet finder det optimale startår ved simpelthen at afprøve alle mulige år og vælge det, der reelt giver den højeste slutværdi. Jo højere det forventede afkast er, jo dyrere er det at betale skat tidligt (de kroner går glip af mere vækst), så høje afkast trækker det optimale startår tættere på sidste år. Ved lave afkast koster tidlig realisering til gengæld mindre i tabt vækst, så det kan bedre betale sig at sprede realiseringen ud over flere år.
+                </p>
+            </div>
+
+            <div class="panel" style="margin-top:16px;">
+                <div class="eyebrow">Data pr. år</div>
+                <div class="data-table-wrap">
+                    <table class="data-table">
+                        <thead>
+                        <tr>
+                            <th>År</th>
+                            <th>ASK-værdi</th>
+                            <th>ASK-skat</th>
+                            <th>AKT-værdi</th>
+                            <th>AKT-skat @27%</th>
+                            <th>AKT-skat @42%</th>
+                        </tr>
+                        </thead>
+                        <tbody id="dataTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-    </div>
 
     </div>
-</div>
+    </div>
 
-<div id="tool2" style="display:none;">
+    <div id="tool2" style="display:none;">
     <div class="layout">
 
         <div class="panel">
@@ -364,15 +416,15 @@
                 <input type="range" id="yearlyReturn2" min="1" max="15" step="0.1" value="8">
             </div>
 
-            <div class="field" style="margin-top:22px;">
-                <label>Forventet inflation <span class="val" id="inflation2Val">2,0%</span></label>
-                <input type="range" id="inflation2" min="0" max="8" step="0.1" value="2">
-            </div>
-
             <label class="toggle-row">
                 <input type="checkbox" id="showRealValue2">
                 Vis i nutidens købekraft (inflationsjusteret)
             </label>
+
+            <div class="field" id="inflationField2" style="margin-top:16px; display:none;">
+                <label>Forventet inflation <span class="val" id="inflation2Val">2,0%</span></label>
+                <input type="range" id="inflation2" min="0" max="8" step="0.1" value="2">
+            </div>
         </div>
 
         <div>
@@ -406,6 +458,24 @@
                 <p class="explainer">
                     Der er en afvejning: sælger du for tidligt, mister du renters rente på de kroner, der forlader depotet som skat, før det er nødvendigt. Venter du for længe, risikerer du i stedet, at en stor del af gevinsten bliver beskattet med den høje sats på 42% i sidste øjeblik. Værktøjet finder det optimale startår ved simpelthen at afprøve alle mulige år og vælge det, der reelt giver den højeste slutværdi. Jo højere det forventede afkast er, jo dyrere er det at betale skat tidligt (de kroner går glip af mere vækst), så høje afkast trækker det optimale startår tættere på sidste år. Ved lave afkast koster tidlig realisering til gengæld mindre i tabt vækst, så det kan bedre betale sig at sprede realiseringen ud over flere år.
                 </p>
+            </div>
+
+            <div class="panel" style="margin-top:16px;">
+                <div class="eyebrow">Data pr. år</div>
+                <div class="data-table-wrap">
+                    <table class="data-table">
+                        <thead>
+                        <tr>
+                            <th>År</th>
+                            <th>Værdi</th>
+                            <th>Indbetalt i alt</th>
+                            <th>Skat @27%</th>
+                            <th>Skat @42%</th>
+                        </tr>
+                        </thead>
+                        <tbody id="dataTableBody2"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -508,12 +578,12 @@
     // ---- Porteret fra Main.java: ask() ----
     function computeAskSeries(years, yearlyReturn, startCash, payTaxExternally){
         let money = startCash;
-        const series = [{year:0, value:startCash}];
+        const series = [{year:0, value:startCash, taxPaid:0}];
         for(let i=1;i<=years;i++){
             const before = money*yearlyReturn;
             const tax = (before-money)*ASK_TAX;
             money = payTaxExternally ? before : before-tax;
-            series.push({year:i, value:money});
+            series.push({year:i, value:money, taxPaid:tax});
         }
         return series;
     }
@@ -569,7 +639,7 @@
         const harvestStartYear = findBestHarvestStartYear(years, yearlyReturn, startCash, investSavedAskTax);
         let shareValue = startCash, costBasis = startCash, shadowAskMoney = startCash;
         const taxLimit = effectiveTaxLimit();
-        const series = [{year:0, value:startCash}];
+        const series = [{year:0, value:startCash, taxAt27:0, taxAt42:0}];
         for(let i=1;i<=years;i++){
             if(investSavedAskTax){
                 const shadowProfit = shadowAskMoney*yearlyReturn - shadowAskMoney;
@@ -578,6 +648,9 @@
                 if(askTax>0){ shareValue+=askTax; costBasis+=askTax; }
             }
             shareValue *= yearlyReturn;
+
+            let taxAt27 = 0, taxAt42 = 0;
+
             if(i<years){
                 if(i>=harvestStartYear){
                     const unrealized = shareValue-costBasis;
@@ -586,18 +659,22 @@
                         const tax = realize*AKT_TAX_LOW;
                         shareValue -= tax;
                         costBasis += (realize-tax);
+                        taxAt27 = tax;
                     }
                 }
             } else {
                 const finalUnrealized = shareValue-costBasis;
                 if(finalUnrealized>0){
-                    const tax = finalUnrealized<=taxLimit
-                        ? finalUnrealized*AKT_TAX_LOW
-                        : taxLimit*AKT_TAX_LOW + (finalUnrealized-taxLimit)*AKT_TAX_HIGH;
-                    shareValue -= tax;
+                    if(finalUnrealized<=taxLimit){
+                        taxAt27 = finalUnrealized*AKT_TAX_LOW;
+                    } else {
+                        taxAt27 = taxLimit*AKT_TAX_LOW;
+                        taxAt42 = (finalUnrealized-taxLimit)*AKT_TAX_HIGH;
+                    }
+                    shareValue -= (taxAt27 + taxAt42);
                 }
             }
-            series.push({year:i, value:shareValue});
+            series.push({year:i, value:shareValue, taxAt27, taxAt42});
         }
         return {series, harvestStartYear};
     }
@@ -654,13 +731,12 @@
         return bestStart;
     }
 
-    // ---- Porteret fra Main.java: aktMonthly() (år-for-år-serie) ----
     function computeMonthlySeries(years, yearlyReturn, startCash, monthlyAmount){
         const harvestStartYear = findBestMonthlyHarvestStartYear(years, yearlyReturn, startCash, monthlyAmount);
         let shareValue = startCash, costBasis = startCash, cumulativeInvested = startCash;
         const monthlyFactor = monthlyReturnFactor(yearlyReturn);
         const taxLimit = effectiveTaxLimit();
-        const series = [{year:0, value:startCash, invested:startCash}];
+        const series = [{year:0, value:startCash, invested:startCash, taxAt27:0, taxAt42:0}];
 
         for(let i=1;i<=years;i++){
             for(let m=1;m<=12;m++){
@@ -670,6 +746,8 @@
                 shareValue *= monthlyFactor;
             }
 
+            let taxAt27 = 0, taxAt42 = 0;
+
             if(i<years){
                 if(i>=harvestStartYear){
                     const unrealized = shareValue-costBasis;
@@ -678,18 +756,22 @@
                         const tax = realize*AKT_TAX_LOW;
                         shareValue -= tax;
                         costBasis += (realize-tax);
+                        taxAt27 = tax;
                     }
                 }
             } else {
                 const finalUnrealized = shareValue-costBasis;
                 if(finalUnrealized>0){
-                    const tax = finalUnrealized<=taxLimit
-                        ? finalUnrealized*AKT_TAX_LOW
-                        : taxLimit*AKT_TAX_LOW + (finalUnrealized-taxLimit)*AKT_TAX_HIGH;
-                    shareValue -= tax;
+                    if(finalUnrealized<=taxLimit){
+                        taxAt27 = finalUnrealized*AKT_TAX_LOW;
+                    } else {
+                        taxAt27 = taxLimit*AKT_TAX_LOW;
+                        taxAt42 = (finalUnrealized-taxLimit)*AKT_TAX_HIGH;
+                    }
+                    shareValue -= (taxAt27 + taxAt42);
                 }
             }
-            series.push({year:i, value:shareValue, invested:cumulativeInvested});
+            series.push({year:i, value:shareValue, invested:cumulativeInvested, taxAt27, taxAt42});
         }
         return {series, harvestStartYear};
     }
@@ -871,16 +953,26 @@
         const showReal = showRealInput.checked;
         document.getElementById('inflationVal').textContent = inflationPercent.toFixed(1).replace('.',',') + '%';
         document.getElementById('inflationNote').style.display = showReal ? 'block' : 'none';
+        document.getElementById('inflationField').style.display = showReal ? 'block' : 'none';
 
         const askSeriesNominal = computeAskSeries(years, yearlyReturn, startCash, payTaxExternally);
         const {series: aktSeriesNominal, harvestStartYear} = computeAktSeries(years, yearlyReturn, startCash, payTaxExternally);
 
         // Vis enten de rå (nominelle) tal, eller de samme tal regnet om til nutidens købekraft
         const askSeries = showReal
-            ? askSeriesNominal.map(p => ({year:p.year, value: toRealValue(p.value, p.year, inflationFactor)}))
+            ? askSeriesNominal.map(p => ({
+                year:p.year,
+                value: toRealValue(p.value, p.year, inflationFactor),
+                taxPaid: toRealValue(p.taxPaid, p.year, inflationFactor)
+            }))
             : askSeriesNominal;
         const aktSeries = showReal
-            ? aktSeriesNominal.map(p => ({year:p.year, value: toRealValue(p.value, p.year, inflationFactor)}))
+            ? aktSeriesNominal.map(p => ({
+                year:p.year,
+                value: toRealValue(p.value, p.year, inflationFactor),
+                taxAt27: toRealValue(p.taxAt27, p.year, inflationFactor),
+                taxAt42: toRealValue(p.taxAt42, p.year, inflationFactor)
+            }))
             : aktSeriesNominal;
 
         chart.data.labels = askSeries.map(p => p.year);
@@ -888,6 +980,20 @@
         chart.data.datasets[1].data = aktSeries.map(p => p.value);
 
         chart.update();
+
+        const tableBody = document.getElementById('dataTableBody');
+        tableBody.innerHTML = askSeries.map((askPoint, i) => {
+            const aktPoint = aktSeries[i];
+            return `<tr>
+                <td>${askPoint.year}</td>
+                <td>${DK.format(askPoint.value)} kr.</td>
+                <td>${DK.format(askPoint.taxPaid)} kr.</td>
+                <td>${DK.format(aktPoint.value)} kr.</td>
+                <td>${aktPoint.taxAt27 > 0 ? DK.format(aktPoint.taxAt27) + ' kr.' : '–'}</td>
+                <td>${aktPoint.taxAt42 > 0 ? DK.format(aktPoint.taxAt42) + ' kr.' : '–'}</td>
+            </tr>`;
+        }).join('');
+
         const noHarvestValueNominal = computeAktFinalValueForStartYear(years, yearlyReturn, startCash, payTaxExternally, years);
         const noHarvestValue = showReal ? toRealValue(noHarvestValueNominal, years, inflationFactor) : noHarvestValueNominal;
         const harvestAdvantage = aktSeries[aktSeries.length-1].value - noHarvestValue;
@@ -948,6 +1054,7 @@
         const showReal2 = showReal2Input.checked;
         document.getElementById('inflation2Val').textContent = inflationPercent2.toFixed(1).replace('.',',') + '%';
         document.getElementById('inflationNote2').style.display = showReal2 ? 'block' : 'none';
+        document.getElementById('inflationField2').style.display = showReal2 ? 'block' : 'none';
 
         const {series: seriesNominal, harvestStartYear} = computeMonthlySeries(years, yearlyReturn, startCash, monthlyAmount);
 
@@ -957,7 +1064,9 @@
             ? seriesNominal.map(p => ({
                 year: p.year,
                 value: toRealValue(p.value, p.year, inflationFactor2),
-                invested: toRealValue(p.invested, p.year, inflationFactor2)
+                invested: toRealValue(p.invested, p.year, inflationFactor2),
+                taxAt27: toRealValue(p.taxAt27, p.year, inflationFactor2),
+                taxAt42: toRealValue(p.taxAt42, p.year, inflationFactor2)
             }))
             : seriesNominal;
 
@@ -975,6 +1084,15 @@
         document.getElementById('totalInvested2').textContent = DK.format(totalInvested) + ' kr.';
         document.getElementById('netProfit2').textContent = DK.format(netProfit) + ' kr.';
         document.getElementById('percentIncrease2').textContent = '+' + percentIncrease.toFixed(1).replace('.',',') + '%';
+
+        const tableBody2 = document.getElementById('dataTableBody2');
+        tableBody2.innerHTML = series.map(p => `<tr>
+            <td>${p.year}</td>
+            <td>${DK.format(p.value)} kr.</td>
+            <td>${DK.format(p.invested)} kr.</td>
+            <td>${p.taxAt27 > 0 ? DK.format(p.taxAt27) + ' kr.' : '–'}</td>
+            <td>${p.taxAt42 > 0 ? DK.format(p.taxAt42) + ' kr.' : '–'}</td>
+        </tr>`).join('');
 
         const noHarvestValueNominal = computeMonthlyFinalValueForStartYear(years, yearlyReturn, startCash, monthlyAmount, years);
         const noHarvestValue = showReal2 ? toRealValue(noHarvestValueNominal, years, inflationFactor2) : noHarvestValueNominal;
