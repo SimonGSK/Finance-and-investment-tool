@@ -639,6 +639,8 @@
         <button class="tab-btn" id="budgetModeBtn2" onclick="setBudgetMode('allocate')">Fordel et beløb</button>
     </div>
 
+    <button class="btn btn-secondary" style="margin-bottom:20px;" onclick="resetBudget()">Nulstil felter</button>
+
     <div class="layout">
 
         <div class="panel">
@@ -708,6 +710,8 @@
 
 <div id="section-formue" style="display:none;">
     <p class="tool-intro">Få et samlet overblik over din formue ved at indtaste dine aktiver og din gæld nedenfor.</p>
+
+    <button class="btn btn-secondary" style="margin-bottom:20px;" onclick="resetNetWorth()">Nulstil felter</button>
 
     <div class="layout">
 
@@ -1557,6 +1561,13 @@
         saveBudgetToStorage();
     }
 
+    function resetBudget(){
+        if(!confirm('Nulstil alle budgetfelter? Det kan ikke fortrydes.')) return;
+        BUDGET_CATEGORIES.forEach(cat => document.getElementById(cat.id).value = 0);
+        document.getElementById('budgetTotalInput').value = 0;
+        updateBudget();
+    }
+
     loadBudgetFromStorage();
     BUDGET_CATEGORIES.forEach(cat => document.getElementById(cat.id).addEventListener('input', updateBudget));
     document.getElementById('budgetTotalInput').addEventListener('input', updateBudget);
@@ -1637,6 +1648,13 @@
         netWorthChart.data.datasets[0].data = values;
         netWorthChart.update();
         saveNetWorthToStorage();
+    }
+
+    function resetNetWorth(){
+        if(!confirm('Nulstil alle formuefelter? Det kan ikke fortrydes.')) return;
+        NET_WORTH_CATEGORIES.forEach(cat => document.getElementById(cat.id).value = 0);
+        document.getElementById('netDebt').value = 0;
+        updateNetWorth();
     }
 
     loadNetWorthFromStorage();
