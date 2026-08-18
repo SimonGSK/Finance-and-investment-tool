@@ -195,6 +195,7 @@
             align-items:flex-start;
             gap:16px;
             max-width:1180px;
+            flex-wrap:wrap;
         }
         .settings-btn{
             background:var(--panel);
@@ -320,6 +321,17 @@
         }
         .btn-secondary{
             color:var(--muted);
+        }
+        @media (max-width:640px){
+            body{ padding:16px; }
+            h1{ font-size:20px; }
+            .top-tabs{ flex-wrap:wrap; }
+            .tabs{ flex-wrap:wrap; }
+            .top-tab-btn{ padding:8px 14px; font-size:13px; }
+            .tab-btn{ padding:8px 4px; font-size:13px; }
+            .stats{ grid-template-columns:1fr; }
+            .data-table-wrap{ overflow-x:auto; }
+            table.data-table{ min-width:520px; }
         }
     </style>
 </head>
