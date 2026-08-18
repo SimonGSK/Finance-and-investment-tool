@@ -435,10 +435,11 @@
                         <tbody id="dataTableBody"></tbody>
                     </table>
                 </div>
+                <button class="btn btn-secondary" style="margin-top:12px;" onclick="downloadTableAsCSV('dataTableBody', 'ask-vs-aktiedepot.csv')">Download som CSV</button>
             </div>
         </div>
 
-    </div>
+        </div>
     </div>
 
     <div id="tool2" style="display:none;">
@@ -531,6 +532,7 @@
                         <tbody id="dataTableBody2"></tbody>
                     </table>
                 </div>
+                <button class="btn btn-secondary" style="margin-top:12px;" onclick="downloadTableAsCSV('dataTableBody2', 'aktiedepot-maanedlig.csv')">Download som CSV</button>
             </div>
         </div>
 
@@ -623,6 +625,7 @@
                             <tbody id="dataTableBody3"></tbody>
                         </table>
                     </div>
+                    <button class="btn btn-secondary" style="margin-top:12px;" onclick="downloadTableAsCSV('dataTableBody3', 'fire-beregner.csv')">Download som CSV</button>
                 </div>
             </div>
 
@@ -1784,6 +1787,33 @@
     }
 
     renderNetWorthHistory();
+
+    function downloadTableAsCSV(tbodyId, filename){
+        const tbody = document.getElementById(tbodyId);
+        const table = tbody.closest('table');
+        const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
+        const rows = Array.from(tbody.querySelectorAll('tr')).map(tr =>
+            Array.from(tr.querySelectorAll('td')).map(td => td.textContent.trim())
+        );
+
+        // Semikolon som separator (ikke komma), fordi danske Excel-opsætninger som
+        // udgangspunkt forventer det - komma bruges jo allerede som decimaltegn i vores tal.
+        const csvLines = [headers, ...rows].map(row =>
+            row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(';')
+        );
+        // \uFEFF (byte-order-mark) forrest hjælper Excel med at genkende dansk tegnsæt (æøå) korrekt.
+        const csvContent = '\uFEFF' + csvLines.join('\r\n');
+
+        const blob = new Blob([csvContent], {type:'text/csv;charset=utf-8;'});
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
 </script>
 
 </body>
