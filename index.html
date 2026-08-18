@@ -703,6 +703,27 @@
                 <div class="eyebrow">Fordeling</div>
                 <canvas id="budgetChart"></canvas>
             </div>
+
+            <div class="panel" style="margin-top:16px;">
+                <div class="eyebrow">50/30/20-reglen</div>
+                <p class="explainer" style="margin:0 0 14px 0; padding-top:0; border-top:none;">
+                    En tommelfingerregel for en sund budgetfordeling: højst 50% til behov (bolig, mad, transport, forsikring, faste regninger), højst 30% til ønsker (fritid, andet), og mindst 20% til opsparing. Kategorierne herunder grupperes automatisk.
+                </p>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="label">Behov (mål: ≤50%)</div>
+                        <div class="value ask" id="ruleBehov">0%</div>
+                    </div>
+                    <div class="stat">
+                        <div class="label">Ønsker (mål: ≤30%)</div>
+                        <div class="value ask" id="ruleOnsker">0%</div>
+                    </div>
+                    <div class="stat">
+                        <div class="label">Opsparing (mål: ≥20%)</div>
+                        <div class="value ask" id="ruleOpsparing">0%</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
     </div>
@@ -1475,6 +1496,13 @@
         {id:'catAndet', label:'Andet', color:'#8B96A3'}
     ];
 
+    const BUDGET_RULE_GROUPS = {
+        catBolig:'behov', catMad:'behov', catTransport:'behov',
+        catForsikring:'behov', catForbrug:'behov',
+        catFritid:'onsker', catAndet:'onsker',
+        catOpsparing:'opsparing'
+    };
+
     let budgetMode = 'build';
 
     const budgetCtx = document.getElementById('budgetChart').getContext('2d');
@@ -1544,6 +1572,27 @@
     function updateBudget(){
         const values = BUDGET_CATEGORIES.map(cat => parseFloat(document.getElementById(cat.id).value) || 0);
         const sum = values.reduce((a,b) => a+b, 0);
+
+        const groupSums = {behov:0, onsker:0, opsparing:0};
+        BUDGET_CATEGORIES.forEach(cat => {
+            const val = parseFloat(document.getElementById(cat.id).value) || 0;
+            groupSums[BUDGET_RULE_GROUPS[cat.id]] += val;
+        });
+        const behovPct = sum > 0 ? (groupSums.behov/sum)*100 : 0;
+        const onskerPct = sum > 0 ? (groupSums.onsker/sum)*100 : 0;
+        const opsparingPct = sum > 0 ? (groupSums.opsparing/sum)*100 : 0;
+
+        const ruleBehovEl = document.getElementById('ruleBehov');
+        ruleBehovEl.textContent = behovPct.toFixed(0) + '%';
+        ruleBehovEl.classList.toggle('negative', behovPct > 50);
+
+        const ruleOnskerEl = document.getElementById('ruleOnsker');
+        ruleOnskerEl.textContent = onskerPct.toFixed(0) + '%';
+        ruleOnskerEl.classList.toggle('negative', onskerPct > 30);
+
+        const ruleOpsparingEl = document.getElementById('ruleOpsparing');
+        ruleOpsparingEl.textContent = opsparingPct.toFixed(0) + '%';
+        ruleOpsparingEl.classList.toggle('negative', opsparingPct < 20);
 
         if(budgetMode === 'build'){
             document.getElementById('budgetSumDisplay').textContent = DK.format(sum) + ' kr.';
