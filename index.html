@@ -272,6 +272,41 @@
         .tool-intro strong{
             color:var(--text);
         }
+        .number-input{
+            width:100%;
+            background:var(--bg);
+            border:1px solid var(--border);
+            border-radius:6px;
+            color:var(--text);
+            font-family:'IBM Plex Mono',monospace;
+            font-size:14px;
+            padding:8px 10px;
+            margin-top:4px;
+        }
+        .number-input:focus{
+            outline:none;
+            border-color:var(--akt);
+        }
+        .value.negative{
+            color:var(--cross);
+        }
+        .btn{
+            background:var(--panel);
+            border:1px solid var(--border);
+            color:var(--text);
+            font-family:'Inter',sans-serif;
+            font-size:13px;
+            font-weight:500;
+            padding:9px 16px;
+            border-radius:8px;
+            cursor:pointer;
+        }
+        .btn:hover{
+            border-color:var(--akt);
+        }
+        .btn-secondary{
+            color:var(--muted);
+        }
     </style>
 </head>
 <body>
@@ -295,6 +330,7 @@
 <div class="top-tabs">
     <button class="top-tab-btn active" id="topTabBtn1" onclick="showSection('tools')">Tools</button>
     <button class="top-tab-btn" id="topTabBtn2" onclick="showSection('budget')">Budget</button>
+    <button class="top-tab-btn" id="topTabBtn3" onclick="showSection('formue')">Formue</button>
 </div>
 
 <div id="section-tools">
@@ -596,7 +632,151 @@
 </div>
 
 <div id="section-budget" style="display:none;">
-    <p style="color:var(--muted);">Budget-fanen er under udvikling.</p>
+    <p class="tool-intro">Byg dit budget op fra bunden, eller indtast et samlet beløb og fordel det ud på kategorier for at se, hvor meget der er tilbage.</p>
+
+    <div class="tabs">
+        <button class="tab-btn active" id="budgetModeBtn1" onclick="setBudgetMode('build')">Byg budget op</button>
+        <button class="tab-btn" id="budgetModeBtn2" onclick="setBudgetMode('allocate')">Fordel et beløb</button>
+    </div>
+
+    <div class="layout">
+
+        <div class="panel">
+            <div class="eyebrow">Kategorier</div>
+
+            <div class="field" id="budgetTotalField" style="display:none;">
+                <label>Samlet beløb <span class="val" id="budgetTotalVal">0 kr.</span></label>
+                <input type="number" id="budgetTotalInput" class="number-input" value="20000" min="0" step="100">
+            </div>
+
+            <div class="field">
+                <label>Bolig (husleje/lån)</label>
+                <input type="number" id="catBolig" class="number-input" value="0" min="0" step="100">
+            </div>
+            <div class="field">
+                <label>Mad & dagligvarer</label>
+                <input type="number" id="catMad" class="number-input" value="0" min="0" step="100">
+            </div>
+            <div class="field">
+                <label>Transport</label>
+                <input type="number" id="catTransport" class="number-input" value="0" min="0" step="100">
+            </div>
+            <div class="field">
+                <label>Forsikringer</label>
+                <input type="number" id="catForsikring" class="number-input" value="0" min="0" step="100">
+            </div>
+            <div class="field">
+                <label>El, varme & internet</label>
+                <input type="number" id="catForbrug" class="number-input" value="0" min="0" step="100">
+            </div>
+            <div class="field">
+                <label>Fritid & underholdning</label>
+                <input type="number" id="catFritid" class="number-input" value="0" min="0" step="100">
+            </div>
+            <div class="field">
+                <label>Opsparing</label>
+                <input type="number" id="catOpsparing" class="number-input" value="0" min="0" step="100">
+            </div>
+            <div class="field">
+                <label>Andet</label>
+                <input type="number" id="catAndet" class="number-input" value="0" min="0" step="100">
+            </div>
+        </div>
+
+        <div>
+            <div class="panel" style="margin-bottom:16px;">
+                <div class="stats">
+                    <div class="stat" id="budgetSummaryBuild">
+                        <div class="label">Samlet budget</div>
+                        <div class="value akt" id="budgetSumDisplay">0 kr.</div>
+                    </div>
+                    <div class="stat" id="budgetSummaryAllocate" style="display:none;">
+                        <div class="label">Penge tilbage</div>
+                        <div class="value" id="budgetRemaining">0 kr.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="eyebrow">Fordeling</div>
+                <canvas id="budgetChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="section-formue" style="display:none;">
+    <p class="tool-intro">Få et samlet overblik over din formue ved at indtaste dine aktiver og din gæld nedenfor.</p>
+
+    <div class="layout">
+
+        <div class="panel">
+            <div class="eyebrow">Aktiver</div>
+
+            <div class="field">
+                <label>Kontanter & opsparingskonti</label>
+                <input type="number" id="netCatKontanter" class="number-input" value="0" min="0" step="500">
+            </div>
+            <div class="field">
+                <label>Aktier & værdipapirer</label>
+                <input type="number" id="netCatAktier" class="number-input" value="0" min="0" step="500">
+            </div>
+            <div class="field">
+                <label>Pension</label>
+                <input type="number" id="netCatPension" class="number-input" value="0" min="0" step="500">
+            </div>
+            <div class="field">
+                <label>Friværdi i bolig</label>
+                <input type="number" id="netCatFrivaerdi" class="number-input" value="0" min="0" step="500">
+            </div>
+            <div class="field">
+                <label>Andet</label>
+                <input type="number" id="netCatAndet" class="number-input" value="0" min="0" step="500">
+            </div>
+
+            <div class="eyebrow" style="margin-top:22px;">Gæld</div>
+            <div class="field">
+                <label>Anden gæld (billån, forbrugslån mv. – ikke realkredit, den indgår allerede i friværdien)</label>
+                <input type="number" id="netDebt" class="number-input" value="0" min="0" step="500">
+            </div>
+        </div>
+
+        <div>
+            <div class="panel" style="margin-bottom:16px;">
+                <div class="stats">
+                    <div class="stat">
+                        <div class="label">Aktiver i alt</div>
+                        <div class="value ask" id="netAssetsTotal">0 kr.</div>
+                    </div>
+                    <div class="stat">
+                        <div class="label">Gæld i alt</div>
+                        <div class="value" id="netDebtTotal">0 kr.</div>
+                    </div>
+                    <div class="stat">
+                        <div class="label">Nettoformue</div>
+                        <div class="value akt" id="netWorthTotal">0 kr.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="eyebrow">Fordeling af aktiver</div>
+                <canvas id="netWorthChart"></canvas>
+            </div>
+
+            <div class="panel" style="margin-top:16px;">
+                <div class="eyebrow">Formuehistorik</div>
+                <p class="explainer" style="margin:0 0 14px 0; padding-top:0; border-top:none;">
+                    Gem et øjebliksbillede af din nettoformue, som den ser ud lige nu, for at følge udviklingen over tid. Data gemmes kun lokalt i din browser – ikke på en server, og er derfor ikke tilgængelig fra andre enheder eller browsere.
+                </p>
+                <button class="btn" onclick="saveNetWorthSnapshot()">+ Gem dagens formue</button>
+                <button class="btn btn-secondary" style="margin-left:8px;" onclick="clearNetWorthHistory()">Ryd historik</button>
+                <canvas id="netWorthHistoryChart" style="margin-top:18px;"></canvas>
+            </div>
+        </div>
+
+    </div>
 </div>
 
 <script>
@@ -1253,13 +1433,20 @@
     function showSection(name){
         document.getElementById('section-tools').style.display = name==='tools' ? 'block' : 'none';
         document.getElementById('section-budget').style.display = name==='budget' ? 'block' : 'none';
+        document.getElementById('section-formue').style.display = name==='formue' ? 'block' : 'none';
         document.getElementById('topTabBtn1').classList.toggle('active', name==='tools');
         document.getElementById('topTabBtn2').classList.toggle('active', name==='budget');
+        document.getElementById('topTabBtn3').classList.toggle('active', name==='formue');
 
         if(name==='tools'){
             const tool1Visible = document.getElementById('tool1').style.display !== 'none';
-            if(tool1Visible){ chart.resize(); } else { chart2.resize(); }
+            const tool2Visible = document.getElementById('tool2').style.display !== 'none';
+            if(tool1Visible){ chart.resize(); }
+            else if(tool2Visible){ chart2.resize(); }
+            else { chart3.resize(); }
         }
+        if(name==='budget'){ budgetChart.resize(); }
+        if(name==='formue'){ netWorthChart.resize(); netWorthHistoryChart.resize(); }
     }
 
     function toggleSettings(){
@@ -1272,6 +1459,264 @@
         update();
         update2();
     });
+
+    const BUDGET_CATEGORIES = [
+        {id:'catBolig', label:'Bolig (husleje/lån)', color:'#45C4B0'},
+        {id:'catMad', label:'Mad & dagligvarer', color:'#E3A548'},
+        {id:'catTransport', label:'Transport', color:'#E85C4A'},
+        {id:'catForsikring', label:'Forsikringer', color:'#6C8EBF'},
+        {id:'catForbrug', label:'El, varme & internet', color:'#9B7EDE'},
+        {id:'catFritid', label:'Fritid & underholdning', color:'#55C57A'},
+        {id:'catOpsparing', label:'Opsparing', color:'#D9A5C0'},
+        {id:'catAndet', label:'Andet', color:'#8B96A3'}
+    ];
+
+    let budgetMode = 'build';
+
+    const budgetCtx = document.getElementById('budgetChart').getContext('2d');
+    let budgetChart = new Chart(budgetCtx, {
+        type:'doughnut',
+        data:{
+            labels: BUDGET_CATEGORIES.map(c => c.label),
+            datasets:[{
+                data: BUDGET_CATEGORIES.map(() => 0),
+                backgroundColor: BUDGET_CATEGORIES.map(c => c.color),
+                borderColor:'#0F1720',
+                borderWidth:2
+            }]
+        },
+        options:{
+            responsive:true,
+            plugins:{
+                legend:{
+                    display:true,
+                    position:'bottom',
+                    labels:{ color:'#8B96A3', font:{family:'Inter', size:11}, boxWidth:12, padding:12 }
+                },
+                tooltip:{
+                    backgroundColor:'#1C2733',
+                    borderColor:'#26323F',
+                    borderWidth:1,
+                    titleColor:'#EDEAE3',
+                    bodyColor:'#EDEAE3',
+                    callbacks:{ label: c => `${c.label}: ${DK.format(c.raw)} kr.` }
+                }
+            }
+        }
+    });
+
+    function setBudgetMode(mode){
+        budgetMode = mode;
+        document.getElementById('budgetModeBtn1').classList.toggle('active', mode==='build');
+        document.getElementById('budgetModeBtn2').classList.toggle('active', mode==='allocate');
+        document.getElementById('budgetTotalField').style.display = mode==='allocate' ? 'block' : 'none';
+        document.getElementById('budgetSummaryBuild').style.display = mode==='build' ? 'block' : 'none';
+        document.getElementById('budgetSummaryAllocate').style.display = mode==='allocate' ? 'block' : 'none';
+        updateBudget();
+    }
+
+    function saveBudgetToStorage(){
+        const data = { budgetMode };
+        BUDGET_CATEGORIES.forEach(cat => data[cat.id] = document.getElementById(cat.id).value);
+        data.budgetTotalInput = document.getElementById('budgetTotalInput').value;
+        localStorage.setItem('budgetData', JSON.stringify(data));
+    }
+
+    function loadBudgetFromStorage(){
+        const raw = localStorage.getItem('budgetData');
+        if(!raw) return;
+        try{
+            const data = JSON.parse(raw);
+            BUDGET_CATEGORIES.forEach(cat => {
+                if(data[cat.id] !== undefined) document.getElementById(cat.id).value = data[cat.id];
+            });
+            if(data.budgetTotalInput !== undefined) document.getElementById('budgetTotalInput').value = data.budgetTotalInput;
+            if(data.budgetMode) budgetMode = data.budgetMode;
+        } catch(e){
+            // Korrupt eller ugyldig data i localStorage - ignorér, og start forfra
+        }
+    }
+
+    function updateBudget(){
+        const values = BUDGET_CATEGORIES.map(cat => parseFloat(document.getElementById(cat.id).value) || 0);
+        const sum = values.reduce((a,b) => a+b, 0);
+
+        if(budgetMode === 'build'){
+            document.getElementById('budgetSumDisplay').textContent = DK.format(sum) + ' kr.';
+        } else {
+            const total = parseFloat(document.getElementById('budgetTotalInput').value) || 0;
+            document.getElementById('budgetTotalVal').textContent = DK.format(total) + ' kr.';
+            const remaining = total - sum;
+            const remainingEl = document.getElementById('budgetRemaining');
+            remainingEl.textContent = DK.format(remaining) + ' kr.';
+            remainingEl.classList.toggle('negative', remaining < 0);
+        }
+
+        budgetChart.data.datasets[0].data = values;
+        budgetChart.update();
+        saveBudgetToStorage();
+    }
+
+    loadBudgetFromStorage();
+    BUDGET_CATEGORIES.forEach(cat => document.getElementById(cat.id).addEventListener('input', updateBudget));
+    document.getElementById('budgetTotalInput').addEventListener('input', updateBudget);
+    setBudgetMode(budgetMode);
+
+    const NET_WORTH_CATEGORIES = [
+        {id:'netCatKontanter', label:'Kontanter & opsparingskonti', color:'#45C4B0'},
+        {id:'netCatAktier', label:'Aktier & værdipapirer', color:'#E3A548'},
+        {id:'netCatPension', label:'Pension', color:'#9B7EDE'},
+        {id:'netCatFrivaerdi', label:'Friværdi i bolig', color:'#6C8EBF'},
+        {id:'netCatAndet', label:'Andet', color:'#8B96A3'}
+    ];
+
+    const netWorthCtx = document.getElementById('netWorthChart').getContext('2d');
+    let netWorthChart = new Chart(netWorthCtx, {
+        type:'doughnut',
+        data:{
+            labels: NET_WORTH_CATEGORIES.map(c => c.label),
+            datasets:[{
+                data: NET_WORTH_CATEGORIES.map(() => 0),
+                backgroundColor: NET_WORTH_CATEGORIES.map(c => c.color),
+                borderColor:'#0F1720',
+                borderWidth:2
+            }]
+        },
+        options:{
+            responsive:true,
+            plugins:{
+                legend:{
+                    display:true,
+                    position:'bottom',
+                    labels:{ color:'#8B96A3', font:{family:'Inter', size:11}, boxWidth:12, padding:12 }
+                },
+                tooltip:{
+                    backgroundColor:'#1C2733',
+                    borderColor:'#26323F',
+                    borderWidth:1,
+                    titleColor:'#EDEAE3',
+                    bodyColor:'#EDEAE3',
+                    callbacks:{ label: c => `${c.label}: ${DK.format(c.raw)} kr.` }
+                }
+            }
+        }
+    });
+
+    function saveNetWorthToStorage(){
+        const data = { netDebt: document.getElementById('netDebt').value };
+        NET_WORTH_CATEGORIES.forEach(cat => data[cat.id] = document.getElementById(cat.id).value);
+        localStorage.setItem('netWorthData', JSON.stringify(data));
+    }
+
+    function loadNetWorthFromStorage(){
+        const raw = localStorage.getItem('netWorthData');
+        if(!raw) return;
+        try{
+            const data = JSON.parse(raw);
+            NET_WORTH_CATEGORIES.forEach(cat => {
+                if(data[cat.id] !== undefined) document.getElementById(cat.id).value = data[cat.id];
+            });
+            if(data.netDebt !== undefined) document.getElementById('netDebt').value = data.netDebt;
+        } catch(e){
+            // Korrupt eller ugyldig data i localStorage - ignorér, og start forfra
+        }
+    }
+
+    function updateNetWorth(){
+        const values = NET_WORTH_CATEGORIES.map(cat => parseFloat(document.getElementById(cat.id).value) || 0);
+        const assetsTotal = values.reduce((a,b) => a+b, 0);
+        const debt = parseFloat(document.getElementById('netDebt').value) || 0;
+        const netWorth = assetsTotal - debt;
+
+        document.getElementById('netAssetsTotal').textContent = DK.format(assetsTotal) + ' kr.';
+        document.getElementById('netDebtTotal').textContent = DK.format(debt) + ' kr.';
+        const netWorthEl = document.getElementById('netWorthTotal');
+        netWorthEl.textContent = DK.format(netWorth) + ' kr.';
+        netWorthEl.classList.toggle('negative', netWorth < 0);
+
+        netWorthChart.data.datasets[0].data = values;
+        netWorthChart.update();
+        saveNetWorthToStorage();
+    }
+
+    loadNetWorthFromStorage();
+    NET_WORTH_CATEGORIES.forEach(cat => document.getElementById(cat.id).addEventListener('input', updateNetWorth));
+    document.getElementById('netDebt').addEventListener('input', updateNetWorth);
+    updateNetWorth();
+
+    let netWorthHistoryChart = null;
+
+    function saveNetWorthSnapshot(){
+        const assetsTotal = NET_WORTH_CATEGORIES.reduce((sum, cat) => sum + (parseFloat(document.getElementById(cat.id).value) || 0), 0);
+        const debt = parseFloat(document.getElementById('netDebt').value) || 0;
+        const netWorth = assetsTotal - debt;
+        const today = new Date().toISOString().slice(0,10);
+
+        let history = JSON.parse(localStorage.getItem('netWorthHistory') || '[]');
+        const existingIndex = history.findIndex(h => h.date === today);
+        if(existingIndex >= 0){
+            history[existingIndex].value = netWorth;
+        } else {
+            history.push({date: today, value: netWorth});
+        }
+        history.sort((a,b) => a.date.localeCompare(b.date));
+        localStorage.setItem('netWorthHistory', JSON.stringify(history));
+        renderNetWorthHistory();
+    }
+
+    function clearNetWorthHistory(){
+        if(confirm('Er du sikker på, at du vil slette hele formuehistorikken? Det kan ikke fortrydes.')){
+            localStorage.removeItem('netWorthHistory');
+            renderNetWorthHistory();
+        }
+    }
+
+    function renderNetWorthHistory(){
+        const history = JSON.parse(localStorage.getItem('netWorthHistory') || '[]');
+        const chartData = {
+            labels: history.map(h => h.date),
+            datasets:[{
+                label:'Nettoformue',
+                data: history.map(h => h.value),
+                borderColor:'#E3A548',
+                backgroundColor:'#E3A548',
+                tension:0.15,
+                pointRadius:4,
+                borderWidth:2.5
+            }]
+        };
+
+        if(netWorthHistoryChart){
+            netWorthHistoryChart.data = chartData;
+            netWorthHistoryChart.update();
+        } else {
+            const ctx = document.getElementById('netWorthHistoryChart').getContext('2d');
+            netWorthHistoryChart = new Chart(ctx, {
+                type:'line',
+                data:chartData,
+                options:{
+                    responsive:true,
+                    plugins:{
+                        legend:{display:false},
+                        tooltip:{
+                            backgroundColor:'#1C2733',
+                            borderColor:'#26323F',
+                            borderWidth:1,
+                            titleColor:'#EDEAE3',
+                            bodyColor:'#EDEAE3',
+                            callbacks:{ label: c => `Nettoformue: ${DK.format(c.raw)} kr.` }
+                        }
+                    },
+                    scales:{
+                        x:{ grid:{color:'#202B36'}, ticks:{color:'#8B96A3', font:{family:'IBM Plex Mono', size:11}} },
+                        y:{ grid:{color:'#202B36'}, ticks:{color:'#8B96A3', font:{family:'IBM Plex Mono', size:11}, callback: v => DK.format(v)} }
+                    }
+                }
+            });
+        }
+    }
+
+    renderNetWorthHistory();
 </script>
 
 </body>
