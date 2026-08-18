@@ -1,11 +1,13 @@
-# Stock Portfolio Tool
+# Finance and investment tool
+
+This README is not up to date, and reflects an earlier version of the project. The README will be updated later.
 
 A pair of calculators for comparing Danish investment account types — a **Danish stock savings account (Aktiesparekonto / ASK)** versus a **regular stock trading account (Aktiedepot)** — including an optimal tax-realization strategy for the regular depot.
 
 The project has two parts:
 
 1. **A Java console application** (`src/Main.java`) — the original command-line version, with a small tool menu.
-2. **An interactive web dashboard** (`index.html`) — a browser-based version of the same calculations, with sliders and live charts. (https://simongsk.github.io/Stock-portfolio-tool/).
+2. **An interactive web dashboard** (`index.html`) — a browser-based version of the same calculations, with sliders and live charts. (https://simongsk.github.io/Finance-and-investment-tool/).
 
 ## What it does
 
