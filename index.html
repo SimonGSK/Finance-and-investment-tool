@@ -348,18 +348,13 @@
 <div class="settings-panel" id="settingsPanel" style="display:none;">
     <div class="eyebrow" style="margin-bottom:12px;">Indstillinger</div>
     <label class="toggle-row">
-        <input type="checkbox" id="doubleDeduction">
-        Dobbelt fradrag (du er gift med en, der ikke selv investerer, og kan derfor udnytte begges 27%-grænse)
-    </label>
-
-    <label class="toggle-row" style="margin-top:14px;">
         <input type="checkbox" id="lightTheme">
         Lyst tema
     </label>
 </div>
 
 <div class="top-tabs">
-    <button class="top-tab-btn active" id="topTabBtn1" onclick="showSection('tools')">Tools</button>
+    <button class="top-tab-btn active" id="topTabBtn1" onclick="showSection('tools')">Investering</button>
     <button class="top-tab-btn" id="topTabBtn2" onclick="showSection('budget')">Budget</button>
     <button class="top-tab-btn" id="topTabBtn3" onclick="showSection('formue')">Formue</button>
 </div>
@@ -371,6 +366,11 @@
         <button class="tab-btn" id="tabBtn2" onclick="showTool(2)">Aktiedepot: fast + månedligt</button>
         <button class="tab-btn" id="tabBtn3" onclick="showTool(3)">FIRE-beregner (4%-reglen)</button>
     </div>
+
+    <label class="toggle-row" style="margin-bottom:20px;">
+        <input type="checkbox" id="doubleDeduction">
+        Dobbelt fradrag (du er gift med en, der ikke selv investerer, og kan derfor udnytte begges 27%-grænse)
+    </label>
 
     <div id="tool1">
         <p class="tool-intro">Dette værktøj kan bruges til at sammenligne potentielle afkast på en <strong>Aktiesparekonto</strong> med et <strong>normalt aktiedepot</strong>. Værktøjet tager udgangspunkt i den optimale realiseringsstrategi for aktiedepotet (se forklaring nedenfor).</p>
@@ -809,6 +809,11 @@
                         <div class="value ask" id="netAssetsTotal">0 kr.</div>
                     </div>
                     <div class="stat">
+                        <div class="label">Likvid formue</div>
+                        <div class="value ask" id="netLiquidTotal">0 kr.</div>
+                        <div class="sub">kontanter + aktier</div>
+                    </div>
+                    <div class="stat">
                         <div class="label">Gæld i alt</div>
                         <div class="value" id="netDebtTotal">0 kr.</div>
                     </div>
@@ -827,11 +832,30 @@
             <div class="panel" style="margin-top:16px;">
                 <div class="eyebrow">Formuehistorik</div>
                 <p class="explainer" style="margin:0 0 14px 0; padding-top:0; border-top:none;">
-                    Gem et øjebliksbillede af din nettoformue, som den ser ud lige nu, for at følge udviklingen over tid. Data gemmes kun lokalt i din browser – ikke på en server, og er derfor ikke tilgængelig fra andre enheder eller browsere.
+                    Gem et øjebliksbillede af din nettoformue for at følge udviklingen over tid. Vælg en tidligere dato, hvis du vil eftertilføje historiske tal. Data gemmes kun lokalt i din browser – ikke på en server, og er derfor ikke tilgængelig fra andre enheder eller browsere.
                 </p>
-                <button class="btn" onclick="saveNetWorthSnapshot()">+ Gem dagens formue</button>
-                <button class="btn btn-secondary" style="margin-left:8px;" onclick="clearNetWorthHistory()">Ryd historik</button>
+
+                <div class="field" style="max-width:220px; margin-bottom:14px;">
+                    <label>Dato</label>
+                    <input type="date" id="snapshotDate" class="number-input">
+                </div>
+
+                <button class="btn" onclick="saveNetWorthSnapshot()">+ Gem formue for valgt dato</button>
+                <button class="btn btn-secondary" style="margin-left:8px;" onclick="clearNetWorthHistory()">Ryd hele historikken</button>
                 <canvas id="netWorthHistoryChart" style="margin-top:18px;"></canvas>
+
+                <div class="data-table-wrap" style="margin-top:16px; max-height:220px;">
+                    <table class="data-table">
+                        <thead>
+                        <tr>
+                            <th>Dato</th>
+                            <th>Nettoformue</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody id="netWorthHistoryTableBody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -1657,11 +1681,11 @@
     setBudgetMode(budgetMode);
 
     const NET_WORTH_CATEGORIES = [
-        {id:'netCatKontanter', label:'Kontanter & opsparingskonti', color:'#45C4B0'},
-        {id:'netCatAktier', label:'Aktier & værdipapirer', color:'#E3A548'},
-        {id:'netCatPension', label:'Pension', color:'#9B7EDE'},
-        {id:'netCatFrivaerdi', label:'Friværdi i bolig', color:'#6C8EBF'},
-        {id:'netCatAndet', label:'Andet', color:'#8B96A3'}
+        {id:'netCatKontanter', label:'Kontanter & opsparingskonti', color:'#45C4B0', liquid:true},
+        {id:'netCatAktier', label:'Aktier & værdipapirer', color:'#E3A548', liquid:true},
+        {id:'netCatPension', label:'Pension', color:'#9B7EDE', liquid:false},
+        {id:'netCatFrivaerdi', label:'Friværdi i bolig', color:'#6C8EBF', liquid:false},
+        {id:'netCatAndet', label:'Andet', color:'#8B96A3', liquid:false}
     ];
 
     const netWorthCtx = document.getElementById('netWorthChart').getContext('2d');
@@ -1719,10 +1743,12 @@
     function updateNetWorth(){
         const values = NET_WORTH_CATEGORIES.map(cat => parseFloat(document.getElementById(cat.id).value) || 0);
         const assetsTotal = values.reduce((a,b) => a+b, 0);
+        const liquidTotal = NET_WORTH_CATEGORIES.reduce((sum, cat, i) => cat.liquid ? sum + values[i] : sum, 0);
         const debt = parseFloat(document.getElementById('netDebt').value) || 0;
         const netWorth = assetsTotal - debt;
 
         document.getElementById('netAssetsTotal').textContent = DK.format(assetsTotal) + ' kr.';
+        document.getElementById('netLiquidTotal').textContent = DK.format(liquidTotal) + ' kr.';
         document.getElementById('netDebtTotal').textContent = DK.format(debt) + ' kr.';
         const netWorthEl = document.getElementById('netWorthTotal');
         netWorthEl.textContent = DK.format(netWorth) + ' kr.';
@@ -1751,16 +1777,23 @@
         const assetsTotal = NET_WORTH_CATEGORIES.reduce((sum, cat) => sum + (parseFloat(document.getElementById(cat.id).value) || 0), 0);
         const debt = parseFloat(document.getElementById('netDebt').value) || 0;
         const netWorth = assetsTotal - debt;
-        const today = new Date().toISOString().slice(0,10);
+        const selectedDate = document.getElementById('snapshotDate').value || new Date().toISOString().slice(0,10);
 
         let history = JSON.parse(localStorage.getItem('netWorthHistory') || '[]');
-        const existingIndex = history.findIndex(h => h.date === today);
+        const existingIndex = history.findIndex(h => h.date === selectedDate);
         if(existingIndex >= 0){
             history[existingIndex].value = netWorth;
         } else {
-            history.push({date: today, value: netWorth});
+            history.push({date: selectedDate, value: netWorth});
         }
         history.sort((a,b) => a.date.localeCompare(b.date));
+        localStorage.setItem('netWorthHistory', JSON.stringify(history));
+        renderNetWorthHistory();
+    }
+
+    function deleteNetWorthEntry(date){
+        let history = JSON.parse(localStorage.getItem('netWorthHistory') || '[]');
+        history = history.filter(h => h.date !== date);
         localStorage.setItem('netWorthHistory', JSON.stringify(history));
         renderNetWorthHistory();
     }
@@ -1815,8 +1848,16 @@
                 }
             });
         }
+
+        const historyTableBody = document.getElementById('netWorthHistoryTableBody');
+        historyTableBody.innerHTML = history.map(h => `<tr>
+        <td>${h.date}</td>
+        <td>${DK.format(h.value)} kr.</td>
+        <td><button class="btn btn-secondary" style="padding:4px 10px; font-size:12px;" onclick="deleteNetWorthEntry('${h.date}')">Slet</button></td>
+    </tr>`).join('');
     }
 
+    document.getElementById('snapshotDate').value = new Date().toISOString().slice(0,10);
     renderNetWorthHistory();
 
     function downloadTableAsCSV(tbodyId, filename){
