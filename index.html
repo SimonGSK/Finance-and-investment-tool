@@ -395,6 +395,7 @@
         <button class="tab-btn active" id="tabBtn1" onclick="showTool(1)">ASK vs. Aktiedepot</button>
         <button class="tab-btn" id="tabBtn2" onclick="showTool(2)">Aktiedepot: fast + månedligt</button>
         <button class="tab-btn" id="tabBtn3" onclick="showTool(3)">FIRE-beregner (4%-reglen)</button>
+        <button class="tab-btn" id="tabBtn4" onclick="showTool(4)">Porteføljetracker</button>
     </div>
 
     <label class="toggle-row" style="margin-bottom:20px;">
@@ -687,6 +688,128 @@
                         </table>
                     </div>
                     <button class="btn btn-secondary" style="margin-top:12px;" onclick="downloadTableAsCSV('dataTableBody3', 'fire-beregner.csv')">Download som CSV</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="tool4" style="display:none;">
+        <p class="tool-intro">Indtast dine porteføljetal en gang om måneden for at følge udviklingen i din aktieportefølje over tid – inklusiv effekten af egne indskud/udbetalinger, køb/salg og udbytte.</p>
+
+        <div class="layout">
+
+            <div class="panel">
+                <div class="eyebrow">Nyt datapunkt</div>
+
+                <div class="field">
+                    <label>Dato</label>
+                    <input type="date" id="ptDate" class="number-input">
+                </div>
+                <div class="field">
+                    <label>Værdi af portefølje (i alt)</label>
+                    <input type="number" id="ptPortfolioValue" class="number-input" value="0" min="0" step="500">
+                </div>
+                <div class="field">
+                    <label>Værdi af aktier</label>
+                    <input type="number" id="ptStockValue" class="number-input" value="0" min="0" step="500">
+                </div>
+                <div class="field">
+                    <label>Kontantbeholdning</label>
+                    <input type="number" id="ptCash" class="number-input" value="0" min="0" step="500">
+                </div>
+                <div class="field">
+                    <label>Købt/solgt (denne periode, negativ ved netto-salg)</label>
+                    <input type="number" id="ptTraded" class="number-input" value="0" step="500">
+                </div>
+                <div class="field">
+                    <label>Indskud/udbetaling (denne periode, negativ ved udbetaling)</label>
+                    <input type="number" id="ptDeposit" class="number-input" value="0" step="500">
+                </div>
+                <div class="field">
+                    <label>Udbytte efter skat (denne periode)</label>
+                    <input type="number" id="ptDividend" class="number-input" value="0" min="0" step="100">
+                </div>
+
+                <button class="btn" onclick="savePortfolioSnapshot()">+ Gem datapunkt</button>
+                <button class="btn btn-secondary" style="margin-left:8px;" onclick="clearPortfolioHistory()">Ryd hele historikken</button>
+            </div>
+
+            <div>
+                <div class="panel" style="margin-bottom:16px;">
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="label">Porteføljeværdi (seneste)</div>
+                            <div class="value akt" id="ptLatestValue">–</div>
+                        </div>
+                        <div class="stat">
+                            <div class="label">Totalt investeret</div>
+                            <div class="value ask" id="ptTotalInvested">–</div>
+                            <div class="sub">kumuleret indskud/udbetaling</div>
+                        </div>
+                        <div class="stat">
+                            <div class="label">Totalt afkast</div>
+                            <div class="value" id="ptTotalReturn">–</div>
+                        </div>
+                        <div class="stat">
+                            <div class="label">Udbytte i alt</div>
+                            <div class="value ask" id="ptTotalDividend">–</div>
+                            <div class="sub">efter skat, kumuleret</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel" style="margin-bottom:16px;">
+                    <div class="legend">
+                        <span><i class="dot" style="background:var(--akt)"></i>Porteføljeværdi</span>
+                        <span><i class="dot" style="background:var(--ask)"></i>Kumuleret indskud/udbetaling</span>
+                    </div>
+                    <canvas id="ptChart1"></canvas>
+                </div>
+
+                <div class="panel" style="margin-bottom:16px;">
+                    <div class="legend">
+                        <span><i class="dot" style="background:var(--akt)"></i>Aktieværdi</span>
+                        <span><i class="dot" style="background:#9B7EDE"></i>Kumuleret køb/salg</span>
+                    </div>
+                    <canvas id="ptChart2"></canvas>
+                </div>
+
+                <div class="panel" style="margin-bottom:16px;">
+                    <div class="legend">
+                        <span><i class="dot" style="background:var(--akt)"></i>Aktieværdi</span>
+                        <span><i class="dot" style="background:var(--ask)"></i>Totalt investeret</span>
+                    </div>
+                    <canvas id="ptChart3"></canvas>
+                </div>
+
+                <div class="panel" style="margin-bottom:16px;">
+                    <div class="legend">
+                        <span><i class="dot" style="background:var(--akt)"></i>Totalt afkast</span>
+                    </div>
+                    <canvas id="ptChart4"></canvas>
+                </div>
+
+                <div class="panel">
+                    <div class="eyebrow">Data pr. datapunkt</div>
+                    <div class="data-table-wrap">
+                        <table class="data-table">
+                            <thead>
+                            <tr>
+                                <th>Dato</th>
+                                <th>Porteføljeværdi</th>
+                                <th>Aktieværdi</th>
+                                <th>Kontant</th>
+                                <th>Købt/solgt</th>
+                                <th>Indskud/udb.</th>
+                                <th>Udbytte</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody id="ptTableBody"></tbody>
+                        </table>
+                    </div>
+                    <button class="btn btn-secondary" style="margin-top:12px;" onclick="downloadTableAsCSV('ptTableBody', 'portefoeljetracker.csv')">Download som CSV</button>
                 </div>
             </div>
 
@@ -1551,12 +1674,15 @@
         document.getElementById('tool1').style.display = n===1 ? 'block' : 'none';
         document.getElementById('tool2').style.display = n===2 ? 'block' : 'none';
         document.getElementById('tool3').style.display = n===3 ? 'block' : 'none';
+        document.getElementById('tool4').style.display = n===4 ? 'block' : 'none';
         document.getElementById('tabBtn1').classList.toggle('active', n===1);
         document.getElementById('tabBtn2').classList.toggle('active', n===2);
         document.getElementById('tabBtn3').classList.toggle('active', n===3);
+        document.getElementById('tabBtn4').classList.toggle('active', n===4);
         if(n===1) chart.resize();
         if(n===2) chart2.resize();
         if(n===3) chart3.resize();
+        if(n===4){ ptChart1.resize(); ptChart2.resize(); ptChart3.resize(); ptChart4.resize(); }
     }
 
     function showSection(name){
@@ -1570,9 +1696,11 @@
         if(name==='tools'){
             const tool1Visible = document.getElementById('tool1').style.display !== 'none';
             const tool2Visible = document.getElementById('tool2').style.display !== 'none';
+            const tool3Visible = document.getElementById('tool3').style.display !== 'none';
             if(tool1Visible){ chart.resize(); }
             else if(tool2Visible){ chart2.resize(); }
-            else { chart3.resize(); }
+            else if(tool3Visible){ chart3.resize(); }
+            else { ptChart1.resize(); ptChart2.resize(); ptChart3.resize(); ptChart4.resize(); }
         }
         if(name==='budget'){ budgetChart.resize(); }
         if(name==='formue'){ netWorthChart.resize(); netWorthHistoryChart.resize(); }
@@ -1971,6 +2099,176 @@
     document.getElementById('snapshotDate').value = new Date().toISOString().slice(0,10);
     renderNetWorthHistory();
 
+    // ============ PORTEFØLJETRACKER ============
+
+    function lineChartOptions(tooltipLabelFn){
+        return {
+            responsive:true,
+            animation:{duration:250},
+            interaction:{mode:'index', intersect:false},
+            plugins:{
+                legend:{display:false},
+                tooltip:{
+                    backgroundColor:'#1C2733',
+                    borderColor:'#26323F',
+                    borderWidth:1,
+                    titleColor:'#EDEAE3',
+                    bodyColor:'#EDEAE3',
+                    callbacks:{ label: tooltipLabelFn }
+                }
+            },
+            scales:{
+                x:{ grid:{color:'#202B36'}, ticks:{color:'#8B96A3', font:{family:'IBM Plex Mono', size:11}} },
+                y:{ grid:{color:'#202B36'}, ticks:{color:'#8B96A3', font:{family:'IBM Plex Mono', size:11}, callback: v => DK.format(v)} }
+            }
+        };
+    }
+
+    const ptTooltipLabel = c => `${c.dataset.label}: ${DK.format(c.raw)} kr.`;
+
+    const ptCtx1 = document.getElementById('ptChart1').getContext('2d');
+    let ptChart1 = new Chart(ptCtx1, {
+        type:'line',
+        data:{labels:[], datasets:[
+                {label:'Porteføljeværdi', data:[], borderColor:'#E3A548', backgroundColor:'#E3A548', tension:0.15, pointRadius:0, borderWidth:2.5},
+                {label:'Kumuleret indskud/udbetaling', data:[], borderColor:'#45C4B0', backgroundColor:'#45C4B0', tension:0.15, pointRadius:0, borderWidth:2, borderDash:[4,4]}
+            ]},
+        options: lineChartOptions(ptTooltipLabel)
+    });
+
+    const ptCtx2 = document.getElementById('ptChart2').getContext('2d');
+    let ptChart2 = new Chart(ptCtx2, {
+        type:'line',
+        data:{labels:[], datasets:[
+                {label:'Aktieværdi', data:[], borderColor:'#E3A548', backgroundColor:'#E3A548', tension:0.15, pointRadius:0, borderWidth:2.5},
+                {label:'Kumuleret køb/salg', data:[], borderColor:'#9B7EDE', backgroundColor:'#9B7EDE', tension:0.15, pointRadius:0, borderWidth:2, borderDash:[4,4]}
+            ]},
+        options: lineChartOptions(ptTooltipLabel)
+    });
+
+    const ptCtx3 = document.getElementById('ptChart3').getContext('2d');
+    let ptChart3 = new Chart(ptCtx3, {
+        type:'line',
+        data:{labels:[], datasets:[
+                {label:'Aktieværdi', data:[], borderColor:'#E3A548', backgroundColor:'#E3A548', tension:0.15, pointRadius:0, borderWidth:2.5},
+                {label:'Totalt investeret', data:[], borderColor:'#45C4B0', backgroundColor:'#45C4B0', tension:0.15, pointRadius:0, borderWidth:2, borderDash:[4,4]}
+            ]},
+        options: lineChartOptions(ptTooltipLabel)
+    });
+
+    const ptCtx4 = document.getElementById('ptChart4').getContext('2d');
+    let ptChart4 = new Chart(ptCtx4, {
+        type:'line',
+        data:{labels:[], datasets:[
+                {label:'Totalt afkast', data:[], borderColor:'#E3A548', backgroundColor:'#E3A548', tension:0.15, pointRadius:0, borderWidth:2.5}
+            ]},
+        options: lineChartOptions(ptTooltipLabel)
+    });
+
+    function savePortfolioSnapshot(){
+        const entry = {
+            date: document.getElementById('ptDate').value || new Date().toISOString().slice(0,10),
+            portfolioValue: parseFloat(document.getElementById('ptPortfolioValue').value) || 0,
+            stockValue: parseFloat(document.getElementById('ptStockValue').value) || 0,
+            cash: parseFloat(document.getElementById('ptCash').value) || 0,
+            traded: parseFloat(document.getElementById('ptTraded').value) || 0,
+            deposit: parseFloat(document.getElementById('ptDeposit').value) || 0,
+            dividend: parseFloat(document.getElementById('ptDividend').value) || 0
+        };
+
+        let history = JSON.parse(localStorage.getItem('portfolioHistory') || '[]');
+        const existingIndex = history.findIndex(h => h.date === entry.date);
+        if(existingIndex >= 0){ history[existingIndex] = entry; }
+        else { history.push(entry); }
+        history.sort((a,b) => a.date.localeCompare(b.date));
+        localStorage.setItem('portfolioHistory', JSON.stringify(history));
+        renderPortfolioHistory();
+    }
+
+    function deletePortfolioEntry(date){
+        let history = JSON.parse(localStorage.getItem('portfolioHistory') || '[]');
+        history = history.filter(h => h.date !== date);
+        localStorage.setItem('portfolioHistory', JSON.stringify(history));
+        renderPortfolioHistory();
+    }
+
+    function clearPortfolioHistory(){
+        if(confirm('Er du sikker på, at du vil slette hele porteføljehistorikken? Det kan ikke fortrydes.')){
+            localStorage.removeItem('portfolioHistory');
+            renderPortfolioHistory();
+        }
+    }
+
+    function renderPortfolioHistory(){
+        const history = JSON.parse(localStorage.getItem('portfolioHistory') || '[]');
+
+        // Kumulerede tal - løbende sum hen over tid, i datorækkefølge
+        let cumDeposit = 0, cumTraded = 0, cumDividend = 0;
+        const enriched = history.map(h => {
+            cumDeposit += h.deposit;
+            cumTraded += h.traded;
+            cumDividend += h.dividend;
+            return {
+                ...h,
+                cumDeposit,
+                cumTraded,
+                cumDividend,
+                totalReturn: h.portfolioValue - cumDeposit
+            };
+        });
+
+        const labels = enriched.map(h => h.date);
+
+        ptChart1.data.labels = labels;
+        ptChart1.data.datasets[0].data = enriched.map(h => h.portfolioValue);
+        ptChart1.data.datasets[1].data = enriched.map(h => h.cumDeposit);
+        ptChart1.update();
+
+        ptChart2.data.labels = labels;
+        ptChart2.data.datasets[0].data = enriched.map(h => h.stockValue);
+        ptChart2.data.datasets[1].data = enriched.map(h => h.cumTraded);
+        ptChart2.update();
+
+        ptChart3.data.labels = labels;
+        ptChart3.data.datasets[0].data = enriched.map(h => h.stockValue);
+        ptChart3.data.datasets[1].data = enriched.map(h => h.cumDeposit);
+        ptChart3.update();
+
+        ptChart4.data.labels = labels;
+        ptChart4.data.datasets[0].data = enriched.map(h => h.totalReturn);
+        ptChart4.update();
+
+        if(enriched.length > 0){
+            const latest = enriched[enriched.length-1];
+            document.getElementById('ptLatestValue').textContent = DK.format(latest.portfolioValue) + ' kr.';
+            document.getElementById('ptTotalInvested').textContent = DK.format(latest.cumDeposit) + ' kr.';
+            const returnEl = document.getElementById('ptTotalReturn');
+            returnEl.textContent = DK.format(latest.totalReturn) + ' kr.';
+            returnEl.classList.toggle('negative', latest.totalReturn < 0);
+            document.getElementById('ptTotalDividend').textContent = DK.format(latest.cumDividend) + ' kr.';
+        } else {
+            document.getElementById('ptLatestValue').textContent = '–';
+            document.getElementById('ptTotalInvested').textContent = '–';
+            document.getElementById('ptTotalReturn').textContent = '–';
+            document.getElementById('ptTotalDividend').textContent = '–';
+        }
+
+        const ptTableBody = document.getElementById('ptTableBody');
+        ptTableBody.innerHTML = enriched.map(h => `<tr>
+            <td>${h.date}</td>
+            <td>${DK.format(h.portfolioValue)} kr.</td>
+            <td>${DK.format(h.stockValue)} kr.</td>
+            <td>${DK.format(h.cash)} kr.</td>
+            <td>${DK.format(h.traded)} kr.</td>
+            <td>${DK.format(h.deposit)} kr.</td>
+            <td>${DK.format(h.dividend)} kr.</td>
+            <td><button class="btn btn-secondary" style="padding:4px 10px; font-size:12px;" onclick="deletePortfolioEntry('${h.date}')">Slet</button></td>
+        </tr>`).join('');
+    }
+
+    document.getElementById('ptDate').value = new Date().toISOString().slice(0,10);
+    renderPortfolioHistory();
+
     function downloadTableAsCSV(tbodyId, filename){
         const tbody = document.getElementById(tbodyId);
         const table = tbody.closest('table');
@@ -2040,7 +2338,7 @@
     }
 
     function applyAllChartThemes(){
-        [chart, chart2, chart3, netWorthHistoryChart].forEach(applyLineChartTheme);
+        [chart, chart2, chart3, netWorthHistoryChart, ptChart1, ptChart2, ptChart3, ptChart4].forEach(applyLineChartTheme);
         [budgetChart, netWorthChart].forEach(applyDoughnutChartTheme);
     }
 
