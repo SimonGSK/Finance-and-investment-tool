@@ -2,7 +2,7 @@
 <html lang="da">
 <head>
     <meta charset="UTF-8">
-    <title>Afkastberegner. Udregn potentiel aktieafkast.</title>
+    <title>Økonomiværktøjer. Få overblik over din økonomi.</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
@@ -321,6 +321,36 @@
         }
         .btn-secondary{
             color:var(--muted);
+        }
+        .milestone-row{
+            margin-bottom:14px;
+        }
+        .milestone-row:last-child{
+            margin-bottom:0;
+        }
+        .milestone-label{
+            display:flex;
+            justify-content:space-between;
+            font-size:13px;
+            color:var(--muted);
+            margin-bottom:6px;
+        }
+        .milestone-label .achieved{
+            color:var(--ask);
+            font-family:'IBM Plex Mono',monospace;
+            font-size:12px;
+        }
+        .progress-track{
+            background:var(--bg);
+            border:1px solid var(--border);
+            border-radius:6px;
+            height:10px;
+            overflow:hidden;
+        }
+        .progress-fill{
+            background:var(--akt);
+            height:100%;
+            transition:width 0.3s ease;
         }
         @media (max-width:640px){
             body{ padding:16px; }
@@ -856,6 +886,22 @@
                         <tbody id="netWorthHistoryTableBody"></tbody>
                     </table>
                 </div>
+            </div>
+
+            <div class="panel" style="margin-top:16px;">
+                <div class="eyebrow">Rekord</div>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="label">Højeste nettoformue</div>
+                        <div class="value akt" id="recordValue">–</div>
+                        <div class="sub" id="recordDate"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel" style="margin-top:16px;">
+                <div class="eyebrow">Milepæle</div>
+                <div id="milestonesContainer"></div>
             </div>
         </div>
 
@@ -1740,10 +1786,20 @@
         }
     }
 
+    function computeLiveNetWorth(){
+        const assetsTotal = NET_WORTH_CATEGORIES.reduce((sum, cat) => sum + (parseFloat(document.getElementById(cat.id).value) || 0), 0);
+        const debt = parseFloat(document.getElementById('netDebt').value) || 0;
+        return assetsTotal - debt;
+    }
+
+    function computeLiveLiquidTotal(){
+        return NET_WORTH_CATEGORIES.reduce((sum, cat) => cat.liquid ? sum + (parseFloat(document.getElementById(cat.id).value) || 0) : sum, 0);
+    }
+
     function updateNetWorth(){
         const values = NET_WORTH_CATEGORIES.map(cat => parseFloat(document.getElementById(cat.id).value) || 0);
         const assetsTotal = values.reduce((a,b) => a+b, 0);
-        const liquidTotal = NET_WORTH_CATEGORIES.reduce((sum, cat, i) => cat.liquid ? sum + values[i] : sum, 0);
+        const liquidTotal = computeLiveLiquidTotal();
         const debt = parseFloat(document.getElementById('netDebt').value) || 0;
         const netWorth = assetsTotal - debt;
 
@@ -1757,6 +1813,7 @@
         netWorthChart.data.datasets[0].data = values;
         netWorthChart.update();
         saveNetWorthToStorage();
+        renderRecordAndMilestones();
     }
 
     function resetNetWorth(){
@@ -1772,19 +1829,20 @@
     updateNetWorth();
 
     let netWorthHistoryChart = null;
+    const MILESTONES = [100000, 250000, 500000, 1000000, 2000000, 5000000];
 
     function saveNetWorthSnapshot(){
-        const assetsTotal = NET_WORTH_CATEGORIES.reduce((sum, cat) => sum + (parseFloat(document.getElementById(cat.id).value) || 0), 0);
-        const debt = parseFloat(document.getElementById('netDebt').value) || 0;
-        const netWorth = assetsTotal - debt;
+        const netWorth = computeLiveNetWorth();
+        const liquidTotal = computeLiveLiquidTotal();
         const selectedDate = document.getElementById('snapshotDate').value || new Date().toISOString().slice(0,10);
 
         let history = JSON.parse(localStorage.getItem('netWorthHistory') || '[]');
         const existingIndex = history.findIndex(h => h.date === selectedDate);
         if(existingIndex >= 0){
             history[existingIndex].value = netWorth;
+            history[existingIndex].liquid = liquidTotal;
         } else {
-            history.push({date: selectedDate, value: netWorth});
+            history.push({date: selectedDate, value: netWorth, liquid: liquidTotal});
         }
         history.sort((a,b) => a.date.localeCompare(b.date));
         localStorage.setItem('netWorthHistory', JSON.stringify(history));
@@ -1809,15 +1867,27 @@
         const history = JSON.parse(localStorage.getItem('netWorthHistory') || '[]');
         const chartData = {
             labels: history.map(h => h.date),
-            datasets:[{
-                label:'Nettoformue',
-                data: history.map(h => h.value),
-                borderColor:'#E3A548',
-                backgroundColor:'#E3A548',
-                tension:0.15,
-                pointRadius:4,
-                borderWidth:2.5
-            }]
+            datasets:[
+                {
+                    label:'Nettoformue',
+                    data: history.map(h => h.value),
+                    borderColor:'#E3A548',
+                    backgroundColor:'#E3A548',
+                    tension:0.15,
+                    pointRadius:4,
+                    borderWidth:2.5
+                },
+                {
+                    label:'Likvid formue',
+                    data: history.map(h => h.liquid ?? null),
+                    borderColor:'#45C4B0',
+                    backgroundColor:'#45C4B0',
+                    tension:0.15,
+                    pointRadius:4,
+                    borderWidth:2,
+                    borderDash:[4,4]
+                }
+            ]
         };
 
         if(netWorthHistoryChart){
@@ -1831,14 +1901,18 @@
                 options:{
                     responsive:true,
                     plugins:{
-                        legend:{display:false},
+                        legend:{
+                            display:true,
+                            position:'bottom',
+                            labels:{ color:'#8B96A3', font:{family:'Inter', size:11}, boxWidth:12, padding:12 }
+                        },
                         tooltip:{
                             backgroundColor:'#1C2733',
                             borderColor:'#26323F',
                             borderWidth:1,
                             titleColor:'#EDEAE3',
                             bodyColor:'#EDEAE3',
-                            callbacks:{ label: c => `Nettoformue: ${DK.format(c.raw)} kr.` }
+                            callbacks:{ label: c => `${c.dataset.label}: ${DK.format(c.raw)} kr.` }
                         }
                     },
                     scales:{
@@ -1851,10 +1925,47 @@
 
         const historyTableBody = document.getElementById('netWorthHistoryTableBody');
         historyTableBody.innerHTML = history.map(h => `<tr>
-        <td>${h.date}</td>
-        <td>${DK.format(h.value)} kr.</td>
-        <td><button class="btn btn-secondary" style="padding:4px 10px; font-size:12px;" onclick="deleteNetWorthEntry('${h.date}')">Slet</button></td>
-    </tr>`).join('');
+            <td>${h.date}</td>
+            <td>${DK.format(h.value)} kr.</td>
+            <td><button class="btn btn-secondary" style="padding:4px 10px; font-size:12px;" onclick="deleteNetWorthEntry('${h.date}')">Slet</button></td>
+        </tr>`).join('');
+
+        renderRecordAndMilestones();
+    }
+
+    function renderRecordAndMilestones(){
+        const history = JSON.parse(localStorage.getItem('netWorthHistory') || '[]');
+        const liveNetWorth = computeLiveNetWorth();
+
+        if(history.length > 0){
+            const record = history.reduce((best, h) => h.value > best.value ? h : best, history[0]);
+            document.getElementById('recordValue').textContent = DK.format(record.value) + ' kr.';
+            document.getElementById('recordDate').textContent = 'opnået ' + record.date;
+        } else {
+            document.getElementById('recordValue').textContent = '–';
+            document.getElementById('recordDate').textContent = 'Gem et øjebliksbillede for at starte din rekord';
+        }
+
+        const sortedHistory = history.slice().sort((a,b) => a.date.localeCompare(b.date));
+        const container = document.getElementById('milestonesContainer');
+        container.innerHTML = MILESTONES.map(milestone => {
+            const achievedEntry = sortedHistory.find(h => h.value >= milestone);
+            const reached = liveNetWorth >= milestone;
+            const pct = Math.max(0, Math.min(100, (liveNetWorth / milestone) * 100));
+            const statusText = achievedEntry
+                ? ('Opnået ' + achievedEntry.date)
+                : (reached ? 'Nået – gem for at registrere datoen' : pct.toFixed(0) + '%');
+
+            return `<div class="milestone-row">
+                <div class="milestone-label">
+                    <span>${DK.format(milestone)} kr.</span>
+                    <span class="${achievedEntry ? 'achieved' : ''}">${statusText}</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" style="width:${pct}%;"></div>
+                </div>
+            </div>`;
+        }).join('');
     }
 
     document.getElementById('snapshotDate').value = new Date().toISOString().slice(0,10);
