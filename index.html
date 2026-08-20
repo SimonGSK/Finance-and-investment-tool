@@ -57,17 +57,23 @@
             gap:20px;
             max-width:1180px;
         }
+        .layout{
+            display:grid;
+            grid-template-columns:minmax(260px, 320px) 1fr;
+            gap:20px;
+            max-width:1600px;
+        }
         .layout-wide{
             display:grid;
-            grid-template-columns:1fr 2fr;
+            grid-template-columns:1fr 1fr;
             gap:20px;
-            max-width:1180px;
+            max-width:1600px;
+        }
+        @media (max-width:1100px){
+            .layout{grid-template-columns:1fr;}
         }
         @media (max-width:820px){
             .layout-wide{grid-template-columns:1fr;}
-        }
-        @media (max-width:820px){
-            .layout{grid-template-columns:1fr;}
         }
         .panel{
             background:var(--panel);
@@ -457,40 +463,44 @@
             <div class="panel">
                 <div class="eyebrow">Parametre</div>
 
-        <div class="field">
-            <label>Startbeløb <span class="val" id="startCashVal">100.000 kr.</span></label>
-            <input type="range" id="startCash" min="1000" max="500000" step="100" value="100000" list="askLimitMark">
-            <datalist id="askLimitMark">
-                <option value="174200"></option>
-            </datalist>
-            <div class="limit-hint">▲ ASK-grænsen er 174.200 kr.</div>
-        </div>
+                <div class="field">
+                    <label>Startbeløb</label>
+                    <input type="number" id="startCashNumber" class="number-input" value="100000" style="margin-bottom:8px;">
+                    <input type="range" id="startCash" min="1000" max="500000" step="100" value="100000" list="askLimitMark">
+                    <datalist id="askLimitMark">
+                        <option value="174200"></option>
+                    </datalist>
+                    <div class="limit-hint">▲ ASK-grænsen er 174.200 kr.</div>
+                </div>
 
-        <div class="field">
-            <label>Antal år <span class="val" id="yearsVal">25</span></label>
-            <input type="range" id="years" min="1" max="60" step="1" value="25">
-        </div>
+                <div class="field">
+                    <label>Antal år</label>
+                    <input type="number" id="yearsNumber" class="number-input" value="25" style="margin-bottom:8px;">
+                    <input type="range" id="years" min="1" max="60" step="1" value="25">
+                </div>
 
-        <div class="field">
-            <label>Forventet årligt afkast <span class="val" id="returnVal">8,0%</span></label>
-            <input type="range" id="yearlyReturn" min="1" max="15" step="0.1" value="8">
-        </div>
+                <div class="field">
+                    <label>Forventet årligt afkast</label>
+                    <input type="number" id="yearlyReturnNumber" class="number-input" value="8" step="0.1" style="margin-bottom:8px;">
+                    <input type="range" id="yearlyReturn" min="1" max="15" step="0.1" value="8">
+                </div>
 
-        <label class="toggle-row">
-            <input type="checkbox" id="payTaxExternally">
-            Betal ASK-skatten udefra (og investér det tilsvarende beløb på aktiedepotet)
-        </label>
+                <label class="toggle-row">
+                    <input type="checkbox" id="payTaxExternally">
+                    Betal ASK-skatten udefra (og investér det tilsvarende beløb på aktiedepotet)
+                </label>
 
-        <label class="toggle-row">
-            <input type="checkbox" id="showRealValue">
-            Vis i nutidens købekraft (inflationsjusteret)
-        </label>
+                <label class="toggle-row">
+                    <input type="checkbox" id="showRealValue">
+                    Vis i nutidens købekraft (inflationsjusteret)
+                </label>
 
-        <div class="field" id="inflationField" style="margin-top:16px; display:none;">
-            <label>Forventet inflation <span class="val" id="inflationVal">2,0%</span></label>
-            <input type="range" id="inflation" min="0" max="8" step="0.1" value="2">
-        </div>
-    </div>
+                <div class="field" id="inflationField" style="margin-top:16px; display:none;">
+                    <label>Forventet inflation</label>
+                    <input type="number" id="inflationNumber" class="number-input" value="2" step="0.1" style="margin-bottom:8px;">
+                    <input type="range" id="inflation" min="0" max="8" step="0.1" value="2">
+                </div>
+            </div>
 
         <div>
             <div class="panel" style="margin-bottom:16px;">
@@ -956,15 +966,14 @@
                         <div class="sub">"Opsparing"-kategorien × 12</div>
                     </div>
                 </div>
-                </div>
             </div>
 
-            <div class="panel">
+            <div class="panel" style="margin-bottom:16px;">
                 <div class="eyebrow">Fordeling</div>
                 <canvas id="budgetChart"></canvas>
             </div>
 
-            <div class="panel" style="margin-top:16px;">
+            <div class="panel">
                 <div class="eyebrow">50/30/20-reglen</div>
                 <p class="explainer" style="margin:0 0 14px 0; padding-top:0; border-top:none;">
                     En tommelfingerregel for en sund budgetfordeling: højst 50% til behov (bolig, mad, transport, forsikring, faste regninger), højst 30% til ønsker (fritid, andet), og mindst 20% til opsparing. Kategorierne herunder grupperes automatisk.
@@ -1070,11 +1079,18 @@
                 <button class="btn btn-secondary" style="margin-left:8px;" onclick="clearNetWorthHistory()">Ryd hele historikken</button>
                 <canvas id="netWorthHistoryChart" style="margin-top:18px;"></canvas>
 
-                <div class="data-table-wrap" style="margin-top:16px; max-height:220px;">
+                <div class="data-table-wrap" style="margin-top:16px; max-height:280px;">
                     <table class="data-table">
                         <thead>
                         <tr>
                             <th>Dato</th>
+                            <th>Kontanter</th>
+                            <th>Aktier</th>
+                            <th>Pension</th>
+                            <th>Friværdi</th>
+                            <th>Andet</th>
+                            <th>Gæld</th>
+                            <th>Likvid</th>
                             <th>Nettoformue</th>
                             <th></th>
                         </tr>
@@ -1496,14 +1512,9 @@
         const payTaxExternally = payTaxInput.checked;
         const yearlyReturn = 1 + returnPercent/100;
 
-        document.getElementById('startCashVal').textContent = DK.format(startCash) + ' kr.';
-        document.getElementById('yearsVal').textContent = years;
-        document.getElementById('returnVal').textContent = returnPercent.toFixed(1).replace('.',',') + '%';
-
         const inflationPercent = parseFloat(inflationInput.value);
         const inflationFactor = 1 + inflationPercent/100;
         const showReal = showRealInput.checked;
-        document.getElementById('inflationVal').textContent = inflationPercent.toFixed(1).replace('.',',') + '%';
         document.getElementById('inflationNote').style.display = showReal ? 'block' : 'none';
         document.getElementById('inflationField').style.display = showReal ? 'block' : 'none';
 
@@ -1579,7 +1590,13 @@
             winnerDetail.textContent = '';
         }
     }
-    [startCashInput, yearsInput, returnInput, payTaxInput, inflationInput, showRealInput].forEach(el => el.addEventListener('input', update));
+
+    bindSliderAndNumber('startCash', 'startCashNumber', update);
+    bindSliderAndNumber('years', 'yearsNumber', update);
+    bindSliderAndNumber('yearlyReturn', 'yearlyReturnNumber', update);
+    bindSliderAndNumber('inflation', 'inflationNumber', update);
+    [payTaxInput, showRealInput].forEach(el => el.addEventListener('input', update));
+
     update();
 
     const startCash2Input = document.getElementById('startCash2');
@@ -2104,13 +2121,18 @@
         const liquidTotal = computeLiveLiquidTotal();
         const selectedDate = document.getElementById('snapshotDate').value || new Date().toISOString().slice(0,10);
 
+        const entry = {date: selectedDate, value: netWorth, liquid: liquidTotal};
+        NET_WORTH_CATEGORIES.forEach(cat => {
+            entry[cat.id] = parseFloat(document.getElementById(cat.id).value) || 0;
+        });
+        entry.debt = parseFloat(document.getElementById('netDebt').value) || 0;
+
         let history = JSON.parse(localStorage.getItem('netWorthHistory') || '[]');
         const existingIndex = history.findIndex(h => h.date === selectedDate);
         if(existingIndex >= 0){
-            history[existingIndex].value = netWorth;
-            history[existingIndex].liquid = liquidTotal;
+            history[existingIndex] = entry;
         } else {
-            history.push({date: selectedDate, value: netWorth, liquid: liquidTotal});
+            history.push(entry);
         }
         history.sort((a,b) => a.date.localeCompare(b.date));
         localStorage.setItem('netWorthHistory', JSON.stringify(history));
@@ -2194,6 +2216,13 @@
         const historyTableBody = document.getElementById('netWorthHistoryTableBody');
         historyTableBody.innerHTML = history.map(h => `<tr>
             <td>${h.date}</td>
+            <td>${DK.format(h.netCatKontanter || 0)} kr.</td>
+            <td>${DK.format(h.netCatAktier || 0)} kr.</td>
+            <td>${DK.format(h.netCatPension || 0)} kr.</td>
+            <td>${DK.format(h.netCatFrivaerdi || 0)} kr.</td>
+            <td>${DK.format(h.netCatAndet || 0)} kr.</td>
+            <td>${DK.format(h.debt || 0)} kr.</td>
+            <td>${DK.format(h.liquid ?? 0)} kr.</td>
             <td>${DK.format(h.value)} kr.</td>
             <td><button class="btn btn-secondary" style="padding:4px 10px; font-size:12px;" onclick="deleteNetWorthEntry('${h.date}')">Slet</button></td>
         </tr>`).join('');
@@ -2442,6 +2471,29 @@
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
+    }
+
+    // Binder en <input type="range"> og en <input type="number"> sammen, så de altid
+    // afspejler samme værdi - flyt skyderen, og tallet opdateres; skriv et tal, og
+    // skyderen flytter med. 'onChange' kaldes efter begge slags input.
+    function bindSliderAndNumber(sliderId, numberId, onChange){
+        const slider = document.getElementById(sliderId);
+        const number = document.getElementById(numberId);
+
+        slider.addEventListener('input', () => {
+            number.value = slider.value;
+            onChange();
+        });
+
+        number.addEventListener('input', () => {
+            let v = parseFloat(number.value);
+            if(isNaN(v)) return;
+            const min = parseFloat(slider.min);
+            const max = parseFloat(slider.max);
+            v = Math.min(max, Math.max(min, v));
+            slider.value = v;
+            onChange();
+        });
     }
 
     function getCSSVar(name){
