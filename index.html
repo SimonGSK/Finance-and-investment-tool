@@ -322,6 +322,44 @@
         .btn-secondary{
             color:var(--muted);
         }
+        .budget-category{
+            border:1px solid var(--border);
+            border-radius:8px;
+            margin-bottom:12px;
+            background:var(--bg);
+        }
+        .budget-category summary{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            padding:12px 14px;
+            cursor:pointer;
+            font-size:14px;
+            color:var(--text);
+            list-style:none;
+        }
+        .budget-category summary::-webkit-details-marker{
+            display:none;
+        }
+        .budget-category summary::after{
+            content:'▾';
+            color:var(--muted);
+            margin-left:8px;
+        }
+        .budget-category .cat-total{
+            font-family:'IBM Plex Mono',monospace;
+            color:var(--akt);
+            font-weight:500;
+        }
+        .budget-items{
+            padding:0 14px 12px 14px;
+        }
+        .budget-item-row{
+            display:flex;
+            gap:8px;
+            margin-bottom:8px;
+            align-items:center;
+        }
         .milestone-row{
             margin-bottom:14px;
         }
@@ -850,42 +888,51 @@
                 <input type="number" id="budgetTotalInput" class="number-input" value="20000" min="0" step="100">
             </div>
 
-            <div class="field">
-                <label>Bolig (husleje/lån)</label>
-                <input type="number" id="catBolig" class="number-input" value="0" min="0" step="100">
-            </div>
-            <div class="field">
-                <label>Mad & dagligvarer</label>
-                <input type="number" id="catMad" class="number-input" value="0" min="0" step="100">
-            </div>
-            <div class="field">
-                <label>Transport</label>
-                <input type="number" id="catTransport" class="number-input" value="0" min="0" step="100">
-            </div>
-            <div class="field">
-                <label>Forsikringer og fagforening</label>
-                <input type="number" id="catForsikring" class="number-input" value="0" min="0" step="100">
-            </div>
-            <div class="field">
-                <label>El, vand og varme</label>
-                <input type="number" id="catForbrug" class="number-input" value="0" min="0" step="100">
-            </div>
-            <div class="field">
-                <label>Telefoni og internet</label>
-                <input type="number" id="catTelefoni" class="number-input" value="0" min="0" step="100">
-            </div>
-            <div class="field">
-                <label>Fritid & underholdning</label>
-                <input type="number" id="catFritid" class="number-input" value="0" min="0" step="100">
-            </div>
-            <div class="field">
-                <label>Opsparing</label>
-                <input type="number" id="catOpsparing" class="number-input" value="0" min="0" step="100">
-            </div>
-            <div class="field">
-                <label>Andet</label>
-                <input type="number" id="catAndet" class="number-input" value="0" min="0" step="100">
-            </div>
+            <details class="budget-category">
+                <summary><span>Bolig (husleje/lån)</span><span class="cat-total" id="total-catBolig">0 kr.</span></summary>
+                <div class="budget-items" id="items-catBolig"></div>
+                <button class="btn btn-secondary" style="margin:0 14px 12px 14px; font-size:12px; padding:6px 12px;" onclick="addBudgetItem('catBolig')">+ Tilføj post</button>
+            </details>
+            <details class="budget-category">
+                <summary><span>Mad & dagligvarer</span><span class="cat-total" id="total-catMad">0 kr.</span></summary>
+                <div class="budget-items" id="items-catMad"></div>
+                <button class="btn btn-secondary" style="margin:0 14px 12px 14px; font-size:12px; padding:6px 12px;" onclick="addBudgetItem('catMad')">+ Tilføj post</button>
+            </details>
+            <details class="budget-category">
+                <summary><span>Transport</span><span class="cat-total" id="total-catTransport">0 kr.</span></summary>
+                <div class="budget-items" id="items-catTransport"></div>
+                <button class="btn btn-secondary" style="margin:0 14px 12px 14px; font-size:12px; padding:6px 12px;" onclick="addBudgetItem('catTransport')">+ Tilføj post</button>
+            </details>
+            <details class="budget-category">
+                <summary><span>Forsikringer og fagforening</span><span class="cat-total" id="total-catForsikring">0 kr.</span></summary>
+                <div class="budget-items" id="items-catForsikring"></div>
+                <button class="btn btn-secondary" style="margin:0 14px 12px 14px; font-size:12px; padding:6px 12px;" onclick="addBudgetItem('catForsikring')">+ Tilføj post</button>
+            </details>
+            <details class="budget-category">
+                <summary><span>El, vand og varme</span><span class="cat-total" id="total-catForbrug">0 kr.</span></summary>
+                <div class="budget-items" id="items-catForbrug"></div>
+                <button class="btn btn-secondary" style="margin:0 14px 12px 14px; font-size:12px; padding:6px 12px;" onclick="addBudgetItem('catForbrug')">+ Tilføj post</button>
+            </details>
+            <details class="budget-category">
+                <summary><span>Telefoni og internet</span><span class="cat-total" id="total-catTelefoni">0 kr.</span></summary>
+                <div class="budget-items" id="items-catTelefoni"></div>
+                <button class="btn btn-secondary" style="margin:0 14px 12px 14px; font-size:12px; padding:6px 12px;" onclick="addBudgetItem('catTelefoni')">+ Tilføj post</button>
+            </details>
+            <details class="budget-category">
+                <summary><span>Fritid & underholdning</span><span class="cat-total" id="total-catFritid">0 kr.</span></summary>
+                <div class="budget-items" id="items-catFritid"></div>
+                <button class="btn btn-secondary" style="margin:0 14px 12px 14px; font-size:12px; padding:6px 12px;" onclick="addBudgetItem('catFritid')">+ Tilføj post</button>
+            </details>
+            <details class="budget-category">
+                <summary><span>Opsparing</span><span class="cat-total" id="total-catOpsparing">0 kr.</span></summary>
+                <div class="budget-items" id="items-catOpsparing"></div>
+                <button class="btn btn-secondary" style="margin:0 14px 12px 14px; font-size:12px; padding:6px 12px;" onclick="addBudgetItem('catOpsparing')">+ Tilføj post</button>
+            </details>
+            <details class="budget-category">
+                <summary><span>Andet</span><span class="cat-total" id="total-catAndet">0 kr.</span></summary>
+                <div class="budget-items" id="items-catAndet"></div>
+                <button class="btn btn-secondary" style="margin:0 14px 12px 14px; font-size:12px; padding:6px 12px;" onclick="addBudgetItem('catAndet')">+ Tilføj post</button>
+            </details>
         </div>
 
         <div>
@@ -898,6 +945,11 @@
                     <div class="stat" id="budgetSummaryAllocate" style="display:none;">
                         <div class="label">Penge tilbage</div>
                         <div class="value" id="budgetRemaining">0 kr.</div>
+                    </div>
+                    <div class="stat">
+                        <div class="label">Årlig opsparing</div>
+                        <div class="value ask" id="budgetYearlySavings">0 kr.</div>
+                        <div class="sub">"Opsparing"-kategorien × 12</div>
                     </div>
                 </div>
             </div>
@@ -1800,9 +1852,7 @@
     }
 
     function saveBudgetToStorage(){
-        const data = { budgetMode };
-        BUDGET_CATEGORIES.forEach(cat => data[cat.id] = document.getElementById(cat.id).value);
-        data.budgetTotalInput = document.getElementById('budgetTotalInput').value;
+        const data = { budgetMode, budgetTotalInput: document.getElementById('budgetTotalInput').value };
         localStorage.setItem('budgetData', JSON.stringify(data));
     }
 
@@ -1811,9 +1861,6 @@
         if(!raw) return;
         try{
             const data = JSON.parse(raw);
-            BUDGET_CATEGORIES.forEach(cat => {
-                if(data[cat.id] !== undefined) document.getElementById(cat.id).value = data[cat.id];
-            });
             if(data.budgetTotalInput !== undefined) document.getElementById('budgetTotalInput').value = data.budgetTotalInput;
             if(data.budgetMode) budgetMode = data.budgetMode;
         } catch(e){
@@ -1821,15 +1868,81 @@
         }
     }
 
+    // ---- Itemiserede budgetposter (label + beløb) pr. kategori ----
+
+    function loadBudgetItems(){
+        return JSON.parse(localStorage.getItem('budgetItems') || '{}');
+    }
+
+    function saveBudgetItems(items){
+        localStorage.setItem('budgetItems', JSON.stringify(items));
+    }
+
+    function categoryTotal(items, catId){
+        return (items[catId] || []).reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+    }
+
+    function addBudgetItem(catId){
+        const items = loadBudgetItems();
+        if(!items[catId]) items[catId] = [];
+        items[catId].push({label:'', amount:0});
+        saveBudgetItems(items);
+        renderBudgetCategory(catId);
+        updateBudget();
+    }
+
+    function removeBudgetItem(catId, index){
+        const items = loadBudgetItems();
+        items[catId].splice(index, 1);
+        saveBudgetItems(items);
+        renderBudgetCategory(catId);
+        updateBudget();
+    }
+
+    function updateBudgetItemLabel(catId, index, value){
+        const items = loadBudgetItems();
+        items[catId][index].label = value;
+        saveBudgetItems(items);
+    }
+
+    function updateBudgetItemAmount(catId, index, value){
+        const items = loadBudgetItems();
+        items[catId][index].amount = parseFloat(value) || 0;
+        saveBudgetItems(items);
+        document.getElementById('total-' + catId).textContent = DK.format(categoryTotal(items, catId)) + ' kr.';
+        updateBudget();
+    }
+
+    function renderBudgetCategory(catId){
+        const items = loadBudgetItems();
+        const catItems = items[catId] || [];
+        const container = document.getElementById('items-' + catId);
+        container.innerHTML = catItems.map((item, i) => `
+        <div class="budget-item-row">
+            <input type="text" class="number-input" style="flex:2;" placeholder="Fx Husleje" value="${(item.label || '').replace(/"/g,'&quot;')}" oninput="updateBudgetItemLabel('${catId}',${i},this.value)">
+            <input type="number" class="number-input" style="flex:1;" value="${item.amount}" oninput="updateBudgetItemAmount('${catId}',${i},this.value)">
+            <button class="btn btn-secondary" style="padding:6px 10px; font-size:12px;" onclick="removeBudgetItem('${catId}',${i})">✕</button>
+        </div>
+    `).join('');
+        document.getElementById('total-' + catId).textContent = DK.format(categoryTotal(items, catId)) + ' kr.';
+    }
+
+    function renderAllBudgetCategories(){
+        BUDGET_CATEGORIES.forEach(cat => renderBudgetCategory(cat.id));
+    }
+
     function updateBudget(){
-        const values = BUDGET_CATEGORIES.map(cat => parseFloat(document.getElementById(cat.id).value) || 0);
+        const items = loadBudgetItems();
+        const values = BUDGET_CATEGORIES.map(cat => categoryTotal(items, cat.id));
         const sum = values.reduce((a,b) => a+b, 0);
 
         const groupSums = {behov:0, onsker:0, opsparing:0};
-        BUDGET_CATEGORIES.forEach(cat => {
-            const val = parseFloat(document.getElementById(cat.id).value) || 0;
-            groupSums[BUDGET_RULE_GROUPS[cat.id]] += val;
+        BUDGET_CATEGORIES.forEach((cat, i) => {
+            groupSums[BUDGET_RULE_GROUPS[cat.id]] += values[i];
         });
+
+        const yearlySavings = categoryTotal(items, 'catOpsparing') * 12;
+        document.getElementById('budgetYearlySavings').textContent = DK.format(yearlySavings) + ' kr.';
         const behovPct = sum > 0 ? (groupSums.behov/sum)*100 : 0;
         const onskerPct = sum > 0 ? (groupSums.onsker/sum)*100 : 0;
         const opsparingPct = sum > 0 ? (groupSums.opsparing/sum)*100 : 0;
@@ -1864,13 +1977,14 @@
 
     function resetBudget(){
         if(!confirm('Nulstil alle budgetfelter? Det kan ikke fortrydes.')) return;
-        BUDGET_CATEGORIES.forEach(cat => document.getElementById(cat.id).value = 0);
+        localStorage.removeItem('budgetItems');
         document.getElementById('budgetTotalInput').value = 0;
+        renderAllBudgetCategories();
         updateBudget();
     }
 
     loadBudgetFromStorage();
-    BUDGET_CATEGORIES.forEach(cat => document.getElementById(cat.id).addEventListener('input', updateBudget));
+    renderAllBudgetCategories();
     document.getElementById('budgetTotalInput').addEventListener('input', updateBudget);
     setBudgetMode(budgetMode);
 
