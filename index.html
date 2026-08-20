@@ -398,7 +398,7 @@
         <button class="tab-btn" id="tabBtn4" onclick="showTool(4)">Porteføljetracker</button>
     </div>
 
-    <label class="toggle-row" style="margin-bottom:20px;">
+    <label class="toggle-row" id="doubleDeductionRow" style="margin-bottom:20px;">
         <input type="checkbox" id="doubleDeduction">
         Dobbelt fradrag (du er gift med en, der ikke selv investerer, og kan derfor udnytte begges 27%-grænse)
     </label>
@@ -431,7 +431,7 @@
 
         <label class="toggle-row">
             <input type="checkbox" id="payTaxExternally">
-            Betal ASK-skatten udefra (og investér det tilsvarende beløb i depotet)
+            Betal ASK-skatten udefra (og investér det tilsvarende beløb på aktiedepotet)
         </label>
 
         <label class="toggle-row">
@@ -472,12 +472,18 @@
             <div class="panel" style="margin-top:16px;">
                 <div class="eyebrow">Optimal realiseringsstrategi</div>
                 <p id="strategyText" style="margin:0; font-size:14px; line-height:1.5;"></p>
-                <p class="explainer">
-                    Der er en afvejning: sælger du for tidligt, mister du renters rente på de kroner, der forlader depotet som skat, før det er nødvendigt. Venter du for længe, risikerer du i stedet, at en stor del af gevinsten bliver beskattet med den høje sats på 42% i sidste øjeblik. Værktøjet finder det optimale startår ved simpelthen at afprøve alle mulige år og vælge det, der reelt giver den højeste slutværdi. Jo højere det forventede afkast er, jo dyrere er det at betale skat tidligt (de kroner går glip af mere vækst), så høje afkast trækker det optimale startår tættere på sidste år. Ved lave afkast koster tidlig realisering til gengæld mindre i tabt vækst, så det kan bedre betale sig at sprede realiseringen ud over flere år.
-                </p>
-                <p class="explainer">
-                    <strong style="color:var(--text);">Et forenklet eksempel ved 8% forventet afkast:</strong> af 79.400 kr. gevinst betaler man 33.348 kr. i skat ved 42%, men kun 21.438 kr. ved 27% – en besparelse på 11.910 kr. her og nu. Men de kroner, man sparer ved at vente og betale 42% til sidst, ville ellers have kunnet blive investeret videre. Ved 8% årligt afkast tager det ca. 6 år for de 21.438 kr. at vokse sig større end de 33.348 kr. Det betyder, at det først kan betale sig at høste til den lave sats, når der er mindre end ca. 6 år tilbage til slutdatoen – præcis den slags afvejning, værktøjets fulde søgning (ovenfor) regner ud for jeres konkrete tal.
-                </p>
+                <details style="margin-top:12px;">
+                    <summary style="cursor:pointer; color:var(--muted); font-size:13px;">Forklaring</summary>
+                    <p class="explainer">
+                        Det er en afvejning: sælger du for tidligt, mister du renters rente på de kroner, der forlader depotet som skat, før det er nødvendigt. Venter du for længe, risikerer du i stedet, at en stor del af gevinsten bliver beskattet med den høje sats på 42% i sidste øjeblik. Værktøjet finder det optimale startår for realisering af gevinst, ved simpelthen at afprøve alle mulige år og vælge det, der reelt giver den højeste slutværdi. Jo højere det forventede afkast er, jo dyrere er det at betale skat tidligt (de kroner går glip af mere vækst), så høje afkast trækker det optimale startår tættere på sidste år. Ved lave afkast koster tidlig realisering til gengæld mindre i tabt vækst, så det kan bedre betale sig at sprede realiseringen ud over flere år.
+                    </p>
+                </details>
+                <details style="margin-top:12px;">
+                    <summary style="cursor:pointer; color:var(--muted); font-size:13px;">Eksempel</summary>
+                    <p class="explainer">
+                        <strong style="color:var(--text);">Et eksempel ved 8% forventet afkast:</strong> af 79.400 kr. gevinst betaler man 33.348 kr. i skat ved 42%, men kun 21.438 kr. ved 27% – en besparelse på 11.910 kr. her og nu. Det er dog ikke hele historien: at realisere gevinst tidligt koster renters rente på de kroner, der forlader depotet som skat, men det nulstiller samtidig anskaffelsessummen på det realiserede beløb, når der genkøbes, så en større del af den fremtidige værdi bliver skattefri "tilbagebetaling af anskaffelsessum" i stedet for ny gevinst. Ved 8% afkast betyder det samlet set, at det tidligst er ca. 8 år før slutdatoen, det bliver en fordel at begynde at realisere gevinst og udnytte 27%-grænsen.
+                    </p>
+                </details>
             </div>
 
             <div class="panel" style="margin-top:16px;">
@@ -570,12 +576,18 @@
             <div class="panel" style="margin-top:16px;">
                 <div class="eyebrow">Optimal realiseringsstrategi</div>
                 <p id="strategyText2" style="margin:0; font-size:14px; line-height:1.5;"></p>
-                <p class="explainer">
-                    Der er en afvejning: sælger du for tidligt, mister du renters rente på de kroner, der forlader depotet som skat, før det er nødvendigt. Venter du for længe, risikerer du i stedet, at en stor del af gevinsten bliver beskattet med den høje sats på 42% i sidste øjeblik. Værktøjet finder det optimale startår ved simpelthen at afprøve alle mulige år og vælge det, der reelt giver den højeste slutværdi. Jo højere det forventede afkast er, jo dyrere er det at betale skat tidligt (de kroner går glip af mere vækst), så høje afkast trækker det optimale startår tættere på sidste år. Ved lave afkast koster tidlig realisering til gengæld mindre i tabt vækst, så det kan bedre betale sig at sprede realiseringen ud over flere år.
-                </p>
-                <p class="explainer">
-                    <strong style="color:var(--text);">Et forenklet eksempel ved 8% forventet afkast:</strong> af 79.400 kr. gevinst betaler man 33.348 kr. i skat ved 42%, men kun 21.438 kr. ved 27% – en besparelse på 11.910 kr. her og nu. Men de kroner, man sparer ved at vente og betale 42% til sidst, ville ellers have kunnet blive investeret videre. Ved 8% årligt afkast tager det ca. 6 år for de 21.438 kr. at vokse sig større end de 33.348 kr. Det betyder, at det først kan betale sig at høste til den lave sats, når der er mindre end ca. 6 år tilbage til slutdatoen – præcis den slags afvejning, værktøjets fulde søgning (ovenfor) regner ud for jeres konkrete tal.
-                </p>
+                <details style="margin-top:12px;">
+                    <summary style="cursor:pointer; color:var(--muted); font-size:13px;">Hvorfor virker det sådan? (uddyb)</summary>
+                    <p class="explainer">
+                        Det er en afvejning: sælger du for tidligt, mister du renters rente på de kroner, der forlader depotet som skat, før det er nødvendigt. Venter du for længe, risikerer du i stedet, at en stor del af gevinsten bliver beskattet med den høje sats på 42% i sidste øjeblik. Værktøjet finder det optimale startår for realisering af gevinst, ved simpelthen at afprøve alle mulige år og vælge det, der reelt giver den højeste slutværdi. Jo højere det forventede afkast er, jo dyrere er det at betale skat tidligt (de kroner går glip af mere vækst), så høje afkast trækker det optimale startår tættere på sidste år. Ved lave afkast koster tidlig realisering til gengæld mindre i tabt vækst, så det kan bedre betale sig at sprede realiseringen ud over flere år.
+                    </p>
+                </details>
+                <details style="margin-top:12px;">
+                    <summary style="cursor:pointer; color:var(--muted); font-size:13px;">Eksempel</summary>
+                    <p class="explainer">
+                        <strong style="color:var(--text);">Et eksempel ved 8% forventet afkast:</strong> af 79.400 kr. gevinst betaler man 33.348 kr. i skat ved 42%, men kun 21.438 kr. ved 27% – en besparelse på 11.910 kr. her og nu. Det er dog ikke hele historien: at realisere gevinst tidligt koster renters rente på de kroner, der forlader depotet som skat, men det nulstiller samtidig anskaffelsessummen på det realiserede beløb, når der genkøbes, så en større del af den fremtidige værdi bliver skattefri "tilbagebetaling af anskaffelsessum" i stedet for ny gevinst. Ved 8% afkast betyder det samlet set, at det tidligst er ca. 8 år før slutdatoen, det bliver en fordel at begynde at realisere gevinst og udnytte 27%-grænsen.
+                    </p>
+                </details>
             </div>
 
             <div class="panel" style="margin-top:16px;">
@@ -851,12 +863,16 @@
                 <input type="number" id="catTransport" class="number-input" value="0" min="0" step="100">
             </div>
             <div class="field">
-                <label>Forsikringer</label>
+                <label>Forsikringer og fagforening</label>
                 <input type="number" id="catForsikring" class="number-input" value="0" min="0" step="100">
             </div>
             <div class="field">
-                <label>El, varme & internet</label>
+                <label>El, vand og varme</label>
                 <input type="number" id="catForbrug" class="number-input" value="0" min="0" step="100">
+            </div>
+            <div class="field">
+                <label>Telefoni og internet</label>
+                <input type="number" id="catTelefoni" class="number-input" value="0" min="0" step="100">
             </div>
             <div class="field">
                 <label>Fritid & underholdning</label>
@@ -1679,11 +1695,14 @@
         document.getElementById('tabBtn2').classList.toggle('active', n===2);
         document.getElementById('tabBtn3').classList.toggle('active', n===3);
         document.getElementById('tabBtn4').classList.toggle('active', n===4);
+        document.getElementById('doubleDeductionRow').style.display = (n===1 || n===2) ? 'flex' : 'none';
         if(n===1) chart.resize();
         if(n===2) chart2.resize();
         if(n===3) chart3.resize();
         if(n===4){ ptChart1.resize(); ptChart2.resize(); ptChart3.resize(); ptChart4.resize(); }
     }
+
+    document.getElementById('doubleDeductionRow').style.display = 'flex';
 
     function showSection(name){
         document.getElementById('section-tools').style.display = name==='tools' ? 'block' : 'none';
@@ -1721,8 +1740,9 @@
         {id:'catBolig', label:'Bolig (husleje/lån)', color:'#45C4B0'},
         {id:'catMad', label:'Mad & dagligvarer', color:'#E3A548'},
         {id:'catTransport', label:'Transport', color:'#E85C4A'},
-        {id:'catForsikring', label:'Forsikringer', color:'#6C8EBF'},
-        {id:'catForbrug', label:'El, varme & internet', color:'#9B7EDE'},
+        {id:'catForsikring', label:'Forsikringer og fagforening', color:'#6C8EBF'},
+        {id:'catForbrug', label:'El, vand og varme', color:'#9B7EDE'},
+        {id:'catTelefoni', label:'Telefoni og internet', color:'#4F86C6'},
         {id:'catFritid', label:'Fritid & underholdning', color:'#55C57A'},
         {id:'catOpsparing', label:'Opsparing', color:'#D9A5C0'},
         {id:'catAndet', label:'Andet', color:'#8B96A3'}
@@ -1730,7 +1750,7 @@
 
     const BUDGET_RULE_GROUPS = {
         catBolig:'behov', catMad:'behov', catTransport:'behov',
-        catForsikring:'behov', catForbrug:'behov',
+        catForsikring:'behov', catForbrug:'behov', catTelefoni:'behov',
         catFritid:'onsker', catAndet:'onsker',
         catOpsparing:'opsparing'
     };
@@ -1861,6 +1881,7 @@
         {id:'netCatFrivaerdi', label:'Friværdi i bolig', color:'#6C8EBF', liquid:false},
         {id:'netCatAndet', label:'Andet', color:'#8B96A3', liquid:false}
     ];
+    const MILESTONES = [100000, 250000, 500000, 1000000, 2000000, 5000000];
 
     const netWorthCtx = document.getElementById('netWorthChart').getContext('2d');
     let netWorthChart = new Chart(netWorthCtx, {
@@ -1957,7 +1978,6 @@
     updateNetWorth();
 
     let netWorthHistoryChart = null;
-    const MILESTONES = [100000, 250000, 500000, 1000000, 2000000, 5000000];
 
     function saveNetWorthSnapshot(){
         const netWorth = computeLiveNetWorth();
