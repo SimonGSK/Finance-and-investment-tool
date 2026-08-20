@@ -57,8 +57,23 @@
             gap:20px;
             max-width:1180px;
         }
-        @media (max-width:820px){
+        .layout{
+            display:grid;
+            grid-template-columns:minmax(260px, 320px) 1fr;
+            gap:20px;
+            max-width:1600px;
+        }
+        .layout-wide{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:20px;
+            max-width:1600px;
+        }
+        @media (max-width:1100px){
             .layout{grid-template-columns:1fr;}
+        }
+        @media (max-width:820px){
+            .layout-wide{grid-template-columns:1fr;}
         }
         .panel{
             background:var(--panel);
@@ -448,40 +463,44 @@
             <div class="panel">
                 <div class="eyebrow">Parametre</div>
 
-        <div class="field">
-            <label>Startbeløb <span class="val" id="startCashVal">100.000 kr.</span></label>
-            <input type="range" id="startCash" min="1000" max="500000" step="100" value="100000" list="askLimitMark">
-            <datalist id="askLimitMark">
-                <option value="174200"></option>
-            </datalist>
-            <div class="limit-hint">▲ ASK-grænsen er 174.200 kr.</div>
-        </div>
+                <div class="field">
+                    <label>Startbeløb</label>
+                    <input type="number" id="startCashNumber" class="number-input" value="100000" style="margin-bottom:8px;">
+                    <input type="range" id="startCash" min="1000" max="500000" step="100" value="100000" list="askLimitMark">
+                    <datalist id="askLimitMark">
+                        <option value="174200"></option>
+                    </datalist>
+                    <div class="limit-hint">▲ ASK-grænsen er 174.200 kr.</div>
+                </div>
 
-        <div class="field">
-            <label>Antal år <span class="val" id="yearsVal">25</span></label>
-            <input type="range" id="years" min="1" max="60" step="1" value="25">
-        </div>
+                <div class="field">
+                    <label>Antal år</label>
+                    <input type="number" id="yearsNumber" class="number-input" value="25" style="margin-bottom:8px;">
+                    <input type="range" id="years" min="1" max="60" step="1" value="25">
+                </div>
 
-        <div class="field">
-            <label>Forventet årligt afkast <span class="val" id="returnVal">8,0%</span></label>
-            <input type="range" id="yearlyReturn" min="1" max="15" step="0.1" value="8">
-        </div>
+                <div class="field">
+                    <label>Forventet årligt afkast</label>
+                    <input type="number" id="yearlyReturnNumber" class="number-input" value="8" step="0.1" style="margin-bottom:8px;">
+                    <input type="range" id="yearlyReturn" min="1" max="15" step="0.1" value="8">
+                </div>
 
-        <label class="toggle-row">
-            <input type="checkbox" id="payTaxExternally">
-            Betal ASK-skatten udefra (og investér det tilsvarende beløb på aktiedepotet)
-        </label>
+                <label class="toggle-row">
+                    <input type="checkbox" id="payTaxExternally">
+                    Betal ASK-skatten udefra (og investér det tilsvarende beløb på aktiedepotet)
+                </label>
 
-        <label class="toggle-row">
-            <input type="checkbox" id="showRealValue">
-            Vis i nutidens købekraft (inflationsjusteret)
-        </label>
+                <label class="toggle-row">
+                    <input type="checkbox" id="showRealValue">
+                    Vis i nutidens købekraft (inflationsjusteret)
+                </label>
 
-        <div class="field" id="inflationField" style="margin-top:16px; display:none;">
-            <label>Forventet inflation <span class="val" id="inflationVal">2,0%</span></label>
-            <input type="range" id="inflation" min="0" max="8" step="0.1" value="2">
-        </div>
-    </div>
+                <div class="field" id="inflationField" style="margin-top:16px; display:none;">
+                    <label>Forventet inflation</label>
+                    <input type="number" id="inflationNumber" class="number-input" value="2" step="0.1" style="margin-bottom:8px;">
+                    <input type="range" id="inflation" min="0" max="8" step="0.1" value="2">
+                </div>
+            </div>
 
         <div>
             <div class="panel" style="margin-bottom:16px;">
@@ -757,8 +776,8 @@
                     <input type="date" id="ptDate" class="number-input">
                 </div>
                 <div class="field">
-                    <label>Værdi af portefølje (i alt)</label>
-                    <input type="number" id="ptPortfolioValue" class="number-input" value="0" min="0" step="500">
+                    <label>Værdi af portefølje (udregnes automatisk)</label>
+                    <input type="number" id="ptPortfolioValue" class="number-input" value="0" readonly style="opacity:0.7; cursor:not-allowed;">
                 </div>
                 <div class="field">
                     <label>Værdi af aktier</label>
@@ -871,21 +890,16 @@
 <div id="section-budget" style="display:none;">
     <p class="tool-intro">Byg dit budget op fra bunden, eller indtast et samlet beløb og fordel det ud på kategorier for at se, hvor meget der er tilbage.</p>
 
-    <div class="tabs">
-        <button class="tab-btn active" id="budgetModeBtn1" onclick="setBudgetMode('build')">Byg budget op</button>
-        <button class="tab-btn" id="budgetModeBtn2" onclick="setBudgetMode('allocate')">Fordel et beløb</button>
-    </div>
-
     <button class="btn btn-secondary" style="margin-bottom:20px;" onclick="resetBudget()">Nulstil felter</button>
 
-    <div class="layout">
+    <div class="layout-wide">
 
         <div class="panel">
             <div class="eyebrow">Kategorier</div>
 
-            <div class="field" id="budgetTotalField" style="display:none;">
-                <label>Samlet beløb <span class="val" id="budgetTotalVal">0 kr.</span></label>
-                <input type="number" id="budgetTotalInput" class="number-input" value="20000" min="0" step="100">
+            <div class="field">
+                <label>Samlet beløb (valgfrit – udfyld for at se "Penge tilbage")</label>
+                <input type="number" id="budgetTotalInput" class="number-input" value="0" min="0" step="100">
             </div>
 
             <details class="budget-category">
@@ -938,13 +952,13 @@
         <div>
             <div class="panel" style="margin-bottom:16px;">
                 <div class="stats">
-                    <div class="stat" id="budgetSummaryBuild">
+                    <div class="stat">
                         <div class="label">Samlet budget</div>
                         <div class="value akt" id="budgetSumDisplay">0 kr.</div>
                     </div>
-                    <div class="stat" id="budgetSummaryAllocate" style="display:none;">
+                    <div class="stat">
                         <div class="label">Penge tilbage</div>
-                        <div class="value" id="budgetRemaining">0 kr.</div>
+                        <div class="value" id="budgetRemaining">–</div>
                     </div>
                     <div class="stat">
                         <div class="label">Årlig opsparing</div>
@@ -954,12 +968,12 @@
                 </div>
             </div>
 
-            <div class="panel">
+            <div class="panel" style="margin-bottom:16px;">
                 <div class="eyebrow">Fordeling</div>
                 <canvas id="budgetChart"></canvas>
             </div>
 
-            <div class="panel" style="margin-top:16px;">
+            <div class="panel">
                 <div class="eyebrow">50/30/20-reglen</div>
                 <p class="explainer" style="margin:0 0 14px 0; padding-top:0; border-top:none;">
                     En tommelfingerregel for en sund budgetfordeling: højst 50% til behov (bolig, mad, transport, forsikring, faste regninger), højst 30% til ønsker (fritid, andet), og mindst 20% til opsparing. Kategorierne herunder grupperes automatisk.
@@ -1065,11 +1079,18 @@
                 <button class="btn btn-secondary" style="margin-left:8px;" onclick="clearNetWorthHistory()">Ryd hele historikken</button>
                 <canvas id="netWorthHistoryChart" style="margin-top:18px;"></canvas>
 
-                <div class="data-table-wrap" style="margin-top:16px; max-height:220px;">
+                <div class="data-table-wrap" style="margin-top:16px; max-height:280px;">
                     <table class="data-table">
                         <thead>
                         <tr>
                             <th>Dato</th>
+                            <th>Kontanter</th>
+                            <th>Aktier</th>
+                            <th>Pension</th>
+                            <th>Friværdi</th>
+                            <th>Andet</th>
+                            <th>Gæld</th>
+                            <th>Likvid</th>
                             <th>Nettoformue</th>
                             <th></th>
                         </tr>
@@ -1105,6 +1126,17 @@
     const AKT_TAX_LOW = 0.27;
     const AKT_TAX_HIGH = 0.42;
     const DK = new Intl.NumberFormat('da-DK', {maximumFractionDigits:0});
+
+    // Marker automatisk hele indholdet af et talfelt, når man klikker i det,
+    // så man kan skrive direkte i stedet for først at skulle slette et "0".
+    // 'true' til sidst (capture-fasen) er nødvendigt, fordi 'focus' ikke bobler
+    // op igennem DOM'et som de fleste andre events.
+    document.addEventListener('focus', function(e){
+        if(e.target.matches && e.target.matches('input[type="number"].number-input')){
+            e.target.select();
+        }
+    }, true);
+
     let doubleDeductionEnabled = false;
 
     function effectiveTaxLimit(){
@@ -1480,14 +1512,9 @@
         const payTaxExternally = payTaxInput.checked;
         const yearlyReturn = 1 + returnPercent/100;
 
-        document.getElementById('startCashVal').textContent = DK.format(startCash) + ' kr.';
-        document.getElementById('yearsVal').textContent = years;
-        document.getElementById('returnVal').textContent = returnPercent.toFixed(1).replace('.',',') + '%';
-
         const inflationPercent = parseFloat(inflationInput.value);
         const inflationFactor = 1 + inflationPercent/100;
         const showReal = showRealInput.checked;
-        document.getElementById('inflationVal').textContent = inflationPercent.toFixed(1).replace('.',',') + '%';
         document.getElementById('inflationNote').style.display = showReal ? 'block' : 'none';
         document.getElementById('inflationField').style.display = showReal ? 'block' : 'none';
 
@@ -1563,7 +1590,13 @@
             winnerDetail.textContent = '';
         }
     }
-    [startCashInput, yearsInput, returnInput, payTaxInput, inflationInput, showRealInput].forEach(el => el.addEventListener('input', update));
+
+    bindSliderAndNumber('startCash', 'startCashNumber', update);
+    bindSliderAndNumber('years', 'yearsNumber', update);
+    bindSliderAndNumber('yearlyReturn', 'yearlyReturnNumber', update);
+    bindSliderAndNumber('inflation', 'inflationNumber', update);
+    [payTaxInput, showRealInput].forEach(el => el.addEventListener('input', update));
+
     update();
 
     const startCash2Input = document.getElementById('startCash2');
@@ -1807,8 +1840,6 @@
         catOpsparing:'opsparing'
     };
 
-    let budgetMode = 'build';
-
     const budgetCtx = document.getElementById('budgetChart').getContext('2d');
     let budgetChart = new Chart(budgetCtx, {
         type:'doughnut',
@@ -1840,16 +1871,6 @@
             }
         }
     });
-
-    function setBudgetMode(mode){
-        budgetMode = mode;
-        document.getElementById('budgetModeBtn1').classList.toggle('active', mode==='build');
-        document.getElementById('budgetModeBtn2').classList.toggle('active', mode==='allocate');
-        document.getElementById('budgetTotalField').style.display = mode==='allocate' ? 'block' : 'none';
-        document.getElementById('budgetSummaryBuild').style.display = mode==='build' ? 'block' : 'none';
-        document.getElementById('budgetSummaryAllocate').style.display = mode==='allocate' ? 'block' : 'none';
-        updateBudget();
-    }
 
     function saveBudgetToStorage(){
         const data = { budgetMode, budgetTotalInput: document.getElementById('budgetTotalInput').value };
@@ -1959,15 +1980,17 @@
         ruleOpsparingEl.textContent = opsparingPct.toFixed(0) + '%';
         ruleOpsparingEl.classList.toggle('negative', opsparingPct < 20);
 
-        if(budgetMode === 'build'){
-            document.getElementById('budgetSumDisplay').textContent = DK.format(sum) + ' kr.';
-        } else {
-            const total = parseFloat(document.getElementById('budgetTotalInput').value) || 0;
-            document.getElementById('budgetTotalVal').textContent = DK.format(total) + ' kr.';
+        document.getElementById('budgetSumDisplay').textContent = DK.format(sum) + ' kr.';
+
+        const total = parseFloat(document.getElementById('budgetTotalInput').value) || 0;
+        const remainingEl = document.getElementById('budgetRemaining');
+        if(total > 0){
             const remaining = total - sum;
-            const remainingEl = document.getElementById('budgetRemaining');
             remainingEl.textContent = DK.format(remaining) + ' kr.';
             remainingEl.classList.toggle('negative', remaining < 0);
+        } else {
+            remainingEl.textContent = '–';
+            remainingEl.classList.remove('negative');
         }
 
         budgetChart.data.datasets[0].data = values;
@@ -1986,7 +2009,7 @@
     loadBudgetFromStorage();
     renderAllBudgetCategories();
     document.getElementById('budgetTotalInput').addEventListener('input', updateBudget);
-    setBudgetMode(budgetMode);
+    updateBudget();
 
     const NET_WORTH_CATEGORIES = [
         {id:'netCatKontanter', label:'Kontanter & opsparingskonti', color:'#45C4B0', liquid:true},
@@ -2098,13 +2121,18 @@
         const liquidTotal = computeLiveLiquidTotal();
         const selectedDate = document.getElementById('snapshotDate').value || new Date().toISOString().slice(0,10);
 
+        const entry = {date: selectedDate, value: netWorth, liquid: liquidTotal};
+        NET_WORTH_CATEGORIES.forEach(cat => {
+            entry[cat.id] = parseFloat(document.getElementById(cat.id).value) || 0;
+        });
+        entry.debt = parseFloat(document.getElementById('netDebt').value) || 0;
+
         let history = JSON.parse(localStorage.getItem('netWorthHistory') || '[]');
         const existingIndex = history.findIndex(h => h.date === selectedDate);
         if(existingIndex >= 0){
-            history[existingIndex].value = netWorth;
-            history[existingIndex].liquid = liquidTotal;
+            history[existingIndex] = entry;
         } else {
-            history.push({date: selectedDate, value: netWorth, liquid: liquidTotal});
+            history.push(entry);
         }
         history.sort((a,b) => a.date.localeCompare(b.date));
         localStorage.setItem('netWorthHistory', JSON.stringify(history));
@@ -2188,6 +2216,13 @@
         const historyTableBody = document.getElementById('netWorthHistoryTableBody');
         historyTableBody.innerHTML = history.map(h => `<tr>
             <td>${h.date}</td>
+            <td>${DK.format(h.netCatKontanter || 0)} kr.</td>
+            <td>${DK.format(h.netCatAktier || 0)} kr.</td>
+            <td>${DK.format(h.netCatPension || 0)} kr.</td>
+            <td>${DK.format(h.netCatFrivaerdi || 0)} kr.</td>
+            <td>${DK.format(h.netCatAndet || 0)} kr.</td>
+            <td>${DK.format(h.debt || 0)} kr.</td>
+            <td>${DK.format(h.liquid ?? 0)} kr.</td>
             <td>${DK.format(h.value)} kr.</td>
             <td><button class="btn btn-secondary" style="padding:4px 10px; font-size:12px;" onclick="deleteNetWorthEntry('${h.date}')">Slet</button></td>
         </tr>`).join('');
@@ -2298,6 +2333,14 @@
             ]},
         options: lineChartOptions(ptTooltipLabel)
     });
+
+    function updatePortfolioValueField(){
+        const stockValue = parseFloat(document.getElementById('ptStockValue').value) || 0;
+        const cash = parseFloat(document.getElementById('ptCash').value) || 0;
+        document.getElementById('ptPortfolioValue').value = stockValue + cash;
+    }
+    document.getElementById('ptStockValue').addEventListener('input', updatePortfolioValueField);
+    document.getElementById('ptCash').addEventListener('input', updatePortfolioValueField);
 
     function savePortfolioSnapshot(){
         const entry = {
@@ -2428,6 +2471,29 @@
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
+    }
+
+    // Binder en <input type="range"> og en <input type="number"> sammen, så de altid
+    // afspejler samme værdi - flyt skyderen, og tallet opdateres; skriv et tal, og
+    // skyderen flytter med. 'onChange' kaldes efter begge slags input.
+    function bindSliderAndNumber(sliderId, numberId, onChange){
+        const slider = document.getElementById(sliderId);
+        const number = document.getElementById(numberId);
+
+        slider.addEventListener('input', () => {
+            number.value = slider.value;
+            onChange();
+        });
+
+        number.addEventListener('input', () => {
+            let v = parseFloat(number.value);
+            if(isNaN(v)) return;
+            const min = parseFloat(slider.min);
+            const max = parseFloat(slider.max);
+            v = Math.min(max, Math.max(min, v));
+            slider.value = v;
+            onChange();
+        });
     }
 
     function getCSSVar(name){
