@@ -459,7 +459,7 @@
         <button class="tab-btn" id="tabBtn4" onclick="showTool(4)">Porteføljetracker</button>
     </div>
 
-    <label class="toggle-row" id="doubleDeductionRow" style="margin-bottom:20px;">
+    <label class="toggle-row" id="doubleDeductionRow" style="margin-top:14px; margin-bottom:20px;">
         <input type="checkbox" id="doubleDeduction">
         Dobbelt fradrag (du er gift med en, der ikke selv investerer, og kan derfor udnytte begges 27%-grænse)
     </label>
@@ -988,7 +988,9 @@
 
             <div class="panel" style="margin-bottom:16px;">
                 <div class="eyebrow">Fordeling</div>
-                <canvas id="budgetChart"></canvas>
+                <div style="max-width:600px; margin:0 auto;">
+                    <canvas id="budgetChart"></canvas>
+                </div>
             </div>
 
             <div class="panel">
@@ -1079,7 +1081,9 @@
 
             <div class="panel">
                 <div class="eyebrow">Fordeling af aktiver</div>
-                <canvas id="netWorthChart"></canvas>
+                <div style="max-width:600px; margin:0 auto;">
+                    <canvas id="netWorthChart"></canvas>
+                </div>
             </div>
 
             <div class="panel" style="margin-top:16px;">
@@ -1126,6 +1130,11 @@
                         <div class="label">Højeste nettoformue</div>
                         <div class="value akt" id="recordValue">–</div>
                         <div class="sub" id="recordDate"></div>
+                    </div>
+                    <div class="stat">
+                        <div class="label">Højeste likvide formue</div>
+                        <div class="value ask" id="recordLiquidValue">–</div>
+                        <div class="sub" id="recordLiquidDate"></div>
                     </div>
                 </div>
             </div>
@@ -1800,14 +1809,22 @@
         document.getElementById('tabBtn2').classList.toggle('active', n===2);
         document.getElementById('tabBtn3').classList.toggle('active', n===3);
         document.getElementById('tabBtn4').classList.toggle('active', n===4);
-        document.getElementById('doubleDeductionRow').style.display = (n===1 || n===2) ? 'flex' : 'none';
+
+        const ddRow = document.getElementById('doubleDeductionRow');
+        if(n===1){
+            document.getElementById('payTaxExternally').closest('.toggle-row').insertAdjacentElement('afterend', ddRow);
+        } else if(n===2){
+            document.getElementById('showRealValue2').closest('.toggle-row').insertAdjacentElement('afterend', ddRow);
+        }
+        ddRow.style.display = (n===1 || n===2) ? 'flex' : 'none';
+
         if(n===1) chart.resize();
         if(n===2) chart2.resize();
         if(n===3) chart3.resize();
         if(n===4){ ptChart1.resize(); ptChart2.resize(); ptChart3.resize(); ptChart4.resize(); }
     }
 
-    document.getElementById('doubleDeductionRow').style.display = 'flex';
+    showTool(1);
 
     function showSection(name){
         document.getElementById('section-tools').style.display = name==='tools' ? 'block' : 'none';
@@ -2258,9 +2275,21 @@
             const record = history.reduce((best, h) => h.value > best.value ? h : best, history[0]);
             document.getElementById('recordValue').textContent = DK.format(record.value) + ' kr.';
             document.getElementById('recordDate').textContent = 'opnået ' + record.date;
+
+            const historyWithLiquid = history.filter(h => h.liquid !== undefined && h.liquid !== null);
+            if(historyWithLiquid.length > 0){
+                const liquidRecord = historyWithLiquid.reduce((best, h) => h.liquid > best.liquid ? h : best, historyWithLiquid[0]);
+                document.getElementById('recordLiquidValue').textContent = DK.format(liquidRecord.liquid) + ' kr.';
+                document.getElementById('recordLiquidDate').textContent = 'opnået ' + liquidRecord.date;
+            } else {
+                document.getElementById('recordLiquidValue').textContent = '–';
+                document.getElementById('recordLiquidDate').textContent = '';
+            }
         } else {
             document.getElementById('recordValue').textContent = '–';
             document.getElementById('recordDate').textContent = 'Gem et øjebliksbillede for at starte din rekord';
+            document.getElementById('recordLiquidValue').textContent = '–';
+            document.getElementById('recordLiquidDate').textContent = '';
         }
 
         const sortedHistory = history.slice().sort((a,b) => a.date.localeCompare(b.date));
