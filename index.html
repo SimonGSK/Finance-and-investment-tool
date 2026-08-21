@@ -65,7 +65,7 @@
         }
         .layout-wide{
             display:grid;
-            grid-template-columns:1fr 1fr;
+            grid-template-columns:35fr 65fr;
             gap:20px;
             max-width:1600px;
         }
@@ -345,8 +345,9 @@
         }
         .budget-category summary{
             display:flex;
-            justify-content:space-between;
             align-items:center;
+            width:100%;
+            box-sizing:border-box;
             padding:12px 14px;
             cursor:pointer;
             font-size:14px;
@@ -359,12 +360,19 @@
         .budget-category summary::after{
             content:'▾';
             color:var(--muted);
-            margin-left:8px;
+            margin-left:10px;
+        }
+        .budget-category summary > span:first-child{
+            flex:1;
+            min-width:0;
         }
         .budget-category .cat-total{
             font-family:'IBM Plex Mono',monospace;
             color:var(--akt);
             font-weight:500;
+            margin-left:auto;
+            padding-left:12px;
+            white-space:nowrap;
         }
         .budget-items{
             padding:0 14px 12px 14px;
@@ -574,36 +582,41 @@
             <div class="panel">
                 <div class="eyebrow">Parametre</div>
 
-            <div class="field">
-                <label>Startbeløb <span class="val" id="startCash2Val">0 kr.</span></label>
-                <input type="range" id="startCash2" min="0" max="1000000" step="5000" value="0">
-            </div>
+                <div class="field">
+                    <label>Startbeløb</label>
+                    <input type="number" id="startCash2Number" class="number-input" value="0" style="margin-bottom:8px;">
+                    <input type="range" id="startCash2" min="0" max="1000000" step="5000" value="0">
+                </div>
 
-            <div class="field">
-                <label>Månedlig investering <span class="val" id="monthlyAmount2Val">3.000 kr.</span></label>
-                <input type="range" id="monthlyAmount2" min="0" max="20000" step="100" value="3000">
-            </div>
+                <div class="field">
+                    <label>Månedlig investering</label>
+                    <input type="number" id="monthlyAmount2Number" class="number-input" value="3000" style="margin-bottom:8px;">
+                    <input type="range" id="monthlyAmount2" min="0" max="20000" step="100" value="3000">
+                </div>
 
-            <div class="field">
-                <label>Antal år <span class="val" id="years2Val">25</span></label>
-                <input type="range" id="years2" min="1" max="60" step="1" value="25">
-            </div>
+                <div class="field">
+                    <label>Antal år</label>
+                    <input type="number" id="years2Number" class="number-input" value="25" style="margin-bottom:8px;">
+                    <input type="range" id="years2" min="1" max="60" step="1" value="25">
+                </div>
 
-            <div class="field">
-                <label>Forventet årligt afkast <span class="val" id="return2Val">8,0%</span></label>
-                <input type="range" id="yearlyReturn2" min="1" max="15" step="0.1" value="8">
-            </div>
+                <div class="field">
+                    <label>Forventet årligt afkast</label>
+                    <input type="number" id="yearlyReturn2Number" class="number-input" value="8" step="0.1" style="margin-bottom:8px;">
+                    <input type="range" id="yearlyReturn2" min="1" max="15" step="0.1" value="8">
+                </div>
 
-            <label class="toggle-row">
-                <input type="checkbox" id="showRealValue2">
-                Vis i nutidens købekraft (inflationsjusteret)
-            </label>
+                <label class="toggle-row">
+                    <input type="checkbox" id="showRealValue2">
+                    Vis i nutidens købekraft (inflationsjusteret)
+                </label>
 
-            <div class="field" id="inflationField2" style="margin-top:16px; display:none;">
-                <label>Forventet inflation <span class="val" id="inflation2Val">2,0%</span></label>
-                <input type="range" id="inflation2" min="0" max="8" step="0.1" value="2">
+                <div class="field" id="inflationField2" style="margin-top:16px; display:none;">
+                    <label>Forventet inflation</label>
+                    <input type="number" id="inflation2Number" class="number-input" value="2" step="0.1" style="margin-bottom:8px;">
+                    <input type="range" id="inflation2" min="0" max="8" step="0.1" value="2">
+                </div>
             </div>
-        </div>
 
         <div>
             <div class="panel" style="margin-bottom:16px;">
@@ -678,27 +691,32 @@
                 <div class="eyebrow">Parametre</div>
 
                 <div class="field">
-                    <label>Årligt forbrug (i dagens penge) <span class="val" id="expenses3Val">300.000 kr.</span></label>
+                    <label>Årligt forbrug (i dagens penge)</label>
+                    <input type="number" id="expenses3Number" class="number-input" value="300000" style="margin-bottom:8px;">
                     <input type="range" id="expenses3" min="50000" max="1000000" step="5000" value="300000">
                 </div>
 
                 <div class="field">
-                    <label>Nuværende opsparing <span class="val" id="startCash3Val">100.000 kr.</span></label>
+                    <label>Nuværende opsparing</label>
+                    <input type="number" id="startCash3Number" class="number-input" value="100000" style="margin-bottom:8px;">
                     <input type="range" id="startCash3" min="0" max="2000000" step="10000" value="100000">
                 </div>
 
                 <div class="field">
-                    <label>Månedlig investering <span class="val" id="monthlyAmount3Val">5.000 kr.</span></label>
+                    <label>Månedlig investering</label>
+                    <input type="number" id="monthlyAmount3Number" class="number-input" value="5000" style="margin-bottom:8px;">
                     <input type="range" id="monthlyAmount3" min="0" max="30000" step="500" value="5000">
                 </div>
 
                 <div class="field">
-                    <label>Forventet årligt afkast <span class="val" id="return3Val">7,0%</span></label>
+                    <label>Forventet årligt afkast</label>
+                    <input type="number" id="yearlyReturn3Number" class="number-input" value="7" step="0.1" style="margin-bottom:8px;">
                     <input type="range" id="yearlyReturn3" min="1" max="15" step="0.1" value="7">
                 </div>
 
                 <div class="field" style="margin-top:22px;">
-                    <label>Forventet inflation <span class="val" id="inflation3Val">2,0%</span></label>
+                    <label>Forventet inflation</label>
+                    <input type="number" id="inflation3Number" class="number-input" value="2" step="0.1" style="margin-bottom:8px;">
                     <input type="range" id="inflation3" min="0" max="8" step="0.1" value="2">
                 </div>
 
@@ -715,7 +733,7 @@
                         <span><i class="dot" style="background:#5B6B7A"></i>FIRE-mål</span>
                     </div>
                     <canvas id="chart3"></canvas>
-                    <div class="explainer" id="inflationNote3" style="display:none; margin-top:10px; padding-top:10px;">Alle beløb er vist i nutidens købekraft – dvs. hvad de fremtidige kroner reelt kan купe for, når man har trukket den forventede inflation fra.</div>
+                    <div class="explainer" id="inflationNote3" style="display:none; margin-top:10px; padding-top:10px;">Alle beløb er vist i nutidens købekraft – dvs. hvad de fremtidige kroner reelt kan købe for, når man har trukket den forventede inflation fra.</div>
                 </div>
                 <div class="stats">
                     <div class="stat">
@@ -1098,6 +1116,7 @@
                         <tbody id="netWorthHistoryTableBody"></tbody>
                     </table>
                 </div>
+                <button class="btn btn-secondary" style="margin-top:12px;" onclick="downloadTableAsCSV('netWorthHistoryTableBody', 'formuehistorik.csv')">Download som CSV</button>
             </div>
 
             <div class="panel" style="margin-top:16px;">
@@ -1613,15 +1632,9 @@
         const returnPercent = parseFloat(return2Input.value);
         const yearlyReturn = 1 + returnPercent/100;
 
-        document.getElementById('startCash2Val').textContent = DK.format(startCash) + ' kr.';
-        document.getElementById('monthlyAmount2Val').textContent = DK.format(monthlyAmount) + ' kr.';
-        document.getElementById('years2Val').textContent = years;
-        document.getElementById('return2Val').textContent = returnPercent.toFixed(1).replace('.',',') + '%';
-
         const inflationPercent2 = parseFloat(inflation2Input.value);
         const inflationFactor2 = 1 + inflationPercent2/100;
         const showReal2 = showReal2Input.checked;
-        document.getElementById('inflation2Val').textContent = inflationPercent2.toFixed(1).replace('.',',') + '%';
         document.getElementById('inflationNote2').style.display = showReal2 ? 'block' : 'none';
         document.getElementById('inflationField2').style.display = showReal2 ? 'block' : 'none';
 
@@ -1676,7 +1689,13 @@
         }
     }
 
-    [startCash2Input, monthlyAmount2Input, years2Input, return2Input, inflation2Input, showReal2Input].forEach(el => el.addEventListener('input', update2));
+    bindSliderAndNumber('startCash2', 'startCash2Number', update2);
+    bindSliderAndNumber('monthlyAmount2', 'monthlyAmount2Number', update2);
+    bindSliderAndNumber('years2', 'years2Number', update2);
+    bindSliderAndNumber('yearlyReturn2', 'yearlyReturn2Number', update2);
+    bindSliderAndNumber('inflation2', 'inflation2Number', update2);
+    showReal2Input.addEventListener('input', update2);
+
     update2();
 
     const expenses3Input = document.getElementById('expenses3');
@@ -1699,11 +1718,6 @@
         const inflationFactor3 = 1 + inflationPercent3/100;
         const showReal3 = showReal3Input.checked;
 
-        document.getElementById('expenses3Val').textContent = DK.format(expenses) + ' kr.';
-        document.getElementById('startCash3Val').textContent = DK.format(startCash) + ' kr.';
-        document.getElementById('monthlyAmount3Val').textContent = DK.format(monthlyAmount) + ' kr.';
-        document.getElementById('return3Val').textContent = returnPercent.toFixed(1).replace('.',',') + '%';
-        document.getElementById('inflation3Val').textContent = inflationPercent3.toFixed(1).replace('.',',') + '%';
         document.getElementById('inflationNote3').style.display = showReal3 ? 'block' : 'none';
 
         // Dit FIRE-beløb, udtrykt i dagens købekraft - det er jo netop det, "expenses" allerede er.
@@ -1768,7 +1782,13 @@
         }
     }
 
-    [expenses3Input, startCash3Input, monthlyAmount3Input, return3Input, inflation3Input, showReal3Input].forEach(el => el.addEventListener('input', update3));
+    bindSliderAndNumber('expenses3', 'expenses3Number', update3);
+    bindSliderAndNumber('startCash3', 'startCash3Number', update3);
+    bindSliderAndNumber('monthlyAmount3', 'monthlyAmount3Number', update3);
+    bindSliderAndNumber('yearlyReturn3', 'yearlyReturn3Number', update3);
+    bindSliderAndNumber('inflation3', 'inflation3Number', update3);
+    showReal3Input.addEventListener('input', update3);
+
     update3();
 
     function showTool(n){
