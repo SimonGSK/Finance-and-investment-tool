@@ -65,7 +65,7 @@
         }
         .layout-wide{
             display:grid;
-            grid-template-columns:1fr 1fr;
+            grid-template-columns:35fr 65fr;
             gap:20px;
             max-width:1600px;
         }
@@ -345,8 +345,9 @@
         }
         .budget-category summary{
             display:flex;
-            justify-content:space-between;
             align-items:center;
+            width:100%;
+            box-sizing:border-box;
             padding:12px 14px;
             cursor:pointer;
             font-size:14px;
@@ -359,12 +360,19 @@
         .budget-category summary::after{
             content:'▾';
             color:var(--muted);
-            margin-left:8px;
+            margin-left:10px;
+        }
+        .budget-category summary > span:first-child{
+            flex:1;
+            min-width:0;
         }
         .budget-category .cat-total{
             font-family:'IBM Plex Mono',monospace;
             color:var(--akt);
             font-weight:500;
+            margin-left:auto;
+            padding-left:12px;
+            white-space:nowrap;
         }
         .budget-items{
             padding:0 14px 12px 14px;
@@ -451,7 +459,7 @@
         <button class="tab-btn" id="tabBtn4" onclick="showTool(4)">Porteføljetracker</button>
     </div>
 
-    <label class="toggle-row" id="doubleDeductionRow" style="margin-bottom:20px;">
+    <label class="toggle-row" id="doubleDeductionRow" style="margin-top:14px; margin-bottom:20px;">
         <input type="checkbox" id="doubleDeduction">
         Dobbelt fradrag (du er gift med en, der ikke selv investerer, og kan derfor udnytte begges 27%-grænse)
     </label>
@@ -574,36 +582,43 @@
             <div class="panel">
                 <div class="eyebrow">Parametre</div>
 
-            <div class="field">
-                <label>Startbeløb <span class="val" id="startCash2Val">0 kr.</span></label>
-                <input type="range" id="startCash2" min="0" max="1000000" step="5000" value="0">
-            </div>
+                <div class="field">
+                    <label>Startbeløb</label>
+                    <input type="number" id="startCash2Number" class="number-input" value="0" style="margin-bottom:8px;">
+                    <input type="range" id="startCash2" min="0" max="1000000" step="5000" value="0">
+                </div>
 
-            <div class="field">
-                <label>Månedlig investering <span class="val" id="monthlyAmount2Val">3.000 kr.</span></label>
-                <input type="range" id="monthlyAmount2" min="0" max="20000" step="100" value="3000">
-            </div>
+                <div class="field">
+                    <label>Månedlig investering</label>
+                    <input type="number" id="monthlyAmount2Number" class="number-input" value="3000" style="margin-bottom:8px;">
+                    <input type="range" id="monthlyAmount2" min="0" max="20000" step="100" value="3000">
+                </div>
 
-            <div class="field">
-                <label>Antal år <span class="val" id="years2Val">25</span></label>
-                <input type="range" id="years2" min="1" max="60" step="1" value="25">
-            </div>
+                <div class="field">
+                    <label>Antal år</label>
+                    <input type="number" id="years2Number" class="number-input" value="25" style="margin-bottom:8px;">
+                    <input type="range" id="years2" min="1" max="60" step="1" value="25">
+                </div>
 
-            <div class="field">
-                <label>Forventet årligt afkast <span class="val" id="return2Val">8,0%</span></label>
-                <input type="range" id="yearlyReturn2" min="1" max="15" step="0.1" value="8">
-            </div>
+                <div class="field">
+                    <label>Forventet årligt afkast</label>
+                    <input type="number" id="yearlyReturn2Number" class="number-input" value="8" step="0.1" style="margin-bottom:8px;">
+                    <input type="range" id="yearlyReturn2" min="1" max="15" step="0.1" value="8">
+                </div>
 
-            <label class="toggle-row">
-                <input type="checkbox" id="showRealValue2">
-                Vis i nutidens købekraft (inflationsjusteret)
-            </label>
+                <div id="tool2InflationRow" style="display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-top:16px;">
+                    <label class="toggle-row" style="flex-shrink:0; padding-top:2px;">
+                        <input type="checkbox" id="showRealValue2">
+                        Vis i nutidens købekraft (inflationsjusteret)
+                    </label>
 
-            <div class="field" id="inflationField2" style="margin-top:16px; display:none;">
-                <label>Forventet inflation <span class="val" id="inflation2Val">2,0%</span></label>
-                <input type="range" id="inflation2" min="0" max="8" step="0.1" value="2">
+                    <div class="field" id="inflationField2" style="display:none; flex:1; min-width:180px; margin:0;">
+                        <label>Forventet inflation</label>
+                        <input type="number" id="inflation2Number" class="number-input" value="2" step="0.1" style="margin-bottom:8px;">
+                        <input type="range" id="inflation2" min="0" max="8" step="0.1" value="2">
+                    </div>
+                </div>
             </div>
-        </div>
 
         <div>
             <div class="panel" style="margin-bottom:16px;">
@@ -678,27 +693,32 @@
                 <div class="eyebrow">Parametre</div>
 
                 <div class="field">
-                    <label>Årligt forbrug (i dagens penge) <span class="val" id="expenses3Val">300.000 kr.</span></label>
+                    <label>Årligt forbrug (i dagens penge)</label>
+                    <input type="number" id="expenses3Number" class="number-input" value="300000" style="margin-bottom:8px;">
                     <input type="range" id="expenses3" min="50000" max="1000000" step="5000" value="300000">
                 </div>
 
                 <div class="field">
-                    <label>Nuværende opsparing <span class="val" id="startCash3Val">100.000 kr.</span></label>
+                    <label>Nuværende opsparing</label>
+                    <input type="number" id="startCash3Number" class="number-input" value="100000" style="margin-bottom:8px;">
                     <input type="range" id="startCash3" min="0" max="2000000" step="10000" value="100000">
                 </div>
 
                 <div class="field">
-                    <label>Månedlig investering <span class="val" id="monthlyAmount3Val">5.000 kr.</span></label>
+                    <label>Månedlig investering</label>
+                    <input type="number" id="monthlyAmount3Number" class="number-input" value="5000" style="margin-bottom:8px;">
                     <input type="range" id="monthlyAmount3" min="0" max="30000" step="500" value="5000">
                 </div>
 
                 <div class="field">
-                    <label>Forventet årligt afkast <span class="val" id="return3Val">7,0%</span></label>
+                    <label>Forventet årligt afkast</label>
+                    <input type="number" id="yearlyReturn3Number" class="number-input" value="7" step="0.1" style="margin-bottom:8px;">
                     <input type="range" id="yearlyReturn3" min="1" max="15" step="0.1" value="7">
                 </div>
 
                 <div class="field" style="margin-top:22px;">
-                    <label>Forventet inflation <span class="val" id="inflation3Val">2,0%</span></label>
+                    <label>Forventet inflation</label>
+                    <input type="number" id="inflation3Number" class="number-input" value="2" step="0.1" style="margin-bottom:8px;">
                     <input type="range" id="inflation3" min="0" max="8" step="0.1" value="2">
                 </div>
 
@@ -715,7 +735,7 @@
                         <span><i class="dot" style="background:#5B6B7A"></i>FIRE-mål</span>
                     </div>
                     <canvas id="chart3"></canvas>
-                    <div class="explainer" id="inflationNote3" style="display:none; margin-top:10px; padding-top:10px;">Alle beløb er vist i nutidens købekraft – dvs. hvad de fremtidige kroner reelt kan купe for, når man har trukket den forventede inflation fra.</div>
+                    <div class="explainer" id="inflationNote3" style="display:none; margin-top:10px; padding-top:10px;">Alle beløb er vist i nutidens købekraft – dvs. hvad de fremtidige kroner reelt kan købe for, når man har trukket den forventede inflation fra.</div>
                 </div>
                 <div class="stats">
                     <div class="stat">
@@ -839,7 +859,7 @@
                 <div class="panel" style="margin-bottom:16px;">
                     <div class="legend">
                         <span><i class="dot" style="background:var(--akt)"></i>Aktieværdi</span>
-                        <span><i class="dot" style="background:#9B7EDE"></i>Kumuleret køb/salg</span>
+                        <span><i class="dot" style="background:#9B7EDE"></i>Køb/solgt (pr. måned)</span>
                     </div>
                     <canvas id="ptChart2"></canvas>
                 </div>
@@ -970,7 +990,9 @@
 
             <div class="panel" style="margin-bottom:16px;">
                 <div class="eyebrow">Fordeling</div>
-                <canvas id="budgetChart"></canvas>
+                <div style="max-width:600px; margin:0 auto;">
+                    <canvas id="budgetChart"></canvas>
+                </div>
             </div>
 
             <div class="panel">
@@ -1061,7 +1083,9 @@
 
             <div class="panel">
                 <div class="eyebrow">Fordeling af aktiver</div>
-                <canvas id="netWorthChart"></canvas>
+                <div style="max-width:600px; margin:0 auto;">
+                    <canvas id="netWorthChart"></canvas>
+                </div>
             </div>
 
             <div class="panel" style="margin-top:16px;">
@@ -1098,6 +1122,20 @@
                         <tbody id="netWorthHistoryTableBody"></tbody>
                     </table>
                 </div>
+                <button class="btn btn-secondary" style="margin-top:12px;" onclick="downloadTableAsCSV('netWorthHistoryTableBody', 'formuehistorik.csv')">Download som CSV</button>
+            </div>
+
+            <div class="panel" style="margin-top:16px;">
+                <div class="eyebrow">Formuesammensætning over tid</div>
+                <div class="legend" style="flex-wrap:wrap;">
+                    <span><i class="dot" style="background:#45C4B0"></i>Kontanter</span>
+                    <span><i class="dot" style="background:#E3A548"></i>Aktier</span>
+                    <span><i class="dot" style="background:#9B7EDE"></i>Pension</span>
+                    <span><i class="dot" style="background:#6C8EBF"></i>Friværdi</span>
+                    <span><i class="dot" style="background:#8B96A3"></i>Andet</span>
+                    <span><i class="dot" style="background:#E85C4A"></i>Gæld</span>
+                </div>
+                <canvas id="netWorthCompositionChart"></canvas>
             </div>
 
             <div class="panel" style="margin-top:16px;">
@@ -1107,6 +1145,11 @@
                         <div class="label">Højeste nettoformue</div>
                         <div class="value akt" id="recordValue">–</div>
                         <div class="sub" id="recordDate"></div>
+                    </div>
+                    <div class="stat">
+                        <div class="label">Højeste likvide formue</div>
+                        <div class="value ask" id="recordLiquidValue">–</div>
+                        <div class="sub" id="recordLiquidDate"></div>
                     </div>
                 </div>
             </div>
@@ -1613,15 +1656,9 @@
         const returnPercent = parseFloat(return2Input.value);
         const yearlyReturn = 1 + returnPercent/100;
 
-        document.getElementById('startCash2Val').textContent = DK.format(startCash) + ' kr.';
-        document.getElementById('monthlyAmount2Val').textContent = DK.format(monthlyAmount) + ' kr.';
-        document.getElementById('years2Val').textContent = years;
-        document.getElementById('return2Val').textContent = returnPercent.toFixed(1).replace('.',',') + '%';
-
         const inflationPercent2 = parseFloat(inflation2Input.value);
         const inflationFactor2 = 1 + inflationPercent2/100;
         const showReal2 = showReal2Input.checked;
-        document.getElementById('inflation2Val').textContent = inflationPercent2.toFixed(1).replace('.',',') + '%';
         document.getElementById('inflationNote2').style.display = showReal2 ? 'block' : 'none';
         document.getElementById('inflationField2').style.display = showReal2 ? 'block' : 'none';
 
@@ -1676,7 +1713,13 @@
         }
     }
 
-    [startCash2Input, monthlyAmount2Input, years2Input, return2Input, inflation2Input, showReal2Input].forEach(el => el.addEventListener('input', update2));
+    bindSliderAndNumber('startCash2', 'startCash2Number', update2);
+    bindSliderAndNumber('monthlyAmount2', 'monthlyAmount2Number', update2);
+    bindSliderAndNumber('years2', 'years2Number', update2);
+    bindSliderAndNumber('yearlyReturn2', 'yearlyReturn2Number', update2);
+    bindSliderAndNumber('inflation2', 'inflation2Number', update2);
+    showReal2Input.addEventListener('input', update2);
+
     update2();
 
     const expenses3Input = document.getElementById('expenses3');
@@ -1699,11 +1742,6 @@
         const inflationFactor3 = 1 + inflationPercent3/100;
         const showReal3 = showReal3Input.checked;
 
-        document.getElementById('expenses3Val').textContent = DK.format(expenses) + ' kr.';
-        document.getElementById('startCash3Val').textContent = DK.format(startCash) + ' kr.';
-        document.getElementById('monthlyAmount3Val').textContent = DK.format(monthlyAmount) + ' kr.';
-        document.getElementById('return3Val').textContent = returnPercent.toFixed(1).replace('.',',') + '%';
-        document.getElementById('inflation3Val').textContent = inflationPercent3.toFixed(1).replace('.',',') + '%';
         document.getElementById('inflationNote3').style.display = showReal3 ? 'block' : 'none';
 
         // Dit FIRE-beløb, udtrykt i dagens købekraft - det er jo netop det, "expenses" allerede er.
@@ -1768,7 +1806,13 @@
         }
     }
 
-    [expenses3Input, startCash3Input, monthlyAmount3Input, return3Input, inflation3Input, showReal3Input].forEach(el => el.addEventListener('input', update3));
+    bindSliderAndNumber('expenses3', 'expenses3Number', update3);
+    bindSliderAndNumber('startCash3', 'startCash3Number', update3);
+    bindSliderAndNumber('monthlyAmount3', 'monthlyAmount3Number', update3);
+    bindSliderAndNumber('yearlyReturn3', 'yearlyReturn3Number', update3);
+    bindSliderAndNumber('inflation3', 'inflation3Number', update3);
+    showReal3Input.addEventListener('input', update3);
+
     update3();
 
     function showTool(n){
@@ -1780,14 +1824,22 @@
         document.getElementById('tabBtn2').classList.toggle('active', n===2);
         document.getElementById('tabBtn3').classList.toggle('active', n===3);
         document.getElementById('tabBtn4').classList.toggle('active', n===4);
-        document.getElementById('doubleDeductionRow').style.display = (n===1 || n===2) ? 'flex' : 'none';
+
+        const ddRow = document.getElementById('doubleDeductionRow');
+        if(n===1){
+            document.getElementById('payTaxExternally').closest('.toggle-row').insertAdjacentElement('afterend', ddRow);
+        } else if(n===2){
+            document.getElementById('tool2InflationRow').insertAdjacentElement('afterend', ddRow);
+        }
+        ddRow.style.display = (n===1 || n===2) ? 'flex' : 'none';
+
         if(n===1) chart.resize();
         if(n===2) chart2.resize();
         if(n===3) chart3.resize();
         if(n===4){ ptChart1.resize(); ptChart2.resize(); ptChart3.resize(); ptChart4.resize(); }
     }
 
-    document.getElementById('doubleDeductionRow').style.display = 'flex';
+    showTool(1);
 
     function showSection(name){
         document.getElementById('section-tools').style.display = name==='tools' ? 'block' : 'none';
@@ -2227,7 +2279,52 @@
             <td><button class="btn btn-secondary" style="padding:4px 10px; font-size:12px;" onclick="deleteNetWorthEntry('${h.date}')">Slet</button></td>
         </tr>`).join('');
 
+        renderNetWorthComposition(history);
         renderRecordAndMilestones();
+    }
+
+    let netWorthCompositionChart = null;
+
+    function renderNetWorthComposition(history){
+        const labels = history.map(h => h.date);
+        const datasets = [
+            {label:'Kontanter', data: history.map(h => h.netCatKontanter || 0), backgroundColor:'#45C4B0', borderColor:'#45C4B0', fill:true, stack:'formue', pointRadius:0, tension:0.1},
+            {label:'Aktier', data: history.map(h => h.netCatAktier || 0), backgroundColor:'#E3A548', borderColor:'#E3A548', fill:true, stack:'formue', pointRadius:0, tension:0.1},
+            {label:'Pension', data: history.map(h => h.netCatPension || 0), backgroundColor:'#9B7EDE', borderColor:'#9B7EDE', fill:true, stack:'formue', pointRadius:0, tension:0.1},
+            {label:'Friværdi', data: history.map(h => h.netCatFrivaerdi || 0), backgroundColor:'#6C8EBF', borderColor:'#6C8EBF', fill:true, stack:'formue', pointRadius:0, tension:0.1},
+            {label:'Andet', data: history.map(h => h.netCatAndet || 0), backgroundColor:'#8B96A3', borderColor:'#8B96A3', fill:true, stack:'formue', pointRadius:0, tension:0.1},
+            {label:'Gæld', data: history.map(h => -(h.debt || 0)), backgroundColor:'#E85C4A', borderColor:'#E85C4A', fill:true, stack:'formue', pointRadius:0, tension:0.1}
+        ];
+
+        if(netWorthCompositionChart){
+            netWorthCompositionChart.data = {labels, datasets};
+            netWorthCompositionChart.update();
+        } else {
+            const ctx = document.getElementById('netWorthCompositionChart').getContext('2d');
+            netWorthCompositionChart = new Chart(ctx, {
+                type:'line',
+                data:{labels, datasets},
+                options:{
+                    responsive:true,
+                    plugins:{
+                        legend:{display:false},
+                        tooltip:{
+                            backgroundColor:'#1C2733', borderColor:'#26323F', borderWidth:1,
+                            titleColor:'#EDEAE3', bodyColor:'#EDEAE3',
+                            callbacks:{ label: c => `${c.dataset.label}: ${DK.format(c.raw)} kr.` }
+                        }
+                    },
+                    scales:{
+                        x:{ grid:{color:'#202B36'}, ticks:{color:'#8B96A3', font:{family:'IBM Plex Mono', size:11}} },
+                        y:{
+                            stacked:true,
+                            grid:{color:'#202B36'},
+                            ticks:{color:'#8B96A3', font:{family:'IBM Plex Mono', size:11}, callback: v => DK.format(v)}
+                        }
+                    }
+                }
+            });
+        }
     }
 
     function renderRecordAndMilestones(){
@@ -2238,9 +2335,21 @@
             const record = history.reduce((best, h) => h.value > best.value ? h : best, history[0]);
             document.getElementById('recordValue').textContent = DK.format(record.value) + ' kr.';
             document.getElementById('recordDate').textContent = 'opnået ' + record.date;
+
+            const historyWithLiquid = history.filter(h => h.liquid !== undefined && h.liquid !== null);
+            if(historyWithLiquid.length > 0){
+                const liquidRecord = historyWithLiquid.reduce((best, h) => h.liquid > best.liquid ? h : best, historyWithLiquid[0]);
+                document.getElementById('recordLiquidValue').textContent = DK.format(liquidRecord.liquid) + ' kr.';
+                document.getElementById('recordLiquidDate').textContent = 'opnået ' + liquidRecord.date;
+            } else {
+                document.getElementById('recordLiquidValue').textContent = '–';
+                document.getElementById('recordLiquidDate').textContent = '';
+            }
         } else {
             document.getElementById('recordValue').textContent = '–';
             document.getElementById('recordDate').textContent = 'Gem et øjebliksbillede for at starte din rekord';
+            document.getElementById('recordLiquidValue').textContent = '–';
+            document.getElementById('recordLiquidDate').textContent = '';
         }
 
         const sortedHistory = history.slice().sort((a,b) => a.date.localeCompare(b.date));
@@ -2307,12 +2416,36 @@
 
     const ptCtx2 = document.getElementById('ptChart2').getContext('2d');
     let ptChart2 = new Chart(ptCtx2, {
-        type:'line',
         data:{labels:[], datasets:[
-                {label:'Aktieværdi', data:[], borderColor:'#E3A548', backgroundColor:'#E3A548', tension:0.15, pointRadius:0, borderWidth:2.5},
-                {label:'Kumuleret køb/salg', data:[], borderColor:'#9B7EDE', backgroundColor:'#9B7EDE', tension:0.15, pointRadius:0, borderWidth:2, borderDash:[4,4]}
+                {type:'line', label:'Aktieværdi', data:[], borderColor:'#E3A548', backgroundColor:'#E3A548', tension:0.15, pointRadius:0, borderWidth:2.5, yAxisID:'y'},
+                {type:'bar', label:'Køb/solgt (pr. måned)', data:[], backgroundColor:'#9B7EDE', yAxisID:'y1'}
             ]},
-        options: lineChartOptions(ptTooltipLabel)
+        options:{
+            responsive:true,
+            animation:{duration:250},
+            interaction:{mode:'index', intersect:false},
+            plugins:{
+                legend:{display:false},
+                tooltip:{
+                    backgroundColor:'#1C2733', borderColor:'#26323F', borderWidth:1,
+                    titleColor:'#EDEAE3', bodyColor:'#EDEAE3',
+                    callbacks:{ label: ptTooltipLabel }
+                }
+            },
+            scales:{
+                x:{ grid:{color:'#202B36'}, ticks:{color:'#8B96A3', font:{family:'IBM Plex Mono', size:11}} },
+                y:{
+                    position:'left',
+                    grid:{color:'#202B36'},
+                    ticks:{color:'#8B96A3', font:{family:'IBM Plex Mono', size:11}, callback: v => DK.format(v)}
+                },
+                y1:{
+                    position:'right',
+                    grid:{drawOnChartArea:false},
+                    ticks:{color:'#8B96A3', font:{family:'IBM Plex Mono', size:11}, callback: v => DK.format(v)}
+                }
+            }
+        }
     });
 
     const ptCtx3 = document.getElementById('ptChart3').getContext('2d');
@@ -2403,7 +2536,7 @@
 
         ptChart2.data.labels = labels;
         ptChart2.data.datasets[0].data = enriched.map(h => h.stockValue);
-        ptChart2.data.datasets[1].data = enriched.map(h => h.cumTraded);
+        ptChart2.data.datasets[1].data = enriched.map(h => h.traded);
         ptChart2.update();
 
         ptChart3.data.labels = labels;
