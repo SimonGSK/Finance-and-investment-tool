@@ -62,7 +62,10 @@
             grid-template-columns:minmax(260px, 320px) 1fr;
             gap:20px;
             max-width:1600px;
-            align-items:start;
+        }
+        .full-width-below{
+            max-width:1600px;
+            margin-top:16px;
         }
         .layout-wide{
             display:grid;
@@ -906,7 +909,7 @@
                             <tbody id="ptTableBody"></tbody>
                         </table>
                     </div>
-                    <p class="explainer" style="margin:12px 0 12px 0; padding-top:0; border-top:none;">Tryk "Download" for at gemme alle dine datapunkter i en CSV-fil, som du fx kan tage med til en anden enhed. Tryk "Upload" for at indlæse punkter fra en CSV-fil igen – dine eksisterende punkter bevares, men punkter med samme dato som i filen bliver overskrevet.</p>
+                    <p class="explainer" style="margin:12px 0 12px 0;">Tryk "Download" for at gemme alle dine datapunkter i en CSV-fil, som du fx kan tage med til en anden enhed. Tryk "Upload" for at indlæse punkter fra en CSV-fil igen – dine eksisterende punkter bevares, men punkter med samme dato som i filen bliver overskrevet.</p>
                     <button class="btn btn-secondary" onclick="downloadTableAsCSV('ptTableBody', 'portefoeljetracker.csv')">Download som CSV</button>
                     <button class="btn btn-secondary" style="margin-left:8px;" onclick="document.getElementById('portfolioCsvUpload').click()">Upload CSV</button>
                     <input type="file" id="portfolioCsvUpload" accept=".csv" style="display:none;" onchange="importPortfolioCSV(event)">
@@ -1135,7 +1138,7 @@
                         <tbody id="netWorthHistoryTableBody"></tbody>
                     </table>
                 </div>
-                <p class="explainer" style="margin:12px 0 12px 0; padding-top:0; border-top:none;">Tryk "Download" for at gemme alle dine datapunkter i en CSV-fil, som du fx kan tage med til en anden enhed. Tryk "Upload" for at indlæse punkter fra en CSV-fil igen – dine eksisterende punkter bevares, men punkter med samme dato som i filen bliver overskrevet.</p>
+                <p class="explainer" style="margin:12px 0 12px 0;">Tryk "Download" for at gemme alle dine datapunkter i en CSV-fil, som du fx kan tage med til en anden enhed. Tryk "Upload" for at indlæse punkter fra en CSV-fil igen – dine eksisterende punkter bevares, men punkter med samme dato som i filen bliver overskrevet.</p>
                 <button class="btn btn-secondary" onclick="downloadTableAsCSV('netWorthHistoryTableBody', 'formuehistorik.csv')">Download som CSV</button>
                 <button class="btn btn-secondary" style="margin-left:8px;" onclick="document.getElementById('netWorthCsvUpload').click()">Upload CSV</button>
                 <input type="file" id="netWorthCsvUpload" accept=".csv" style="display:none;" onchange="importNetWorthCSV(event)">
