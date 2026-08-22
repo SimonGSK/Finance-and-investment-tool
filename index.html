@@ -63,6 +63,10 @@
             gap:20px;
             max-width:1600px;
         }
+        .full-width-below{
+            max-width:1600px;
+            margin-top:16px;
+        }
         .layout-wide{
             display:grid;
             grid-template-columns:35fr 65fr;
@@ -213,6 +217,10 @@
             flex-wrap:wrap;
         }
         .settings-btn{
+            position:fixed;
+            top:16px;
+            right:16px;
+            z-index:100;
             background:var(--panel);
             border:1px solid var(--border);
             color:var(--text);
@@ -221,18 +229,21 @@
             height:40px;
             border-radius:8px;
             cursor:pointer;
-            flex-shrink:0;
         }
         .settings-btn:hover{
             border-color:var(--akt);
         }
         .settings-panel{
+            position:fixed;
+            top:64px;
+            right:16px;
+            z-index:99;
+            width:280px;
+            box-shadow:0 8px 24px rgba(0,0,0,0.4);
             background:var(--panel);
             border:1px solid var(--border);
             border-radius:10px;
             padding:18px 20px;
-            margin:12px 0 20px 0;
-            max-width:1180px;
         }
         .top-tabs{
             display:flex;
@@ -898,7 +909,10 @@
                             <tbody id="ptTableBody"></tbody>
                         </table>
                     </div>
-                    <button class="btn btn-secondary" style="margin-top:12px;" onclick="downloadTableAsCSV('ptTableBody', 'portefoeljetracker.csv')">Download som CSV</button>
+                    <p class="explainer" style="margin:12px 0 12px 0;">Tryk "Download" for at gemme alle dine datapunkter i en CSV-fil, som du fx kan tage med til en anden enhed. Tryk "Upload" for at indlæse punkter fra en CSV-fil igen – dine eksisterende punkter bevares, men punkter med samme dato som i filen bliver overskrevet.</p>
+                    <button class="btn btn-secondary" onclick="downloadTableAsCSV('ptTableBody', 'portefoeljetracker.csv')">Download som CSV</button>
+                    <button class="btn btn-secondary" style="margin-left:8px;" onclick="document.getElementById('portfolioCsvUpload').click()">Upload CSV</button>
+                    <input type="file" id="portfolioCsvUpload" accept=".csv" style="display:none;" onchange="importPortfolioCSV(event)">
                 </div>
             </div>
 
@@ -1101,7 +1115,9 @@
 
                 <button class="btn" onclick="saveNetWorthSnapshot()">+ Gem formue for valgt dato</button>
                 <button class="btn btn-secondary" style="margin-left:8px;" onclick="clearNetWorthHistory()">Ryd hele historikken</button>
-                <canvas id="netWorthHistoryChart" style="margin-top:18px;"></canvas>
+                <div style="position:relative; width:100%; margin-top:18px;">
+                    <canvas id="netWorthHistoryChart"></canvas>
+                </div>
 
                 <div class="data-table-wrap" style="margin-top:16px; max-height:280px;">
                     <table class="data-table">
@@ -1122,7 +1138,10 @@
                         <tbody id="netWorthHistoryTableBody"></tbody>
                     </table>
                 </div>
-                <button class="btn btn-secondary" style="margin-top:12px;" onclick="downloadTableAsCSV('netWorthHistoryTableBody', 'formuehistorik.csv')">Download som CSV</button>
+                <p class="explainer" style="margin:12px 0 12px 0;">Tryk "Download" for at gemme alle dine datapunkter i en CSV-fil, som du fx kan tage med til en anden enhed. Tryk "Upload" for at indlæse punkter fra en CSV-fil igen – dine eksisterende punkter bevares, men punkter med samme dato som i filen bliver overskrevet.</p>
+                <button class="btn btn-secondary" onclick="downloadTableAsCSV('netWorthHistoryTableBody', 'formuehistorik.csv')">Download som CSV</button>
+                <button class="btn btn-secondary" style="margin-left:8px;" onclick="document.getElementById('netWorthCsvUpload').click()">Upload CSV</button>
+                <input type="file" id="netWorthCsvUpload" accept=".csv" style="display:none;" onchange="importNetWorthCSV(event)">
             </div>
 
             <div class="panel" style="margin-top:16px;">
@@ -2168,6 +2187,91 @@
 
     let netWorthHistoryChart = null;
 
+    // Fjerner "kr.", tusindtalspunktummer og andet, og bevarer kun tal + minus.
+    function parseDanishAmount(str){
+        if(!str) return 0;
+        const cleaned = str.toString().replace(/[^\d-]/g, '');
+        const num = parseInt(cleaned, 10);
+        return isNaN(num) ? 0 : num;
+    }
+
+    // Simpel semikolon-adskilt CSV-parser, der forstår anførselstegn omkring felter
+    // (præcis det format, downloadTableAsCSV eksporterer i).
+    function parseCSV(text){
+        const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+        return lines.map(line => {
+            const cells = [];
+            let cur = '', inQuotes = false;
+            for(let i=0;i<line.length;i++){
+                const c = line[i];
+                if(inQuotes){
+                    if(c === '"'){
+                        if(line[i+1] === '"'){ cur += '"'; i++; }
+                        else { inQuotes = false; }
+                    } else { cur += c; }
+                } else {
+                    if(c === '"'){ inQuotes = true; }
+                    else if(c === ';'){ cells.push(cur); cur=''; }
+                    else { cur += c; }
+                }
+            }
+            cells.push(cur);
+            return cells;
+        });
+    }
+
+    function importNetWorthCSV(event){
+        const file = event.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e){
+            try{
+                const rows = parseCSV(e.target.result);
+                const headers = rows[0];
+                const dataRows = rows.slice(1);
+                const col = name => headers.indexOf(name);
+                const idxDate = col('Dato');
+
+                if(idxDate === -1){
+                    alert('CSV-filen ser ikke ud til at have det rigtige format (mangler "Dato"-kolonne).');
+                    return;
+                }
+
+                let history = JSON.parse(localStorage.getItem('netWorthHistory') || '[]');
+                let importedCount = 0;
+
+                dataRows.forEach(row => {
+                    const date = row[idxDate];
+                    if(!date) return;
+                    const entry = {
+                        date: date,
+                        netCatKontanter: parseDanishAmount(row[col('Kontanter')]),
+                        netCatAktier: parseDanishAmount(row[col('Aktier')]),
+                        netCatPension: parseDanishAmount(row[col('Pension')]),
+                        netCatFrivaerdi: parseDanishAmount(row[col('Friværdi')]),
+                        netCatAndet: parseDanishAmount(row[col('Andet')]),
+                        debt: parseDanishAmount(row[col('Gæld')]),
+                        liquid: parseDanishAmount(row[col('Likvid')]),
+                        value: parseDanishAmount(row[col('Nettoformue')])
+                    };
+                    const existingIndex = history.findIndex(h => h.date === entry.date);
+                    if(existingIndex >= 0){ history[existingIndex] = entry; }
+                    else { history.push(entry); }
+                    importedCount++;
+                });
+
+                history.sort((a,b) => a.date.localeCompare(b.date));
+                localStorage.setItem('netWorthHistory', JSON.stringify(history));
+                renderNetWorthHistory();
+                alert(importedCount + ' datapunkt(er) importeret.');
+            } catch(err){
+                alert('Kunne ikke læse CSV-filen. Tjek at det er en fil eksporteret fra dette værktøj.');
+            }
+            event.target.value = '';
+        };
+        reader.readAsText(file, 'UTF-8');
+    }
+
     function saveNetWorthSnapshot(){
         const netWorth = computeLiveNetWorth();
         const liquidTotal = computeLiveLiquidTotal();
@@ -2329,7 +2433,9 @@
 
     function renderRecordAndMilestones(){
         const history = JSON.parse(localStorage.getItem('netWorthHistory') || '[]');
-        const liveNetWorth = computeLiveNetWorth();
+        const sortedByDate = history.slice().sort((a,b) => a.date.localeCompare(b.date));
+        const latestEntry = sortedByDate.length > 0 ? sortedByDate[sortedByDate.length-1] : null;
+        const liveNetWorth = latestEntry ? latestEntry.value : computeLiveNetWorth();
 
         if(history.length > 0){
             const record = history.reduce((best, h) => h.value > best.value ? h : best, history[0]);
