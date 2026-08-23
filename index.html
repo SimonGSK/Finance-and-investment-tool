@@ -63,9 +63,22 @@
             gap:20px;
             max-width:1600px;
         }
+        .full-width-above{
+            max-width:1600px;
+            margin-bottom:16px;
+        }
         .full-width-below{
             max-width:1600px;
             margin-top:16px;
+        }
+        .panel.chart-panel{
+            display:flex;
+            flex-direction:column;
+        }
+        .chart-wrap{
+            position:relative;
+            flex:1;
+            min-height:280px;
         }
         .layout-wide{
             display:grid;
@@ -521,30 +534,34 @@
                 </div>
             </div>
 
-        <div>
-            <div class="panel" style="margin-bottom:16px;">
+            <div class="panel chart-panel">
                 <div class="legend">
                     <span><i class="dot" style="background:var(--ask)"></i>Aktiesparekonto</span>
                     <span><i class="dot" style="background:var(--akt)"></i>Aktiedepot (optimal realiseringsstrategi)</span>
                 </div>
-                <canvas id="chart"></canvas>
+                <div class="chart-wrap"><canvas id="chart"></canvas></div>
                 <div class="explainer" id="inflationNote" style="display:none; margin-top:10px; padding-top:10px;">Alle beløb er vist i nutidens købekraft – dvs. hvad de fremtidige kroner reelt kan købe for, når man har trukket den forventede inflation fra.</div>
             </div>
-        <div class="stats">
-            <div class="stat">
-                <div class="label">Slutværdi - Aktiesparekonto</div>
-                <div class="value ask" id="finalAsk">–</div>
-            </div>
-            <div class="stat">
-                <div class="label">Slutværdi - Aktiedepot</div>
-                <div class="value akt" id="finalAkt">–</div>
-            </div>
-            <div class="stat">
-                <div class="label">Vinder til sidst</div>
-                <div class="value" id="winner">–</div>
-                <div class="sub" id="winnerDetail"></div>
-            </div>
+
         </div>
+
+        <div class="full-width-below">
+            <div class="stats">
+                <div class="stat">
+                    <div class="label">Slutværdi - Aktiesparekonto</div>
+                    <div class="value ask" id="finalAsk">–</div>
+                </div>
+                <div class="stat">
+                    <div class="label">Slutværdi - Aktiedepot</div>
+                    <div class="value akt" id="finalAkt">–</div>
+                </div>
+                <div class="stat">
+                    <div class="label">Vinder til sidst</div>
+                    <div class="value" id="winner">–</div>
+                    <div class="sub" id="winnerDetail"></div>
+                </div>
+            </div>
+
             <div class="panel" style="margin-top:16px;">
                 <div class="eyebrow">Optimal realiseringsstrategi</div>
                 <p id="strategyText" style="margin:0; font-size:14px; line-height:1.5;"></p>
@@ -582,8 +599,7 @@
                 <button class="btn btn-secondary" style="margin-top:12px;" onclick="downloadTableAsCSV('dataTableBody', 'ask-vs-aktiedepot.csv')">Download som CSV</button>
             </div>
         </div>
-
-        </div>
+    </div>
     </div>
 
     <div id="tool2" style="display:none;">
@@ -1432,6 +1448,7 @@
             ]},
         options:{
             responsive:true,
+            maintainAspectRatio:false,
             animation:{duration:250},
             interaction:{mode:'index', intersect:false},
             plugins:{
