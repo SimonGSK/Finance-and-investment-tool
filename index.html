@@ -600,7 +600,6 @@
             </div>
         </div>
     </div>
-    </div>
 
     <div id="tool2" style="display:none;">
         <p class="tool-intro">Dette værktøj kan bruges til at udforske potentielle afkast på et <strong>normalt aktiedepot</strong>, med et engangsindskud og en fast månedlig investering. Værktøjet tager udgangspunkt i den optimale realiseringsstrategi (se forklaring nedenfor).</p>
@@ -824,7 +823,7 @@
                 <div class="stat">
                     <div class="label">Totalt investeret</div>
                     <div class="value ask" id="ptTotalInvested">–</div>
-                    <div class="sub">kumuleret indskud/udbetaling</div>
+                    <div class="sub">kumuleret køb/solgt</div>
                 </div>
                 <div class="stat">
                     <div class="label">Totalt afkast</div>
@@ -2736,7 +2735,7 @@
 
         ptChart3.data.labels = labels;
         ptChart3.data.datasets[0].data = enriched.map(h => h.stockValue);
-        ptChart3.data.datasets[1].data = enriched.map(h => h.cumDeposit);
+        ptChart3.data.datasets[1].data = enriched.map(h => h.cumTraded);
         ptChart3.update();
 
         ptChart4.data.labels = labels;
@@ -2746,7 +2745,7 @@
         if(enriched.length > 0){
             const latest = enriched[enriched.length-1];
             document.getElementById('ptLatestValue').textContent = DK.format(latest.portfolioValue) + ' kr.';
-            document.getElementById('ptTotalInvested').textContent = DK.format(latest.cumDeposit) + ' kr.';
+            document.getElementById('ptTotalInvested').textContent = DK.format(latest.cumTraded) + ' kr.';
             const returnEl = document.getElementById('ptTotalReturn');
             returnEl.textContent = DK.format(latest.totalReturn) + ' kr.';
             returnEl.classList.toggle('negative', latest.totalReturn < 0);
