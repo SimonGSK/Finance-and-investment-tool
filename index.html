@@ -2195,10 +2195,16 @@
         return isNaN(num) ? 0 : num;
     }
 
-    // Simpel semikolon-adskilt CSV-parser, der forstår anførselstegn omkring felter
-    // (præcis det format, downloadTableAsCSV eksporterer i).
+    // CSV-parser der selv opdager, om filen bruger semikolon (vores eget format)
+    // eller komma (fx hvis filen er genexporteret fra Numbers/Excel med andre
+    // regionsindstillinger). Forstår desuden anførselstegn omkring felter.
     function parseCSV(text){
         const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+        if(lines.length === 0) return [];
+        const semicolons = (lines[0].match(/;/g) || []).length;
+        const commas = (lines[0].match(/,/g) || []).length;
+        const delimiter = semicolons >= commas ? ';' : ',';
+
         return lines.map(line => {
             const cells = [];
             let cur = '', inQuotes = false;
@@ -2211,11 +2217,11 @@
                     } else { cur += c; }
                 } else {
                     if(c === '"'){ inQuotes = true; }
-                    else if(c === ';'){ cells.push(cur); cur=''; }
+                    else if(c === delimiter){ cells.push(cur); cur=''; }
                     else { cur += c; }
                 }
             }
-            cells.push(cur);
+            cells.push(cur.trim());
             return cells;
         });
     }
