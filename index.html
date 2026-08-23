@@ -647,15 +647,18 @@
                 </div>
             </div>
 
-        <div>
-            <div class="panel" style="margin-bottom:16px;">
+            <div class="panel chart-panel">
                 <div class="legend">
                     <span><i class="dot" style="background:var(--akt)"></i>Aktiedepot (værdi)</span>
                     <span><i class="dot" style="background:#5B6B7A"></i>Indbetalt kapital</span>
                 </div>
-                <canvas id="chart2"></canvas>
+                <div class="chart-wrap"><canvas id="chart2"></canvas></div>
                 <div class="explainer" id="inflationNote2" style="display:none; margin-top:10px; padding-top:10px;">Alle beløb er vist i nutidens købekraft – dvs. hvad de fremtidige kroner reelt kan købe for, når man har trukket den forventede inflation fra.</div>
             </div>
+
+        </div>
+
+        <div class="full-width-below">
             <div class="stats">
                 <div class="stat">
                     <div class="label">Slutværdi</div>
@@ -708,9 +711,7 @@
                 <button class="btn btn-secondary" style="margin-top:12px;" onclick="downloadTableAsCSV('dataTableBody2', 'aktiedepot-maanedlig.csv')">Download som CSV</button>
             </div>
         </div>
-
     </div>
-</div>
 
     <div id="tool3" style="display:none;">
         <p class="tool-intro">Dette værktøj kan bruges til at finde ud af, hvor mange år der går, før din opsparing er stor nok til at forsørge dit ønskede årlige forbrug via <strong>4%-reglen</strong> ("FIRE" – Financial Independence, Retire Early).</p>
@@ -755,63 +756,87 @@
                 </label>
             </div>
 
-            <div>
-                <div class="panel" style="margin-bottom:16px;">
-                    <div class="legend">
-                        <span><i class="dot" style="background:var(--akt)"></i>Formue</span>
-                        <span><i class="dot" style="background:#5B6B7A"></i>FIRE-mål</span>
-                    </div>
-                    <canvas id="chart3"></canvas>
-                    <div class="explainer" id="inflationNote3" style="display:none; margin-top:10px; padding-top:10px;">Alle beløb er vist i nutidens købekraft – dvs. hvad de fremtidige kroner reelt kan købe for, når man har trukket den forventede inflation fra.</div>
+            <div class="panel chart-panel">
+                <div class="legend">
+                    <span><i class="dot" style="background:var(--akt)"></i>Formue</span>
+                    <span><i class="dot" style="background:#5B6B7A"></i>FIRE-mål</span>
                 </div>
-                <div class="stats">
-                    <div class="stat">
-                        <div class="label">Formue ved FIRE</div>
-                        <div class="value ask" id="valueAtFire3">–</div>
-                        <div class="sub" id="valueAtFireSub3"></div>
-                    </div>
-                    <div class="stat">
-                        <div class="label">Antal år til FIRE</div>
-                        <div class="value akt" id="yearsToFire3">–</div>
-                        <div class="sub" id="yearsToFireSub3"></div>
-                    </div>
-                    <div class="stat">
-                        <div class="label">Årligt forbrug ved FIRE</div>
-                        <div class="value" id="consumptionAtFire3">–</div>
-                        <div class="sub" id="consumptionAtFireSub3"></div>
-                    </div>
-                </div>
+                <div class="chart-wrap"><canvas id="chart3"></canvas></div>
+                <div class="explainer" id="inflationNote3" style="display:none; margin-top:10px; padding-top:10px;">Alle beløb er vist i nutidens købekraft – dvs. hvad de fremtidige kroner reelt kan købe for, når man har trukket den forventede inflation fra.</div>
+            </div>
 
-                <div class="panel" style="margin-top:16px;">
-                    <div class="eyebrow">Om 4%-reglen</div>
-                    <p class="explainer" style="margin:0; padding-top:0; border-top:none;">
-                        4%-reglen siger, at man kan hæve 4% af sin formue om året uden statistisk set at løbe tør for penge over en lang tidshorisont (oprindeligt baseret på det amerikanske "Trinity study"). Omvendt betyder det, at dit "FIRE-beløb" er dit ønskede årlige forbrug ganget med 25 (dvs. divideret med 4%). Reglen er en tommelfingerregel, ikke en garanti — den er baseret på historiske afkast og tager fx ikke højde for skat på løbende udbetalinger.
-                    </p>
-                </div>
+        </div>
 
-                <div class="panel" style="margin-top:16px;">
-                    <div class="eyebrow">Data pr. år</div>
-                    <div class="data-table-wrap">
-                        <table class="data-table">
-                            <thead>
-                            <tr>
-                                <th>År</th>
-                                <th>Formue</th>
-                                <th>FIRE-mål</th>
-                            </tr>
-                            </thead>
-                            <tbody id="dataTableBody3"></tbody>
-                        </table>
-                    </div>
-                    <button class="btn btn-secondary" style="margin-top:12px;" onclick="downloadTableAsCSV('dataTableBody3', 'fire-beregner.csv')">Download som CSV</button>
+        <div class="full-width-below">
+            <div class="stats">
+                <div class="stat">
+                    <div class="label">Formue ved FIRE</div>
+                    <div class="value ask" id="valueAtFire3">–</div>
+                    <div class="sub" id="valueAtFireSub3"></div>
+                </div>
+                <div class="stat">
+                    <div class="label">Antal år til FIRE</div>
+                    <div class="value akt" id="yearsToFire3">–</div>
+                    <div class="sub" id="yearsToFireSub3"></div>
+                </div>
+                <div class="stat">
+                    <div class="label">Årligt forbrug ved FIRE</div>
+                    <div class="value" id="consumptionAtFire3">–</div>
+                    <div class="sub" id="consumptionAtFireSub3"></div>
                 </div>
             </div>
 
+            <div class="panel" style="margin-top:16px;">
+                <div class="eyebrow">Om 4%-reglen</div>
+                <p class="explainer" style="margin:0; padding-top:0; border-top:none;">
+                    4%-reglen siger, at man kan hæve 4% af sin formue om året uden statistisk set at løbe tør for penge over en lang tidshorisont (oprindeligt baseret på det amerikanske "Trinity study"). Omvendt betyder det, at dit "FIRE-beløb" er dit ønskede årlige forbrug ganget med 25 (dvs. divideret med 4%). Reglen er en tommelfingerregel, ikke en garanti — den er baseret på historiske afkast og tager fx ikke højde for skat på løbende udbetalinger.
+                </p>
+            </div>
+
+            <div class="panel" style="margin-top:16px;">
+                <div class="eyebrow">Data pr. år</div>
+                <div class="data-table-wrap">
+                    <table class="data-table">
+                        <thead>
+                        <tr>
+                            <th>År</th>
+                            <th>Formue</th>
+                            <th>FIRE-mål</th>
+                        </tr>
+                        </thead>
+                        <tbody id="dataTableBody3"></tbody>
+                    </table>
+                </div>
+                <button class="btn btn-secondary" style="margin-top:12px;" onclick="downloadTableAsCSV('dataTableBody3', 'fire-beregner.csv')">Download som CSV</button>
+            </div>
         </div>
     </div>
 
     <div id="tool4" style="display:none;">
         <p class="tool-intro">Indtast dine porteføljetal en gang om måneden for at følge udviklingen i din aktieportefølje over tid – inklusiv effekten af egne indskud/udbetalinger, køb/salg og udbytte.</p>
+
+        <div class="full-width-above">
+            <div class="stats">
+                <div class="stat">
+                    <div class="label">Porteføljeværdi (seneste)</div>
+                    <div class="value akt" id="ptLatestValue">–</div>
+                </div>
+                <div class="stat">
+                    <div class="label">Totalt investeret</div>
+                    <div class="value ask" id="ptTotalInvested">–</div>
+                    <div class="sub">kumuleret indskud/udbetaling</div>
+                </div>
+                <div class="stat">
+                    <div class="label">Totalt afkast</div>
+                    <div class="value" id="ptTotalReturn">–</div>
+                </div>
+                <div class="stat">
+                    <div class="label">Udbytte i alt</div>
+                    <div class="value ask" id="ptTotalDividend">–</div>
+                    <div class="sub">efter skat, kumuleret</div>
+                </div>
+            </div>
+        </div>
 
         <div class="layout">
 
@@ -851,87 +876,64 @@
                 <button class="btn btn-secondary" style="margin-left:8px;" onclick="clearPortfolioHistory()">Ryd hele historikken</button>
             </div>
 
-            <div>
-                <div class="panel" style="margin-bottom:16px;">
-                    <div class="stats">
-                        <div class="stat">
-                            <div class="label">Porteføljeværdi (seneste)</div>
-                            <div class="value akt" id="ptLatestValue">–</div>
-                        </div>
-                        <div class="stat">
-                            <div class="label">Totalt investeret</div>
-                            <div class="value ask" id="ptTotalInvested">–</div>
-                            <div class="sub">kumuleret indskud/udbetaling</div>
-                        </div>
-                        <div class="stat">
-                            <div class="label">Totalt afkast</div>
-                            <div class="value" id="ptTotalReturn">–</div>
-                        </div>
-                        <div class="stat">
-                            <div class="label">Udbytte i alt</div>
-                            <div class="value ask" id="ptTotalDividend">–</div>
-                            <div class="sub">efter skat, kumuleret</div>
-                        </div>
-                    </div>
+            <div class="panel chart-panel">
+                <div class="legend">
+                    <span><i class="dot" style="background:var(--akt)"></i>Porteføljeværdi</span>
+                    <span><i class="dot" style="background:var(--ask)"></i>Kumuleret indskud/udbetaling</span>
                 </div>
-
-                <div class="panel" style="margin-bottom:16px;">
-                    <div class="legend">
-                        <span><i class="dot" style="background:var(--akt)"></i>Porteføljeværdi</span>
-                        <span><i class="dot" style="background:var(--ask)"></i>Kumuleret indskud/udbetaling</span>
-                    </div>
-                    <canvas id="ptChart1"></canvas>
-                </div>
-
-                <div class="panel" style="margin-bottom:16px;">
-                    <div class="legend">
-                        <span><i class="dot" style="background:var(--akt)"></i>Aktieværdi</span>
-                        <span><i class="dot" style="background:#9B7EDE"></i>Køb/solgt (pr. måned)</span>
-                    </div>
-                    <canvas id="ptChart2"></canvas>
-                </div>
-
-                <div class="panel" style="margin-bottom:16px;">
-                    <div class="legend">
-                        <span><i class="dot" style="background:var(--akt)"></i>Aktieværdi</span>
-                        <span><i class="dot" style="background:var(--ask)"></i>Totalt investeret</span>
-                    </div>
-                    <canvas id="ptChart3"></canvas>
-                </div>
-
-                <div class="panel" style="margin-bottom:16px;">
-                    <div class="legend">
-                        <span><i class="dot" style="background:var(--akt)"></i>Totalt afkast</span>
-                    </div>
-                    <canvas id="ptChart4"></canvas>
-                </div>
-
-                <div class="panel">
-                    <div class="eyebrow">Data pr. datapunkt</div>
-                    <div class="data-table-wrap">
-                        <table class="data-table">
-                            <thead>
-                            <tr>
-                                <th>Dato</th>
-                                <th>Porteføljeværdi</th>
-                                <th>Aktieværdi</th>
-                                <th>Kontant</th>
-                                <th>Købt/solgt</th>
-                                <th>Indskud/udb.</th>
-                                <th>Udbytte</th>
-                                <th></th>
-                            </tr>
-                            </thead>
-                            <tbody id="ptTableBody"></tbody>
-                        </table>
-                    </div>
-                    <p class="explainer" style="margin:12px 0 12px 0;">Tryk "Download" for at gemme alle dine datapunkter i en CSV-fil, som du fx kan tage med til en anden enhed. Tryk "Upload" for at indlæse punkter fra en CSV-fil igen – dine eksisterende punkter bevares, men punkter med samme dato som i filen bliver overskrevet.</p>
-                    <button class="btn btn-secondary" onclick="downloadTableAsCSV('ptTableBody', 'portefoeljetracker.csv')">Download som CSV</button>
-                    <button class="btn btn-secondary" style="margin-left:8px;" onclick="document.getElementById('portfolioCsvUpload').click()">Upload CSV</button>
-                    <input type="file" id="portfolioCsvUpload" accept=".csv" style="display:none;" onchange="importPortfolioCSV(event)">
-                </div>
+                <div class="chart-wrap"><canvas id="ptChart1"></canvas></div>
             </div>
 
+        </div>
+
+        <div class="full-width-below">
+            <div class="panel" style="margin-bottom:16px;">
+                <div class="legend">
+                    <span><i class="dot" style="background:var(--akt)"></i>Aktieværdi</span>
+                    <span><i class="dot" style="background:#9B7EDE"></i>Køb/solgt (pr. måned)</span>
+                </div>
+                <canvas id="ptChart2"></canvas>
+            </div>
+
+            <div class="panel" style="margin-bottom:16px;">
+                <div class="legend">
+                    <span><i class="dot" style="background:var(--akt)"></i>Aktieværdi</span>
+                    <span><i class="dot" style="background:var(--ask)"></i>Totalt investeret</span>
+                </div>
+                <canvas id="ptChart3"></canvas>
+            </div>
+
+            <div class="panel" style="margin-bottom:16px;">
+                <div class="legend">
+                    <span><i class="dot" style="background:var(--akt)"></i>Totalt afkast</span>
+                </div>
+                <canvas id="ptChart4"></canvas>
+            </div>
+
+            <div class="panel">
+                <div class="eyebrow">Data pr. datapunkt</div>
+                <div class="data-table-wrap">
+                    <table class="data-table">
+                        <thead>
+                        <tr>
+                            <th>Dato</th>
+                            <th>Porteføljeværdi</th>
+                            <th>Aktieværdi</th>
+                            <th>Kontant</th>
+                            <th>Købt/solgt</th>
+                            <th>Indskud/udb.</th>
+                            <th>Udbytte</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody id="ptTableBody"></tbody>
+                    </table>
+                </div>
+                <p class="explainer" style="margin:12px 0 12px 0;">Tryk "Download" for at gemme alle dine datapunkter i en CSV-fil, som du fx kan tage med til en anden enhed. Tryk "Upload" for at indlæse punkter fra en CSV-fil igen – dine eksisterende punkter bevares, men punkter med samme dato som i filen bliver overskrevet.</p>
+                <button class="btn btn-secondary" onclick="downloadTableAsCSV('ptTableBody', 'portefoeljetracker.csv')">Download som CSV</button>
+                <button class="btn btn-secondary" style="margin-left:8px;" onclick="document.getElementById('portfolioCsvUpload').click()">Upload CSV</button>
+                <input type="file" id="portfolioCsvUpload" accept=".csv" style="display:none;" onchange="importPortfolioCSV(event)">
+            </div>
         </div>
     </div>
 
@@ -1490,6 +1492,7 @@
             ]},
         options:{
             responsive:true,
+            maintainAspectRatio:false,
             animation:{duration:250},
             interaction:{mode:'index', intersect:false},
             plugins:{
@@ -1531,6 +1534,7 @@
             ]},
         options:{
             responsive:true,
+            maintainAspectRatio:false,
             animation:{duration:250},
             interaction:{mode:'index', intersect:false},
             plugins:{
@@ -2204,12 +2208,26 @@
 
     let netWorthHistoryChart = null;
 
-    // Fjerner "kr.", tusindtalspunktummer og andet, og bevarer kun tal + minus.
+    // Fortolker danske talformater korrekt: punktum som tusindtalsseparator,
+    // komma som decimaltegn (fx "10.099,00 kr." eller vores eget "10.099 kr.").
     function parseDanishAmount(str){
         if(!str) return 0;
-        const cleaned = str.toString().replace(/[^\d-]/g, '');
-        const num = parseInt(cleaned, 10);
-        return isNaN(num) ? 0 : num;
+        let cleaned = str.toString().trim();
+        cleaned = cleaned.replace(/[^\d,.-]/g, '');   // fjern "kr.", mellemrum osv.
+        cleaned = cleaned.replace(/\./g, '');          // fjern tusindtalspunktummer
+        cleaned = cleaned.replace(',', '.');           // komma -> decimalpunktum
+        const num = parseFloat(cleaned);
+        return isNaN(num) ? 0 : Math.round(num);
+    }
+
+    // Finder overskriftsrækken ved at lede efter "Dato" i de første par linjer,
+    // i stedet for blindt at antage den står på linje 1 - Numbers/Excel indsætter
+    // sommetider en ekstra "tabelnavn"-linje øverst, som ellers ville forvirre os.
+    function findHeaderRowIndex(rows){
+        for(let i=0; i<Math.min(rows.length, 5); i++){
+            if(rows[i].includes('Dato')) return i;
+        }
+        return -1;
     }
 
     // CSV-parser der selv opdager, om filen bruger semikolon (vores eget format)
@@ -2250,15 +2268,14 @@
         reader.onload = function(e){
             try{
                 const rows = parseCSV(e.target.result);
-                const headers = rows[0];
-                const dataRows = rows.slice(1);
-                const col = name => headers.indexOf(name);
-                const idxDate = col('Dato');
-
-                if(idxDate === -1){
+                const headerIndex = findHeaderRowIndex(rows);
+                if(headerIndex === -1){
                     alert('CSV-filen ser ikke ud til at have det rigtige format (mangler "Dato"-kolonne).');
                     return;
                 }
+                const headers = rows[headerIndex];
+                const dataRows = rows.slice(headerIndex + 1);
+                const col = name => headers.indexOf(name);
 
                 let history = JSON.parse(localStorage.getItem('netWorthHistory') || '[]');
                 let importedCount = 0;
@@ -2540,7 +2557,7 @@
                 {label:'Porteføljeværdi', data:[], borderColor:'#E3A548', backgroundColor:'#E3A548', tension:0.15, pointRadius:0, borderWidth:2.5},
                 {label:'Kumuleret indskud/udbetaling', data:[], borderColor:'#45C4B0', backgroundColor:'#45C4B0', tension:0.15, pointRadius:0, borderWidth:2, borderDash:[4,4]}
             ]},
-        options: lineChartOptions(ptTooltipLabel)
+        options: {...lineChartOptions(ptTooltipLabel), maintainAspectRatio:false}
     });
 
     const ptCtx2 = document.getElementById('ptChart2').getContext('2d');
@@ -2603,6 +2620,55 @@
     }
     document.getElementById('ptStockValue').addEventListener('input', updatePortfolioValueField);
     document.getElementById('ptCash').addEventListener('input', updatePortfolioValueField);
+
+    function importPortfolioCSV(event){
+        const file = event.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e){
+            try{
+                const rows = parseCSV(e.target.result);
+                const headerIndex = findHeaderRowIndex(rows);
+                if(headerIndex === -1){
+                    alert('CSV-filen ser ikke ud til at have det rigtige format (mangler "Dato"-kolonne).');
+                    return;
+                }
+                const headers = rows[headerIndex];
+                const dataRows = rows.slice(headerIndex + 1);
+                const col = name => headers.indexOf(name);
+
+                let history = JSON.parse(localStorage.getItem('portfolioHistory') || '[]');
+                let importedCount = 0;
+
+                dataRows.forEach(row => {
+                    const date = row[idxDate];
+                    if(!date) return;
+                    const entry = {
+                        date: date,
+                        portfolioValue: parseDanishAmount(row[col('Porteføljeværdi')]),
+                        stockValue: parseDanishAmount(row[col('Aktieværdi')]),
+                        cash: parseDanishAmount(row[col('Kontant')]),
+                        traded: parseDanishAmount(row[col('Købt/solgt')]),
+                        deposit: parseDanishAmount(row[col('Indskud/udb.')]),
+                        dividend: parseDanishAmount(row[col('Udbytte')])
+                    };
+                    const existingIndex = history.findIndex(h => h.date === entry.date);
+                    if(existingIndex >= 0){ history[existingIndex] = entry; }
+                    else { history.push(entry); }
+                    importedCount++;
+                });
+
+                history.sort((a,b) => a.date.localeCompare(b.date));
+                localStorage.setItem('portfolioHistory', JSON.stringify(history));
+                renderPortfolioHistory();
+                alert(importedCount + ' datapunkt(er) importeret.');
+            } catch(err){
+                alert('Kunne ikke læse CSV-filen. Tjek at det er en fil eksporteret fra dette værktøj.');
+            }
+            event.target.value = '';
+        };
+        reader.readAsText(file, 'UTF-8');
+    }
 
     function savePortfolioSnapshot(){
         const entry = {
