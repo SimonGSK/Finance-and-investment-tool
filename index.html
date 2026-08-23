@@ -2281,7 +2281,7 @@
                 let importedCount = 0;
 
                 dataRows.forEach(row => {
-                    const date = row[idxDate];
+                    const date = row[col('Dato')];
                     if(!date) return;
                     const entry = {
                         date: date,
@@ -2641,7 +2641,7 @@
                 let importedCount = 0;
 
                 dataRows.forEach(row => {
-                    const date = row[idxDate];
+                    const date = row[col('Dato')];
                     if(!date) return;
                     const entry = {
                         date: date,
