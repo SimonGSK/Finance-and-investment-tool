@@ -6,6 +6,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+
+    <!-- TODO: Erstat "mitsite" med mit eget goatcounter brugernavn-->
+    <script data-goatcounter="https://mitsite.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+
+    <!-- TODO: Erstat ca-pub-XXXXXXXXXXXXXXXX med mit eget AdSense-udgiver-ID -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
     <style>
         :root{
             --bg:#0F1720;
@@ -37,7 +43,39 @@
             background:var(--bg);
             color:var(--text);
             font-family:'Inter',sans-serif;
+            padding:0;
+        }
+        .page-shell{
+            display:flex;
+            justify-content:center;
+            gap:16px;
+            min-height:100vh;
+        }
+        .site-content{
+            flex:1;
+            min-width:0;
             padding:28px;
+        }
+        .ad-slot{
+            flex-shrink:0;
+            width:160px;
+            position:sticky;
+            top:16px;
+            align-self:flex-start;
+            min-height:600px;
+            border:1px dashed var(--border);
+            border-radius:8px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:var(--muted);
+            font-size:11px;
+            font-family:'IBM Plex Mono',monospace;
+            text-align:center;
+            padding:8px;
+        }
+        @media (max-width:1400px){
+            .ad-slot{ display:none; }
         }
         h1{
             font-family:'Space Grotesk',sans-serif;
@@ -452,7 +490,24 @@
 </head>
 <body>
 
-<div class="topbar">
+<div class="page-shell">
+
+    <aside class="ad-slot">
+        <!-- Google AdSense-annonce (venstre) indsættes her, når I har jeres AdSense-kode -->
+        <!-- TODO: indsæt udgiver-ID i "ca-pub-xxxx..."-->
+        <!-- TODO: indsæt data-ad-slot-nummer i 'data-ad-slot="xxxxx..."' -->
+        <!-- TODO: Samtykke-/cookie-banner der spørger folk om lov. Google har en løsning man kan sætte op fra AdSense-konto-->
+        Annonceplads
+        <ins class="adsbygoogle"
+             style="display:block; width:160px; height:600px;"
+             data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+             data-ad-slot="XXXXXXXXXX"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </aside>
+
+    <div class="site-content">
+
+        <div class="topbar">
     <div>
         <h1>Investeringsværktøjer</h1>
         <p class="subtitle">Brug værktøjerne og udforsk dit investeringspotentiale.</p>
@@ -1197,6 +1252,23 @@
         </div>
 
     </div>
+</div>
+
+</div>
+
+<aside class="ad-slot">
+    <!-- Google AdSense-annonce (højre) indsættes her, når I har jeres AdSense-kode -->
+    <!-- TODO: indsæt udgiver-ID i "ca-pub-xxxx..."-->
+    <!-- TODO: indsæt data-ad-slot-nummer i 'data-ad-slot="xxxxx..."' -->
+    <!-- TODO: Samtykke-/cookie-banner der spørger folk om lov. Google har en løsning man kan sætte op fra AdSense-konto-->
+    Annonceplads
+    <ins class="adsbygoogle"
+         style="display:block; width:160px; height:600px;"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="XXXXXXXXXX"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</aside>
+
 </div>
 
 <script>
