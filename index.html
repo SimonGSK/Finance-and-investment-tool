@@ -101,6 +101,12 @@
             gap:20px;
             max-width:1600px;
         }
+        .layout-net-worth{
+            display:grid;
+            grid-template-columns:24.5fr 75.5fr;
+            gap:20px;
+            max-width:1600px;
+        }
         .full-width-above{
             max-width:1600px;
             margin-bottom:16px;
@@ -120,7 +126,7 @@
         }
         .layout-wide{
             display:grid;
-            grid-template-columns:35fr 65fr;
+            grid-template-columns:33fr 67fr;
             gap:20px;
             max-width:1600px;
         }
@@ -998,6 +1004,24 @@
 
     <button class="btn btn-secondary" style="margin-bottom:20px;" onclick="resetBudget()">Nulstil felter</button>
 
+    <div class="full-width-above">
+        <div class="stats">
+            <div class="stat">
+                <div class="label">Samlet budget</div>
+                <div class="value akt" id="budgetSumDisplay">0 kr.</div>
+            </div>
+            <div class="stat">
+                <div class="label">Penge tilbage</div>
+                <div class="value" id="budgetRemaining">–</div>
+            </div>
+            <div class="stat">
+                <div class="label">Årlig opsparing</div>
+                <div class="value ask" id="budgetYearlySavings">0 kr.</div>
+                <div class="sub">"Opsparing"-kategorien × 12</div>
+            </div>
+        </div>
+    </div>
+
     <div class="layout-wide">
 
         <div class="panel">
@@ -1055,54 +1079,34 @@
             </details>
         </div>
 
-        <div>
-            <div class="panel" style="margin-bottom:16px;">
-                <div class="stats">
-                    <div class="stat">
-                        <div class="label">Samlet budget</div>
-                        <div class="value akt" id="budgetSumDisplay">0 kr.</div>
-                    </div>
-                    <div class="stat">
-                        <div class="label">Penge tilbage</div>
-                        <div class="value" id="budgetRemaining">–</div>
-                    </div>
-                    <div class="stat">
-                        <div class="label">Årlig opsparing</div>
-                        <div class="value ask" id="budgetYearlySavings">0 kr.</div>
-                        <div class="sub">"Opsparing"-kategorien × 12</div>
-                    </div>
-                </div>
-            </div>
+        <div class="panel chart-panel">
+            <div class="eyebrow">Fordeling</div>
+            <div class="chart-wrap"><canvas id="budgetChart"></canvas></div>
+        </div>
 
-            <div class="panel" style="margin-bottom:16px;">
-                <div class="eyebrow">Fordeling</div>
-                <div style="max-width:600px; margin:0 auto;">
-                    <canvas id="budgetChart"></canvas>
-                </div>
-            </div>
+    </div>
 
-            <div class="panel">
-                <div class="eyebrow">50/30/20-reglen</div>
-                <p class="explainer" style="margin:0 0 14px 0; padding-top:0; border-top:none;">
-                    En tommelfingerregel for en sund budgetfordeling: højst 50% til behov (bolig, mad, transport, forsikring, faste regninger), højst 30% til ønsker (fritid, andet), og mindst 20% til opsparing. Kategorierne herunder grupperes automatisk.
-                </p>
-                <div class="stats">
-                    <div class="stat">
-                        <div class="label">Behov (mål: ≤50%)</div>
-                        <div class="value ask" id="ruleBehov">0%</div>
-                    </div>
-                    <div class="stat">
-                        <div class="label">Ønsker (mål: ≤30%)</div>
-                        <div class="value ask" id="ruleOnsker">0%</div>
-                    </div>
-                    <div class="stat">
-                        <div class="label">Opsparing (mål: ≥20%)</div>
-                        <div class="value ask" id="ruleOpsparing">0%</div>
-                    </div>
+    <div class="full-width-below">
+        <div class="panel">
+            <div class="eyebrow">50/30/20-reglen</div>
+            <p class="explainer" style="margin:0 0 14px 0; padding-top:0; border-top:none;">
+                En tommelfingerregel for en sund budgetfordeling: højst 50% til behov (bolig, mad, transport, forsikring, faste regninger), højst 30% til ønsker (fritid, andet), og mindst 20% til opsparing. Kategorierne herunder grupperes automatisk.
+            </p>
+            <div class="stats">
+                <div class="stat">
+                    <div class="label">Behov (mål: ≤50%)</div>
+                    <div class="value ask" id="ruleBehov">0%</div>
+                </div>
+                <div class="stat">
+                    <div class="label">Ønsker (mål: ≤30%)</div>
+                    <div class="value ask" id="ruleOnsker">0%</div>
+                </div>
+                <div class="stat">
+                    <div class="label">Opsparing (mål: ≥20%)</div>
+                    <div class="value ask" id="ruleOpsparing">0%</div>
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 
@@ -1111,7 +1115,29 @@
 
     <button class="btn btn-secondary" style="margin-bottom:20px;" onclick="resetNetWorth()">Nulstil felter</button>
 
-    <div class="layout">
+    <div class="full-width-above">
+        <div class="stats">
+            <div class="stat">
+                <div class="label">Aktiver i alt</div>
+                <div class="value ask" id="netAssetsTotal">0 kr.</div>
+            </div>
+            <div class="stat">
+                <div class="label">Likvid formue</div>
+                <div class="value ask" id="netLiquidTotal">0 kr.</div>
+                <div class="sub">kontanter + aktier</div>
+            </div>
+            <div class="stat">
+                <div class="label">Gæld i alt</div>
+                <div class="value" id="netDebtTotal">0 kr.</div>
+            </div>
+            <div class="stat">
+                <div class="label">Nettoformue</div>
+                <div class="value akt" id="netWorthTotal">0 kr.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layout-net-worth">
 
         <div class="panel">
             <div class="eyebrow">Aktiver</div>
@@ -1144,37 +1170,15 @@
             </div>
         </div>
 
-        <div>
-            <div class="panel" style="margin-bottom:16px;">
-                <div class="stats">
-                    <div class="stat">
-                        <div class="label">Aktiver i alt</div>
-                        <div class="value ask" id="netAssetsTotal">0 kr.</div>
-                    </div>
-                    <div class="stat">
-                        <div class="label">Likvid formue</div>
-                        <div class="value ask" id="netLiquidTotal">0 kr.</div>
-                        <div class="sub">kontanter + aktier</div>
-                    </div>
-                    <div class="stat">
-                        <div class="label">Gæld i alt</div>
-                        <div class="value" id="netDebtTotal">0 kr.</div>
-                    </div>
-                    <div class="stat">
-                        <div class="label">Nettoformue</div>
-                        <div class="value akt" id="netWorthTotal">0 kr.</div>
-                    </div>
-                </div>
-            </div>
+        <div class="panel chart-panel">
+            <div class="eyebrow">Fordeling af aktiver</div>
+            <div class="chart-wrap"><canvas id="netWorthChart"></canvas></div>
+        </div>
 
-            <div class="panel">
-                <div class="eyebrow">Fordeling af aktiver</div>
-                <div style="max-width:600px; margin:0 auto;">
-                    <canvas id="netWorthChart"></canvas>
-                </div>
-            </div>
+    </div>
 
-            <div class="panel" style="margin-top:16px;">
+    <div class="full-width-below">
+        <div class="panel" style="margin-bottom:16px;">
                 <div class="eyebrow">Formuehistorik</div>
                 <p class="explainer" style="margin:0 0 14px 0; padding-top:0; border-top:none;">
                     Gem et øjebliksbillede af din nettoformue for at følge udviklingen over tid. Vælg en tidligere dato, hvis du vil eftertilføje historiske tal. Data gemmes kun lokalt i din browser – ikke på en server, og er derfor ikke tilgængelig fra andre enheder eller browsere.
@@ -1252,7 +1256,6 @@
         </div>
 
     </div>
-</div>
 
 </div>
 
@@ -2017,6 +2020,7 @@
         },
         options:{
             responsive:true,
+            maintainAspectRatio:false,
             plugins:{
                 legend:{
                     display:true,
@@ -2197,6 +2201,7 @@
         },
         options:{
             responsive:true,
+            maintainAspectRatio:false,
             plugins:{
                 legend:{
                     display:true,
