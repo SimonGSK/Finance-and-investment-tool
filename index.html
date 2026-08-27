@@ -101,6 +101,12 @@
             gap:20px;
             max-width:1600px;
         }
+        .layout-net-worth{
+            display:grid;
+            grid-template-columns:24.5fr 75.5fr;
+            gap:20px;
+            max-width:1600px;
+        }
         .full-width-above{
             max-width:1600px;
             margin-bottom:16px;
@@ -120,7 +126,7 @@
         }
         .layout-wide{
             display:grid;
-            grid-template-columns:35fr 65fr;
+            grid-template-columns:33fr 67fr;
             gap:20px;
             max-width:1600px;
         }
@@ -998,6 +1004,24 @@
 
     <button class="btn btn-secondary" style="margin-bottom:20px;" onclick="resetBudget()">Nulstil felter</button>
 
+    <div class="full-width-above">
+        <div class="stats">
+            <div class="stat">
+                <div class="label">Samlet budget</div>
+                <div class="value akt" id="budgetSumDisplay">0 kr.</div>
+            </div>
+            <div class="stat">
+                <div class="label">Penge tilbage</div>
+                <div class="value" id="budgetRemaining">–</div>
+            </div>
+            <div class="stat">
+                <div class="label">Årlig opsparing</div>
+                <div class="value ask" id="budgetYearlySavings">0 kr.</div>
+                <div class="sub">"Opsparing"-kategorien × 12</div>
+            </div>
+        </div>
+    </div>
+
     <div class="layout-wide">
 
         <div class="panel">
@@ -1055,54 +1079,34 @@
             </details>
         </div>
 
-        <div>
-            <div class="panel" style="margin-bottom:16px;">
-                <div class="stats">
-                    <div class="stat">
-                        <div class="label">Samlet budget</div>
-                        <div class="value akt" id="budgetSumDisplay">0 kr.</div>
-                    </div>
-                    <div class="stat">
-                        <div class="label">Penge tilbage</div>
-                        <div class="value" id="budgetRemaining">–</div>
-                    </div>
-                    <div class="stat">
-                        <div class="label">Årlig opsparing</div>
-                        <div class="value ask" id="budgetYearlySavings">0 kr.</div>
-                        <div class="sub">"Opsparing"-kategorien × 12</div>
-                    </div>
-                </div>
-            </div>
+        <div class="panel chart-panel">
+            <div class="eyebrow">Fordeling</div>
+            <div class="chart-wrap"><canvas id="budgetChart"></canvas></div>
+        </div>
 
-            <div class="panel" style="margin-bottom:16px;">
-                <div class="eyebrow">Fordeling</div>
-                <div style="max-width:600px; margin:0 auto;">
-                    <canvas id="budgetChart"></canvas>
-                </div>
-            </div>
+    </div>
 
-            <div class="panel">
-                <div class="eyebrow">50/30/20-reglen</div>
-                <p class="explainer" style="margin:0 0 14px 0; padding-top:0; border-top:none;">
-                    En tommelfingerregel for en sund budgetfordeling: højst 50% til behov (bolig, mad, transport, forsikring, faste regninger), højst 30% til ønsker (fritid, andet), og mindst 20% til opsparing. Kategorierne herunder grupperes automatisk.
-                </p>
-                <div class="stats">
-                    <div class="stat">
-                        <div class="label">Behov (mål: ≤50%)</div>
-                        <div class="value ask" id="ruleBehov">0%</div>
-                    </div>
-                    <div class="stat">
-                        <div class="label">Ønsker (mål: ≤30%)</div>
-                        <div class="value ask" id="ruleOnsker">0%</div>
-                    </div>
-                    <div class="stat">
-                        <div class="label">Opsparing (mål: ≥20%)</div>
-                        <div class="value ask" id="ruleOpsparing">0%</div>
-                    </div>
+    <div class="full-width-below">
+        <div class="panel">
+            <div class="eyebrow">50/30/20-reglen</div>
+            <p class="explainer" style="margin:0 0 14px 0; padding-top:0; border-top:none;">
+                En tommelfingerregel for en sund budgetfordeling: højst 50% til behov (bolig, mad, transport, forsikring, faste regninger), højst 30% til ønsker (fritid, andet), og mindst 20% til opsparing. Kategorierne herunder grupperes automatisk.
+            </p>
+            <div class="stats">
+                <div class="stat">
+                    <div class="label">Behov (mål: ≤50%)</div>
+                    <div class="value ask" id="ruleBehov">0%</div>
+                </div>
+                <div class="stat">
+                    <div class="label">Ønsker (mål: ≤30%)</div>
+                    <div class="value ask" id="ruleOnsker">0%</div>
+                </div>
+                <div class="stat">
+                    <div class="label">Opsparing (mål: ≥20%)</div>
+                    <div class="value ask" id="ruleOpsparing">0%</div>
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 
@@ -1111,7 +1115,29 @@
 
     <button class="btn btn-secondary" style="margin-bottom:20px;" onclick="resetNetWorth()">Nulstil felter</button>
 
-    <div class="layout">
+    <div class="full-width-above">
+        <div class="stats">
+            <div class="stat">
+                <div class="label">Aktiver i alt</div>
+                <div class="value ask" id="netAssetsTotal">0 kr.</div>
+            </div>
+            <div class="stat">
+                <div class="label">Likvid formue</div>
+                <div class="value ask" id="netLiquidTotal">0 kr.</div>
+                <div class="sub">kontanter + aktier</div>
+            </div>
+            <div class="stat">
+                <div class="label">Gæld i alt</div>
+                <div class="value" id="netDebtTotal">0 kr.</div>
+            </div>
+            <div class="stat">
+                <div class="label">Nettoformue</div>
+                <div class="value akt" id="netWorthTotal">0 kr.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layout-net-worth">
 
         <div class="panel">
             <div class="eyebrow">Aktiver</div>
@@ -1144,37 +1170,15 @@
             </div>
         </div>
 
-        <div>
-            <div class="panel" style="margin-bottom:16px;">
-                <div class="stats">
-                    <div class="stat">
-                        <div class="label">Aktiver i alt</div>
-                        <div class="value ask" id="netAssetsTotal">0 kr.</div>
-                    </div>
-                    <div class="stat">
-                        <div class="label">Likvid formue</div>
-                        <div class="value ask" id="netLiquidTotal">0 kr.</div>
-                        <div class="sub">kontanter + aktier</div>
-                    </div>
-                    <div class="stat">
-                        <div class="label">Gæld i alt</div>
-                        <div class="value" id="netDebtTotal">0 kr.</div>
-                    </div>
-                    <div class="stat">
-                        <div class="label">Nettoformue</div>
-                        <div class="value akt" id="netWorthTotal">0 kr.</div>
-                    </div>
-                </div>
-            </div>
+        <div class="panel chart-panel">
+            <div class="eyebrow">Fordeling af aktiver</div>
+            <div class="chart-wrap"><canvas id="netWorthChart"></canvas></div>
+        </div>
 
-            <div class="panel">
-                <div class="eyebrow">Fordeling af aktiver</div>
-                <div style="max-width:600px; margin:0 auto;">
-                    <canvas id="netWorthChart"></canvas>
-                </div>
-            </div>
+    </div>
 
-            <div class="panel" style="margin-top:16px;">
+    <div class="full-width-below">
+        <div class="panel" style="margin-bottom:16px;">
                 <div class="eyebrow">Formuehistorik</div>
                 <p class="explainer" style="margin:0 0 14px 0; padding-top:0; border-top:none;">
                     Gem et øjebliksbillede af din nettoformue for at følge udviklingen over tid. Vælg en tidligere dato, hvis du vil eftertilføje historiske tal. Data gemmes kun lokalt i din browser – ikke på en server, og er derfor ikke tilgængelig fra andre enheder eller browsere.
@@ -1245,16 +1249,44 @@
                 </div>
             </div>
 
-            <div class="panel" style="margin-top:16px;">
-                <div class="eyebrow">Milepæle</div>
-                <div id="milestonesContainer"></div>
-            </div>
+        <div class="panel" style="margin-top:16px;">
+            <div class="eyebrow">Milepæle</div>
+            <div id="milestonesContainer"></div>
         </div>
 
+        <div class="panel" style="margin-top:16px;">
+            <div class="eyebrow">Hvor rig er jeg?</div>
+            <p class="explainer" style="margin:0 0 14px 0; padding-top:0; border-top:none;">
+                Sammenlign din nuværende nettoformue (fra felterne ovenfor) med andre danskere på din alder. Baseret på et uddrag af CEPOS' formueopgørelse (oprindeligt fra Danmarks Statistik, 2022-tal opregnet til 2025-niveau) – kun til sjov og inspiration, ikke en videnskabelig præcis sammenligning.
+            </p>
+
+            <div class="field" style="max-width:200px;">
+                <label>Din alder</label>
+                <input type="number" id="wealthAge" class="number-input" value="30" min="18" max="90">
+            </div>
+
+            <div class="stats" style="margin-top:16px;">
+                <div class="stat">
+                    <div class="label">Din nettoformue</div>
+                    <div class="value akt" id="wealthCompareValue">0 kr.</div>
+                </div>
+                <div class="stat">
+                    <div class="label">Placering</div>
+                    <div class="value ask" id="wealthPercentile">–</div>
+                    <div class="sub" id="wealthPercentileSub"></div>
+                </div>
+                <div class="stat">
+                    <div class="label">Median for din aldersgruppe</div>
+                    <div class="value" id="wealthMedian">–</div>
+                </div>
+            </div>
+
+            <div class="eyebrow" style="margin-top:22px;">Din formue svarer til...</div>
+            <div id="purchasingPowerContainer" style="font-size:14px; line-height:1.9; color:var(--text);"></div>
+        </div>
     </div>
 </div>
-
-</div>
+    </div>
 
 <aside class="ad-slot">
     <!-- Google AdSense-annonce (højre) indsættes her, når I har jeres AdSense-kode -->
@@ -2017,6 +2049,7 @@
         },
         options:{
             responsive:true,
+            maintainAspectRatio:false,
             plugins:{
                 legend:{
                     display:true,
@@ -2197,6 +2230,7 @@
         },
         options:{
             responsive:true,
+            maintainAspectRatio:false,
             plugins:{
                 legend:{
                     display:true,
@@ -2245,6 +2279,95 @@
         return NET_WORTH_CATEGORIES.reduce((sum, cat) => cat.liquid ? sum + (parseFloat(document.getElementById(cat.id).value) || 0) : sum, 0);
     }
 
+    // Uddrag af CEPOS' formueopgørelse (Danmarks Statistik, 2022-tal opregnet til
+    // 2025-niveau) - 16 alderstrin i stedet for alle 73, vi regner lineært imellem.
+    const CEPOS_WEALTH_TABLE = [
+        {age:18, p10:3000, p25:10000, p50:38000, p75:88000, p90:175000, p95:282000, p99:926000},
+        {age:20, p10:1000, p25:16000, p50:57000, p75:136000, p90:269000, p95:433000, p99:1320000},
+        {age:25, p10:-96000, p25:9000, p50:82000, p75:240000, p90:591000, p95:938000, p99:2330000},
+        {age:30, p10:-196000, p25:21000, p50:221000, p75:598000, p90:1113000, p95:1584000, p99:3956000},
+        {age:35, p10:-153000, p25:99000, p50:475000, p75:1041000, p90:1792000, p95:2515000, p99:6636000},
+        {age:40, p10:-43000, p25:233000, p50:790000, p75:1551000, p90:2619000, p95:3718000, p99:10912000},
+        {age:45, p10:34000, p25:464000, p50:1180000, p75:2165000, p90:3629000, p95:5340000, p99:17385000},
+        {age:50, p10:115000, p25:695000, p50:1549000, p75:2763000, p90:4753000, p95:7199000, p99:24047000},
+        {age:55, p10:173000, p25:842000, p50:1815000, p75:3245000, p90:5613000, p95:8607000, p99:28417000},
+        {age:60, p10:262000, p25:1028000, p50:2147000, p75:3804000, p90:6391000, p95:9414000, p99:26968000},
+        {age:65, p10:366000, p25:1207000, p50:2415000, p75:4182000, p90:6768000, p95:9571000, p99:24358000},
+        {age:70, p10:309000, p25:1019000, p50:2214000, p75:4002000, p90:6597000, p95:9446000, p99:23098000},
+        {age:75, p10:257000, p25:828000, p50:1919000, p75:3584000, p90:6122000, p95:8991000, p99:22813000},
+        {age:80, p10:167000, p25:574000, p50:1515000, p75:3013000, p90:5380000, p95:8038000, p99:20629000},
+        {age:85, p10:117000, p25:380000, p50:1159000, p75:2446000, p90:4463000, p95:6554000, p99:17001000},
+        {age:90, p10:85000, p25:265000, p50:925000, p75:2164000, p90:4046000, p95:5999000, p99:14732000}
+    ];
+
+    function findNearestWealthRow(age){
+        const clampedAge = Math.max(18, Math.min(90, age));
+        return CEPOS_WEALTH_TABLE.reduce((closest, row) =>
+            Math.abs(row.age - clampedAge) < Math.abs(closest.age - clampedAge) ? row : closest
+        );
+    }
+
+    // Regner en cirka-percentil ud fra formuen, ved at interpolere lineært
+    // imellem de kendte procentgrænser (10/25/50/75/90/95/99) for aldersgruppen.
+    function estimatePercentile(netWorth, row){
+        const points = [
+            {p:0, v: row.p10 - (row.p25 - row.p10)},
+            {p:10, v: row.p10},
+            {p:25, v: row.p25},
+            {p:50, v: row.p50},
+            {p:75, v: row.p75},
+            {p:90, v: row.p90},
+            {p:95, v: row.p95},
+            {p:99, v: row.p99},
+            {p:100, v: row.p99 + (row.p99 - row.p95)}
+        ];
+        for(let i=1; i<points.length; i++){
+            if(netWorth <= points[i].v){
+                const a = points[i-1], b = points[i];
+                const frac = (netWorth - a.v) / ((b.v - a.v) || 1);
+                return Math.max(0, Math.min(100, Math.round(a.p + frac*(b.p-a.p))));
+            }
+        }
+        return 100;
+    }
+
+    // Sjove, omtrentlige priser - juster frit efter smag. Bruges kun til
+    // "din formue svarer til X ting"-sammenligningen, ikke til noget seriøst.
+    const FUN_ITEMS = [
+        {label:'bananer', price:3},
+        {label:'iPhone 17', price:7499},
+        {label:'kvadratmeters lejlighed i Kbh K', price:85760},
+        {label:'Fiat 500 (2026)', price:189990},
+        {label:'Porsche 911 GT3 RS med danske afgifter', price:4910783}
+    ];
+
+    function renderPurchasingPower(netWorth){
+        const container = document.getElementById('purchasingPowerContainer');
+        if(netWorth <= 0){
+            container.innerHTML = '<span style="color:var(--muted);">Udfyld dine aktiver ovenfor for at se det her.</span>';
+            return;
+        }
+        container.innerHTML = FUN_ITEMS.map(item => {
+            const qty = netWorth / item.price;
+            const qtyDisplay = qty >= 10 ? Math.round(qty).toLocaleString('da-DK') : qty.toFixed(1).replace('.', ',');
+            return `<div>💰 <strong>${qtyDisplay}</strong> ${item.label}</div>`;
+        }).join('');
+    }
+
+    function updateWealthComparison(){
+        const netWorth = computeLiveNetWorth();
+        const age = parseInt(document.getElementById('wealthAge').value) || 30;
+        const row = findNearestWealthRow(age);
+        const percentile = estimatePercentile(netWorth, row);
+
+        document.getElementById('wealthCompareValue').textContent = DK.format(netWorth) + ' kr.';
+        document.getElementById('wealthPercentile').textContent = 'Top ' + Math.max(1, 100-percentile) + '%';
+        document.getElementById('wealthPercentileSub').textContent = 'du har mere end ca. ' + percentile + '% af din aldersgruppe';
+        document.getElementById('wealthMedian').textContent = DK.format(row.p50) + ' kr.';
+
+        renderPurchasingPower(netWorth);
+    }
+
     function updateNetWorth(){
         const values = NET_WORTH_CATEGORIES.map(cat => parseFloat(document.getElementById(cat.id).value) || 0);
         const assetsTotal = values.reduce((a,b) => a+b, 0);
@@ -2263,6 +2386,7 @@
         netWorthChart.update();
         saveNetWorthToStorage();
         renderRecordAndMilestones();
+        updateWealthComparison();
     }
 
     function resetNetWorth(){
@@ -2275,6 +2399,7 @@
     loadNetWorthFromStorage();
     NET_WORTH_CATEGORIES.forEach(cat => document.getElementById(cat.id).addEventListener('input', updateNetWorth));
     document.getElementById('netDebt').addEventListener('input', updateNetWorth);
+    document.getElementById('wealthAge').addEventListener('input', updateWealthComparison);
     updateNetWorth();
 
     let netWorthHistoryChart = null;
