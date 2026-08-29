@@ -311,7 +311,34 @@ input[type=range]{
     color:#0F1720;
     border-color:var(--akt);
 }
-
+.intro-banner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-left:3px solid var(--akt);
+    border-radius:8px;
+    padding:14px 16px;
+    margin-bottom:20px;
+    font-size:13px;
+    color:var(--text);
+    max-width:1600px;
+}
+.intro-banner button{
+    background:transparent;
+    border:none;
+    color:var(--muted);
+    font-size:18px;
+    cursor:pointer;
+    flex-shrink:0;
+    line-height:1;
+    padding:0 4px;
+}
+.intro-banner button:hover{
+    color:var(--text);
+}
 .data-table-wrap{
     max-height:340px;
     overflow-y:auto;
