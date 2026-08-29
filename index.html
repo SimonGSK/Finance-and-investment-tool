@@ -16,46 +16,46 @@
 </head>
 <body>
 
-<div class="page-shell">
+    <div class="page-shell">
 
-    <aside class="ad-slot">
-        <!-- Google AdSense-annonce (venstre) indsættes her, når I har jeres AdSense-kode -->
-        <!-- TODO: indsæt udgiver-ID i "ca-pub-xxxx..."-->
-        <!-- TODO: indsæt data-ad-slot-nummer i 'data-ad-slot="xxxxx..."' -->
-        <!-- TODO: Samtykke-/cookie-banner der spørger folk om lov. Google har en løsning man kan sætte op fra AdSense-konto-->
-        Annonceplads
-        <ins class="adsbygoogle"
-             style="display:block; width:160px; height:600px;"
-             data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-             data-ad-slot="XXXXXXXXXX"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-    </aside>
+        <aside class="ad-slot">
+            <!-- Google AdSense-annonce (venstre) indsættes her, når I har jeres AdSense-kode -->
+            <!-- TODO: indsæt udgiver-ID i "ca-pub-xxxx..."-->
+            <!-- TODO: indsæt data-ad-slot-nummer i 'data-ad-slot="xxxxx..."' -->
+            <!-- TODO: Samtykke-/cookie-banner der spørger folk om lov. Google har en løsning man kan sætte op fra AdSense-konto-->
+            Annonceplads
+            <ins class="adsbygoogle"
+                 style="display:block; width:160px; height:600px;"
+                 data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                 data-ad-slot="XXXXXXXXXX"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </aside>
 
-    <div class="site-content">
+        <div class="site-content">
 
-        <div class="topbar">
-    <div>
-        <h1>Investeringsværktøjer</h1>
-        <p class="subtitle">Brug værktøjerne og udforsk dit investeringspotentiale.</p>
+            <div class="topbar">
+        <div>
+            <h1>Økonomiværktøjer</h1>
+            <p class="subtitle">Brug værktøjerne og udforsk dit økonomiske potentiale.</p>
+        </div>
+        <button class="settings-btn" id="settingsBtn" onclick="toggleSettings()">⚙️</button>
     </div>
-    <button class="settings-btn" id="settingsBtn" onclick="toggleSettings()">⚙️</button>
-</div>
 
-<div class="settings-panel" id="settingsPanel" style="display:none;">
-    <div class="eyebrow" style="margin-bottom:12px;">Indstillinger</div>
-    <label class="toggle-row">
-        <input type="checkbox" id="lightTheme">
-        Lyst tema
-    </label>
-</div>
+    <div class="settings-panel" id="settingsPanel" style="display:none;">
+        <div class="eyebrow" style="margin-bottom:12px;">Indstillinger</div>
+        <label class="toggle-row">
+            <input type="checkbox" id="lightTheme">
+            Lyst tema
+        </label>
+    </div>
 
-<div class="top-tabs">
-    <button class="top-tab-btn active" id="topTabBtn1" onclick="showSection('tools')">Investering</button>
-    <button class="top-tab-btn" id="topTabBtn2" onclick="showSection('budget')">Budget</button>
-    <button class="top-tab-btn" id="topTabBtn3" onclick="showSection('formue')">Formue</button>
-</div>
+    <div class="top-tabs">
+        <button class="top-tab-btn active" id="topTabBtn1" onclick="showSection('tools')">Investering</button>
+        <button class="top-tab-btn" id="topTabBtn2" onclick="showSection('budget')">Budget</button>
+        <button class="top-tab-btn" id="topTabBtn3" onclick="showSection('formue')">Formue</button>
+    </div>
 
-<div id="section-tools">
+    <div id="section-tools">
 
     <div class="tabs">
         <button class="tab-btn active" id="tabBtn1" onclick="showTool(1)">ASK vs. Aktiedepot</button>
@@ -463,7 +463,6 @@
                 </div>
                 <div class="chart-wrap"><canvas id="ptChart1"></canvas></div>
             </div>
-
         </div>
 
         <div class="full-width-below">
@@ -808,85 +807,28 @@
 </div>
     </div>
 
-<aside class="ad-slot">
-    <!-- Google AdSense-annonce (højre) indsættes her, når I har jeres AdSense-kode -->
-    <!-- TODO: indsæt udgiver-ID i "ca-pub-xxxx..."-->
-    <!-- TODO: indsæt data-ad-slot-nummer i 'data-ad-slot="xxxxx..."' -->
-    <!-- TODO: Samtykke-/cookie-banner der spørger folk om lov. Google har en løsning man kan sætte op fra AdSense-konto-->
-    Annonceplads
-    <ins class="adsbygoogle"
-         style="display:block; width:160px; height:600px;"
-         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-         data-ad-slot="XXXXXXXXXX"></ins>
-    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-</aside>
+        <aside class="ad-slot">
+            <!-- Google AdSense-annonce (højre) indsættes her, når I har jeres AdSense-kode -->
+            <!-- TODO: indsæt udgiver-ID i "ca-pub-xxxx..."-->
+            <!-- TODO: indsæt data-ad-slot-nummer i 'data-ad-slot="xxxxx..."' -->
+            <!-- TODO: Samtykke-/cookie-banner der spørger folk om lov. Google har en løsning man kan sætte op fra AdSense-konto-->
+            Annonceplads
+            <ins class="adsbygoogle"
+                 style="display:block; width:160px; height:600px;"
+                 data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                 data-ad-slot="XXXXXXXXXX"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </aside>
+    </div>
 
-</div>
-
-<script>
-    function getCSSVar(name){
-        return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-    }
-
-    function applyLineChartTheme(chartInstance){
-        if(!chartInstance) return;
-        const gridColor = getCSSVar('--chart-grid');
-        const tickColor = getCSSVar('--muted');
-        const tooltipBg = getCSSVar('--tooltip-bg');
-        const tooltipBorder = getCSSVar('--border');
-        const textColor = getCSSVar('--text');
-
-        chartInstance.options.scales.x.grid.color = gridColor;
-        chartInstance.options.scales.x.ticks.color = tickColor;
-        if(chartInstance.options.scales.x.title) chartInstance.options.scales.x.title.color = tickColor;
-        chartInstance.options.scales.y.grid.color = gridColor;
-        chartInstance.options.scales.y.ticks.color = tickColor;
-        chartInstance.options.plugins.tooltip.backgroundColor = tooltipBg;
-        chartInstance.options.plugins.tooltip.borderColor = tooltipBorder;
-        chartInstance.options.plugins.tooltip.titleColor = textColor;
-        chartInstance.options.plugins.tooltip.bodyColor = textColor;
-        chartInstance.update();
-    }
-
-    function applyDoughnutChartTheme(chartInstance){
-        if(!chartInstance) return;
-        const tickColor = getCSSVar('--muted');
-        const tooltipBg = getCSSVar('--tooltip-bg');
-        const tooltipBorder = getCSSVar('--border');
-        const textColor = getCSSVar('--text');
-        const sliceBorder = getCSSVar('--panel');
-
-        chartInstance.options.plugins.legend.labels.color = tickColor;
-        chartInstance.options.plugins.tooltip.backgroundColor = tooltipBg;
-        chartInstance.options.plugins.tooltip.borderColor = tooltipBorder;
-        chartInstance.options.plugins.tooltip.titleColor = textColor;
-        chartInstance.options.plugins.tooltip.bodyColor = textColor;
-        chartInstance.data.datasets[0].borderColor = sliceBorder;
-        chartInstance.update();
-    }
-
-    function applyAllChartThemes(){
-        [chart, chart2, chart3, netWorthHistoryChart, ptChart1, ptChart2, ptChart3, ptChart4].forEach(applyLineChartTheme);
-        [budgetChart, netWorthChart].forEach(applyDoughnutChartTheme);
-    }
-
-    function setTheme(theme){
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-        applyAllChartThemes();
-    }
-
-    document.getElementById('lightTheme').addEventListener('change', () => {
-        setTheme(document.getElementById('lightTheme').checked ? 'light' : 'dark');
-    });
-
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    if(savedTheme === 'light'){
-        document.getElementById('lightTheme').checked = true;
-    }
-    applyAllChartThemes();
-</script>
-
+    <script src="js/shared.js"></script>
+    <script src="js/tool1-ask-akt.js"></script>
+    <script src="js/tool2-monthly.js"></script>
+    <script src="js/tool3-fire.js"></script>
+    <script src="js/tool4-portfolio.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/budget.js"></script>
+    <script src="js/net-worth.js"></script>
+    <script src="js/theme.js"></script>
 </body>
 </html>
