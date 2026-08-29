@@ -40,16 +40,20 @@
         </div>
         <button class="settings-btn" id="settingsBtn" onclick="toggleSettings()">⚙️</button>
     </div>
+        <div class="settings-panel" id="settingsPanel" style="display:none;">
+            <div class="eyebrow" style="margin-bottom:12px;">Indstillinger</div>
+            <label class="toggle-row">
+                <input type="checkbox" id="lightTheme">
+                Lyst tema
+            </label>
+        </div>
 
-    <div class="settings-panel" id="settingsPanel" style="display:none;">
-        <div class="eyebrow" style="margin-bottom:12px;">Indstillinger</div>
-        <label class="toggle-row">
-            <input type="checkbox" id="lightTheme">
-            Lyst tema
-        </label>
-    </div>
+        <div class="intro-banner" id="introBanner" style="display:none;">
+            <span>👋 Data gemmes kun lokalt i denne browser – ingen konti, intet login, og intet sendes til en server. Rydder du browserdata, forsvinder dine tal.</span>
+            <button onclick="dismissIntroBanner()" aria-label="Luk">✕</button>
+        </div>
 
-    <div class="top-tabs">
+        <div class="top-tabs">
         <button class="top-tab-btn active" id="topTabBtn1" onclick="showSection('tools')">Investering</button>
         <button class="top-tab-btn" id="topTabBtn2" onclick="showSection('budget')">Budget</button>
         <button class="top-tab-btn" id="topTabBtn3" onclick="showSection('formue')">Formue</button>

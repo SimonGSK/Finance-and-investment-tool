@@ -45,6 +45,15 @@ function showSection(name){
     if(name==='formue'){ netWorthChart.resize(); netWorthHistoryChart.resize(); }
 }
 
+function dismissIntroBanner(){
+    document.getElementById('introBanner').style.display = 'none';
+    localStorage.setItem('hasSeenIntroBanner', 'true');
+}
+
+if(!localStorage.getItem('hasSeenIntroBanner')){
+    document.getElementById('introBanner').style.display = 'flex';
+}
+
 function toggleSettings(){
     const panel = document.getElementById('settingsPanel');
     panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
