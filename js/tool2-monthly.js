@@ -211,4 +211,3 @@ bindSliderAndNumber('inflation2', 'inflation2Number', update2);
 showReal2Input.addEventListener('input', update2);
 
 update2();
-
