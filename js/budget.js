@@ -173,6 +173,7 @@ function updateBudget(){
 
     budgetChart.data.datasets[0].data = values;
     budgetChart.update();
+    document.getElementById('budgetChartEmpty').style.display = sum > 0 ? 'none' : 'flex';
     saveBudgetToStorage();
 }
 

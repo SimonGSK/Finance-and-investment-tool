@@ -231,6 +231,11 @@ function renderPortfolioHistory(){
         document.getElementById('ptTotalDividend').textContent = '–';
     }
 
+    const ptHasData = enriched.length > 0;
+    ['ptChart1Empty', 'ptChart2Empty', 'ptChart3Empty', 'ptChart4Empty'].forEach(id => {
+        document.getElementById(id).style.display = ptHasData ? 'none' : 'flex';
+    });
+
     const ptTableBody = document.getElementById('ptTableBody');
     ptTableBody.innerHTML = enriched.map(h => `<tr>
             <td>${h.date}</td>
