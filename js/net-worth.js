@@ -175,6 +175,7 @@ function updateNetWorth(){
 
     netWorthChart.data.datasets[0].data = values;
     netWorthChart.update();
+    document.getElementById('netWorthChartEmpty').style.display = assetsTotal > 0 ? 'none' : 'flex';
     saveNetWorthToStorage();
     renderRecordAndMilestones();
     updateWealthComparison();
@@ -356,6 +357,10 @@ function renderNetWorthHistory(){
             <td>${DK.format(h.value)} kr.</td>
             <td><button class="btn btn-secondary" style="padding:4px 10px; font-size:12px;" onclick="deleteNetWorthEntry('${h.date}')">Slet</button></td>
         </tr>`).join('');
+
+    const netWorthHasHistory = history.length > 0;
+    document.getElementById('netWorthHistoryChartEmpty').style.display = netWorthHasHistory ? 'none' : 'flex';
+    document.getElementById('netWorthCompositionChartEmpty').style.display = netWorthHasHistory ? 'none' : 'flex';
 
     renderNetWorthComposition(history);
     renderRecordAndMilestones();

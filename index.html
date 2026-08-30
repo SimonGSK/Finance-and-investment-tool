@@ -465,7 +465,10 @@
                     <span><i class="dot" style="background:var(--akt)"></i>Porteføljeværdi</span>
                     <span><i class="dot" style="background:var(--ask)"></i>Kumuleret indskud/udbetaling</span>
                 </div>
-                <div class="chart-wrap"><canvas id="ptChart1"></canvas></div>
+                <div class="chart-wrap">
+                    <canvas id="ptChart1"></canvas>
+                    <div class="chart-empty-state" id="ptChart1Empty">Ingen data endnu – gem dit første datapunkt til venstre for at se grafen.</div>
+                </div>
             </div>
         </div>
 
@@ -475,7 +478,10 @@
                     <span><i class="dot" style="background:var(--akt)"></i>Aktieværdi</span>
                     <span><i class="dot" style="background:#9B7EDE"></i>Køb/solgt (pr. måned)</span>
                 </div>
-                <canvas id="ptChart2"></canvas>
+                <div class="chart-wrap">
+                    <canvas id="ptChart2"></canvas>
+                    <div class="chart-empty-state" id="ptChart2Empty">Ingen data endnu – gem dit første datapunkt til venstre for at se grafen.</div>
+                </div>
             </div>
 
             <div class="panel" style="margin-bottom:16px;">
@@ -483,14 +489,20 @@
                     <span><i class="dot" style="background:var(--akt)"></i>Aktieværdi</span>
                     <span><i class="dot" style="background:var(--ask)"></i>Totalt investeret</span>
                 </div>
-                <canvas id="ptChart3"></canvas>
+                <div class="chart-wrap">
+                    <canvas id="ptChart3"></canvas>
+                    <div class="chart-empty-state" id="ptChart3Empty">Ingen data endnu – gem dit første datapunkt til venstre for at se grafen.</div>
+                </div>
             </div>
 
             <div class="panel" style="margin-bottom:16px;">
                 <div class="legend">
                     <span><i class="dot" style="background:var(--akt)"></i>Totalt afkast</span>
                 </div>
-                <canvas id="ptChart4"></canvas>
+                <div class="chart-wrap">
+                    <canvas id="ptChart4"></canvas>
+                    <div class="chart-empty-state" id="ptChart4Empty">Ingen data endnu – gem dit første datapunkt til venstre for at se grafen.</div>
+                </div>
             </div>
 
             <div class="panel">
@@ -604,7 +616,10 @@
 
         <div class="panel chart-panel">
             <div class="eyebrow">Fordeling</div>
-            <div class="chart-wrap"><canvas id="budgetChart"></canvas></div>
+            <div class="chart-wrap">
+                <canvas id="budgetChart"></canvas>
+                <div class="chart-empty-state" id="budgetChartEmpty">Udfyld dine kategorier til venstre for at se fordelingen her.</div>
+            </div>
         </div>
 
     </div>
@@ -695,28 +710,32 @@
 
         <div class="panel chart-panel">
             <div class="eyebrow">Fordeling af aktiver</div>
-            <div class="chart-wrap"><canvas id="netWorthChart"></canvas></div>
+            <div class="chart-wrap">
+                <canvas id="netWorthChart"></canvas>
+                <div class="chart-empty-state" id="netWorthChartEmpty">Udfyld dine aktiver til venstre for at se fordelingen her.</div>
+            </div>
         </div>
 
     </div>
 
     <div class="full-width-below">
         <div class="panel" style="margin-bottom:16px;">
-                <div class="eyebrow">Formuehistorik</div>
-                <p class="explainer" style="margin:0 0 14px 0; padding-top:0; border-top:none;">
-                    Gem et øjebliksbillede af din nettoformue for at følge udviklingen over tid. Vælg en tidligere dato, hvis du vil eftertilføje historiske tal. Data gemmes kun lokalt i din browser – ikke på en server, og er derfor ikke tilgængelig fra andre enheder eller browsere.
-                </p>
+            <div class="eyebrow">Formuehistorik</div>
+            <p class="explainer" style="margin:0 0 14px 0; padding-top:0; border-top:none;">
+                Gem et øjebliksbillede af din nettoformue for at følge udviklingen over tid. Vælg en tidligere dato, hvis du vil eftertilføje historiske tal. Data gemmes kun lokalt i din browser – ikke på en server, og er derfor ikke tilgængelig fra andre enheder eller browsere.
+            </p>
 
-                <div class="field" style="max-width:220px; margin-bottom:14px;">
-                    <label>Dato</label>
-                    <input type="date" id="snapshotDate" class="number-input">
-                </div>
+            <div class="field" style="max-width:220px; margin-bottom:14px;">
+                <label>Dato</label>
+                <input type="date" id="snapshotDate" class="number-input">
+            </div>
 
-                <button class="btn" onclick="saveNetWorthSnapshot()">+ Gem formue for valgt dato</button>
-                <button class="btn btn-secondary" style="margin-left:8px;" onclick="clearNetWorthHistory()">Ryd hele historikken</button>
-                <div style="position:relative; width:100%; margin-top:18px;">
-                    <canvas id="netWorthHistoryChart"></canvas>
-                </div>
+            <button class="btn" onclick="saveNetWorthSnapshot()">+ Gem formue for valgt dato</button>
+            <button class="btn btn-secondary" style="margin-left:8px;" onclick="clearNetWorthHistory()">Ryd hele historikken</button>
+            <div class="chart-wrap" style="margin-top:18px;">
+                <canvas id="netWorthHistoryChart"></canvas>
+                <div class="chart-empty-state" id="netWorthHistoryChartEmpty">Ingen data endnu – gem et øjebliksbillede af din formue for at se udviklingen her.</div>
+            </div>
 
                 <div class="data-table-wrap" style="margin-top:16px; max-height:280px;">
                     <table class="data-table">
@@ -753,7 +772,10 @@
                     <span><i class="dot" style="background:#8B96A3"></i>Andet</span>
                     <span><i class="dot" style="background:#E85C4A"></i>Gæld</span>
                 </div>
-                <canvas id="netWorthCompositionChart"></canvas>
+                <div class="chart-wrap">
+                    <canvas id="netWorthCompositionChart"></canvas>
+                    <div class="chart-empty-state" id="netWorthCompositionChartEmpty">Ingen data endnu – gem et øjebliksbillede af din formue for at se sammensætningen her.</div>
+                </div>
             </div>
 
             <div class="panel" style="margin-top:16px;">
