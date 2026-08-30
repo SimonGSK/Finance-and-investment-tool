@@ -54,9 +54,26 @@ document.getElementById('lightTheme').addEventListener('change', () => {
     setTheme(document.getElementById('lightTheme').checked ? 'light' : 'dark');
 });
 
-const savedTheme = localStorage.getItem('theme') || 'dark';
+function getSystemTheme(){
+    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+}
+
+const storedTheme = localStorage.getItem('theme');
+const savedTheme = storedTheme || getSystemTheme();
 document.documentElement.setAttribute('data-theme', savedTheme);
 if(savedTheme === 'light'){
     document.getElementById('lightTheme').checked = true;
 }
 applyAllChartThemes();
+
+// Så længe brugeren IKKE selv har valgt et tema manuelt (dvs. intet gemt endnu),
+// følger siden systemets tema live - også hvis man skifter det, mens siden er åben.
+if(!storedTheme){
+    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+        if(localStorage.getItem('theme')) return; // brugeren har nu valgt manuelt undervejs - stop med at følge
+        const theme = e.matches ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+        document.getElementById('lightTheme').checked = (theme === 'light');
+        applyAllChartThemes();
+    });
+}
