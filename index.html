@@ -40,13 +40,19 @@
         </div>
         <button class="settings-btn" id="settingsBtn" onclick="toggleSettings()">⚙️</button>
     </div>
-        <div class="settings-panel" id="settingsPanel" style="display:none;">
-            <div class="eyebrow" style="margin-bottom:12px;">Indstillinger</div>
-            <label class="toggle-row">
-                <input type="checkbox" id="lightTheme">
-                Lyst tema
-            </label>
-        </div>
+            <div class="settings-panel" id="settingsPanel" style="display:none;">
+                <div class="eyebrow" style="margin-bottom:12px;">Indstillinger</div>
+                <label class="toggle-row">
+                    <input type="checkbox" id="lightTheme">
+                    Lyst tema
+                </label>
+
+                <div class="eyebrow" style="margin-top:18px; margin-bottom:10px;">Data</div>
+                <p class="explainer" style="margin:0 0 10px 0; padding-top:0; border-top:none;">Download for at gemme alle dine Budget-, Formue- og Portefølje-data i én fil, eller upload for at genindlæse gemt data.</p>
+                <button class="btn btn-secondary" style="width:100%; margin-bottom:8px;" onclick="exportAllData()">Download alt (JSON)</button>
+                <button class="btn btn-secondary" style="width:100%;" onclick="document.getElementById('allDataUpload').click()">Upload alt (JSON)</button>
+                <input type="file" id="allDataUpload" accept=".json" style="display:none;" onchange="importAllData(event)">
+            </div>
 
         <div class="intro-banner" id="introBanner" style="display:none;">
             <span>👋 Data gemmes kun lokalt i denne browser – ingen konti, intet login, og intet sendes til en server. Rydder du browserdata, forsvinder dine tal.</span>

@@ -45,6 +45,49 @@ function showSection(name){
     if(name==='formue'){ netWorthChart.resize(); netWorthHistoryChart.resize(); }
 }
 
+const BACKUP_KEYS = ['budgetItems', 'budgetData', 'netWorthData', 'netWorthHistory', 'portfolioHistory'];
+
+function exportAllData(){
+    const backup = {};
+    BACKUP_KEYS.forEach(key => {
+        const raw = localStorage.getItem(key);
+        if(raw !== null) backup[key] = JSON.parse(raw);
+    });
+    const json = JSON.stringify(backup, null, 2);
+    const blob = new Blob([json], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'okonomivaerktoejer-backup-' + new Date().toISOString().slice(0,10) + '.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+function importAllData(event){
+    const file = event.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e){
+        try{
+            const backup = JSON.parse(e.target.result);
+            if(!confirm('Dette overskriver dine nuværende Budget-, Formue- og Portefølje-data med indholdet af filen. Vil du fortsætte?')) return;
+            BACKUP_KEYS.forEach(key => {
+                if(backup[key] !== undefined){
+                    localStorage.setItem(key, JSON.stringify(backup[key]));
+                }
+            });
+            alert('Data importeret. Siden genindlæses nu.');
+            location.reload();
+        } catch(err){
+            alert('Kunne ikke læse filen. Tjek at det er en backup-fil eksporteret fra dette værktøj.');
+        }
+        event.target.value = '';
+    };
+    reader.readAsText(file, 'UTF-8');
+}
+
 function dismissIntroBanner(){
     document.getElementById('introBanner').style.display = 'none';
     localStorage.setItem('hasSeenIntroBanner', 'true');
