@@ -109,6 +109,10 @@ h1{
     flex:1;
     min-height:280px;
 }
+.chart-wrap-standalone{
+    position:relative;
+    height:320px;
+}
 .chart-empty-state{
     position:absolute;
     inset:0;
@@ -516,4 +520,8 @@ table.data-table tbody tr:hover{ background:#1A2430; }
     .stats{ grid-template-columns:1fr; }
     .data-table-wrap{ overflow-x:auto; }
     table.data-table{ min-width:520px; }
+}
+@media (min-width:1401px){
+    .settings-btn{ right:192px; }
+    .settings-panel{ right:192px; }
 }
