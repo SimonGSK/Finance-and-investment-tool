@@ -19,8 +19,8 @@ const ctx3 = document.getElementById('chart3').getContext('2d');
 let chart3 = new Chart(ctx3, {
     type:'line',
     data:{labels:[], datasets:[
-            {label:'Formue', data:[], borderColor:'#E3A548', backgroundColor:'#E3A548', tension:0.15, pointRadius:0, borderWidth:2.5},
-            {label:'FIRE-mål', data:[], borderColor:'#5B6B7A', backgroundColor:'#5B6B7A', tension:0.15, pointRadius:0, borderWidth:2, borderDash:[4,4]}
+            {label:'Formue', data:[], borderColor:CHART_COLOR('--akt'), backgroundColor:CHART_COLOR('--akt'), themeVar:'--akt', tension:0.15, pointRadius:0, borderWidth:2.5},
+            {label:'FIRE-mål', data:[], borderColor:CHART_COLOR('--neutral-series'), backgroundColor:CHART_COLOR('--neutral-series'), themeVar:'--neutral-series', tension:0.15, pointRadius:0, borderWidth:2, borderDash:[4,4]}
         ]},
     options:{
         responsive:true,
@@ -30,11 +30,11 @@ let chart3 = new Chart(ctx3, {
         plugins:{
             legend:{display:false},
             tooltip:{
-                backgroundColor:'#1C2733',
-                borderColor:'#26323F',
+                backgroundColor:CHART_COLOR('--tooltip-bg'),
+                borderColor:CHART_COLOR('--border'),
                 borderWidth:1,
-                titleColor:'#EDEAE3',
-                bodyColor:'#EDEAE3',
+                titleColor:CHART_COLOR('--text'),
+                bodyColor:CHART_COLOR('--text'),
                 callbacks:{
                     label: c => `${c.dataset.label}: ${DK.format(c.raw)} kr.`
                 }
@@ -42,14 +42,14 @@ let chart3 = new Chart(ctx3, {
         },
         scales:{
             x:{
-                grid:{color:'#202B36'},
-                ticks:{color:'#8B96A3', font:{family:'IBM Plex Mono', size:11}},
-                title:{display:true, text:'År', color:'#8B96A3', font:{family:'Inter', size:12}}
+                grid:{color:CHART_COLOR('--chart-grid')},
+                ticks:{color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11}},
+                title:{display:true, text:'År', color:CHART_COLOR('--muted'), font:{family:'Manrope', size:12}}
             },
             y:{
-                grid:{color:'#202B36'},
+                grid:{color:CHART_COLOR('--chart-grid')},
                 ticks:{
-                    color:'#8B96A3', font:{family:'IBM Plex Mono', size:11},
+                    color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11},
                     callback: v => DK.format(v)
                 }
             }

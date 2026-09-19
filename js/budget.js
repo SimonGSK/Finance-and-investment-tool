@@ -1,13 +1,13 @@
 const BUDGET_CATEGORIES = [
-    {id:'catBolig', label:'Bolig (husleje/lån)', color:'#45C4B0'},
-    {id:'catMad', label:'Mad & dagligvarer', color:'#E3A548'},
-    {id:'catTransport', label:'Transport', color:'#E85C4A'},
-    {id:'catForsikring', label:'Forsikringer og fagforening', color:'#6C8EBF'},
-    {id:'catForbrug', label:'El, vand og varme', color:'#9B7EDE'},
-    {id:'catTelefoni', label:'Telefoni og internet', color:'#4F86C6'},
-    {id:'catFritid', label:'Fritid & underholdning', color:'#55C57A'},
-    {id:'catOpsparing', label:'Opsparing', color:'#D9A5C0'},
-    {id:'catAndet', label:'Andet', color:'#8B96A3'}
+    {id:'catBolig', label:'Bolig (husleje/lån)', color:'#5FA894'},
+    {id:'catMad', label:'Mad & dagligvarer', color:'#C9973F'},
+    {id:'catTransport', label:'Transport', color:'#C96A54'},
+    {id:'catForsikring', label:'Forsikringer og fagforening', color:'#6E8FB8'},
+    {id:'catForbrug', label:'El, vand og varme', color:'#8E7BB5'},
+    {id:'catTelefoni', label:'Telefoni og internet', color:'#4E8FA8'},
+    {id:'catFritid', label:'Fritid & underholdning', color:'#7FA65C'},
+    {id:'catOpsparing', label:'Opsparing', color:'#C08CA8'},
+    {id:'catAndet', label:'Andet', color:'#8A93A6'}
 ];
 
 const BUDGET_RULE_GROUPS = {
@@ -25,7 +25,7 @@ let budgetChart = new Chart(budgetCtx, {
         datasets:[{
             data: BUDGET_CATEGORIES.map(() => 0),
             backgroundColor: BUDGET_CATEGORIES.map(c => c.color),
-            borderColor:'#0F1720',
+            borderColor:CHART_COLOR('--panel'),
             borderWidth:2
         }]
     },
@@ -36,14 +36,14 @@ let budgetChart = new Chart(budgetCtx, {
             legend:{
                 display:true,
                 position:'bottom',
-                labels:{ color:'#8B96A3', font:{family:'Inter', size:11}, boxWidth:12, padding:12 }
+                labels:{ color:CHART_COLOR('--muted'), font:{family:'Manrope', size:11}, boxWidth:12, padding:12 }
             },
             tooltip:{
-                backgroundColor:'#1C2733',
-                borderColor:'#26323F',
+                backgroundColor:CHART_COLOR('--tooltip-bg'),
+                borderColor:CHART_COLOR('--border'),
                 borderWidth:1,
-                titleColor:'#EDEAE3',
-                bodyColor:'#EDEAE3',
+                titleColor:CHART_COLOR('--text'),
+                bodyColor:CHART_COLOR('--text'),
                 callbacks:{ label: c => `${c.label}: ${DK.format(c.raw)} kr.` }
             }
         }
@@ -51,7 +51,7 @@ let budgetChart = new Chart(budgetCtx, {
 });
 
 function saveBudgetToStorage(){
-    const data = { budgetMode, budgetTotalInput: document.getElementById('budgetTotalInput').value };
+    const data = { budgetTotalInput: document.getElementById('budgetTotalInput').value };
     localStorage.setItem('budgetData', JSON.stringify(data));
 }
 
@@ -61,7 +61,6 @@ function loadBudgetFromStorage(){
     try{
         const data = JSON.parse(raw);
         if(data.budgetTotalInput !== undefined) document.getElementById('budgetTotalInput').value = data.budgetTotalInput;
-        if(data.budgetMode) budgetMode = data.budgetMode;
     } catch(e){
         // Korrupt eller ugyldig data i localStorage - ignorér, og start forfra
     }
