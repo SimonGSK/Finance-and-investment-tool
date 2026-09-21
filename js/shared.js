@@ -1,14 +1,26 @@
-const TAX_LIMIT_27 = 79400;
-const ASK_TAX = 0.17;
-const AKT_TAX_LOW = 0.27;
-const AKT_TAX_HIGH = 0.42;
+/**
+ * @file DOM-hjælpere, der deles af alle værktøjer: talformatering, opslag af
+ * CSS-variabler til graferne, kobling af skyder og talfelt, og CSV-download.
+ * Selve beregningerne ligger i calc.js.
+ */
+
 const DK = new Intl.NumberFormat('da-DK', {maximumFractionDigits:0});
 
+/**
+ * Læser en CSS custom property fra :root, fx '--akt' eller '--font-mono'.
+ * @param {string} name variabelnavnet inkl. de to bindestreger
+ * @returns {string} værdien som tekst, uden omgivende mellemrum
+ */
 function getCSSVar(name){
     return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
 
-// Grafernes farver hentes fra CSS-variabler, så de følger temaet (lyst/mørkt).
+/**
+ * Farve til Chart.js hentet fra en CSS-variabel, så graferne følger temaet.
+ * Samme som getCSSVar - navnet gør bare hensigten tydelig i grafopsætningerne.
+ * @param {string} name fx '--ask'
+ * @returns {string} en hex-farve
+ */
 function CHART_COLOR(name){
     return getCSSVar(name);
 }
@@ -23,25 +35,15 @@ document.addEventListener('focus', function(e){
     }
 }, true);
 
-let doubleDeductionEnabled = false;
-
-function effectiveTaxLimit(){
-    return doubleDeductionEnabled ? TAX_LIMIT_27 * 2 : TAX_LIMIT_27;
-}
-
-// ---- Porteret fra Main.java: monthlyReturnFactor() ----
-function monthlyReturnFactor(yearlyReturn){
-    return Math.pow(yearlyReturn, 1/12);
-}
-
-// Regner et fremtidigt (nominelt) beløb om til nutidens købekraft.
-function toRealValue(nominalValue, year, inflationFactor){
-    return nominalValue / Math.pow(inflationFactor, year);
-}
-
-// Binder en <input type="range"> og en <input type="number"> sammen, så de altid
-// afspejler samme værdi - flyt skyderen, og tallet opdateres; skriv et tal, og
-// skyderen flytter med. 'onChange' kaldes efter begge slags input.
+/**
+ * Binder en <input type="range"> og en <input type="number"> sammen. Talfeltet er
+ * sandheden: det er dét, beregningerne læser fra, så et indtastet beløb bruges
+ * præcist som skrevet. Skyderen følger bare med visuelt og bliver derfor klemt
+ * ind i sit eget min/max/step uden at det påvirker tallet.
+ * @param {string} sliderId id på range-inputtet
+ * @param {string} numberId id på number-inputtet
+ * @param {() => void} onChange kaldes efter begge slags input
+ */
 function bindSliderAndNumber(sliderId, numberId, onChange){
     const slider = document.getElementById(sliderId);
     const number = document.getElementById(numberId);
@@ -52,16 +54,28 @@ function bindSliderAndNumber(sliderId, numberId, onChange){
     });
 
     number.addEventListener('input', () => {
-        let v = parseFloat(number.value);
+        const v = parseFloat(number.value);
         if(isNaN(v)) return;
-        const min = parseFloat(slider.min);
-        const max = parseFloat(slider.max);
-        v = Math.min(max, Math.max(min, v));
         slider.value = v;
         onChange();
     });
+
+    // Efterlades feltet tomt, sættes det tilbage til skyderens værdi, så
+    // beregningerne aldrig står med et tomt felt.
+    number.addEventListener('change', () => {
+        if(isNaN(parseFloat(number.value))){
+            number.value = slider.value;
+            onChange();
+        }
+    });
 }
 
+/**
+ * Downloader en HTML-tabel som CSV i dansk Excel-venligt format: semikolon som
+ * separator, alle felter i anførselstegn, og en BOM så æøå vises rigtigt.
+ * @param {string} tbodyId id på tabellens <tbody>; overskrifterne tages fra <thead>
+ * @param {string} filename fx 'formuehistorik.csv'
+ */
 function downloadTableAsCSV(tbodyId, filename){
     const tbody = document.getElementById(tbodyId);
     const table = tbody.closest('table');
@@ -89,55 +103,3 @@ function downloadTableAsCSV(tbodyId, filename){
     URL.revokeObjectURL(url);
 }
 
-// Fortolker danske talformater korrekt: punktum som tusindtalsseparator,
-// komma som decimaltegn (fx "10.099,00 kr." eller vores eget "10.099 kr.").
-function parseDanishAmount(str){
-    if(!str) return 0;
-    let cleaned = str.toString().trim();
-    cleaned = cleaned.replace(/[^\d,.-]/g, '');   // fjern "kr.", mellemrum osv.
-    cleaned = cleaned.replace(/\./g, '');          // fjern tusindtalspunktummer
-    cleaned = cleaned.replace(',', '.');           // komma -> decimalpunktum
-    const num = parseFloat(cleaned);
-    return isNaN(num) ? 0 : Math.round(num);
-}
-
-// Finder overskriftsrækken ved at lede efter "Dato" i de første par linjer,
-// i stedet for blindt at antage den står på linje 1 - Numbers/Excel indsætter
-// sommetider en ekstra "tabelnavn"-linje øverst, som ellers ville forvirre os.
-function findHeaderRowIndex(rows){
-    for(let i=0; i<Math.min(rows.length, 5); i++){
-        if(rows[i].includes('Dato')) return i;
-    }
-    return -1;
-}
-
-// CSV-parser der selv opdager, om filen bruger semikolon (vores eget format)
-// eller komma (fx hvis filen er genexporteret fra Numbers/Excel med andre
-// regionsindstillinger). Forstår desuden anførselstegn omkring felter.
-function parseCSV(text){
-    const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
-    if(lines.length === 0) return [];
-    const semicolons = (lines[0].match(/;/g) || []).length;
-    const commas = (lines[0].match(/,/g) || []).length;
-    const delimiter = semicolons >= commas ? ';' : ',';
-
-    return lines.map(line => {
-        const cells = [];
-        let cur = '', inQuotes = false;
-        for(let i=0;i<line.length;i++){
-            const c = line[i];
-            if(inQuotes){
-                if(c === '"'){
-                    if(line[i+1] === '"'){ cur += '"'; i++; }
-                    else { inQuotes = false; }
-                } else { cur += c; }
-            } else {
-                if(c === '"'){ inQuotes = true; }
-                else if(c === delimiter){ cells.push(cur); cur=''; }
-                else { cur += c; }
-            }
-        }
-        cells.push(cur.trim());
-        return cells;
-    });
-}

@@ -1,65 +1,87 @@
-# Finance and investment tool
+# Økonomiværktøjer
 
-This README is not up to date, and reflects an earlier version of the project. The README will be updated later.
+A set of Danish personal-finance calculators in a single static web page: compare investment account types, plan monthly investing and FIRE, track a portfolio, build a budget, and follow your net worth over time.
 
-A pair of calculators for comparing Danish investment account types — a **Danish stock savings account (Aktiesparekonto / ASK)** versus a **regular stock trading account (Aktiedepot)** — including an optimal tax-realization strategy for the regular depot.
+**Live:** https://simongsk.github.io/Finance-and-investment-tool/
 
-The project has two parts:
+All data stays in your browser's `localStorage`. There are no accounts, no server, and nothing is sent anywhere.
 
-1. **A Java console application** (`src/Main.java`) — the original command-line version, with a small tool menu.
-2. **An interactive web dashboard** (`index.html`) — a browser-based version of the same calculations, with sliders and live charts. (https://simongsk.github.io/Finance-and-investment-tool/).
+## The tools
 
-## What it does
+### Investering
 
-Danish investors can hold stocks either in an **ASK** (flat 17% yearly tax on gains, but capped at a 174,200 kr. deposit limit in 2026) or a regular **depot** (27%/42% progressive tax, only on realized gains, no deposit limit). Deciding between the two — and figuring out *when* to realize gains on a regular depot to minimize tax — isn't obvious. This tool runs the numbers for you.
+**ASK vs. Aktiedepot** — Compares a lump sum in a Danish stock savings account (*Aktiesparekonto*, flat 17% yearly tax on gains, 174.200 kr. deposit limit) against the same sum in a regular depot (*Aktiedepot*, 27%/42% progressive tax on realised gains, no limit). The depot side uses the tax-optimal realisation strategy described below. Supports paying the ASK tax from outside the account, the doubled 27% threshold for married couples, and inflation-adjusted ("today's purchasing power") display.
 
-**Tool 1 — ASK vs. Aktiedepot**
-Compares a lump-sum investment in an ASK against the same lump sum in a regular depot, using the tax-optimal realization strategy for the depot (see below).
+**Aktiedepot: fast + månedligt** — A regular depot with an optional starting amount plus a fixed monthly contribution, again with the optimal realisation strategy. Shows total invested, net profit and percentage gain.
 
-![Tool 1 screenshot](docs/ASK-VS-AKT.png)
+**FIRE-beregner** — How many years until a portfolio can sustain your yearly expenses under the 4% rule, given a starting amount, monthly contributions, expected return and inflation. The FIRE target grows with inflation, so the answer is in real terms.
 
-**Tool 2 — Aktiedepot with a lump sum + monthly contributions**
-Models a regular depot with an optional starting amount plus a fixed monthly contribution, again using the optimal realization strategy — since a regular depot has no deposit limit, this covers scenarios an ASK can't.
+**Porteføljetracker** — Log your portfolio's value, cash, trades, deposits and dividends over time. Charts value vs. cumulative deposits, monthly buys/sells, and total return. Import and export as CSV.
 
-![Tool 2 screenshot](docs/Aktiedepot.png)
+### Budget
 
-**Optimal realization strategy**
-For the regular depot, the tool searches every possible year to start "harvesting" gains (selling and immediately re-buying, up to the 79,400 kr. 27%-tax threshold each year) and picks whichever start year actually produces the highest final value — rather than assuming earlier is always better. It also shows how much this strategy saves compared to never selling until the final year.
+Build a monthly budget bottom-up with itemised entries per category, or enter a total and see what's left. Shows the split across needs / wants / savings against the 50/30/20 rule, and projects yearly savings.
 
-## Running the Java console app
+### Formue
 
-Requires Java 21+ (uses `Locale.of(...)` and switch expressions).
+Enter your assets (cash, stocks, pension, home equity, other) and debt to get your net worth and liquid wealth. Save dated snapshots to build a history, see how the composition has changed over time, track milestones, and compare your net worth to other Danes your age (based on CEPOS's summary of Danmarks Statistik wealth data). Plus a light-hearted "your wealth equals *n* bananas / iPhones / Porsches" comparison.
 
-```bash
-cd src
-javac Main.java
-java Main
-```
+### Settings
 
-You'll get a menu to choose between the two tools, enter your numbers, and re-run with different values without restarting.
+Light or dark theme (follows the system by default), and a one-file JSON backup/restore of all Budget, Formue and Portefølje data.
 
-## Using the web dashboard
+## The optimal realisation strategy
 
-`index.html` is a single, self-contained file — no build step, no server required.
+For a regular depot, gains are only taxed when realised — at 27% up to a yearly threshold (79.400 kr. in 2026) and 42% above it. "Harvesting" means selling and immediately re-buying up to that threshold each year, so the gain is taxed at 27% now rather than partly at 42% later. But harvesting early also means paying tax earlier and losing compounding on it.
+
+Rather than assume earlier is always better, the tool tries every possible year to start harvesting and picks the one that produces the highest final value. It then reports how much that beats never selling until the last year.
+
+## Running it locally
+
+It is plain HTML, CSS and JavaScript with no build step. Serve the folder over HTTP rather than opening `index.html` directly, because `localStorage` behaves inconsistently on `file://` URLs:
 
 ```bash
-open ask-vs-akt-graf.html   # macOS
-# or just double-click the file / drag it into a browser
+npm start
 ```
 
-It uses [Chart.js](https://www.chartjs.org/) (loaded from a CDN) and needs an internet connection to load fonts and the charting library.
+Then open http://localhost:4173. (`npm start` just runs `python3 -m http.server 4173`; any static server works.) [Chart.js](https://www.chartjs.org/) and the fonts load from CDNs, so an internet connection is needed for those.
 
-## Assumptions & disclaimer
+## Tests
 
-- Tax rules reflect Danish law as of 2026: 17% flat ASK tax, 27%/42% progressive depot tax with a 79,400 kr. threshold, and a 174,200 kr. ASK deposit limit. These thresholds are typically adjusted yearly and are **not** inflation-indexed in this tool.
-- All figures are nominal projections based on a constant assumed annual return — real markets don't move in a straight line.
-- This is a personal finance calculator, **not financial or tax advice**. Consult a professional before making investment decisions.
+The financial calculations, the tax logic, the percentile lookup and the Danish number/CSV parsers live in [`js/calc.js`](js/calc.js), which has no DOM dependencies and is tested with Node's built-in test runner — no packages to install.
 
-## Tech stack
+```bash
+npm test
+```
 
-- Java 21 (console app)
-- Vanilla HTML/CSS/JavaScript + Chart.js (web dashboard) — no framework, no build tooling
+Several tests pin exact known outputs (for example, 25 years at 8% from 100.000 kr. gives 496.847 kr. in a depot with harvesting from year 19), so any change to the maths is caught immediately. The suite runs automatically on every push and pull request via GitHub Actions.
+
+## Project layout
+
+```
+index.html              The whole UI (all tools are sections of one page)
+styles.css              Design tokens (dark + light themes), layout, components
+js/calc.js              Pure calculation logic - the only file the tests import
+js/shared.js            DOM helpers: slider/number binding, CSV download, chart colour lookup
+js/tool1-ask-akt.js     ASK vs. Aktiedepot
+js/tool2-monthly.js     Aktiedepot with monthly contributions
+js/tool3-fire.js        FIRE calculator
+js/tool4-portfolio.js   Portfolio tracker
+js/budget.js            Budget
+js/net-worth.js         Formue: net worth, history, milestones, comparison
+js/navigation.js        Tab switching, settings panel, full backup import/export
+js/theme.js             Theme switching and re-theming charts
+tests/calc.test.js      Test suite for calc.js
+src/Main.java           The original console prototype of tools 1 and 2 (Java 21)
+```
+
+## Assumptions and disclaimer
+
+- Tax rules reflect Danish law as of 2026: 17% flat ASK tax, 27%/42% progressive depot tax with a 79.400 kr. threshold, and a 174.200 kr. ASK deposit limit. These thresholds are normally adjusted yearly and are **not** indexed in this tool.
+- All projections assume a constant annual return. Real markets do not move in a straight line.
+- The wealth comparison uses a 16-row extract of CEPOS's age-by-age table, interpolated linearly, and is for curiosity only.
+- This is a personal-finance calculator, **not financial or tax advice**. Consult a professional before making investment decisions.
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE) — see the LICENSE file for details. In short: you're free to use, copy, modify, and distribute this code, including commercially, as long as the original copyright notice is included.
+[MIT](LICENSE) — free to use, copy, modify and distribute, including commercially, as long as the original copyright notice is included.

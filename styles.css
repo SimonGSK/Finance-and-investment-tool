@@ -188,6 +188,29 @@ h1{
     max-width:1600px;
     margin-top:var(--s5);
 }
+.full-width-above, .full-width-below{
+    display:flex;
+    flex-direction:column;
+    gap:var(--s5);
+}
+
+/* ---- Rhythm inside a panel ---- */
+.field .number-input:not(:last-child){ margin-bottom:var(--s2); }
+.toggle-row + .toggle-row{ margin-top:var(--s3); }
+.toggle-row + .field{ margin-top:var(--s5); }
+.tool-intro + .btn{ margin-bottom:var(--s5); }
+.btn + .btn{ margin-left:var(--s2); }
+.panel > details{ margin-top:var(--s3); }
+.panel > * + .stats{ margin-top:var(--s4); }
+.panel > .btn + .chart-wrap,
+.panel > .chart-wrap + .data-table-wrap{ margin-top:var(--s5); }
+.panel > .data-table-wrap + .btn,
+.panel > .explainer + .btn{ margin-top:var(--s4); }
+.eyebrow-section{ margin-top:var(--s5); }
+.explainer-lead{ margin:0 0 var(--s4) 0; padding-top:0; border-top:none; }
+.summary-toggle{ cursor:pointer; color:var(--muted); font-size:13.5px; }
+.btn-sm{ font-size:12px; padding:6px 12px; }
+.budget-category > .btn{ margin:0 var(--s4) var(--s4) var(--s4); }
 @media (max-width:1100px){
     .layout, .layout-net-worth{grid-template-columns:1fr;}
 }
@@ -212,9 +235,10 @@ h1{
     flex:1;
     min-height:300px;
 }
-.chart-wrap-standalone{
-    position:relative;
-    height:340px;
+.chart-wrap.chart-wrap-standalone{
+    flex:none;
+    min-height:0;
+    height:380px;
 }
 .chart-empty-state{
     position:absolute;
@@ -695,6 +719,19 @@ table.data-table tbody tr:hover{ background:var(--panel-hover); }
     border-radius:var(--r-pill);
     transition:width 0.4s var(--ease);
 }
+
+/* ---- Fun comparison ---- */
+.fun-item{
+    display:flex;
+    align-items:baseline;
+    gap:var(--s3);
+    padding:var(--s2) 0;
+    border-bottom:1px solid var(--border);
+    font-size:14px;
+}
+.fun-item:last-child{ border-bottom:none; }
+.fun-emoji{ width:1.6em; flex-shrink:0; text-align:center; font-size:18px; line-height:1; }
+.fun-item strong{ font-family:var(--font-mono); font-weight:500; color:var(--akt); min-width:6ch; text-align:right; }
 
 /* ---- Small screens ---- */
 @media (max-width:640px){

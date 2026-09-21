@@ -1,94 +1,6 @@
-// ---- Porteret fra Main.java: computeMonthlyFinalValueForStartYear() ----
-function computeMonthlyFinalValueForStartYear(years, yearlyReturn, startCash, monthlyAmount, harvestStartYear){
-    let shareValue = startCash, costBasis = startCash;
-    const monthlyFactor = monthlyReturnFactor(yearlyReturn);
-    const taxLimit = effectiveTaxLimit();
-
-    for(let i=1;i<=years;i++){
-        for(let m=1;m<=12;m++){
-            shareValue += monthlyAmount;
-            costBasis += monthlyAmount;
-            shareValue *= monthlyFactor;
-        }
-
-        if(i<years){
-            if(i>=harvestStartYear){
-                const unrealized = shareValue-costBasis;
-                if(unrealized>0){
-                    const realize = Math.min(unrealized, taxLimit);
-                    const tax = realize*AKT_TAX_LOW;
-                    shareValue -= tax;
-                    costBasis += (realize-tax);
-                }
-            }
-        } else {
-            const finalUnrealized = shareValue-costBasis;
-            if(finalUnrealized>0){
-                const tax = finalUnrealized<=taxLimit
-                    ? finalUnrealized*AKT_TAX_LOW
-                    : taxLimit*AKT_TAX_LOW + (finalUnrealized-taxLimit)*AKT_TAX_HIGH;
-                shareValue -= tax;
-            }
-        }
-    }
-    return shareValue;
-}
-
-// ---- Porteret fra Main.java: findBestMonthlyHarvestStartYear() ----
-function findBestMonthlyHarvestStartYear(years, yearlyReturn, startCash, monthlyAmount){
-    let bestStart = years;
-    let bestValue = computeMonthlyFinalValueForStartYear(years, yearlyReturn, startCash, monthlyAmount, bestStart);
-    for(let c=years-1;c>=1;c--){
-        const v = computeMonthlyFinalValueForStartYear(years, yearlyReturn, startCash, monthlyAmount, c);
-        if(v>bestValue){ bestValue=v; bestStart=c; }
-    }
-    return bestStart;
-}
-
-function computeMonthlySeries(years, yearlyReturn, startCash, monthlyAmount){
-    const harvestStartYear = findBestMonthlyHarvestStartYear(years, yearlyReturn, startCash, monthlyAmount);
-    let shareValue = startCash, costBasis = startCash, cumulativeInvested = startCash;
-    const monthlyFactor = monthlyReturnFactor(yearlyReturn);
-    const taxLimit = effectiveTaxLimit();
-    const series = [{year:0, value:startCash, invested:startCash, taxAt27:0, taxAt42:0}];
-
-    for(let i=1;i<=years;i++){
-        for(let m=1;m<=12;m++){
-            shareValue += monthlyAmount;
-            costBasis += monthlyAmount;
-            cumulativeInvested += monthlyAmount;
-            shareValue *= monthlyFactor;
-        }
-
-        let taxAt27 = 0, taxAt42 = 0;
-
-        if(i<years){
-            if(i>=harvestStartYear){
-                const unrealized = shareValue-costBasis;
-                if(unrealized>0){
-                    const realize = Math.min(unrealized, taxLimit);
-                    const tax = realize*AKT_TAX_LOW;
-                    shareValue -= tax;
-                    costBasis += (realize-tax);
-                    taxAt27 = tax;
-                }
-            }
-        } else {
-            const finalUnrealized = shareValue-costBasis;
-            if(finalUnrealized>0){
-                if(finalUnrealized<=taxLimit){
-                    taxAt27 = finalUnrealized*AKT_TAX_LOW;
-                } else {
-                    taxAt27 = taxLimit*AKT_TAX_LOW;
-                    taxAt42 = (finalUnrealized-taxLimit)*AKT_TAX_HIGH;
-                }
-                shareValue -= (taxAt27 + taxAt42);
-            }
-        }
-        series.push({year:i, value:shareValue, invested:cumulativeInvested, taxAt27, taxAt42});
-    }
-    return {series, harvestStartYear};
-}
+/**
+ * @file Værktøj 2: Aktiedepot med startbeløb og fast månedlig indbetaling.
+ */
 
 const ctx2 = document.getElementById('chart2').getContext('2d');
 let chart2 = new Chart(ctx2, {
@@ -118,13 +30,13 @@ let chart2 = new Chart(ctx2, {
         scales:{
             x:{
                 grid:{color:CHART_COLOR('--chart-grid')},
-                ticks:{color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11}},
-                title:{display:true, text:'År', color:CHART_COLOR('--muted'), font:{family:'Manrope', size:12}}
+                ticks:{color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-mono'), size:11}},
+                title:{display:true, text:'År', color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-sans'), size:12}}
             },
             y:{
                 grid:{color:CHART_COLOR('--chart-grid')},
                 ticks:{
-                    color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11},
+                    color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-mono'), size:11},
                     callback: v => DK.format(v)
                 }
             }
@@ -132,13 +44,16 @@ let chart2 = new Chart(ctx2, {
     }
 });
 
-const startCash2Input = document.getElementById('startCash2');
-const monthlyAmount2Input = document.getElementById('monthlyAmount2');
-const years2Input = document.getElementById('years2');
-const return2Input = document.getElementById('yearlyReturn2');
-const inflation2Input = document.getElementById('inflation2');
+const startCash2Input = document.getElementById('startCash2Number');
+const monthlyAmount2Input = document.getElementById('monthlyAmount2Number');
+const years2Input = document.getElementById('years2Number');
+const return2Input = document.getElementById('yearlyReturn2Number');
+const inflation2Input = document.getElementById('inflation2Number');
 const showReal2Input = document.getElementById('showRealValue2');
 
+/**
+ * Genberegner alt ud fra formularens aktuelle værdier. Kaldes ved hvert input.
+ */
 function update2(){
     const startCash = parseInt(startCash2Input.value);
     const monthlyAmount = parseInt(monthlyAmount2Input.value);

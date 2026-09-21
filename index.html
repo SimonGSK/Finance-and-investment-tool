@@ -95,7 +95,7 @@
 
                 <div class="field">
                     <label>Startbeløb</label>
-                    <input type="number" id="startCashNumber" class="number-input" value="100000" style="margin-bottom:8px;">
+                    <input type="number" id="startCashNumber" class="number-input" value="100000" min="0" step="1000">
                     <input type="range" id="startCash" min="1000" max="500000" step="100" value="100000" list="askLimitMark">
                     <datalist id="askLimitMark">
                         <option value="174200"></option>
@@ -105,13 +105,13 @@
 
                 <div class="field">
                     <label>Antal år</label>
-                    <input type="number" id="yearsNumber" class="number-input" value="25" style="margin-bottom:8px;">
+                    <input type="number" id="yearsNumber" class="number-input" value="25">
                     <input type="range" id="years" min="1" max="60" step="1" value="25">
                 </div>
 
                 <div class="field">
                     <label>Forventet årligt afkast</label>
-                    <input type="number" id="yearlyReturnNumber" class="number-input" value="8" step="0.1" style="margin-bottom:8px;">
+                    <input type="number" id="yearlyReturnNumber" class="number-input" value="8" step="0.1">
                     <input type="range" id="yearlyReturn" min="1" max="15" step="0.1" value="8">
                 </div>
 
@@ -125,9 +125,9 @@
                     Vis i nutidens købekraft (inflationsjusteret)
                 </label>
 
-                <div class="field" id="inflationField" style="margin-top:16px; display:none;">
+                <div class="field" id="inflationField" style="display:none;">
                     <label>Forventet inflation</label>
-                    <input type="number" id="inflationNumber" class="number-input" value="2" step="0.1" style="margin-bottom:8px;">
+                    <input type="number" id="inflationNumber" class="number-input" value="2" step="0.1">
                     <input type="range" id="inflation" min="0" max="8" step="0.1" value="2">
                 </div>
             </div>
@@ -160,24 +160,24 @@
                 </div>
             </div>
 
-            <div class="panel" style="margin-top:16px;">
+            <div class="panel">
                 <div class="eyebrow">Optimal realiseringsstrategi</div>
                 <p id="strategyText" style="margin:0; font-size:14px; line-height:1.5;"></p>
-                <details style="margin-top:12px;">
-                    <summary style="cursor:pointer; color:var(--muted); font-size:13px;">Forklaring</summary>
+                <details>
+                    <summary class="summary-toggle">Forklaring</summary>
                     <p class="explainer">
                         Det er en afvejning: sælger du for tidligt, mister du renters rente på de kroner, der forlader depotet som skat, før det er nødvendigt. Venter du for længe, risikerer du i stedet, at en stor del af gevinsten bliver beskattet med den høje sats på 42% i sidste øjeblik. Værktøjet finder det optimale startår for realisering af gevinst, ved simpelthen at afprøve alle mulige år og vælge det, der reelt giver den højeste slutværdi. Jo højere det forventede afkast er, jo dyrere er det at betale skat tidligt (de kroner går glip af mere vækst), så høje afkast trækker det optimale startår tættere på sidste år. Ved lave afkast koster tidlig realisering til gengæld mindre i tabt vækst, så det kan bedre betale sig at sprede realiseringen ud over flere år.
                     </p>
                 </details>
-                <details style="margin-top:12px;">
-                    <summary style="cursor:pointer; color:var(--muted); font-size:13px;">Eksempel</summary>
+                <details>
+                    <summary class="summary-toggle">Eksempel</summary>
                     <p class="explainer">
                         <strong style="color:var(--text);">Et eksempel ved 8% forventet afkast:</strong> af 79.400 kr. gevinst betaler man 33.348 kr. i skat ved 42%, men kun 21.438 kr. ved 27% – en besparelse på 11.910 kr. her og nu. Det er dog ikke hele historien: at realisere gevinst tidligt koster renters rente på de kroner, der forlader depotet som skat, men det nulstiller samtidig anskaffelsessummen på det realiserede beløb, når der genkøbes, så en større del af den fremtidige værdi bliver skattefri "tilbagebetaling af anskaffelsessum" i stedet for ny gevinst. Ved 8% afkast betyder det samlet set, at det tidligst er ca. 8 år før slutdatoen, det bliver en fordel at begynde at realisere gevinst og udnytte 27%-grænsen.
                     </p>
                 </details>
             </div>
 
-            <div class="panel" style="margin-top:16px;">
+            <div class="panel">
                 <div class="eyebrow">Data pr. år</div>
                 <div class="data-table-wrap">
                     <table class="data-table">
@@ -194,7 +194,7 @@
                         <tbody id="dataTableBody"></tbody>
                     </table>
                 </div>
-                <button class="btn btn-secondary" style="margin-top:12px;" onclick="downloadTableAsCSV('dataTableBody', 'ask-vs-aktiedepot.csv')">Download som CSV</button>
+                <button class="btn btn-secondary" onclick="downloadTableAsCSV('dataTableBody', 'ask-vs-aktiedepot.csv')">Download som CSV</button>
             </div>
         </div>
     </div>
@@ -208,25 +208,25 @@
 
                 <div class="field">
                     <label>Startbeløb</label>
-                    <input type="number" id="startCash2Number" class="number-input" value="0" style="margin-bottom:8px;">
+                    <input type="number" id="startCash2Number" class="number-input" value="0" min="0" step="1000">
                     <input type="range" id="startCash2" min="0" max="1000000" step="5000" value="0">
                 </div>
 
                 <div class="field">
                     <label>Månedlig investering</label>
-                    <input type="number" id="monthlyAmount2Number" class="number-input" value="3000" style="margin-bottom:8px;">
+                    <input type="number" id="monthlyAmount2Number" class="number-input" value="3000" min="0" step="100">
                     <input type="range" id="monthlyAmount2" min="0" max="20000" step="100" value="3000">
                 </div>
 
                 <div class="field">
                     <label>Antal år</label>
-                    <input type="number" id="years2Number" class="number-input" value="25" style="margin-bottom:8px;">
+                    <input type="number" id="years2Number" class="number-input" value="25">
                     <input type="range" id="years2" min="1" max="60" step="1" value="25">
                 </div>
 
                 <div class="field">
                     <label>Forventet årligt afkast</label>
-                    <input type="number" id="yearlyReturn2Number" class="number-input" value="8" step="0.1" style="margin-bottom:8px;">
+                    <input type="number" id="yearlyReturn2Number" class="number-input" value="8" step="0.1">
                     <input type="range" id="yearlyReturn2" min="1" max="15" step="0.1" value="8">
                 </div>
 
@@ -238,7 +238,7 @@
 
                     <div class="field" id="inflationField2" style="display:none; flex:1; min-width:180px; margin:0;">
                         <label>Forventet inflation</label>
-                        <input type="number" id="inflation2Number" class="number-input" value="2" step="0.1" style="margin-bottom:8px;">
+                        <input type="number" id="inflation2Number" class="number-input" value="2" step="0.1">
                         <input type="range" id="inflation2" min="0" max="8" step="0.1" value="2">
                     </div>
                 </div>
@@ -247,7 +247,7 @@
             <div class="panel chart-panel">
                 <div class="legend">
                     <span><i class="dot" style="background:var(--akt)"></i>Aktiedepot (værdi)</span>
-                    <span><i class="dot" style="background:#5B6B7A"></i>Indbetalt kapital</span>
+                    <span><i class="dot" style="background:var(--neutral-series)"></i>Indbetalt kapital</span>
                 </div>
                 <div class="chart-wrap"><canvas id="chart2"></canvas></div>
                 <div class="explainer" id="inflationNote2" style="display:none; margin-top:10px; padding-top:10px;">Alle beløb er vist i nutidens købekraft – dvs. hvad de fremtidige kroner reelt kan købe for, når man har trukket den forventede inflation fra.</div>
@@ -272,24 +272,24 @@
                 </div>
             </div>
 
-            <div class="panel" style="margin-top:16px;">
+            <div class="panel">
                 <div class="eyebrow">Optimal realiseringsstrategi</div>
                 <p id="strategyText2" style="margin:0; font-size:14px; line-height:1.5;"></p>
-                <details style="margin-top:12px;">
-                    <summary style="cursor:pointer; color:var(--muted); font-size:13px;">Hvorfor virker det sådan? (uddyb)</summary>
+                <details>
+                    <summary class="summary-toggle">Hvorfor virker det sådan? (uddyb)</summary>
                     <p class="explainer">
                         Det er en afvejning: sælger du for tidligt, mister du renters rente på de kroner, der forlader depotet som skat, før det er nødvendigt. Venter du for længe, risikerer du i stedet, at en stor del af gevinsten bliver beskattet med den høje sats på 42% i sidste øjeblik. Værktøjet finder det optimale startår for realisering af gevinst, ved simpelthen at afprøve alle mulige år og vælge det, der reelt giver den højeste slutværdi. Jo højere det forventede afkast er, jo dyrere er det at betale skat tidligt (de kroner går glip af mere vækst), så høje afkast trækker det optimale startår tættere på sidste år. Ved lave afkast koster tidlig realisering til gengæld mindre i tabt vækst, så det kan bedre betale sig at sprede realiseringen ud over flere år.
                     </p>
                 </details>
-                <details style="margin-top:12px;">
-                    <summary style="cursor:pointer; color:var(--muted); font-size:13px;">Eksempel</summary>
+                <details>
+                    <summary class="summary-toggle">Eksempel</summary>
                     <p class="explainer">
                         <strong style="color:var(--text);">Et eksempel ved 8% forventet afkast:</strong> af 79.400 kr. gevinst betaler man 33.348 kr. i skat ved 42%, men kun 21.438 kr. ved 27% – en besparelse på 11.910 kr. her og nu. Det er dog ikke hele historien: at realisere gevinst tidligt koster renters rente på de kroner, der forlader depotet som skat, men det nulstiller samtidig anskaffelsessummen på det realiserede beløb, når der genkøbes, så en større del af den fremtidige værdi bliver skattefri "tilbagebetaling af anskaffelsessum" i stedet for ny gevinst. Ved 8% afkast betyder det samlet set, at det tidligst er ca. 8 år før slutdatoen, det bliver en fordel at begynde at realisere gevinst og udnytte 27%-grænsen.
                     </p>
                 </details>
             </div>
 
-            <div class="panel" style="margin-top:16px;">
+            <div class="panel">
                 <div class="eyebrow">Data pr. år</div>
                 <div class="data-table-wrap">
                     <table class="data-table">
@@ -305,7 +305,7 @@
                         <tbody id="dataTableBody2"></tbody>
                     </table>
                 </div>
-                <button class="btn btn-secondary" style="margin-top:12px;" onclick="downloadTableAsCSV('dataTableBody2', 'aktiedepot-maanedlig.csv')">Download som CSV</button>
+                <button class="btn btn-secondary" onclick="downloadTableAsCSV('dataTableBody2', 'aktiedepot-maanedlig.csv')">Download som CSV</button>
             </div>
         </div>
     </div>
@@ -319,31 +319,31 @@
 
                 <div class="field">
                     <label>Årligt forbrug (i dagens penge)</label>
-                    <input type="number" id="expenses3Number" class="number-input" value="300000" style="margin-bottom:8px;">
+                    <input type="number" id="expenses3Number" class="number-input" value="300000" min="0" step="1000">
                     <input type="range" id="expenses3" min="50000" max="1000000" step="5000" value="300000">
                 </div>
 
                 <div class="field">
                     <label>Nuværende opsparing</label>
-                    <input type="number" id="startCash3Number" class="number-input" value="100000" style="margin-bottom:8px;">
+                    <input type="number" id="startCash3Number" class="number-input" value="100000" min="0" step="1000">
                     <input type="range" id="startCash3" min="0" max="2000000" step="10000" value="100000">
                 </div>
 
                 <div class="field">
                     <label>Månedlig investering</label>
-                    <input type="number" id="monthlyAmount3Number" class="number-input" value="5000" style="margin-bottom:8px;">
+                    <input type="number" id="monthlyAmount3Number" class="number-input" value="5000" min="0" step="100">
                     <input type="range" id="monthlyAmount3" min="0" max="30000" step="500" value="5000">
                 </div>
 
                 <div class="field">
                     <label>Forventet årligt afkast</label>
-                    <input type="number" id="yearlyReturn3Number" class="number-input" value="7" step="0.1" style="margin-bottom:8px;">
+                    <input type="number" id="yearlyReturn3Number" class="number-input" value="7" step="0.1">
                     <input type="range" id="yearlyReturn3" min="1" max="15" step="0.1" value="7">
                 </div>
 
-                <div class="field" style="margin-top:22px;">
+                <div class="field">
                     <label>Forventet inflation</label>
-                    <input type="number" id="inflation3Number" class="number-input" value="2" step="0.1" style="margin-bottom:8px;">
+                    <input type="number" id="inflation3Number" class="number-input" value="2" step="0.1">
                     <input type="range" id="inflation3" min="0" max="8" step="0.1" value="2">
                 </div>
 
@@ -356,7 +356,7 @@
             <div class="panel chart-panel">
                 <div class="legend">
                     <span><i class="dot" style="background:var(--akt)"></i>Formue</span>
-                    <span><i class="dot" style="background:#5B6B7A"></i>FIRE-mål</span>
+                    <span><i class="dot" style="background:var(--neutral-series)"></i>FIRE-mål</span>
                 </div>
                 <div class="chart-wrap"><canvas id="chart3"></canvas></div>
                 <div class="explainer" id="inflationNote3" style="display:none; margin-top:10px; padding-top:10px;">Alle beløb er vist i nutidens købekraft – dvs. hvad de fremtidige kroner reelt kan købe for, når man har trukket den forventede inflation fra.</div>
@@ -383,14 +383,14 @@
                 </div>
             </div>
 
-            <div class="panel" style="margin-top:16px;">
+            <div class="panel">
                 <div class="eyebrow">Om 4%-reglen</div>
                 <p class="explainer" style="margin:0; padding-top:0; border-top:none;">
                     4%-reglen siger, at man kan hæve 4% af sin formue om året uden statistisk set at løbe tør for penge over en lang tidshorisont (oprindeligt baseret på det amerikanske "Trinity study"). Omvendt betyder det, at dit "FIRE-beløb" er dit ønskede årlige forbrug ganget med 25 (dvs. divideret med 4%). Reglen er en tommelfingerregel, ikke en garanti — den er baseret på historiske afkast og tager fx ikke højde for skat på løbende udbetalinger.
                 </p>
             </div>
 
-            <div class="panel" style="margin-top:16px;">
+            <div class="panel">
                 <div class="eyebrow">Data pr. år</div>
                 <div class="data-table-wrap">
                     <table class="data-table">
@@ -404,7 +404,7 @@
                         <tbody id="dataTableBody3"></tbody>
                     </table>
                 </div>
-                <button class="btn btn-secondary" style="margin-top:12px;" onclick="downloadTableAsCSV('dataTableBody3', 'fire-beregner.csv')">Download som CSV</button>
+                <button class="btn btn-secondary" onclick="downloadTableAsCSV('dataTableBody3', 'fire-beregner.csv')">Download som CSV</button>
             </div>
         </div>
     </div>
@@ -470,7 +470,7 @@
                 </div>
 
                 <button class="btn" onclick="savePortfolioSnapshot()">+ Gem datapunkt</button>
-                <button class="btn btn-secondary" style="margin-left:8px;" onclick="clearPortfolioHistory()">Ryd hele historikken</button>
+                <button class="btn btn-secondary" onclick="clearPortfolioHistory()">Ryd hele historikken</button>
             </div>
 
             <div class="panel chart-panel">
@@ -486,33 +486,33 @@
         </div>
 
         <div class="full-width-below">
-            <div class="panel" style="margin-bottom:16px;">
+            <div class="panel">
                 <div class="legend">
                     <span><i class="dot" style="background:var(--akt)"></i>Aktieværdi</span>
-                    <span><i class="dot" style="background:#9B7EDE"></i>Køb/solgt (pr. måned)</span>
+                    <span><i class="dot" style="background:#8E7BB5"></i>Køb/solgt (pr. måned)</span>
                 </div>
-                <div class="chart-wrap">
+                <div class="chart-wrap chart-wrap-standalone">
                     <canvas id="ptChart2"></canvas>
                     <div class="chart-empty-state" id="ptChart2Empty">Ingen data endnu – gem dit første datapunkt til venstre for at se grafen.</div>
                 </div>
             </div>
 
-            <div class="panel" style="margin-bottom:16px;">
+            <div class="panel">
                 <div class="legend">
                     <span><i class="dot" style="background:var(--akt)"></i>Aktieværdi</span>
                     <span><i class="dot" style="background:var(--ask)"></i>Totalt investeret</span>
                 </div>
-                <div class="chart-wrap">
+                <div class="chart-wrap chart-wrap-standalone">
                     <canvas id="ptChart3"></canvas>
                     <div class="chart-empty-state" id="ptChart3Empty">Ingen data endnu – gem dit første datapunkt til venstre for at se grafen.</div>
                 </div>
             </div>
 
-            <div class="panel" style="margin-bottom:16px;">
+            <div class="panel">
                 <div class="legend">
                     <span><i class="dot" style="background:var(--akt)"></i>Totalt afkast</span>
                 </div>
-                <div class="chart-wrap">
+                <div class="chart-wrap chart-wrap-standalone">
                     <canvas id="ptChart4"></canvas>
                     <div class="chart-empty-state" id="ptChart4Empty">Ingen data endnu – gem dit første datapunkt til venstre for at se grafen.</div>
                 </div>
@@ -539,7 +539,7 @@
                 </div>
                 <p class="explainer" style="margin:12px 0 12px 0;">Tryk "Download" for at gemme alle dine datapunkter i en CSV-fil, som du fx kan tage med til en anden enhed. Tryk "Upload" for at indlæse punkter fra en CSV-fil igen – dine eksisterende punkter bevares, men punkter med samme dato som i filen bliver overskrevet.</p>
                 <button class="btn btn-secondary" onclick="downloadTableAsCSV('ptTableBody', 'portefoeljetracker.csv')">Download som CSV</button>
-                <button class="btn btn-secondary" style="margin-left:8px;" onclick="document.getElementById('portfolioCsvUpload').click()">Upload CSV</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('portfolioCsvUpload').click()">Upload CSV</button>
                 <input type="file" id="portfolioCsvUpload" accept=".csv" style="display:none;" onchange="importPortfolioCSV(event)">
             </div>
         </div>
@@ -550,7 +550,7 @@
 <div id="section-budget" style="display:none;">
     <p class="tool-intro">Byg dit budget op fra bunden, eller indtast et samlet beløb og fordel det ud på kategorier for at se, hvor meget der er tilbage.</p>
 
-    <button class="btn btn-secondary" style="margin-bottom:20px;" onclick="resetBudget()">Nulstil felter</button>
+    <button class="btn btn-secondary" onclick="resetBudget()">Nulstil felter</button>
 
     <div class="full-width-above">
         <div class="stats">
@@ -583,47 +583,47 @@
             <details class="budget-category">
                 <summary><span>Bolig (husleje/lån)</span><span class="cat-total" id="total-catBolig">0 kr.</span></summary>
                 <div class="budget-items" id="items-catBolig"></div>
-                <button class="btn btn-secondary" style="margin:0 14px 12px 14px; font-size:12px; padding:6px 12px;" onclick="addBudgetItem('catBolig')">+ Tilføj post</button>
+                <button class="btn btn-secondary btn-sm" onclick="addBudgetItem('catBolig')">+ Tilføj post</button>
             </details>
             <details class="budget-category">
                 <summary><span>Mad & dagligvarer</span><span class="cat-total" id="total-catMad">0 kr.</span></summary>
                 <div class="budget-items" id="items-catMad"></div>
-                <button class="btn btn-secondary" style="margin:0 14px 12px 14px; font-size:12px; padding:6px 12px;" onclick="addBudgetItem('catMad')">+ Tilføj post</button>
+                <button class="btn btn-secondary btn-sm" onclick="addBudgetItem('catMad')">+ Tilføj post</button>
             </details>
             <details class="budget-category">
                 <summary><span>Transport</span><span class="cat-total" id="total-catTransport">0 kr.</span></summary>
                 <div class="budget-items" id="items-catTransport"></div>
-                <button class="btn btn-secondary" style="margin:0 14px 12px 14px; font-size:12px; padding:6px 12px;" onclick="addBudgetItem('catTransport')">+ Tilføj post</button>
+                <button class="btn btn-secondary btn-sm" onclick="addBudgetItem('catTransport')">+ Tilføj post</button>
             </details>
             <details class="budget-category">
                 <summary><span>Forsikringer og fagforening</span><span class="cat-total" id="total-catForsikring">0 kr.</span></summary>
                 <div class="budget-items" id="items-catForsikring"></div>
-                <button class="btn btn-secondary" style="margin:0 14px 12px 14px; font-size:12px; padding:6px 12px;" onclick="addBudgetItem('catForsikring')">+ Tilføj post</button>
+                <button class="btn btn-secondary btn-sm" onclick="addBudgetItem('catForsikring')">+ Tilføj post</button>
             </details>
             <details class="budget-category">
                 <summary><span>El, vand og varme</span><span class="cat-total" id="total-catForbrug">0 kr.</span></summary>
                 <div class="budget-items" id="items-catForbrug"></div>
-                <button class="btn btn-secondary" style="margin:0 14px 12px 14px; font-size:12px; padding:6px 12px;" onclick="addBudgetItem('catForbrug')">+ Tilføj post</button>
+                <button class="btn btn-secondary btn-sm" onclick="addBudgetItem('catForbrug')">+ Tilføj post</button>
             </details>
             <details class="budget-category">
                 <summary><span>Telefoni og internet</span><span class="cat-total" id="total-catTelefoni">0 kr.</span></summary>
                 <div class="budget-items" id="items-catTelefoni"></div>
-                <button class="btn btn-secondary" style="margin:0 14px 12px 14px; font-size:12px; padding:6px 12px;" onclick="addBudgetItem('catTelefoni')">+ Tilføj post</button>
+                <button class="btn btn-secondary btn-sm" onclick="addBudgetItem('catTelefoni')">+ Tilføj post</button>
             </details>
             <details class="budget-category">
                 <summary><span>Fritid & underholdning</span><span class="cat-total" id="total-catFritid">0 kr.</span></summary>
                 <div class="budget-items" id="items-catFritid"></div>
-                <button class="btn btn-secondary" style="margin:0 14px 12px 14px; font-size:12px; padding:6px 12px;" onclick="addBudgetItem('catFritid')">+ Tilføj post</button>
+                <button class="btn btn-secondary btn-sm" onclick="addBudgetItem('catFritid')">+ Tilføj post</button>
             </details>
             <details class="budget-category">
                 <summary><span>Opsparing</span><span class="cat-total" id="total-catOpsparing">0 kr.</span></summary>
                 <div class="budget-items" id="items-catOpsparing"></div>
-                <button class="btn btn-secondary" style="margin:0 14px 12px 14px; font-size:12px; padding:6px 12px;" onclick="addBudgetItem('catOpsparing')">+ Tilføj post</button>
+                <button class="btn btn-secondary btn-sm" onclick="addBudgetItem('catOpsparing')">+ Tilføj post</button>
             </details>
             <details class="budget-category">
                 <summary><span>Andet</span><span class="cat-total" id="total-catAndet">0 kr.</span></summary>
                 <div class="budget-items" id="items-catAndet"></div>
-                <button class="btn btn-secondary" style="margin:0 14px 12px 14px; font-size:12px; padding:6px 12px;" onclick="addBudgetItem('catAndet')">+ Tilføj post</button>
+                <button class="btn btn-secondary btn-sm" onclick="addBudgetItem('catAndet')">+ Tilføj post</button>
             </details>
         </div>
 
@@ -640,7 +640,7 @@
     <div class="full-width-below">
         <div class="panel">
             <div class="eyebrow">50/30/20-reglen</div>
-            <p class="explainer" style="margin:0 0 14px 0; padding-top:0; border-top:none;">
+            <p class="explainer explainer-lead">
                 En tommelfingerregel for en sund budgetfordeling: højst 50% til behov (bolig, mad, transport, forsikring, faste regninger), højst 30% til ønsker (fritid, andet), og mindst 20% til opsparing. Kategorierne herunder grupperes automatisk.
             </p>
             <div class="stats">
@@ -664,7 +664,7 @@
 <div id="section-formue" style="display:none;">
     <p class="tool-intro">Få et samlet overblik over din formue ved at indtaste dine aktiver og din gæld nedenfor.</p>
 
-    <button class="btn btn-secondary" style="margin-bottom:20px;" onclick="resetNetWorth()">Nulstil felter</button>
+    <button class="btn btn-secondary" onclick="resetNetWorth()">Nulstil felter</button>
 
     <div class="full-width-above">
         <div class="stats">
@@ -714,7 +714,7 @@
                 <input type="number" id="netCatAndet" class="number-input" value="0" min="0" step="500">
             </div>
 
-            <div class="eyebrow" style="margin-top:22px;">Gæld</div>
+            <div class="eyebrow eyebrow-section">Gæld</div>
             <div class="field">
                 <label>Anden gæld (billån, forbrugslån mv. – ikke realkredit, den indgår allerede i friværdien)</label>
                 <input type="number" id="netDebt" class="number-input" value="0" min="0" step="500">
@@ -732,9 +732,9 @@
     </div>
 
     <div class="full-width-below">
-        <div class="panel" style="margin-bottom:16px;">
+        <div class="panel">
             <div class="eyebrow">Formuehistorik</div>
-            <p class="explainer" style="margin:0 0 14px 0; padding-top:0; border-top:none;">
+            <p class="explainer explainer-lead">
                 Gem et øjebliksbillede af din nettoformue for at følge udviklingen over tid. Vælg en tidligere dato, hvis du vil eftertilføje historiske tal. Data gemmes kun lokalt i din browser – ikke på en server, og er derfor ikke tilgængelig fra andre enheder eller browsere.
             </p>
 
@@ -744,13 +744,13 @@
             </div>
 
             <button class="btn" onclick="saveNetWorthSnapshot()">+ Gem formue for valgt dato</button>
-            <button class="btn btn-secondary" style="margin-left:8px;" onclick="clearNetWorthHistory()">Ryd hele historikken</button>
-            <div class="chart-wrap" style="margin-top:18px;">
+            <button class="btn btn-secondary" onclick="clearNetWorthHistory()">Ryd hele historikken</button>
+            <div class="chart-wrap chart-wrap-standalone">
                 <canvas id="netWorthHistoryChart"></canvas>
                 <div class="chart-empty-state" id="netWorthHistoryChartEmpty">Ingen data endnu – gem et øjebliksbillede af din formue for at se udviklingen her.</div>
             </div>
 
-                <div class="data-table-wrap" style="margin-top:16px; max-height:280px;">
+                <div class="data-table-wrap" style="max-height:280px;">
                     <table class="data-table">
                         <thead>
                         <tr>
@@ -771,27 +771,27 @@
                 </div>
                 <p class="explainer" style="margin:12px 0 12px 0;">Tryk "Download" for at gemme alle dine datapunkter i en CSV-fil, som du fx kan tage med til en anden enhed. Tryk "Upload" for at indlæse punkter fra en CSV-fil igen – dine eksisterende punkter bevares, men punkter med samme dato som i filen bliver overskrevet.</p>
                 <button class="btn btn-secondary" onclick="downloadTableAsCSV('netWorthHistoryTableBody', 'formuehistorik.csv')">Download som CSV</button>
-                <button class="btn btn-secondary" style="margin-left:8px;" onclick="document.getElementById('netWorthCsvUpload').click()">Upload CSV</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('netWorthCsvUpload').click()">Upload CSV</button>
                 <input type="file" id="netWorthCsvUpload" accept=".csv" style="display:none;" onchange="importNetWorthCSV(event)">
             </div>
 
-            <div class="panel" style="margin-top:16px;">
+            <div class="panel">
                 <div class="eyebrow">Formuesammensætning over tid</div>
                 <div class="legend" style="flex-wrap:wrap;">
-                    <span><i class="dot" style="background:#45C4B0"></i>Kontanter</span>
-                    <span><i class="dot" style="background:#E3A548"></i>Aktier</span>
-                    <span><i class="dot" style="background:#9B7EDE"></i>Pension</span>
-                    <span><i class="dot" style="background:#6C8EBF"></i>Friværdi</span>
-                    <span><i class="dot" style="background:#8B96A3"></i>Andet</span>
-                    <span><i class="dot" style="background:#E85C4A"></i>Gæld</span>
+                    <span><i class="dot" style="background:#5FA894"></i>Kontanter</span>
+                    <span><i class="dot" style="background:#C9973F"></i>Aktier</span>
+                    <span><i class="dot" style="background:#8E7BB5"></i>Pension</span>
+                    <span><i class="dot" style="background:#6E8FB8"></i>Friværdi</span>
+                    <span><i class="dot" style="background:#8A93A6"></i>Andet</span>
+                    <span><i class="dot" style="background:#C96A54"></i>Gæld</span>
                 </div>
-                <div class="chart-wrap">
+                <div class="chart-wrap chart-wrap-standalone">
                     <canvas id="netWorthCompositionChart"></canvas>
                     <div class="chart-empty-state" id="netWorthCompositionChartEmpty">Ingen data endnu – gem et øjebliksbillede af din formue for at se sammensætningen her.</div>
                 </div>
             </div>
 
-            <div class="panel" style="margin-top:16px;">
+            <div class="panel">
                 <div class="eyebrow">Rekord</div>
                 <div class="stats">
                     <div class="stat">
@@ -807,14 +807,14 @@
                 </div>
             </div>
 
-        <div class="panel" style="margin-top:16px;">
+        <div class="panel">
             <div class="eyebrow">Milepæle</div>
             <div id="milestonesContainer"></div>
         </div>
 
-        <div class="panel" style="margin-top:16px;">
+        <div class="panel">
             <div class="eyebrow">Hvor rig er jeg?</div>
-            <p class="explainer" style="margin:0 0 14px 0; padding-top:0; border-top:none;">
+            <p class="explainer explainer-lead">
                 Sammenlign din nuværende nettoformue (fra felterne ovenfor) med andre danskere på din alder. Baseret på et uddrag af CEPOS' formueopgørelse (oprindeligt fra Danmarks Statistik, 2022-tal opregnet til 2025-niveau) – kun til sjov og inspiration, ikke en videnskabelig præcis sammenligning.
             </p>
 
@@ -823,7 +823,7 @@
                 <input type="number" id="wealthAge" class="number-input" value="30" min="18" max="90">
             </div>
 
-            <div class="stats" style="margin-top:16px;">
+            <div class="stats">
                 <div class="stat">
                     <div class="label">Din nettoformue</div>
                     <div class="value akt" id="wealthCompareValue">0 kr.</div>
@@ -839,7 +839,7 @@
                 </div>
             </div>
 
-            <div class="eyebrow" style="margin-top:22px;">Din formue svarer til...</div>
+            <div class="eyebrow eyebrow-section">Din formue svarer til...</div>
             <div id="purchasingPowerContainer" style="font-size:14px; line-height:1.9; color:var(--text);"></div>
         </div>
     </div>
@@ -862,6 +862,7 @@
         </aside>
     </div>
 
+    <script src="js/calc.js"></script>
     <script src="js/shared.js"></script>
     <script src="js/tool1-ask-akt.js"></script>
     <script src="js/tool2-monthly.js"></script>

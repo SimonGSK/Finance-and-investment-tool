@@ -1,6 +1,19 @@
+/**
+ * @file Værktøj 4: Porteføljetracker. Datapunkter (dato, værdi, kontanter,
+ * handler, indskud, udbytte) gemmes i localStorage under 'portfolioHistory'
+ * og vises i fire grafer og en tabel. Kan importeres/eksporteres som CSV.
+ */
+
+/**
+ * Fælles Chart.js-opsætning for de fire porteføljegrafer: temafarver, mono-akser,
+ * tooltip der viser alle serier for en dato.
+ * @param {(c: object) => string} tooltipLabelFn formaterer én tooltip-linje
+ * @returns {object} options-objekt til `new Chart`
+ */
 function lineChartOptions(tooltipLabelFn){
     return {
         responsive:true,
+        maintainAspectRatio:false,
         animation:{duration:250},
         interaction:{mode:'index', intersect:false},
         plugins:{
@@ -15,8 +28,8 @@ function lineChartOptions(tooltipLabelFn){
             }
         },
         scales:{
-            x:{ grid:{color:CHART_COLOR('--chart-grid')}, ticks:{color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11}} },
-            y:{ grid:{color:CHART_COLOR('--chart-grid')}, ticks:{color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11}, callback: v => DK.format(v)} }
+            x:{ grid:{color:CHART_COLOR('--chart-grid')}, ticks:{color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-mono'), size:11}} },
+            y:{ grid:{color:CHART_COLOR('--chart-grid')}, ticks:{color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-mono'), size:11}, callback: v => DK.format(v)} }
         }
     };
 }
@@ -30,7 +43,7 @@ let ptChart1 = new Chart(ptCtx1, {
             {label:'Porteføljeværdi', data:[], borderColor:CHART_COLOR('--akt'), backgroundColor:CHART_COLOR('--akt'), themeVar:'--akt', tension:0.15, pointRadius:0, borderWidth:2.5},
             {label:'Kumuleret indskud/udbetaling', data:[], borderColor:CHART_COLOR('--ask'), backgroundColor:CHART_COLOR('--ask'), themeVar:'--ask', tension:0.15, pointRadius:0, borderWidth:2, borderDash:[4,4]}
         ]},
-    options: {...lineChartOptions(ptTooltipLabel), maintainAspectRatio:false}
+    options: lineChartOptions(ptTooltipLabel)
 });
 
 const ptCtx2 = document.getElementById('ptChart2').getContext('2d');
@@ -52,16 +65,16 @@ let ptChart2 = new Chart(ptCtx2, {
             }
         },
         scales:{
-            x:{ grid:{color:CHART_COLOR('--chart-grid')}, ticks:{color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11}} },
+            x:{ grid:{color:CHART_COLOR('--chart-grid')}, ticks:{color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-mono'), size:11}} },
             y:{
                 position:'left',
                 grid:{color:CHART_COLOR('--chart-grid')},
-                ticks:{color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11}, callback: v => DK.format(v)}
+                ticks:{color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-mono'), size:11}, callback: v => DK.format(v)}
             },
             y1:{
                 position:'right',
                 grid:{drawOnChartArea:false},
-                ticks:{color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11}, callback: v => DK.format(v)}
+                ticks:{color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-mono'), size:11}, callback: v => DK.format(v)}
             }
         }
     }
@@ -86,6 +99,10 @@ let ptChart4 = new Chart(ptCtx4, {
     options: lineChartOptions(ptTooltipLabel)
 });
 
+/**
+ * Porteføljeværdi = aktieværdi + kontanter. Feltet er skrivebeskyttet og
+ * udregnes, når et af de to andre ændres.
+ */
 function updatePortfolioValueField(){
     const stockValue = parseFloat(document.getElementById('ptStockValue').value) || 0;
     const cash = parseFloat(document.getElementById('ptCash').value) || 0;
@@ -94,6 +111,11 @@ function updatePortfolioValueField(){
 document.getElementById('ptStockValue').addEventListener('input', updatePortfolioValueField);
 document.getElementById('ptCash').addEventListener('input', updatePortfolioValueField);
 
+/**
+ * Indlæser datapunkter fra en CSV-fil (vores eget format eller genexporteret
+ * fra Numbers/Excel). Eksisterende punkter bevares; samme dato overskrives.
+ * @param {Event} event change-eventet fra <input type="file">
+ */
 function importPortfolioCSV(event){
     const file = event.target.files[0];
     if(!file) return;
@@ -143,6 +165,10 @@ function importPortfolioCSV(event){
     reader.readAsText(file, 'UTF-8');
 }
 
+/**
+ * Gemmer formularens værdier som et datapunkt for den valgte dato (i dag som
+ * standard) og gentegner graferne.
+ */
 function savePortfolioSnapshot(){
     const entry = {
         date: document.getElementById('ptDate').value || new Date().toISOString().slice(0,10),
@@ -163,6 +189,10 @@ function savePortfolioSnapshot(){
     renderPortfolioHistory();
 }
 
+/**
+ * Sletter datapunktet for en dato.
+ * @param {string} date ISO-dato, fx '2026-09-21'
+ */
 function deletePortfolioEntry(date){
     let history = JSON.parse(localStorage.getItem('portfolioHistory') || '[]');
     history = history.filter(h => h.date !== date);
@@ -170,6 +200,9 @@ function deletePortfolioEntry(date){
     renderPortfolioHistory();
 }
 
+/**
+ * Sletter hele porteføljehistorikken efter bekræftelse.
+ */
 function clearPortfolioHistory(){
     if(confirm('Er du sikker på, at du vil slette hele porteføljehistorikken? Det kan ikke fortrydes.')){
         localStorage.removeItem('portfolioHistory');
@@ -177,6 +210,10 @@ function clearPortfolioHistory(){
     }
 }
 
+/**
+ * Læser historikken fra localStorage og opdaterer alle fire grafer, tabellen
+ * og tomme-tilstandene.
+ */
 function renderPortfolioHistory(){
     const history = JSON.parse(localStorage.getItem('portfolioHistory') || '[]');
 

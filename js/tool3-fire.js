@@ -1,19 +1,7 @@
-// FIRE-opsparing: rent vækst-loop uden skatteoptimering (der er intet at "høste"
-// på en opsparing, man endnu ikke har rørt). Genbruger monthlyReturnFactor() fra
-// det månedlige aktiedepot-værktøj.
-function computeFireSeries(startCash, monthlyAmount, yearlyReturn, maxYears){
-    const monthlyFactor = monthlyReturnFactor(yearlyReturn);
-    let value = startCash;
-    const series = [{year:0, value:startCash}];
-    for(let i=1;i<=maxYears;i++){
-        for(let m=1;m<=12;m++){
-            value += monthlyAmount;
-            value *= monthlyFactor;
-        }
-        series.push({year:i, value});
-    }
-    return series;
-}
+/**
+ * @file Værktøj 3: FIRE-beregner efter 4%-reglen. FIRE-målet vokser med
+ * inflationen år for år, så "år til FIRE" er i reelle termer.
+ */
 
 const ctx3 = document.getElementById('chart3').getContext('2d');
 let chart3 = new Chart(ctx3, {
@@ -43,13 +31,13 @@ let chart3 = new Chart(ctx3, {
         scales:{
             x:{
                 grid:{color:CHART_COLOR('--chart-grid')},
-                ticks:{color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11}},
-                title:{display:true, text:'År', color:CHART_COLOR('--muted'), font:{family:'Manrope', size:12}}
+                ticks:{color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-mono'), size:11}},
+                title:{display:true, text:'År', color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-sans'), size:12}}
             },
             y:{
                 grid:{color:CHART_COLOR('--chart-grid')},
                 ticks:{
-                    color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11},
+                    color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-mono'), size:11},
                     callback: v => DK.format(v)
                 }
             }
@@ -57,16 +45,19 @@ let chart3 = new Chart(ctx3, {
     }
 });
 
-const expenses3Input = document.getElementById('expenses3');
-const startCash3Input = document.getElementById('startCash3');
-const monthlyAmount3Input = document.getElementById('monthlyAmount3');
-const return3Input = document.getElementById('yearlyReturn3');
-const inflation3Input = document.getElementById('inflation3');
+const expenses3Input = document.getElementById('expenses3Number');
+const startCash3Input = document.getElementById('startCash3Number');
+const monthlyAmount3Input = document.getElementById('monthlyAmount3Number');
+const return3Input = document.getElementById('yearlyReturn3Number');
+const inflation3Input = document.getElementById('inflation3Number');
 const showReal3Input = document.getElementById('showRealValue3');
 
 const FIRE_MAX_YEARS = 60;
 const FIRE_WITHDRAWAL_RATE = 4; // 4%-reglen - fast, ikke justerbar
 
+/**
+ * Genberegner alt ud fra formularens aktuelle værdier. Kaldes ved hvert input.
+ */
 function update3(){
     const expenses = parseInt(expenses3Input.value);
     const startCash = parseInt(startCash3Input.value);
