@@ -36,7 +36,7 @@ let budgetChart = new Chart(budgetCtx, {
             legend:{
                 display:true,
                 position:'bottom',
-                labels:{ color:CHART_COLOR('--muted'), font:{family:'Manrope', size:11}, boxWidth:12, padding:12 }
+                labels:{ color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-sans'), size:11}, boxWidth:12, padding:12 }
             },
             tooltip:{
                 backgroundColor:CHART_COLOR('--tooltip-bg'),

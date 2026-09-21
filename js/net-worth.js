@@ -26,7 +26,7 @@ let netWorthChart = new Chart(netWorthCtx, {
             legend:{
                 display:true,
                 position:'bottom',
-                labels:{ color:CHART_COLOR('--muted'), font:{family:'Manrope', size:11}, boxWidth:12, padding:12 }
+                labels:{ color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-sans'), size:11}, boxWidth:12, padding:12 }
             },
             tooltip:{
                 backgroundColor:CHART_COLOR('--tooltip-bg'),
@@ -125,11 +125,11 @@ function estimatePercentile(netWorth, row){
 // Sjove, omtrentlige priser - juster frit efter smag. Bruges kun til
 // "din formue svarer til X ting"-sammenligningen, ikke til noget seriøst.
 const FUN_ITEMS = [
-    {label:'bananer', price:3},
-    {label:'iPhone 17', price:7499},
-    {label:'kvadratmeters lejlighed i Kbh K', price:85760},
-    {label:'Fiat 500 (2026)', price:189990},
-    {label:'Porsche 911 GT3 RS med danske afgifter', price:4910783}
+    {emoji:'🍌', label:'bananer', price:3},
+    {emoji:'📱', label:'iPhone 17', price:7499},
+    {emoji:'🏢', label:'kvadratmeters lejlighed i Kbh K', price:85760},
+    {emoji:'🚗', label:'Fiat 500 (2026)', price:189990},
+    {emoji:'🏎️', label:'Porsche 911 GT3 RS med danske afgifter', price:4910783}
 ];
 
 function renderPurchasingPower(netWorth){
@@ -141,7 +141,7 @@ function renderPurchasingPower(netWorth){
     container.innerHTML = FUN_ITEMS.map(item => {
         const qty = netWorth / item.price;
         const qtyDisplay = qty >= 10 ? Math.round(qty).toLocaleString('da-DK') : qty.toFixed(1).replace('.', ',');
-        return `<div>💰 <strong>${qtyDisplay}</strong> ${item.label}</div>`;
+        return `<div class="fun-item"><span class="fun-emoji">${item.emoji}</span><strong>${qtyDisplay}</strong> ${item.label}</div>`;
     }).join('');
 }
 
@@ -323,11 +323,12 @@ function renderNetWorthHistory(){
             data:chartData,
             options:{
                 responsive:true,
+                maintainAspectRatio:false,
                 plugins:{
                     legend:{
                         display:true,
                         position:'bottom',
-                        labels:{ color:CHART_COLOR('--muted'), font:{family:'Manrope', size:11}, boxWidth:12, padding:12 }
+                        labels:{ color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-sans'), size:11}, boxWidth:12, padding:12 }
                     },
                     tooltip:{
                         backgroundColor:CHART_COLOR('--tooltip-bg'),
@@ -339,8 +340,8 @@ function renderNetWorthHistory(){
                     }
                 },
                 scales:{
-                    x:{ grid:{color:CHART_COLOR('--chart-grid')}, ticks:{color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11}} },
-                    y:{ grid:{color:CHART_COLOR('--chart-grid')}, ticks:{color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11}, callback: v => DK.format(v)} }
+                    x:{ grid:{color:CHART_COLOR('--chart-grid')}, ticks:{color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-mono'), size:11}} },
+                    y:{ grid:{color:CHART_COLOR('--chart-grid')}, ticks:{color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-mono'), size:11}, callback: v => DK.format(v)} }
                 }
             }
         });
@@ -391,6 +392,7 @@ function renderNetWorthComposition(history){
             data:{labels, datasets},
             options:{
                 responsive:true,
+                maintainAspectRatio:false,
                 plugins:{
                     legend:{display:false},
                     tooltip:{
@@ -400,11 +402,11 @@ function renderNetWorthComposition(history){
                     }
                 },
                 scales:{
-                    x:{ grid:{color:CHART_COLOR('--chart-grid')}, ticks:{color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11}} },
+                    x:{ grid:{color:CHART_COLOR('--chart-grid')}, ticks:{color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-mono'), size:11}} },
                     y:{
                         stacked:true,
                         grid:{color:CHART_COLOR('--chart-grid')},
-                        ticks:{color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11}, callback: v => DK.format(v)}
+                        ticks:{color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-mono'), size:11}, callback: v => DK.format(v)}
                     }
                 }
             }

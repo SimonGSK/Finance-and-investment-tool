@@ -42,7 +42,7 @@ function showSection(name){
         else { ptChart1.resize(); ptChart2.resize(); ptChart3.resize(); ptChart4.resize(); }
     }
     if(name==='budget'){ budgetChart.resize(); }
-    if(name==='formue'){ netWorthChart.resize(); netWorthHistoryChart.resize(); }
+    if(name==='formue'){ netWorthChart.resize(); netWorthHistoryChart.resize(); if(netWorthCompositionChart) netWorthCompositionChart.resize(); }
 }
 
 const BACKUP_KEYS = ['budgetItems', 'budgetData', 'netWorthData', 'netWorthHistory', 'portfolioHistory'];

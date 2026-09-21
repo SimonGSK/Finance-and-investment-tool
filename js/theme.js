@@ -74,6 +74,11 @@ if(savedTheme === 'light'){
 }
 applyAllChartThemes();
 
+// Canvas-tekst tegnes med den skrifttype, der er klar i det øjeblik grafen tegnes.
+// Graferne tegnes første gang før webfontene er hentet, så gentegn dem, når
+// fontene er klar - ellers sidder aksetekster og legender fast i fallback-skriften.
+document.fonts.ready.then(applyAllChartThemes);
+
 // Så længe brugeren IKKE selv har valgt et tema manuelt (dvs. intet gemt endnu),
 // følger siden systemets tema live - også hvis man skifter det, mens siden er åben.
 if(!storedTheme){

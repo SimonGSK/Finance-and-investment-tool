@@ -130,13 +130,13 @@ let chart = new Chart(ctx, {
         scales:{
             x:{
                 grid:{color:CHART_COLOR('--chart-grid')},
-                ticks:{color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11}},
-                title:{display:true, text:'År', color:CHART_COLOR('--muted'), font:{family:'Manrope', size:12}}
+                ticks:{color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-mono'), size:11}},
+                title:{display:true, text:'År', color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-sans'), size:12}}
             },
             y:{
                 grid:{color:CHART_COLOR('--chart-grid')},
                 ticks:{
-                    color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11},
+                    color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-mono'), size:11},
                     callback: v => DK.format(v)
                 }
             }
