@@ -76,10 +76,6 @@ function saveBudgetItems(items){
     localStorage.setItem('budgetItems', JSON.stringify(items));
 }
 
-function categoryTotal(items, catId){
-    return (items[catId] || []).reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
-}
-
 function addBudgetItem(catId){
     const items = loadBudgetItems();
     if(!items[catId]) items[catId] = [];

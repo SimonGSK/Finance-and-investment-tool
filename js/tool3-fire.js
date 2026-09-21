@@ -1,20 +1,3 @@
-// FIRE-opsparing: rent vækst-loop uden skatteoptimering (der er intet at "høste"
-// på en opsparing, man endnu ikke har rørt). Genbruger monthlyReturnFactor() fra
-// det månedlige aktiedepot-værktøj.
-function computeFireSeries(startCash, monthlyAmount, yearlyReturn, maxYears){
-    const monthlyFactor = monthlyReturnFactor(yearlyReturn);
-    let value = startCash;
-    const series = [{year:0, value:startCash}];
-    for(let i=1;i<=maxYears;i++){
-        for(let m=1;m<=12;m++){
-            value += monthlyAmount;
-            value *= monthlyFactor;
-        }
-        series.push({year:i, value});
-    }
-    return series;
-}
-
 const ctx3 = document.getElementById('chart3').getContext('2d');
 let chart3 = new Chart(ctx3, {
     type:'line',

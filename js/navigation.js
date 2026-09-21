@@ -103,7 +103,7 @@ function toggleSettings(){
 }
 
 document.getElementById('doubleDeduction').addEventListener('change', () => {
-    doubleDeductionEnabled = document.getElementById('doubleDeduction').checked;
+    setDoubleDeduction(document.getElementById('doubleDeduction').checked);
     update();
     update2();
 });
