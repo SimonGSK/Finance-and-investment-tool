@@ -1,9 +1,9 @@
 const NET_WORTH_CATEGORIES = [
-    {id:'netCatKontanter', label:'Kontanter & opsparingskonti', color:'#45C4B0', liquid:true},
-    {id:'netCatAktier', label:'Aktier & værdipapirer', color:'#E3A548', liquid:true},
-    {id:'netCatPension', label:'Pension', color:'#9B7EDE', liquid:false},
-    {id:'netCatFrivaerdi', label:'Friværdi i bolig', color:'#6C8EBF', liquid:false},
-    {id:'netCatAndet', label:'Andet', color:'#8B96A3', liquid:false}
+    {id:'netCatKontanter', label:'Kontanter & opsparingskonti', color:'#5FA894', liquid:true},
+    {id:'netCatAktier', label:'Aktier & værdipapirer', color:'#C9973F', liquid:true},
+    {id:'netCatPension', label:'Pension', color:'#8E7BB5', liquid:false},
+    {id:'netCatFrivaerdi', label:'Friværdi i bolig', color:'#6E8FB8', liquid:false},
+    {id:'netCatAndet', label:'Andet', color:'#8A93A6', liquid:false}
 ];
 const MILESTONES = [100000, 250000, 500000, 1000000, 2000000, 5000000];
 
@@ -15,7 +15,7 @@ let netWorthChart = new Chart(netWorthCtx, {
         datasets:[{
             data: NET_WORTH_CATEGORIES.map(() => 0),
             backgroundColor: NET_WORTH_CATEGORIES.map(c => c.color),
-            borderColor:'#0F1720',
+            borderColor:CHART_COLOR('--panel'),
             borderWidth:2
         }]
     },
@@ -26,14 +26,14 @@ let netWorthChart = new Chart(netWorthCtx, {
             legend:{
                 display:true,
                 position:'bottom',
-                labels:{ color:'#8B96A3', font:{family:'Inter', size:11}, boxWidth:12, padding:12 }
+                labels:{ color:CHART_COLOR('--muted'), font:{family:'Manrope', size:11}, boxWidth:12, padding:12 }
             },
             tooltip:{
-                backgroundColor:'#1C2733',
-                borderColor:'#26323F',
+                backgroundColor:CHART_COLOR('--tooltip-bg'),
+                borderColor:CHART_COLOR('--border'),
                 borderWidth:1,
-                titleColor:'#EDEAE3',
-                bodyColor:'#EDEAE3',
+                titleColor:CHART_COLOR('--text'),
+                bodyColor:CHART_COLOR('--text'),
                 callbacks:{ label: c => `${c.label}: ${DK.format(c.raw)} kr.` }
             }
         }
@@ -292,8 +292,9 @@ function renderNetWorthHistory(){
             {
                 label:'Nettoformue',
                 data: history.map(h => h.value),
-                borderColor:'#E3A548',
-                backgroundColor:'#E3A548',
+                borderColor:CHART_COLOR('--akt'),
+                backgroundColor:CHART_COLOR('--akt'),
+                themeVar:'--akt',
                 tension:0.15,
                 pointRadius:4,
                 borderWidth:2.5
@@ -301,8 +302,9 @@ function renderNetWorthHistory(){
             {
                 label:'Likvid formue',
                 data: history.map(h => h.liquid ?? null),
-                borderColor:'#45C4B0',
-                backgroundColor:'#45C4B0',
+                borderColor:CHART_COLOR('--ask'),
+                backgroundColor:CHART_COLOR('--ask'),
+                themeVar:'--ask',
                 tension:0.15,
                 pointRadius:4,
                 borderWidth:2,
@@ -325,20 +327,20 @@ function renderNetWorthHistory(){
                     legend:{
                         display:true,
                         position:'bottom',
-                        labels:{ color:'#8B96A3', font:{family:'Inter', size:11}, boxWidth:12, padding:12 }
+                        labels:{ color:CHART_COLOR('--muted'), font:{family:'Manrope', size:11}, boxWidth:12, padding:12 }
                     },
                     tooltip:{
-                        backgroundColor:'#1C2733',
-                        borderColor:'#26323F',
+                        backgroundColor:CHART_COLOR('--tooltip-bg'),
+                        borderColor:CHART_COLOR('--border'),
                         borderWidth:1,
-                        titleColor:'#EDEAE3',
-                        bodyColor:'#EDEAE3',
+                        titleColor:CHART_COLOR('--text'),
+                        bodyColor:CHART_COLOR('--text'),
                         callbacks:{ label: c => `${c.dataset.label}: ${DK.format(c.raw)} kr.` }
                     }
                 },
                 scales:{
-                    x:{ grid:{color:'#202B36'}, ticks:{color:'#8B96A3', font:{family:'IBM Plex Mono', size:11}} },
-                    y:{ grid:{color:'#202B36'}, ticks:{color:'#8B96A3', font:{family:'IBM Plex Mono', size:11}, callback: v => DK.format(v)} }
+                    x:{ grid:{color:CHART_COLOR('--chart-grid')}, ticks:{color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11}} },
+                    y:{ grid:{color:CHART_COLOR('--chart-grid')}, ticks:{color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11}, callback: v => DK.format(v)} }
                 }
             }
         });
@@ -371,12 +373,12 @@ let netWorthCompositionChart = null;
 function renderNetWorthComposition(history){
     const labels = history.map(h => h.date);
     const datasets = [
-        {label:'Kontanter', data: history.map(h => h.netCatKontanter || 0), backgroundColor:'#45C4B0', borderColor:'#45C4B0', fill:true, stack:'formue', pointRadius:0, tension:0.1},
-        {label:'Aktier', data: history.map(h => h.netCatAktier || 0), backgroundColor:'#E3A548', borderColor:'#E3A548', fill:true, stack:'formue', pointRadius:0, tension:0.1},
-        {label:'Pension', data: history.map(h => h.netCatPension || 0), backgroundColor:'#9B7EDE', borderColor:'#9B7EDE', fill:true, stack:'formue', pointRadius:0, tension:0.1},
-        {label:'Friværdi', data: history.map(h => h.netCatFrivaerdi || 0), backgroundColor:'#6C8EBF', borderColor:'#6C8EBF', fill:true, stack:'formue', pointRadius:0, tension:0.1},
-        {label:'Andet', data: history.map(h => h.netCatAndet || 0), backgroundColor:'#8B96A3', borderColor:'#8B96A3', fill:true, stack:'formue', pointRadius:0, tension:0.1},
-        {label:'Gæld', data: history.map(h => -(h.debt || 0)), backgroundColor:'#E85C4A', borderColor:'#E85C4A', fill:true, stack:'formue', pointRadius:0, tension:0.1}
+        {label:'Kontanter', data: history.map(h => h.netCatKontanter || 0), backgroundColor:'#5FA894', borderColor:'#5FA894', fill:true, stack:'formue', pointRadius:0, tension:0.1},
+        {label:'Aktier', data: history.map(h => h.netCatAktier || 0), backgroundColor:'#C9973F', borderColor:'#C9973F', fill:true, stack:'formue', pointRadius:0, tension:0.1},
+        {label:'Pension', data: history.map(h => h.netCatPension || 0), backgroundColor:'#8E7BB5', borderColor:'#8E7BB5', fill:true, stack:'formue', pointRadius:0, tension:0.1},
+        {label:'Friværdi', data: history.map(h => h.netCatFrivaerdi || 0), backgroundColor:'#6E8FB8', borderColor:'#6E8FB8', fill:true, stack:'formue', pointRadius:0, tension:0.1},
+        {label:'Andet', data: history.map(h => h.netCatAndet || 0), backgroundColor:'#8A93A6', borderColor:'#8A93A6', fill:true, stack:'formue', pointRadius:0, tension:0.1},
+        {label:'Gæld', data: history.map(h => -(h.debt || 0)), backgroundColor:'#C96A54', borderColor:'#C96A54', fill:true, stack:'formue', pointRadius:0, tension:0.1}
     ];
 
     if(netWorthCompositionChart){
@@ -392,17 +394,17 @@ function renderNetWorthComposition(history){
                 plugins:{
                     legend:{display:false},
                     tooltip:{
-                        backgroundColor:'#1C2733', borderColor:'#26323F', borderWidth:1,
-                        titleColor:'#EDEAE3', bodyColor:'#EDEAE3',
+                        backgroundColor:CHART_COLOR('--tooltip-bg'), borderColor:CHART_COLOR('--border'), borderWidth:1,
+                        titleColor:CHART_COLOR('--text'), bodyColor:CHART_COLOR('--text'),
                         callbacks:{ label: c => `${c.dataset.label}: ${DK.format(c.raw)} kr.` }
                     }
                 },
                 scales:{
-                    x:{ grid:{color:'#202B36'}, ticks:{color:'#8B96A3', font:{family:'IBM Plex Mono', size:11}} },
+                    x:{ grid:{color:CHART_COLOR('--chart-grid')}, ticks:{color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11}} },
                     y:{
                         stacked:true,
-                        grid:{color:'#202B36'},
-                        ticks:{color:'#8B96A3', font:{family:'IBM Plex Mono', size:11}, callback: v => DK.format(v)}
+                        grid:{color:CHART_COLOR('--chart-grid')},
+                        ticks:{color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11}, callback: v => DK.format(v)}
                     }
                 }
             }

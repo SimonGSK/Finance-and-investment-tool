@@ -1,9 +1,17 @@
-function getCSSVar(name){
-    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+// Datasæt der er markeret med themeVar henter deres farve fra CSS-variablen igen,
+// så graflinjerne skifter med, når temaet skifter.
+function refreshDatasetColors(chartInstance){
+    chartInstance.data.datasets.forEach(ds => {
+        if(!ds.themeVar) return;
+        const color = getCSSVar(ds.themeVar);
+        ds.borderColor = color;
+        ds.backgroundColor = color;
+    });
 }
 
 function applyLineChartTheme(chartInstance){
     if(!chartInstance) return;
+    refreshDatasetColors(chartInstance);
     const gridColor = getCSSVar('--chart-grid');
     const tickColor = getCSSVar('--muted');
     const tooltipBg = getCSSVar('--tooltip-bg');

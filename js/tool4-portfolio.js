@@ -6,17 +6,17 @@ function lineChartOptions(tooltipLabelFn){
         plugins:{
             legend:{display:false},
             tooltip:{
-                backgroundColor:'#1C2733',
-                borderColor:'#26323F',
+                backgroundColor:CHART_COLOR('--tooltip-bg'),
+                borderColor:CHART_COLOR('--border'),
                 borderWidth:1,
-                titleColor:'#EDEAE3',
-                bodyColor:'#EDEAE3',
+                titleColor:CHART_COLOR('--text'),
+                bodyColor:CHART_COLOR('--text'),
                 callbacks:{ label: tooltipLabelFn }
             }
         },
         scales:{
-            x:{ grid:{color:'#202B36'}, ticks:{color:'#8B96A3', font:{family:'IBM Plex Mono', size:11}} },
-            y:{ grid:{color:'#202B36'}, ticks:{color:'#8B96A3', font:{family:'IBM Plex Mono', size:11}, callback: v => DK.format(v)} }
+            x:{ grid:{color:CHART_COLOR('--chart-grid')}, ticks:{color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11}} },
+            y:{ grid:{color:CHART_COLOR('--chart-grid')}, ticks:{color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11}, callback: v => DK.format(v)} }
         }
     };
 }
@@ -27,8 +27,8 @@ const ptCtx1 = document.getElementById('ptChart1').getContext('2d');
 let ptChart1 = new Chart(ptCtx1, {
     type:'line',
     data:{labels:[], datasets:[
-            {label:'Porteføljeværdi', data:[], borderColor:'#E3A548', backgroundColor:'#E3A548', tension:0.15, pointRadius:0, borderWidth:2.5},
-            {label:'Kumuleret indskud/udbetaling', data:[], borderColor:'#45C4B0', backgroundColor:'#45C4B0', tension:0.15, pointRadius:0, borderWidth:2, borderDash:[4,4]}
+            {label:'Porteføljeværdi', data:[], borderColor:CHART_COLOR('--akt'), backgroundColor:CHART_COLOR('--akt'), themeVar:'--akt', tension:0.15, pointRadius:0, borderWidth:2.5},
+            {label:'Kumuleret indskud/udbetaling', data:[], borderColor:CHART_COLOR('--ask'), backgroundColor:CHART_COLOR('--ask'), themeVar:'--ask', tension:0.15, pointRadius:0, borderWidth:2, borderDash:[4,4]}
         ]},
     options: {...lineChartOptions(ptTooltipLabel), maintainAspectRatio:false}
 });
@@ -36,8 +36,8 @@ let ptChart1 = new Chart(ptCtx1, {
 const ptCtx2 = document.getElementById('ptChart2').getContext('2d');
 let ptChart2 = new Chart(ptCtx2, {
     data:{labels:[], datasets:[
-            {type:'line', label:'Aktieværdi', data:[], borderColor:'#E3A548', backgroundColor:'#E3A548', tension:0.15, pointRadius:0, borderWidth:2.5, yAxisID:'y'},
-            {type:'bar', label:'Køb/solgt (pr. måned)', data:[], backgroundColor:'#9B7EDE', yAxisID:'y1'}
+            {type:'line', label:'Aktieværdi', data:[], borderColor:CHART_COLOR('--akt'), backgroundColor:CHART_COLOR('--akt'), themeVar:'--akt', tension:0.15, pointRadius:0, borderWidth:2.5, yAxisID:'y'},
+            {type:'bar', label:'Køb/solgt (pr. måned)', data:[], backgroundColor:'#8E7BB5', yAxisID:'y1'}
         ]},
     options:{
         responsive:true,
@@ -46,22 +46,22 @@ let ptChart2 = new Chart(ptCtx2, {
         plugins:{
             legend:{display:false},
             tooltip:{
-                backgroundColor:'#1C2733', borderColor:'#26323F', borderWidth:1,
-                titleColor:'#EDEAE3', bodyColor:'#EDEAE3',
+                backgroundColor:CHART_COLOR('--tooltip-bg'), borderColor:CHART_COLOR('--border'), borderWidth:1,
+                titleColor:CHART_COLOR('--text'), bodyColor:CHART_COLOR('--text'),
                 callbacks:{ label: ptTooltipLabel }
             }
         },
         scales:{
-            x:{ grid:{color:'#202B36'}, ticks:{color:'#8B96A3', font:{family:'IBM Plex Mono', size:11}} },
+            x:{ grid:{color:CHART_COLOR('--chart-grid')}, ticks:{color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11}} },
             y:{
                 position:'left',
-                grid:{color:'#202B36'},
-                ticks:{color:'#8B96A3', font:{family:'IBM Plex Mono', size:11}, callback: v => DK.format(v)}
+                grid:{color:CHART_COLOR('--chart-grid')},
+                ticks:{color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11}, callback: v => DK.format(v)}
             },
             y1:{
                 position:'right',
                 grid:{drawOnChartArea:false},
-                ticks:{color:'#8B96A3', font:{family:'IBM Plex Mono', size:11}, callback: v => DK.format(v)}
+                ticks:{color:CHART_COLOR('--muted'), font:{family:'IBM Plex Mono', size:11}, callback: v => DK.format(v)}
             }
         }
     }
@@ -71,8 +71,8 @@ const ptCtx3 = document.getElementById('ptChart3').getContext('2d');
 let ptChart3 = new Chart(ptCtx3, {
     type:'line',
     data:{labels:[], datasets:[
-            {label:'Aktieværdi', data:[], borderColor:'#E3A548', backgroundColor:'#E3A548', tension:0.15, pointRadius:0, borderWidth:2.5},
-            {label:'Totalt investeret', data:[], borderColor:'#45C4B0', backgroundColor:'#45C4B0', tension:0.15, pointRadius:0, borderWidth:2, borderDash:[4,4]}
+            {label:'Aktieværdi', data:[], borderColor:CHART_COLOR('--akt'), backgroundColor:CHART_COLOR('--akt'), themeVar:'--akt', tension:0.15, pointRadius:0, borderWidth:2.5},
+            {label:'Totalt investeret', data:[], borderColor:CHART_COLOR('--ask'), backgroundColor:CHART_COLOR('--ask'), themeVar:'--ask', tension:0.15, pointRadius:0, borderWidth:2, borderDash:[4,4]}
         ]},
     options: lineChartOptions(ptTooltipLabel)
 });
@@ -81,7 +81,7 @@ const ptCtx4 = document.getElementById('ptChart4').getContext('2d');
 let ptChart4 = new Chart(ptCtx4, {
     type:'line',
     data:{labels:[], datasets:[
-            {label:'Totalt afkast', data:[], borderColor:'#E3A548', backgroundColor:'#E3A548', tension:0.15, pointRadius:0, borderWidth:2.5}
+            {label:'Totalt afkast', data:[], borderColor:CHART_COLOR('--akt'), backgroundColor:CHART_COLOR('--akt'), themeVar:'--akt', tension:0.15, pointRadius:0, borderWidth:2.5}
         ]},
     options: lineChartOptions(ptTooltipLabel)
 });

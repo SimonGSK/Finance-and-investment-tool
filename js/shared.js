@@ -4,6 +4,15 @@ const AKT_TAX_LOW = 0.27;
 const AKT_TAX_HIGH = 0.42;
 const DK = new Intl.NumberFormat('da-DK', {maximumFractionDigits:0});
 
+function getCSSVar(name){
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+// Grafernes farver hentes fra CSS-variabler, så de følger temaet (lyst/mørkt).
+function CHART_COLOR(name){
+    return getCSSVar(name);
+}
+
 // Marker automatisk hele indholdet af et talfelt, når man klikker i det,
 // så man kan skrive direkte i stedet for først at skulle slette et "0".
 // 'true' til sidst (capture-fasen) er nødvendigt, fordi 'focus' ikke bobler
