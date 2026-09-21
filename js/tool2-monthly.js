@@ -1,3 +1,7 @@
+/**
+ * @file Værktøj 2: Aktiedepot med startbeløb og fast månedlig indbetaling.
+ */
+
 const ctx2 = document.getElementById('chart2').getContext('2d');
 let chart2 = new Chart(ctx2, {
     type:'line',
@@ -47,6 +51,9 @@ const return2Input = document.getElementById('yearlyReturn2Number');
 const inflation2Input = document.getElementById('inflation2Number');
 const showReal2Input = document.getElementById('showRealValue2');
 
+/**
+ * Genberegner alt ud fra formularens aktuelle værdier. Kaldes ved hvert input.
+ */
 function update2(){
     const startCash = parseInt(startCash2Input.value);
     const monthlyAmount = parseInt(monthlyAmount2Input.value);

@@ -1,3 +1,14 @@
+/**
+ * @file Navigation mellem sektioner (Investering/Budget/Formue) og værktøjer,
+ * indstillingspanelet, intro-banneret og fuld backup af alle data som JSON.
+ */
+
+/**
+ * Viser ét af de fire investeringsværktøjer og skjuler de andre. Sørger også
+ * for at den viste graf får målt sin størrelse - Chart.js kan ikke måle en
+ * graf, der var skjult, da den blev tegnet.
+ * @param {1|2|3|4} n
+ */
 function showTool(n){
     document.getElementById('tool1').style.display = n===1 ? 'block' : 'none';
     document.getElementById('tool2').style.display = n===2 ? 'block' : 'none';
@@ -24,6 +35,11 @@ function showTool(n){
 
 showTool(1);
 
+/**
+ * Skifter mellem de tre hovedsektioner og gentegner sektionens grafer, så de
+ * får den rigtige størrelse efter at have været skjult.
+ * @param {'tools'|'budget'|'formue'} name
+ */
 function showSection(name){
     document.getElementById('section-tools').style.display = name==='tools' ? 'block' : 'none';
     document.getElementById('section-budget').style.display = name==='budget' ? 'block' : 'none';
@@ -47,6 +63,10 @@ function showSection(name){
 
 const BACKUP_KEYS = ['budgetItems', 'budgetData', 'netWorthData', 'netWorthHistory', 'portfolioHistory'];
 
+/**
+ * Downloader alle gemte data (budget, formue, historik, portefølje) som én
+ * JSON-fil, så man kan flytte dem til en anden browser eller enhed.
+ */
 function exportAllData(){
     const backup = {};
     BACKUP_KEYS.forEach(key => {
@@ -65,6 +85,11 @@ function exportAllData(){
     URL.revokeObjectURL(url);
 }
 
+/**
+ * Indlæser en JSON-backup fra exportAllData og overskriver de gemte data efter
+ * bekræftelse. Siden genindlæses bagefter, så alt læses ind på ny.
+ * @param {Event} event change-eventet fra <input type="file">
+ */
 function importAllData(event){
     const file = event.target.files[0];
     if(!file) return;
@@ -88,6 +113,9 @@ function importAllData(event){
     reader.readAsText(file, 'UTF-8');
 }
 
+/**
+ * Skjuler velkomst-banneret og husker det, så det ikke vises igen.
+ */
 function dismissIntroBanner(){
     document.getElementById('introBanner').style.display = 'none';
     localStorage.setItem('hasSeenIntroBanner', 'true');
@@ -97,6 +125,9 @@ if(!localStorage.getItem('hasSeenIntroBanner')){
     document.getElementById('introBanner').style.display = 'flex';
 }
 
+/**
+ * Åbner eller lukker indstillingspanelet under tandhjulet.
+ */
 function toggleSettings(){
     const panel = document.getElementById('settingsPanel');
     panel.style.display = panel.style.display === 'none' ? 'block' : 'none';

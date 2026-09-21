@@ -1,5 +1,13 @@
-// Datasæt der er markeret med themeVar henter deres farve fra CSS-variablen igen,
-// så graflinjerne skifter med, når temaet skifter.
+/**
+ * @file Lyst/mørkt tema: læser det gemte valg (ellers systemets), skifter tema
+ * og gentegner alle grafer, så deres farver og skrifttyper følger med.
+ */
+
+/**
+ * Datasæt, der er markeret med `themeVar`, får deres farve læst fra CSS-variablen
+ * igen, så graflinjerne skifter med, når temaet skifter.
+ * @param {import('chart.js').Chart} chartInstance
+ */
 function refreshDatasetColors(chartInstance){
     chartInstance.data.datasets.forEach(ds => {
         if(!ds.themeVar) return;
@@ -9,6 +17,11 @@ function refreshDatasetColors(chartInstance){
     });
 }
 
+/**
+ * Sætter grid-, akse-, tooltip- og seriefarver på en linjegraf ud fra det
+ * aktuelle tema og tegner den igen. Ignorerer null (grafer, der ikke er lavet endnu).
+ * @param {import('chart.js').Chart|null} chartInstance
+ */
 function applyLineChartTheme(chartInstance){
     if(!chartInstance) return;
     refreshDatasetColors(chartInstance);
@@ -30,6 +43,11 @@ function applyLineChartTheme(chartInstance){
     chartInstance.update();
 }
 
+/**
+ * Som applyLineChartTheme, men for doughnut-graferne (legend, tooltip og
+ * kanten mellem lagkagestykkerne).
+ * @param {import('chart.js').Chart|null} chartInstance
+ */
 function applyDoughnutChartTheme(chartInstance){
     if(!chartInstance) return;
     const tickColor = getCSSVar('--muted');
@@ -47,11 +65,18 @@ function applyDoughnutChartTheme(chartInstance){
     chartInstance.update();
 }
 
+/**
+ * Gentegner samtlige grafer på siden med det aktuelle tema.
+ */
 function applyAllChartThemes(){
     [chart, chart2, chart3, netWorthHistoryChart, ptChart1, ptChart2, ptChart3, ptChart4].forEach(applyLineChartTheme);
     [budgetChart, netWorthChart].forEach(applyDoughnutChartTheme);
 }
 
+/**
+ * Skifter tema, gemmer valget, og gentegner graferne.
+ * @param {'light'|'dark'} theme
+ */
 function setTheme(theme){
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
@@ -62,6 +87,9 @@ document.getElementById('lightTheme').addEventListener('change', () => {
     setTheme(document.getElementById('lightTheme').checked ? 'light' : 'dark');
 });
 
+/**
+ * @returns {'light'|'dark'} det tema, styresystemet foretrækker lige nu
+ */
 function getSystemTheme(){
     return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
 }

@@ -1,3 +1,8 @@
+/**
+ * @file Værktøj 3: FIRE-beregner efter 4%-reglen. FIRE-målet vokser med
+ * inflationen år for år, så "år til FIRE" er i reelle termer.
+ */
+
 const ctx3 = document.getElementById('chart3').getContext('2d');
 let chart3 = new Chart(ctx3, {
     type:'line',
@@ -50,6 +55,9 @@ const showReal3Input = document.getElementById('showRealValue3');
 const FIRE_MAX_YEARS = 60;
 const FIRE_WITHDRAWAL_RATE = 4; // 4%-reglen - fast, ikke justerbar
 
+/**
+ * Genberegner alt ud fra formularens aktuelle værdier. Kaldes ved hvert input.
+ */
 function update3(){
     const expenses = parseInt(expenses3Input.value);
     const startCash = parseInt(startCash3Input.value);

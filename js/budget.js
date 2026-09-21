@@ -1,3 +1,9 @@
+/**
+ * @file Budget: itemiserede poster pr. kategori, 50/30/20-fordeling, årlig
+ * opsparing og en doughnut over fordelingen. Posterne gemmes i localStorage
+ * under 'budgetItems', det samlede beløb under 'budgetData'.
+ */
+
 const BUDGET_CATEGORIES = [
     {id:'catBolig', label:'Bolig (husleje/lån)', color:'#5FA894'},
     {id:'catMad', label:'Mad & dagligvarer', color:'#C9973F'},
@@ -50,11 +56,17 @@ let budgetChart = new Chart(budgetCtx, {
     }
 });
 
+/**
+ * Gemmer det indtastede samlede beløb.
+ */
 function saveBudgetToStorage(){
     const data = { budgetTotalInput: document.getElementById('budgetTotalInput').value };
     localStorage.setItem('budgetData', JSON.stringify(data));
 }
 
+/**
+ * Genindlæser det samlede beløb. Ugyldige gemte data ignoreres.
+ */
 function loadBudgetFromStorage(){
     const raw = localStorage.getItem('budgetData');
     if(!raw) return;
@@ -68,14 +80,24 @@ function loadBudgetFromStorage(){
 
 // ---- Itemiserede budgetposter (label + beløb) pr. kategori ----
 
+/**
+ * @returns {Object<string, {label:string, amount:number}[]>} alle poster, nøglet på kategori-id
+ */
 function loadBudgetItems(){
     return JSON.parse(localStorage.getItem('budgetItems') || '{}');
 }
 
+/**
+ * @param {Object<string, {label:string, amount:number}[]>} items
+ */
 function saveBudgetItems(items){
     localStorage.setItem('budgetItems', JSON.stringify(items));
 }
 
+/**
+ * Tilføjer en tom post til en kategori og gentegner den.
+ * @param {string} catId fx 'catBolig'
+ */
 function addBudgetItem(catId){
     const items = loadBudgetItems();
     if(!items[catId]) items[catId] = [];
@@ -85,6 +107,10 @@ function addBudgetItem(catId){
     updateBudget();
 }
 
+/**
+ * @param {string} catId
+ * @param {number} index postens plads i kategorien
+ */
 function removeBudgetItem(catId, index){
     const items = loadBudgetItems();
     items[catId].splice(index, 1);
@@ -93,12 +119,23 @@ function removeBudgetItem(catId, index){
     updateBudget();
 }
 
+/**
+ * @param {string} catId
+ * @param {number} index
+ * @param {string} value den nye tekst
+ */
 function updateBudgetItemLabel(catId, index, value){
     const items = loadBudgetItems();
     items[catId][index].label = value;
     saveBudgetItems(items);
 }
 
+/**
+ * Opdaterer et beløb, kategoriens total og hele budgettet.
+ * @param {string} catId
+ * @param {number} index
+ * @param {string} value råværdien fra inputfeltet
+ */
 function updateBudgetItemAmount(catId, index, value){
     const items = loadBudgetItems();
     items[catId][index].amount = parseFloat(value) || 0;
@@ -107,6 +144,10 @@ function updateBudgetItemAmount(catId, index, value){
     updateBudget();
 }
 
+/**
+ * Gentegner posterne og totalen for én kategori.
+ * @param {string} catId
+ */
 function renderBudgetCategory(catId){
     const items = loadBudgetItems();
     const catItems = items[catId] || [];
@@ -121,10 +162,17 @@ function renderBudgetCategory(catId){
     document.getElementById('total-' + catId).textContent = DK.format(categoryTotal(items, catId)) + ' kr.';
 }
 
+/**
+ * Gentegner alle kategorier.
+ */
 function renderAllBudgetCategories(){
     BUDGET_CATEGORIES.forEach(cat => renderBudgetCategory(cat.id));
 }
 
+/**
+ * Genberegner sum, penge tilbage, årlig opsparing, 50/30/20-procenterne og
+ * doughnut-grafen, og gemmer det samlede beløb. Kaldes ved hver ændring.
+ */
 function updateBudget(){
     const items = loadBudgetItems();
     const values = BUDGET_CATEGORIES.map(cat => categoryTotal(items, cat.id));
@@ -172,6 +220,9 @@ function updateBudget(){
     saveBudgetToStorage();
 }
 
+/**
+ * Nulstiller alle poster og det samlede beløb efter bekræftelse.
+ */
 function resetBudget(){
     if(!confirm('Nulstil alle budgetfelter? Det kan ikke fortrydes.')) return;
     localStorage.removeItem('budgetItems');

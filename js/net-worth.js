@@ -1,3 +1,10 @@
+/**
+ * @file Formue: aktiver og gæld, nettoformue og likvid formue, daterede
+ * øjebliksbilleder (historik), formuesammensætning over tid, rekord og
+ * milepæle, og sammenligning med andre danskere på samme alder. Felterne
+ * gemmes under 'netWorthData', historikken under 'netWorthHistory'.
+ */
+
 const NET_WORTH_CATEGORIES = [
     {id:'netCatKontanter', label:'Kontanter & opsparingskonti', color:'#5FA894', liquid:true},
     {id:'netCatAktier', label:'Aktier & værdipapirer', color:'#C9973F', liquid:true},
@@ -40,12 +47,18 @@ let netWorthChart = new Chart(netWorthCtx, {
     }
 });
 
+/**
+ * Gemmer felternes aktuelle værdier.
+ */
 function saveNetWorthToStorage(){
     const data = { netDebt: document.getElementById('netDebt').value };
     NET_WORTH_CATEGORIES.forEach(cat => data[cat.id] = document.getElementById(cat.id).value);
     localStorage.setItem('netWorthData', JSON.stringify(data));
 }
 
+/**
+ * Genindlæser felterne. Ugyldige gemte data ignoreres.
+ */
 function loadNetWorthFromStorage(){
     const raw = localStorage.getItem('netWorthData');
     if(!raw) return;
@@ -60,12 +73,18 @@ function loadNetWorthFromStorage(){
     }
 }
 
+/**
+ * @returns {number} aktiver minus gæld ud fra felternes aktuelle værdier
+ */
 function computeLiveNetWorth(){
     const assetsTotal = NET_WORTH_CATEGORIES.reduce((sum, cat) => sum + (parseFloat(document.getElementById(cat.id).value) || 0), 0);
     const debt = parseFloat(document.getElementById('netDebt').value) || 0;
     return assetsTotal - debt;
 }
 
+/**
+ * @returns {number} summen af de likvide aktiver (kontanter og aktier)
+ */
 function computeLiveLiquidTotal(){
     return NET_WORTH_CATEGORIES.reduce((sum, cat) => cat.liquid ? sum + (parseFloat(document.getElementById(cat.id).value) || 0) : sum, 0);
 }
@@ -80,6 +99,10 @@ const FUN_ITEMS = [
     {emoji:'🏎️', label:'Porsche 911 GT3 RS med danske afgifter', price:4910783}
 ];
 
+/**
+ * Den lette "din formue svarer til n bananer/iPhones/..."-liste.
+ * @param {number} netWorth
+ */
 function renderPurchasingPower(netWorth){
     const container = document.getElementById('purchasingPowerContainer');
     if(netWorth <= 0){
@@ -93,6 +116,10 @@ function renderPurchasingPower(netWorth){
     }).join('');
 }
 
+/**
+ * Opdaterer placeringen i forhold til aldersgruppen (CEPOS-tabellen i calc.js)
+ * og købekraft-listen.
+ */
 function updateWealthComparison(){
     const netWorth = computeLiveNetWorth();
     const age = parseInt(document.getElementById('wealthAge').value) || 30;
@@ -107,6 +134,10 @@ function updateWealthComparison(){
     renderPurchasingPower(netWorth);
 }
 
+/**
+ * Genberegner nøgletal, doughnut-grafen og sammenligningen ud fra felterne,
+ * og gemmer dem. Kaldes ved hver ændring.
+ */
 function updateNetWorth(){
     const values = NET_WORTH_CATEGORIES.map(cat => parseFloat(document.getElementById(cat.id).value) || 0);
     const assetsTotal = values.reduce((a,b) => a+b, 0);
@@ -129,6 +160,9 @@ function updateNetWorth(){
     updateWealthComparison();
 }
 
+/**
+ * Nulstiller alle felter efter bekræftelse. Historikken bevares.
+ */
 function resetNetWorth(){
     if(!confirm('Nulstil alle formuefelter? Det kan ikke fortrydes.')) return;
     NET_WORTH_CATEGORIES.forEach(cat => document.getElementById(cat.id).value = 0);
@@ -144,6 +178,11 @@ updateNetWorth();
 
 let netWorthHistoryChart = null;
 
+/**
+ * Indlæser historik fra en CSV-fil (vores eget format eller genexporteret fra
+ * Numbers/Excel). Eksisterende punkter bevares; samme dato overskrives.
+ * @param {Event} event change-eventet fra <input type="file">
+ */
 function importNetWorthCSV(event){
     const file = event.target.files[0];
     if(!file) return;
@@ -195,6 +234,10 @@ function importNetWorthCSV(event){
     reader.readAsText(file, 'UTF-8');
 }
 
+/**
+ * Gemmer felternes værdier som et øjebliksbillede for den valgte dato (i dag
+ * som standard) og gentegner historikken.
+ */
 function saveNetWorthSnapshot(){
     const netWorth = computeLiveNetWorth();
     const liquidTotal = computeLiveLiquidTotal();
@@ -218,6 +261,9 @@ function saveNetWorthSnapshot(){
     renderNetWorthHistory();
 }
 
+/**
+ * @param {string} date ISO-dato, fx '2026-09-21'
+ */
 function deleteNetWorthEntry(date){
     let history = JSON.parse(localStorage.getItem('netWorthHistory') || '[]');
     history = history.filter(h => h.date !== date);
@@ -225,6 +271,9 @@ function deleteNetWorthEntry(date){
     renderNetWorthHistory();
 }
 
+/**
+ * Sletter hele formuehistorikken efter bekræftelse.
+ */
 function clearNetWorthHistory(){
     if(confirm('Er du sikker på, at du vil slette hele formuehistorikken? Det kan ikke fortrydes.')){
         localStorage.removeItem('netWorthHistory');
@@ -232,6 +281,10 @@ function clearNetWorthHistory(){
     }
 }
 
+/**
+ * Læser historikken fra localStorage og opdaterer historik-grafen, tabellen,
+ * sammensætningen samt rekord og milepæle.
+ */
 function renderNetWorthHistory(){
     const history = JSON.parse(localStorage.getItem('netWorthHistory') || '[]');
     const chartData = {
@@ -319,6 +372,10 @@ function renderNetWorthHistory(){
 
 let netWorthCompositionChart = null;
 
+/**
+ * Stablet arealgraf over aktivtyper og gæld pr. øjebliksbillede.
+ * @param {object[]} history øjebliksbillederne, sorteret efter dato
+ */
 function renderNetWorthComposition(history){
     const labels = history.map(h => h.date);
     const datasets = [
@@ -362,6 +419,10 @@ function renderNetWorthComposition(history){
     }
 }
 
+/**
+ * Højeste nettoformue og likvide formue nogensinde, samt fremdrift mod hver
+ * milepæl i MILESTONES med dato for hvornår den blev nået.
+ */
 function renderRecordAndMilestones(){
     const history = JSON.parse(localStorage.getItem('netWorthHistory') || '[]');
     const sortedByDate = history.slice().sort((a,b) => a.date.localeCompare(b.date));

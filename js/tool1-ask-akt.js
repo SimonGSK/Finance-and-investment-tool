@@ -1,3 +1,9 @@
+/**
+ * @file Værktøj 1: Aktiesparekonto vs. aktiedepot med engangsindskud. Læser
+ * parametrene fra formularen, kører beregningerne fra calc.js, og opdaterer
+ * graf, nøgletal, strategitekst og tabellen.
+ */
+
 const ctx = document.getElementById('chart').getContext('2d');
 let chart = new Chart(ctx, {
     type:'line',
@@ -60,6 +66,9 @@ startCashSlider.addEventListener('input', () => {
     }
 });
 
+/**
+ * Genberegner alt ud fra formularens aktuelle værdier. Kaldes ved hvert input.
+ */
 function update(){
     const startCash = parseInt(startCashInput.value);
     const years = parseInt(yearsInput.value);

@@ -13,29 +13,59 @@ const AKT_TAX_HIGH = 0.42;
 
 let doubleDeductionEnabled = false;
 
+/**
+ * Slår "dobbelt fradrag" til eller fra: er man gift med en, der ikke selv
+ * investerer, kan man udnytte begges 27%-grænse og dermed realisere dobbelt
+ * så meget gevinst om året til den lave sats.
+ * @param {boolean} enabled
+ */
 function setDoubleDeduction(enabled){
     doubleDeductionEnabled = !!enabled;
 }
 
+/**
+ * Den 27%-grænse, beregningerne aktuelt regner med.
+ * @returns {number} 79.400 kr., eller det dobbelte med dobbelt fradrag
+ */
 function effectiveTaxLimit(){
     return doubleDeductionEnabled ? TAX_LIMIT_27 * 2 : TAX_LIMIT_27;
 }
 
 // ==== Afkast og inflation ====
 
-// ---- Porteret fra Main.java: monthlyReturnFactor() ----
+/**
+ * Omregner en årlig afkastfaktor til den tilsvarende månedlige, så tolv
+ * måneders vækst i træk giver præcis ét års afkast.
+ * @param {number} yearlyReturn årlig afkastfaktor, fx 1.08 for 8 %
+ * @returns {number} månedlig faktor, fx 1.00643 for 8 % p.a.
+ */
 function monthlyReturnFactor(yearlyReturn){
     return Math.pow(yearlyReturn, 1/12);
 }
 
-// Regner et fremtidigt (nominelt) beløb om til nutidens købekraft.
+/**
+ * Regner et fremtidigt (nominelt) beløb om til nutidens købekraft.
+ * @param {number} nominalValue beløbet i fremtidige kroner
+ * @param {number} year hvor mange år ude i fremtiden
+ * @param {number} inflationFactor årlig inflationsfaktor, fx 1.02 for 2 %
+ * @returns {number} beløbet udtrykt i dagens kroner
+ */
 function toRealValue(nominalValue, year, inflationFactor){
     return nominalValue / Math.pow(inflationFactor, year);
 }
 
 // ==== Aktiesparekonto vs. aktiedepot (engangsindskud) ====
 
-// ---- Porteret fra Main.java: ask() ----
+/**
+ * Simulerer en aktiesparekonto år for år. ASK lagerbeskattes: hvert års gevinst
+ * beskattes med 17 %, uanset om der sælges.
+ * @param {number} years antal år
+ * @param {number} yearlyReturn årlig afkastfaktor, fx 1.08
+ * @param {number} startCash startbeløb i kr.
+ * @param {boolean} payTaxExternally true hvis skatten betales udefra, så kontoen
+ *   selv vokser ubeskattet (skatten opgøres stadig i taxPaid)
+ * @returns {{year:number, value:number, taxPaid:number}[]} ét punkt pr. år inkl. år 0
+ */
 function computeAskSeries(years, yearlyReturn, startCash, payTaxExternally){
     let money = startCash;
     const series = [{year:0, value:startCash, taxPaid:0}];
@@ -48,7 +78,18 @@ function computeAskSeries(years, yearlyReturn, startCash, payTaxExternally){
     return series;
 }
 
-// ---- Importeret fra Main.java: computeFinalValueForStartYear() ----
+/**
+ * Slutværdien af et aktiedepot med engangsindskud, hvor gevinster "høstes"
+ * (sælges og genkøbes op til 27%-grænsen) hvert år fra og med harvestStartYear.
+ * Sidste år realiseres resten og beskattes progressivt (27 % / 42 %).
+ * @param {number} years antal år
+ * @param {number} yearlyReturn årlig afkastfaktor, fx 1.08
+ * @param {number} startCash startbeløb i kr.
+ * @param {boolean} investSavedAskTax true hvis den ASK-skat, man sparer, i stedet
+ *   indskydes på depotet år for år (sammenligningsgrundlag for "betal skat udefra")
+ * @param {number} harvestStartYear første år, der høstes i (years = høst aldrig)
+ * @returns {number} depotets værdi efter skat i sidste år
+ */
 function computeAktFinalValueForStartYear(years, yearlyReturn, startCash, investSavedAskTax, harvestStartYear){
     let shareValue = startCash, costBasis = startCash, shadowAskMoney = startCash;
     const taxLimit = effectiveTaxLimit();
@@ -83,7 +124,16 @@ function computeAktFinalValueForStartYear(years, yearlyReturn, startCash, invest
     return shareValue;
 }
 
-// ---- Importeret fra Main.java: findBestHarvestStartYear() ----
+/**
+ * Finder det høst-startår, der giver den højeste slutværdi, ved at prøve dem alle.
+ * Tidlig høst sparer 42%-skat senere, men koster tabt rentes rente på den skat,
+ * der betales tidligt - så det bedste år er ikke oplagt.
+ * @param {number} years antal år
+ * @param {number} yearlyReturn årlig afkastfaktor
+ * @param {number} startCash startbeløb i kr.
+ * @param {boolean} investSavedAskTax se computeAktFinalValueForStartYear
+ * @returns {number} det bedste startår, 1..years
+ */
 function findBestHarvestStartYear(years, yearlyReturn, startCash, investSavedAskTax){
     let bestStart = years;
     let bestValue = computeAktFinalValueForStartYear(years, yearlyReturn, startCash, investSavedAskTax, bestStart);
@@ -94,7 +144,15 @@ function findBestHarvestStartYear(years, yearlyReturn, startCash, investSavedAsk
     return bestStart;
 }
 
-// ---- Importeret fra Main.java: akt() (år-for-år-serie, med den optimale strategi) ----
+/**
+ * Simulerer et aktiedepot med engangsindskud år for år med den optimale
+ * realiseringsstrategi. Skatten opdeles i 27%- og 42%-delen pr. år.
+ * @param {number} years antal år
+ * @param {number} yearlyReturn årlig afkastfaktor
+ * @param {number} startCash startbeløb i kr.
+ * @param {boolean} investSavedAskTax se computeAktFinalValueForStartYear
+ * @returns {{series:{year:number, value:number, taxAt27:number, taxAt42:number}[], harvestStartYear:number}}
+ */
 function computeAktSeries(years, yearlyReturn, startCash, investSavedAskTax){
     const harvestStartYear = findBestHarvestStartYear(years, yearlyReturn, startCash, investSavedAskTax);
     let shareValue = startCash, costBasis = startCash, shadowAskMoney = startCash;
@@ -141,7 +199,17 @@ function computeAktSeries(years, yearlyReturn, startCash, investSavedAskTax){
 
 // ==== Aktiedepot med månedlig indbetaling ====
 
-// ---- Porteret fra Main.java: computeMonthlyFinalValueForStartYear() ----
+/**
+ * Slutværdien af et aktiedepot med startbeløb og fast månedlig indbetaling,
+ * med høst fra harvestStartYear (se computeAktFinalValueForStartYear).
+ * Indbetalingerne lægges til før månedens afkast tilskrives.
+ * @param {number} years antal år
+ * @param {number} yearlyReturn årlig afkastfaktor
+ * @param {number} startCash startbeløb i kr.
+ * @param {number} monthlyAmount månedlig indbetaling i kr.
+ * @param {number} harvestStartYear første år, der høstes i
+ * @returns {number} depotets værdi efter skat i sidste år
+ */
 function computeMonthlyFinalValueForStartYear(years, yearlyReturn, startCash, monthlyAmount, harvestStartYear){
     let shareValue = startCash, costBasis = startCash;
     const monthlyFactor = monthlyReturnFactor(yearlyReturn);
@@ -177,7 +245,14 @@ function computeMonthlyFinalValueForStartYear(years, yearlyReturn, startCash, mo
     return shareValue;
 }
 
-// ---- Porteret fra Main.java: findBestMonthlyHarvestStartYear() ----
+/**
+ * Som findBestHarvestStartYear, men for depotet med månedlig indbetaling.
+ * @param {number} years
+ * @param {number} yearlyReturn
+ * @param {number} startCash
+ * @param {number} monthlyAmount
+ * @returns {number} det bedste startår, 1..years
+ */
 function findBestMonthlyHarvestStartYear(years, yearlyReturn, startCash, monthlyAmount){
     let bestStart = years;
     let bestValue = computeMonthlyFinalValueForStartYear(years, yearlyReturn, startCash, monthlyAmount, bestStart);
@@ -188,6 +263,15 @@ function findBestMonthlyHarvestStartYear(years, yearlyReturn, startCash, monthly
     return bestStart;
 }
 
+/**
+ * Simulerer depotet med månedlig indbetaling år for år med den optimale
+ * strategi, og holder styr på hvor meget der i alt er indbetalt.
+ * @param {number} years
+ * @param {number} yearlyReturn
+ * @param {number} startCash
+ * @param {number} monthlyAmount
+ * @returns {{series:{year:number, value:number, invested:number, taxAt27:number, taxAt42:number}[], harvestStartYear:number}}
+ */
 function computeMonthlySeries(years, yearlyReturn, startCash, monthlyAmount){
     const harvestStartYear = findBestMonthlyHarvestStartYear(years, yearlyReturn, startCash, monthlyAmount);
     let shareValue = startCash, costBasis = startCash, cumulativeInvested = startCash;
@@ -235,9 +319,15 @@ function computeMonthlySeries(years, yearlyReturn, startCash, monthlyAmount){
 
 // ==== FIRE-opsparing ====
 
-// FIRE-opsparing: rent vækst-loop uden skatteoptimering (der er intet at "høste"
-// på en opsparing, man endnu ikke har rørt). Genbruger monthlyReturnFactor() fra
-// det månedlige aktiedepot-værktøj.
+/**
+ * Formueopbygning frem mod FIRE: et rent vækst-loop uden skatteoptimering
+ * (der er intet at "høste" på en opsparing, man endnu ikke har rørt).
+ * @param {number} startCash startbeløb i kr.
+ * @param {number} monthlyAmount månedlig opsparing i kr.
+ * @param {number} yearlyReturn årlig afkastfaktor
+ * @param {number} maxYears hvor mange år frem der simuleres
+ * @returns {{year:number, value:number}[]} ét punkt pr. år inkl. år 0
+ */
 function computeFireSeries(startCash, monthlyAmount, yearlyReturn, maxYears){
     const monthlyFactor = monthlyReturnFactor(yearlyReturn);
     let value = startCash;
@@ -254,14 +344,24 @@ function computeFireSeries(startCash, monthlyAmount, yearlyReturn, maxYears){
 
 // ==== Budget ====
 
+/**
+ * Summen af posterne i én budgetkategori. Ugyldige beløb tæller som 0.
+ * @param {Object<string, {label:string, amount:number|string}[]>} items alle poster, nøglet på kategori-id
+ * @param {string} catId
+ * @returns {number}
+ */
 function categoryTotal(items, catId){
     return (items[catId] || []).reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
 }
 
 // ==== Formue: placering i forhold til andre danskere ====
 
-// Uddrag af CEPOS' formueopgørelse (Danmarks Statistik, 2022-tal opregnet til
-// 2025-niveau) - 16 alderstrin i stedet for alle 73, vi regner lineært imellem.
+/**
+ * Uddrag af CEPOS' formueopgørelse (Danmarks Statistik, 2022-tal opregnet til
+ * 2025-niveau): nettoformue-percentiler pr. alder. 16 alderstrin i stedet for
+ * alle 73 - der regnes lineært imellem.
+ * @type {{age:number, p10:number, p25:number, p50:number, p75:number, p90:number, p95:number, p99:number}[]}
+ */
 const CEPOS_WEALTH_TABLE = [
     {age:18, p10:3000, p25:10000, p50:38000, p75:88000, p90:175000, p95:282000, p99:926000},
     {age:20, p10:1000, p25:16000, p50:57000, p75:136000, p90:269000, p95:433000, p99:1320000},
@@ -281,6 +381,11 @@ const CEPOS_WEALTH_TABLE = [
     {age:90, p10:85000, p25:265000, p50:925000, p75:2164000, p90:4046000, p95:5999000, p99:14732000}
 ];
 
+/**
+ * Rækken i CEPOS_WEALTH_TABLE, der ligger tættest på alderen (klemt til 18-90).
+ * @param {number} age
+ * @returns {{age:number, p10:number, p25:number, p50:number, p75:number, p90:number, p95:number, p99:number}}
+ */
 function findNearestWealthRow(age){
     const clampedAge = Math.max(18, Math.min(90, age));
     return CEPOS_WEALTH_TABLE.reduce((closest, row) =>
@@ -288,8 +393,13 @@ function findNearestWealthRow(age){
     );
 }
 
-// Regner en cirka-percentil ud fra formuen, ved at interpolere lineært
-// imellem de kendte procentgrænser (10/25/50/75/90/95/99) for aldersgruppen.
+/**
+ * Cirka-percentil for en nettoformue i sin aldersgruppe: interpolerer lineært
+ * imellem de kendte procentgrænser (10/25/50/75/90/95/99).
+ * @param {number} netWorth nettoformue i kr.
+ * @param {{p10:number, p25:number, p50:number, p75:number, p90:number, p95:number, p99:number}} row aldersrækken fra findNearestWealthRow
+ * @returns {number} 0-100, hvor 50 betyder "mere end halvdelen af aldersgruppen"
+ */
 function estimatePercentile(netWorth, row){
     const points = [
         {p:0, v: row.p10 - (row.p25 - row.p10)},
@@ -314,8 +424,12 @@ function estimatePercentile(netWorth, row){
 
 // ==== Parsing af danske tal og CSV ====
 
-// Fortolker danske talformater korrekt: punktum som tusindtalsseparator,
-// komma som decimaltegn (fx "10.099,00 kr." eller vores eget "10.099 kr.").
+/**
+ * Fortolker et dansk formateret beløb: punktum som tusindtalsseparator, komma
+ * som decimaltegn (fx "10.099,00 kr." eller vores eget "10.099 kr.").
+ * @param {string|null|undefined} str
+ * @returns {number} afrundet til hele kroner; 0 hvis tomt eller ugyldigt
+ */
 function parseDanishAmount(str){
     if(!str) return 0;
     let cleaned = str.toString().trim();
@@ -326,9 +440,12 @@ function parseDanishAmount(str){
     return isNaN(num) ? 0 : Math.round(num);
 }
 
-// Finder overskriftsrækken ved at lede efter "Dato" i de første par linjer,
-// i stedet for blindt at antage den står på linje 1 - Numbers/Excel indsætter
-// sommetider en ekstra "tabelnavn"-linje øverst, som ellers ville forvirre os.
+/**
+ * Finder overskriftsrækken ved at lede efter "Dato" i de første fem linjer -
+ * Numbers/Excel indsætter sommetider en ekstra "tabelnavn"-linje øverst.
+ * @param {string[][]} rows rækker fra parseCSV
+ * @returns {number} indeks for overskriftsrækken, eller -1
+ */
 function findHeaderRowIndex(rows){
     for(let i=0; i<Math.min(rows.length, 5); i++){
         if(rows[i].includes('Dato')) return i;
@@ -336,9 +453,13 @@ function findHeaderRowIndex(rows){
     return -1;
 }
 
-// CSV-parser der selv opdager, om filen bruger semikolon (vores eget format)
-// eller komma (fx hvis filen er genexporteret fra Numbers/Excel med andre
-// regionsindstillinger). Forstår desuden anførselstegn omkring felter.
+/**
+ * CSV-parser, der selv opdager om filen bruger semikolon (vores eget format)
+ * eller komma (fx genexporteret fra Numbers/Excel). Forstår anførselstegn
+ * omkring felter og "" som escaped anførselstegn. Tomme linjer springes over.
+ * @param {string} text hele filens indhold
+ * @returns {string[][]} én række pr. linje, én streng pr. celle
+ */
 function parseCSV(text){
     const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
     if(lines.length === 0) return [];
