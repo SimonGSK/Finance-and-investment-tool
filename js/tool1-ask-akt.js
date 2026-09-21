@@ -144,20 +144,23 @@ let chart = new Chart(ctx, {
     }
 });
 
-const startCashInput = document.getElementById('startCash');
-const yearsInput = document.getElementById('years');
-const returnInput = document.getElementById('yearlyReturn');
+const startCashInput = document.getElementById('startCashNumber');
+const yearsInput = document.getElementById('yearsNumber');
+const returnInput = document.getElementById('yearlyReturnNumber');
 const payTaxInput = document.getElementById('payTaxExternally');
-const inflationInput = document.getElementById('inflation');
+const inflationInput = document.getElementById('inflationNumber');
 const showRealInput = document.getElementById('showRealValue');
 
 const ASK_LIMIT = 174200;
 const SNAP_TOLERANCE = 4000;
 
-startCashInput.addEventListener('input', () => {
-    const val = parseInt(startCashInput.value);
+// Skyderen snapper til ASK-grænsen, når man trækker den tæt på - kun skyderen,
+// så et præcist indtastet tal aldrig bliver rykket.
+const startCashSlider = document.getElementById('startCash');
+startCashSlider.addEventListener('input', () => {
+    const val = parseInt(startCashSlider.value);
     if(Math.abs(val - ASK_LIMIT) < SNAP_TOLERANCE){
-        startCashInput.value = ASK_LIMIT;
+        startCashSlider.value = ASK_LIMIT;
     }
 });
 

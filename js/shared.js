@@ -39,9 +39,11 @@ function toRealValue(nominalValue, year, inflationFactor){
     return nominalValue / Math.pow(inflationFactor, year);
 }
 
-// Binder en <input type="range"> og en <input type="number"> sammen, så de altid
-// afspejler samme værdi - flyt skyderen, og tallet opdateres; skriv et tal, og
-// skyderen flytter med. 'onChange' kaldes efter begge slags input.
+// Binder en <input type="range"> og en <input type="number"> sammen. Talfeltet er
+// sandheden: det er dét, beregningerne læser fra, så et indtastet beløb bruges
+// præcist som skrevet. Skyderen følger bare med visuelt og bliver derfor klemt
+// ind i sit eget min/max/step uden at det påvirker tallet. 'onChange' kaldes
+// efter begge slags input.
 function bindSliderAndNumber(sliderId, numberId, onChange){
     const slider = document.getElementById(sliderId);
     const number = document.getElementById(numberId);
@@ -52,13 +54,19 @@ function bindSliderAndNumber(sliderId, numberId, onChange){
     });
 
     number.addEventListener('input', () => {
-        let v = parseFloat(number.value);
+        const v = parseFloat(number.value);
         if(isNaN(v)) return;
-        const min = parseFloat(slider.min);
-        const max = parseFloat(slider.max);
-        v = Math.min(max, Math.max(min, v));
         slider.value = v;
         onChange();
+    });
+
+    // Efterlades feltet tomt, sættes det tilbage til skyderens værdi, så
+    // beregningerne aldrig står med et tomt felt.
+    number.addEventListener('change', () => {
+        if(isNaN(parseFloat(number.value))){
+            number.value = slider.value;
+            onChange();
+        }
     });
 }
 

@@ -132,11 +132,11 @@ let chart2 = new Chart(ctx2, {
     }
 });
 
-const startCash2Input = document.getElementById('startCash2');
-const monthlyAmount2Input = document.getElementById('monthlyAmount2');
-const years2Input = document.getElementById('years2');
-const return2Input = document.getElementById('yearlyReturn2');
-const inflation2Input = document.getElementById('inflation2');
+const startCash2Input = document.getElementById('startCash2Number');
+const monthlyAmount2Input = document.getElementById('monthlyAmount2Number');
+const years2Input = document.getElementById('years2Number');
+const return2Input = document.getElementById('yearlyReturn2Number');
+const inflation2Input = document.getElementById('inflation2Number');
 const showReal2Input = document.getElementById('showRealValue2');
 
 function update2(){

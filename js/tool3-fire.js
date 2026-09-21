@@ -57,11 +57,11 @@ let chart3 = new Chart(ctx3, {
     }
 });
 
-const expenses3Input = document.getElementById('expenses3');
-const startCash3Input = document.getElementById('startCash3');
-const monthlyAmount3Input = document.getElementById('monthlyAmount3');
-const return3Input = document.getElementById('yearlyReturn3');
-const inflation3Input = document.getElementById('inflation3');
+const expenses3Input = document.getElementById('expenses3Number');
+const startCash3Input = document.getElementById('startCash3Number');
+const monthlyAmount3Input = document.getElementById('monthlyAmount3Number');
+const return3Input = document.getElementById('yearlyReturn3Number');
+const inflation3Input = document.getElementById('inflation3Number');
 const showReal3Input = document.getElementById('showRealValue3');
 
 const FIRE_MAX_YEARS = 60;
