@@ -61,7 +61,7 @@ function showSection(name){
     if(name==='formue'){ netWorthChart.resize(); netWorthHistoryChart.resize(); if(netWorthCompositionChart) netWorthCompositionChart.resize(); }
 }
 
-const BACKUP_KEYS = ['budgetItems', 'budgetData', 'netWorthData', 'netWorthHistory', 'portfolioHistory'];
+const BACKUP_KEYS = ['budgetItems', 'budgetData', 'budgetCustomCategories', 'netWorthData', 'netWorthHistory', 'portfolioHistory'];
 
 /**
  * Downloader alle gemte data (budget, formue, historik, portefølje) som én
@@ -94,21 +94,28 @@ function importAllData(event){
     const file = event.target.files[0];
     if(!file) return;
     const reader = new FileReader();
-    reader.onload = function(e){
-        try{
-            const backup = JSON.parse(e.target.result);
-            if(!confirm('Dette overskriver dine nuværende Budget-, Formue- og Portefølje-data med indholdet af filen. Vil du fortsætte?')) return;
-            BACKUP_KEYS.forEach(key => {
-                if(backup[key] !== undefined){
-                    localStorage.setItem(key, JSON.stringify(backup[key]));
-                }
-            });
-            alert('Data importeret. Siden genindlæses nu.');
-            location.reload();
-        } catch(err){
-            alert('Kunne ikke læse filen. Tjek at det er en backup-fil eksporteret fra dette værktøj.');
-        }
+    reader.onload = async function(e){
         event.target.value = '';
+        let backup;
+        try{
+            backup = JSON.parse(e.target.result);
+        } catch(err){
+            await infoDialog({title:'Filen kunne ikke læses', message:'Det ser ikke ud til at være en backup-fil fra dette værktøj. Vælg den .json-fil, du fik fra "Download alt".'});
+            return;
+        }
+        const found = BACKUP_KEYS.filter(key => backup[key] !== undefined);
+        if(!found.length){
+            await infoDialog({title:'Ingen data i filen', message:'Filen indeholder ingen budget-, formue- eller porteføljedata. Intet er ændret.'});
+            return;
+        }
+        const ok = await confirmDialog({
+            title:'Erstat dine data med backuppen?',
+            message:'Dine nuværende data i de dele, filen indeholder, bliver erstattet af filens indhold. Det kan ikke fortrydes, så download evt. en backup af dine nuværende data først.',
+            confirmLabel:'Erstat og genindlæs', danger:true
+        });
+        if(!ok) return;
+        found.forEach(key => localStorage.setItem(key, JSON.stringify(backup[key])));
+        location.reload();
     };
     reader.readAsText(file, 'UTF-8');
 }

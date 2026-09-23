@@ -345,13 +345,75 @@ function computeFireSeries(startCash, monthlyAmount, yearlyReturn, maxYears){
 // ==== Budget ====
 
 /**
- * Summen af posterne i én budgetkategori. Ugyldige beløb tæller som 0.
- * @param {Object<string, {label:string, amount:number|string}[]>} items alle poster, nøglet på kategori-id
+ * En budgetposts beløb omregnet til pr. måned. `freq` er antal måneder mellem
+ * betalingerne (1 = månedlig, 3 = kvartalsvis, 12 = årlig); mangler den, er
+ * posten månedlig. Ugyldige beløb tæller som 0.
+ * @param {{amount:number|string, freq?:number}} item
+ * @returns {number}
+ */
+function monthlyAmount(item){
+    const amount = parseFloat(item.amount) || 0;
+    const freq = parseFloat(item.freq) || 1;
+    return amount / freq;
+}
+
+/**
+ * Summen af posterne i én budgetkategori, pr. måned.
+ * @param {Object<string, {label:string, amount:number|string, freq?:number}[]>} items alle poster, nøglet på kategori-id
  * @param {string} catId
  * @returns {number}
  */
 function categoryTotal(items, catId){
-    return (items[catId] || []).reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+    return (items[catId] || []).reduce((sum, item) => sum + monthlyAmount(item), 0);
+}
+
+/**
+ * Hele budgettet opsummeret: månedlig total pr. kategori, samlet sum, og summen
+ * pr. 50/30/20-gruppe.
+ * @param {{id:string, group:'behov'|'onsker'|'opsparing'}[]} categories
+ * @param {Object<string, {amount:number|string, freq?:number}[]>} items
+ * @returns {{values:number[], sum:number, groupSums:{behov:number, onsker:number, opsparing:number}}}
+ */
+function budgetSummary(categories, items){
+    const values = categories.map(cat => categoryTotal(items, cat.id));
+    const groupSums = {behov:0, onsker:0, opsparing:0};
+    categories.forEach((cat, i) => { groupSums[cat.group] += values[i]; });
+    return { values, sum: values.reduce((a, b) => a + b, 0), groupSums };
+}
+
+// ==== Historik (datapunkter pr. dato) ====
+
+/**
+ * Indsætter et datapunkt i en historik, eller erstatter det, der allerede
+ * findes på samme dato. Rører ikke den oprindelige liste.
+ * @template {{date:string}} T
+ * @param {T[]} history
+ * @param {T} entry
+ * @returns {{history:T[], replaced:T|null}} den nye liste sorteret efter dato, og det erstattede punkt (hvis nogen)
+ */
+function upsertByDate(history, entry){
+    const replaced = history.find(h => h.date === entry.date) || null;
+    const next = history.filter(h => h.date !== entry.date).concat([entry]);
+    next.sort((a, b) => a.date.localeCompare(b.date));
+    return { history: next, replaced };
+}
+
+/**
+ * Fletter flere datapunkter ind i en historik (fx fra en CSV-import). Punkter
+ * med en dato, der allerede findes, erstatter det gamle.
+ * @template {{date:string}} T
+ * @param {T[]} history
+ * @param {T[]} entries
+ * @returns {{history:T[], replacedDates:string[], addedCount:number}}
+ */
+function mergeByDate(history, entries){
+    const existing = new Set(history.map(h => h.date));
+    const byDate = new Map(history.map(h => [h.date, h]));
+    entries.forEach(e => byDate.set(e.date, e));
+    const incomingDates = [...new Set(entries.map(e => e.date))];
+    const replacedDates = incomingDates.filter(d => existing.has(d)).sort();
+    const next = [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
+    return { history: next, replacedDates, addedCount: incomingDates.length - replacedDates.length };
 }
 
 // ==== Formue: placering i forhold til andre danskere ====
@@ -497,7 +559,8 @@ if(typeof module !== 'undefined' && module.exports){
         computeAskSeries, computeAktFinalValueForStartYear, findBestHarvestStartYear, computeAktSeries,
         computeMonthlyFinalValueForStartYear, findBestMonthlyHarvestStartYear, computeMonthlySeries,
         computeFireSeries,
-        categoryTotal,
+        monthlyAmount, categoryTotal, budgetSummary,
+        upsertByDate, mergeByDate,
         CEPOS_WEALTH_TABLE, findNearestWealthRow, estimatePercentile,
         parseDanishAmount, findHeaderRowIndex, parseCSV
     };

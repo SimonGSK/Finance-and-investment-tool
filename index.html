@@ -2,6 +2,7 @@
 <html lang="da">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Økonomiværktøjer. Få overblik over din økonomi.</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -565,7 +566,7 @@
             <div class="stat">
                 <div class="label">Årlig opsparing</div>
                 <div class="value ask" id="budgetYearlySavings">0 kr.</div>
-                <div class="sub">"Opsparing"-kategorien × 12</div>
+                <div class="sub">alle opsparingsposter × 12</div>
             </div>
         </div>
     </div>
@@ -580,58 +581,15 @@
                 <input type="number" id="budgetTotalInput" class="number-input" value="0" min="0" step="100">
             </div>
 
-            <details class="budget-category">
-                <summary><span>Bolig (husleje/lån)</span><span class="cat-total" id="total-catBolig">0 kr.</span></summary>
-                <div class="budget-items" id="items-catBolig"></div>
-                <button class="btn btn-secondary btn-sm" onclick="addBudgetItem('catBolig')">+ Tilføj post</button>
-            </details>
-            <details class="budget-category">
-                <summary><span>Mad & dagligvarer</span><span class="cat-total" id="total-catMad">0 kr.</span></summary>
-                <div class="budget-items" id="items-catMad"></div>
-                <button class="btn btn-secondary btn-sm" onclick="addBudgetItem('catMad')">+ Tilføj post</button>
-            </details>
-            <details class="budget-category">
-                <summary><span>Transport</span><span class="cat-total" id="total-catTransport">0 kr.</span></summary>
-                <div class="budget-items" id="items-catTransport"></div>
-                <button class="btn btn-secondary btn-sm" onclick="addBudgetItem('catTransport')">+ Tilføj post</button>
-            </details>
-            <details class="budget-category">
-                <summary><span>Forsikringer og fagforening</span><span class="cat-total" id="total-catForsikring">0 kr.</span></summary>
-                <div class="budget-items" id="items-catForsikring"></div>
-                <button class="btn btn-secondary btn-sm" onclick="addBudgetItem('catForsikring')">+ Tilføj post</button>
-            </details>
-            <details class="budget-category">
-                <summary><span>El, vand og varme</span><span class="cat-total" id="total-catForbrug">0 kr.</span></summary>
-                <div class="budget-items" id="items-catForbrug"></div>
-                <button class="btn btn-secondary btn-sm" onclick="addBudgetItem('catForbrug')">+ Tilføj post</button>
-            </details>
-            <details class="budget-category">
-                <summary><span>Telefoni og internet</span><span class="cat-total" id="total-catTelefoni">0 kr.</span></summary>
-                <div class="budget-items" id="items-catTelefoni"></div>
-                <button class="btn btn-secondary btn-sm" onclick="addBudgetItem('catTelefoni')">+ Tilføj post</button>
-            </details>
-            <details class="budget-category">
-                <summary><span>Fritid & underholdning</span><span class="cat-total" id="total-catFritid">0 kr.</span></summary>
-                <div class="budget-items" id="items-catFritid"></div>
-                <button class="btn btn-secondary btn-sm" onclick="addBudgetItem('catFritid')">+ Tilføj post</button>
-            </details>
-            <details class="budget-category">
-                <summary><span>Opsparing</span><span class="cat-total" id="total-catOpsparing">0 kr.</span></summary>
-                <div class="budget-items" id="items-catOpsparing"></div>
-                <button class="btn btn-secondary btn-sm" onclick="addBudgetItem('catOpsparing')">+ Tilføj post</button>
-            </details>
-            <details class="budget-category">
-                <summary><span>Andet</span><span class="cat-total" id="total-catAndet">0 kr.</span></summary>
-                <div class="budget-items" id="items-catAndet"></div>
-                <button class="btn btn-secondary btn-sm" onclick="addBudgetItem('catAndet')">+ Tilføj post</button>
-            </details>
+            <div id="budgetCategoryList"></div>
+            <button class="btn btn-secondary add-category-btn" onclick="openNewCategoryDialog()">+ Tilføj egen kategori</button>
         </div>
 
-        <div class="panel chart-panel chart-panel-compact">
+        <div class="panel chart-panel">
             <div class="eyebrow">Fordeling</div>
             <div class="chart-wrap">
                 <canvas id="budgetChart"></canvas>
-                <div class="chart-empty-state" id="budgetChartEmpty">Udfyld dine kategorier til venstre for at se fordelingen her.</div>
+                <div class="chart-empty-state" id="budgetChartEmpty">Klik på en kategori til venstre for at tilføje dine udgifter.</div>
             </div>
         </div>
 
@@ -641,7 +599,7 @@
         <div class="panel">
             <div class="eyebrow">50/30/20-reglen</div>
             <p class="explainer explainer-lead">
-                En tommelfingerregel for en sund budgetfordeling: højst 50% til behov (bolig, mad, transport, forsikring, faste regninger), højst 30% til ønsker (fritid, andet), og mindst 20% til opsparing. Kategorierne herunder grupperes automatisk.
+                En tommelfingerregel for en sund budgetfordeling: højst 50% til behov, højst 30% til ønsker, og mindst 20% til opsparing. Kategorierne er grupperet sådan i listen ovenfor, og dine egne kategorier placeres i den gruppe, du vælger.
             </p>
             <div class="stats">
                 <div class="stat">
@@ -721,7 +679,7 @@
             </div>
         </div>
 
-        <div class="panel chart-panel chart-panel-compact">
+        <div class="panel chart-panel">
             <div class="eyebrow">Fordeling af aktiver</div>
             <div class="chart-wrap">
                 <canvas id="netWorthChart"></canvas>
@@ -864,6 +822,7 @@
 
     <script src="js/calc.js"></script>
     <script src="js/shared.js"></script>
+    <script src="js/ui.js"></script>
     <script src="js/tool1-ask-akt.js"></script>
     <script src="js/tool2-monthly.js"></script>
     <script src="js/tool3-fire.js"></script>
