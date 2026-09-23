@@ -2,12 +2,37 @@
 // almindeligt script i browseren (og definerer derfor sine funktioner globalt),
 // og kan samtidig require()'es fra Node, så tests/ kan afprøve tallene direkte.
 
-// ==== Skattesatser og -grænser ====
+// ==== Satser og grænser – opdateres hvert år ====
+// Alle årlige tal samlet ét sted. Teksterne på siden (fx "ASK-grænsen er
+// 174.200 kr.") hentes også herfra via data-rule, så en ny opdatering kun
+// kræver ændringer i denne blok.
 
+const TAX_YEAR = 2026;
+
+// Aktiesparekonto og aktiedepot.
+const ASK_DEPOSIT_LIMIT = 174200;
 const TAX_LIMIT_27 = 79400;
 const ASK_TAX = 0.17;
 const AKT_TAX_LOW = 0.27;
 const AKT_TAX_HIGH = 0.42;
+
+// Bolig. Tinglysningsafgift pr. 1. januar 2026 (skat.dk): skøde 1.850 kr. + 0,6 % af
+// prisen, pant 1.825 kr. + 1,25 % af lånets hovedstol.
+const TINGLYSNING = { skoedeFast: 1850, skoedePct: 0.006, pantFast: 1825, pantPct: 0.0125 };
+// Mindst 5 % udbetaling ved køb af ejerbolig; realkredit op til 80 % af prisen.
+const MIN_UDBETALING = 0.05;
+const MAX_REALKREDIT = 0.80;
+// Finanstilsynet: gældsfaktor over 4 kombineret med belåningsgrad over 60 %
+// betyder begrænsninger på lånetyper (fast rente eller mindst 5 års rentebinding, afdrag).
+const HIGH_DEBT_FACTOR = 4;
+const HIGH_LTV = 0.60;
+// Rentefradrag: ca. 33 % af renteudgifter op til 50.000 kr. pr. voksen, ca. 25 % derover.
+const RENTEFRADRAG = { lowRate: 0.33, highRate: 0.25, thresholdPerAdult: 50000 };
+
+// Pensionsafkastskat (PAL) af afkast på pensionsordninger.
+const PAL_SKAT = 0.153;
+// Beløbsgrænser for pensionsindbetalinger (skat.dk).
+const PENSION_LIMITS = { aldersopsparing: 9900, aldersopsparingNearPension: 64200, ratepension: 68700 };
 
 // ==== Dobbelt fradrag (ægtefælle) og den effektive 27%-grænse ====
 
@@ -583,20 +608,7 @@ function parseCSV(text){
     });
 }
 
-// ==== Bolig og lån: regler (2026) ====
-
-// Tinglysningsafgift pr. 1. januar 2026 (skat.dk): skøde 1.850 kr. + 0,6 % af
-// prisen, pant 1.825 kr. + 1,25 % af lånets hovedstol.
-const TINGLYSNING = { skoedeFast: 1850, skoedePct: 0.006, pantFast: 1825, pantPct: 0.0125 };
-// Mindst 5 % udbetaling ved køb af ejerbolig; realkredit op til 80 % af prisen.
-const MIN_UDBETALING = 0.05;
-const MAX_REALKREDIT = 0.80;
-// Finanstilsynet: gældsfaktor over 4 kombineret med belåningsgrad over 60 %
-// betyder begrænsninger på lånetyper (fast rente eller mindst 5 års rentebinding, afdrag).
-const HIGH_DEBT_FACTOR = 4;
-const HIGH_LTV = 0.60;
-// Rentefradrag: ca. 33 % af renteudgifter op til 50.000 kr. pr. voksen, ca. 25 % derover.
-const RENTEFRADRAG = { lowRate: 0.33, highRate: 0.25, thresholdPerAdult: 50000 };
+// ==== Bolig og lån ====
 
 /**
  * Den faste månedlige ydelse på et annuitetslån.
@@ -868,11 +880,6 @@ function simulateDebtPayoff(debts, extraMonthly, strategy){
 
 // ==== Pension ====
 
-// Pensionsafkastskat (PAL) af afkast på pensionsordninger.
-const PAL_SKAT = 0.153;
-// Beløbsgrænser 2026 (skat.dk).
-const PENSION_LIMITS_2026 = { aldersopsparing: 9900, aldersopsparingNearPension: 64200, ratepension: 68700 };
-
 /**
  * Folkepensionsalderen for et fødselstidspunkt. 67-70 år er vedtaget; højere
  * aldre er Beskæftigelsesministeriets skøn, som endnu ikke er vedtaget.
@@ -1015,7 +1022,7 @@ function portfolioCashFlows(history){
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
-        TAX_LIMIT_27, ASK_TAX, AKT_TAX_LOW, AKT_TAX_HIGH,
+        TAX_YEAR, ASK_DEPOSIT_LIMIT, TAX_LIMIT_27, ASK_TAX, AKT_TAX_LOW, AKT_TAX_HIGH,
         setDoubleDeduction, effectiveTaxLimit,
         monthlyReturnFactor, toRealValue,
         computeAskSeries, computeAktFinalValueForStartYear, findBestHarvestStartYear, computeAktSeries,
@@ -1028,7 +1035,7 @@ if(typeof module !== 'undefined' && module.exports){
         TINGLYSNING, MIN_UDBETALING, MAX_REALKREDIT, HIGH_DEBT_FACTOR, HIGH_LTV, RENTEFRADRAG,
         annuityPayment, purchaseCosts, loanSplit, interestDeductionValue, loanCapacity,
         simulateBuyVsRent, simulateDebtPayoff,
-        PAL_SKAT, PENSION_LIMITS_2026, folkepensionAge, simulatePension,
+        PAL_SKAT, PENSION_LIMITS, folkepensionAge, simulatePension,
         backupReminderDue, emergencyFundMonths, xirr, portfolioCashFlows
     };
 }

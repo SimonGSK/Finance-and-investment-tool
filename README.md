@@ -83,6 +83,7 @@ js/loan-capacity.js     Hvor meget kan jeg låne?
 js/buy-vs-rent.js       Køb eller leje?
 js/debt-payoff.js       Gældsafvikling
 js/monthly-status.js    Månedsstatus (saves to both trackers)
+js/share.js             Shareable calculator links
 js/budget.js            Budget
 js/net-worth.js         Formue: net worth, history, milestones, comparison
 js/navigation.js        Tab switching, settings panel, full backup import/export
@@ -90,6 +91,14 @@ js/theme.js             Theme switching and re-theming charts
 tests/calc.test.js      Test suite for calc.js
 src/Main.java           The original console prototype of tools 1 and 2 (Java 21)
 ```
+
+## Updating for a new tax year
+
+Every yearly figure — ASK limit, 27%/42% threshold, tinglysning, PAL, pension limits, lending rules, interest deduction — sits in one block at the top of [`js/calc.js`](js/calc.js). The explanatory text on the page reads its numbers from that block (`data-rule` in the HTML), so a yearly update is: edit the block, adjust the tests that pin exact values, run `npm test`.
+
+## Sharing a calculation
+
+Each calculator has a **Del beregning** button that copies a link reopening it with the same inputs. The inputs live after the `#` in the link, which browsers never send to a server. The trackers, budget and debt list can't be shared this way — they're personal data, and a link must never overwrite what someone has saved.
 
 ## Assumptions and disclaimer
 

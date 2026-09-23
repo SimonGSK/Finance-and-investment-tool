@@ -773,6 +773,7 @@ select.number-input{ font-family:var(--font-sans); cursor:pointer; }
 
 /* ---- Calculators ---- */
 .details-body{ margin-top:var(--s4); }
+.tool-actions{ margin:calc(-1 * var(--s3)) 0 var(--s5) 0; }
 .intro-banner[hidden]{ display:none; }
 .backup-banner{ border-color:var(--akt); }
 .banner-actions{ display:flex; gap:var(--s2); flex-shrink:0; flex-wrap:wrap; }

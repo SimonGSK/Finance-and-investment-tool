@@ -185,3 +185,50 @@ function monthsFromNow(months){
     d.setMonth(d.getMonth() + months);
     return d.toLocaleDateString('da-DK', {month:'short', year:'numeric'});
 }
+
+/**
+ * En sats som tal uden %-tegn i dansk format: 0.27 -> "27", 0.153 -> "15,3".
+ * @param {number} fraction
+ * @returns {string}
+ */
+function pctNumber(fraction){
+    return (Math.round(fraction * 10000) / 100).toLocaleString('da-DK', {maximumFractionDigits:2});
+}
+
+// Tekster på siden, der gentager årets satser, hentes fra blokken øverst i calc.js.
+// Elementet skriver kun selve tallet; "kr." og "%" står i HTML'en.
+const RULE_TEXT = {
+    TAX_YEAR: () => String(TAX_YEAR),
+    ASK_DEPOSIT_LIMIT: () => DK.format(ASK_DEPOSIT_LIMIT),
+    TAX_LIMIT_27: () => DK.format(TAX_LIMIT_27),
+    AKT_TAX_LOW: () => pctNumber(AKT_TAX_LOW),
+    AKT_TAX_HIGH: () => pctNumber(AKT_TAX_HIGH),
+    ASK_TAX: () => pctNumber(ASK_TAX),
+    EXAMPLE_TAX_HIGH: () => DK.format(TAX_LIMIT_27 * AKT_TAX_HIGH),
+    EXAMPLE_TAX_LOW: () => DK.format(TAX_LIMIT_27 * AKT_TAX_LOW),
+    EXAMPLE_TAX_SAVING: () => DK.format(TAX_LIMIT_27 * (AKT_TAX_HIGH - AKT_TAX_LOW)),
+    PAL_SKAT: () => pctNumber(PAL_SKAT),
+    RATEPENSION_LIMIT: () => DK.format(PENSION_LIMITS.ratepension),
+    ALDERSOPSPARING_LIMIT: () => DK.format(PENSION_LIMITS.aldersopsparing),
+    ALDERSOPSPARING_NEAR_LIMIT: () => DK.format(PENSION_LIMITS.aldersopsparingNearPension),
+    SKOEDE_FAST: () => DK.format(TINGLYSNING.skoedeFast),
+    SKOEDE_PCT: () => pctNumber(TINGLYSNING.skoedePct),
+    PANT_FAST: () => DK.format(TINGLYSNING.pantFast),
+    PANT_PCT: () => pctNumber(TINGLYSNING.pantPct),
+    MIN_UDBETALING: () => pctNumber(MIN_UDBETALING),
+    MAX_REALKREDIT: () => pctNumber(MAX_REALKREDIT),
+    HIGH_DEBT_FACTOR: () => String(HIGH_DEBT_FACTOR).replace('.', ','),
+    HIGH_LTV: () => pctNumber(HIGH_LTV),
+    RENTEFRADRAG_LOW: () => pctNumber(RENTEFRADRAG.lowRate),
+    RENTEFRADRAG_HIGH: () => pctNumber(RENTEFRADRAG.highRate),
+    RENTEFRADRAG_THRESHOLD: () => DK.format(RENTEFRADRAG.thresholdPerAdult)
+};
+
+/** Udfylder alle [data-rule]-elementer med årets tal. */
+function fillRuleText(){
+    document.querySelectorAll('[data-rule]').forEach(node => {
+        const format = RULE_TEXT[node.dataset.rule];
+        if(format) node.textContent = format();
+    });
+}
+fillRuleText();
