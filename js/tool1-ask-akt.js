@@ -53,16 +53,16 @@ const payTaxInput = document.getElementById('payTaxExternally');
 const inflationInput = document.getElementById('inflationNumber');
 const showRealInput = document.getElementById('showRealValue');
 
-const ASK_LIMIT = 174200;
 const SNAP_TOLERANCE = 4000;
+document.querySelector('#askLimitMark option').value = ASK_DEPOSIT_LIMIT;
 
 // Skyderen snapper til ASK-grænsen, når man trækker den tæt på - kun skyderen,
 // så et præcist indtastet tal aldrig bliver rykket.
 const startCashSlider = document.getElementById('startCash');
 startCashSlider.addEventListener('input', () => {
     const val = parseInt(startCashSlider.value);
-    if(Math.abs(val - ASK_LIMIT) < SNAP_TOLERANCE){
-        startCashSlider.value = ASK_LIMIT;
+    if(Math.abs(val - ASK_DEPOSIT_LIMIT) < SNAP_TOLERANCE){
+        startCashSlider.value = ASK_DEPOSIT_LIMIT;
     }
 });
 
@@ -127,10 +127,10 @@ function update(){
 
     const strategyEl = document.getElementById('strategyText');
     if(harvestStartYear < years){
-        strategyEl.innerHTML = `Start med at realisere gevinst i <strong style="color:var(--akt)">år ${harvestStartYear}</strong> (ud af ${years} år i alt) – sælg og genkøb årligt op til 27%-grænsen, indtil sidste år, hvor resten sælges og beskattes progressivt.<br><br>
+        strategyEl.innerHTML = `Start med at realisere gevinst i <strong style="color:var(--akt)">år ${harvestStartYear}</strong> (ud af ${years} år i alt) – sælg og genkøb årligt op til ${pctNumber(AKT_TAX_LOW)}%-grænsen, indtil sidste år, hvor resten sælges og beskattes progressivt.<br><br>
                 Det giver <strong style="color:var(--akt)">${DK.format(harvestAdvantage)} kr. mere</strong> end hvis du havde ventet og solgt det hele i sidste år.`;
     } else {
-        strategyEl.innerHTML = `Bedst er slet ikke at realisere undervejs – vent til sidste år, og betal den progressive skat (27%/42%) af hele gevinsten på én gang. Her giver tidlig realisering ingen fordel.`;
+        strategyEl.innerHTML = `Bedst er slet ikke at realisere undervejs – vent til sidste år, og betal den progressive skat (${pctNumber(AKT_TAX_LOW)}%/${pctNumber(AKT_TAX_HIGH)}%) af hele gevinsten på én gang. Her giver tidlig realisering ingen fordel.`;
     }
     const finalAsk = askSeries[askSeries.length-1].value;
     const finalAkt = aktSeries[aktSeries.length-1].value;

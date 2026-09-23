@@ -97,11 +97,12 @@
 
     <label class="toggle-row" id="doubleDeductionRow" style="margin-top:14px; margin-bottom:20px;">
         <input type="checkbox" id="doubleDeduction">
-        Dobbelt fradrag (du er gift med en, der ikke selv investerer, og kan derfor udnytte begges 27%-grænse)
+        Dobbelt fradrag (du er gift med en, der ikke selv investerer, og kan derfor udnytte begges <span data-rule="AKT_TAX_LOW">27</span>%-grænse)
     </label>
 
     <div id="tool1">
         <p class="tool-intro">Dette værktøj kan bruges til at sammenligne potentielle afkast på en <strong>Aktiesparekonto</strong> med et <strong>normalt aktiedepot</strong>. Værktøjet tager udgangspunkt i den optimale realiseringsstrategi for aktiedepotet (se forklaring nedenfor).</p>
+        <div class="tool-actions"><button class="btn btn-secondary btn-sm" type="button" onclick="shareCalculator('tool1')">Del beregning</button></div>
         <div class="layout">
 
             <div class="panel">
@@ -114,7 +115,7 @@
                     <datalist id="askLimitMark">
                         <option value="174200"></option>
                     </datalist>
-                    <div class="limit-hint">▲ ASK-grænsen er 174.200 kr.</div>
+                    <div class="limit-hint">▲ ASK-grænsen er <span data-rule="ASK_DEPOSIT_LIMIT">174.200</span> kr.</div>
                 </div>
 
                 <div class="field">
@@ -180,13 +181,13 @@
                 <details>
                     <summary class="summary-toggle">Forklaring</summary>
                     <p class="explainer">
-                        Det er en afvejning: sælger du for tidligt, mister du renters rente på de kroner, der forlader depotet som skat, før det er nødvendigt. Venter du for længe, risikerer du i stedet, at en stor del af gevinsten bliver beskattet med den høje sats på 42% i sidste øjeblik. Værktøjet finder det optimale startår for realisering af gevinst, ved simpelthen at afprøve alle mulige år og vælge det, der reelt giver den højeste slutværdi. Jo højere det forventede afkast er, jo dyrere er det at betale skat tidligt (de kroner går glip af mere vækst), så høje afkast trækker det optimale startår tættere på sidste år. Ved lave afkast koster tidlig realisering til gengæld mindre i tabt vækst, så det kan bedre betale sig at sprede realiseringen ud over flere år.
+                        Det er en afvejning: sælger du for tidligt, mister du renters rente på de kroner, der forlader depotet som skat, før det er nødvendigt. Venter du for længe, risikerer du i stedet, at en stor del af gevinsten bliver beskattet med den høje sats på <span data-rule="AKT_TAX_HIGH">42</span>% i sidste øjeblik. Værktøjet finder det optimale startår for realisering af gevinst, ved simpelthen at afprøve alle mulige år og vælge det, der reelt giver den højeste slutværdi. Jo højere det forventede afkast er, jo dyrere er det at betale skat tidligt (de kroner går glip af mere vækst), så høje afkast trækker det optimale startår tættere på sidste år. Ved lave afkast koster tidlig realisering til gengæld mindre i tabt vækst, så det kan bedre betale sig at sprede realiseringen ud over flere år.
                     </p>
                 </details>
                 <details>
                     <summary class="summary-toggle">Eksempel</summary>
                     <p class="explainer">
-                        <strong style="color:var(--text);">Et eksempel ved 8% forventet afkast:</strong> af 79.400 kr. gevinst betaler man 33.348 kr. i skat ved 42%, men kun 21.438 kr. ved 27% – en besparelse på 11.910 kr. her og nu. Det er dog ikke hele historien: at realisere gevinst tidligt koster renters rente på de kroner, der forlader depotet som skat, men det nulstiller samtidig anskaffelsessummen på det realiserede beløb, når der genkøbes, så en større del af den fremtidige værdi bliver skattefri "tilbagebetaling af anskaffelsessum" i stedet for ny gevinst. Ved 8% afkast betyder det samlet set, at det tidligst er ca. 8 år før slutdatoen, det bliver en fordel at begynde at realisere gevinst og udnytte 27%-grænsen.
+                        <strong style="color:var(--text);">Et eksempel ved 8% forventet afkast:</strong> af <span data-rule="TAX_LIMIT_27">79.400</span> kr. gevinst betaler man <span data-rule="EXAMPLE_TAX_HIGH">33.348</span> kr. i skat ved <span data-rule="AKT_TAX_HIGH">42</span>%, men kun <span data-rule="EXAMPLE_TAX_LOW">21.438</span> kr. ved <span data-rule="AKT_TAX_LOW">27</span>% – en besparelse på <span data-rule="EXAMPLE_TAX_SAVING">11.910</span> kr. her og nu. Det er dog ikke hele historien: at realisere gevinst tidligt koster renters rente på de kroner, der forlader depotet som skat, men det nulstiller samtidig anskaffelsessummen på det realiserede beløb, når der genkøbes, så en større del af den fremtidige værdi bliver skattefri "tilbagebetaling af anskaffelsessum" i stedet for ny gevinst. Ved 8% afkast betyder det samlet set, at det tidligst er ca. 8 år før slutdatoen, det bliver en fordel at begynde at realisere gevinst og udnytte <span data-rule="AKT_TAX_LOW">27</span>%-grænsen.
                     </p>
                 </details>
             </div>
@@ -215,6 +216,7 @@
 
     <div id="tool2" style="display:none;">
         <p class="tool-intro">Dette værktøj kan bruges til at udforske potentielle afkast på et <strong>normalt aktiedepot</strong>, med et engangsindskud og en fast månedlig investering. Værktøjet tager udgangspunkt i den optimale realiseringsstrategi (se forklaring nedenfor).</p>
+        <div class="tool-actions"><button class="btn btn-secondary btn-sm" type="button" onclick="shareCalculator('tool2')">Del beregning</button></div>
         <div class="layout">
 
             <div class="panel">
@@ -292,13 +294,13 @@
                 <details>
                     <summary class="summary-toggle">Hvorfor virker det sådan? (uddyb)</summary>
                     <p class="explainer">
-                        Det er en afvejning: sælger du for tidligt, mister du renters rente på de kroner, der forlader depotet som skat, før det er nødvendigt. Venter du for længe, risikerer du i stedet, at en stor del af gevinsten bliver beskattet med den høje sats på 42% i sidste øjeblik. Værktøjet finder det optimale startår for realisering af gevinst, ved simpelthen at afprøve alle mulige år og vælge det, der reelt giver den højeste slutværdi. Jo højere det forventede afkast er, jo dyrere er det at betale skat tidligt (de kroner går glip af mere vækst), så høje afkast trækker det optimale startår tættere på sidste år. Ved lave afkast koster tidlig realisering til gengæld mindre i tabt vækst, så det kan bedre betale sig at sprede realiseringen ud over flere år.
+                        Det er en afvejning: sælger du for tidligt, mister du renters rente på de kroner, der forlader depotet som skat, før det er nødvendigt. Venter du for længe, risikerer du i stedet, at en stor del af gevinsten bliver beskattet med den høje sats på <span data-rule="AKT_TAX_HIGH">42</span>% i sidste øjeblik. Værktøjet finder det optimale startår for realisering af gevinst, ved simpelthen at afprøve alle mulige år og vælge det, der reelt giver den højeste slutværdi. Jo højere det forventede afkast er, jo dyrere er det at betale skat tidligt (de kroner går glip af mere vækst), så høje afkast trækker det optimale startår tættere på sidste år. Ved lave afkast koster tidlig realisering til gengæld mindre i tabt vækst, så det kan bedre betale sig at sprede realiseringen ud over flere år.
                     </p>
                 </details>
                 <details>
                     <summary class="summary-toggle">Eksempel</summary>
                     <p class="explainer">
-                        <strong style="color:var(--text);">Et eksempel ved 8% forventet afkast:</strong> af 79.400 kr. gevinst betaler man 33.348 kr. i skat ved 42%, men kun 21.438 kr. ved 27% – en besparelse på 11.910 kr. her og nu. Det er dog ikke hele historien: at realisere gevinst tidligt koster renters rente på de kroner, der forlader depotet som skat, men det nulstiller samtidig anskaffelsessummen på det realiserede beløb, når der genkøbes, så en større del af den fremtidige værdi bliver skattefri "tilbagebetaling af anskaffelsessum" i stedet for ny gevinst. Ved 8% afkast betyder det samlet set, at det tidligst er ca. 8 år før slutdatoen, det bliver en fordel at begynde at realisere gevinst og udnytte 27%-grænsen.
+                        <strong style="color:var(--text);">Et eksempel ved 8% forventet afkast:</strong> af <span data-rule="TAX_LIMIT_27">79.400</span> kr. gevinst betaler man <span data-rule="EXAMPLE_TAX_HIGH">33.348</span> kr. i skat ved <span data-rule="AKT_TAX_HIGH">42</span>%, men kun <span data-rule="EXAMPLE_TAX_LOW">21.438</span> kr. ved <span data-rule="AKT_TAX_LOW">27</span>% – en besparelse på <span data-rule="EXAMPLE_TAX_SAVING">11.910</span> kr. her og nu. Det er dog ikke hele historien: at realisere gevinst tidligt koster renters rente på de kroner, der forlader depotet som skat, men det nulstiller samtidig anskaffelsessummen på det realiserede beløb, når der genkøbes, så en større del af den fremtidige værdi bliver skattefri "tilbagebetaling af anskaffelsessum" i stedet for ny gevinst. Ved 8% afkast betyder det samlet set, at det tidligst er ca. 8 år før slutdatoen, det bliver en fordel at begynde at realisere gevinst og udnytte <span data-rule="AKT_TAX_LOW">27</span>%-grænsen.
                     </p>
                 </details>
             </div>
@@ -326,6 +328,7 @@
 
     <div id="tool3" style="display:none;">
         <p class="tool-intro">Dette værktøj kan bruges til at finde ud af, hvor mange år der går, før din opsparing er stor nok til at forsørge dit ønskede årlige forbrug via <strong>4%-reglen</strong> ("FIRE" – Financial Independence, Retire Early).</p>
+        <div class="tool-actions"><button class="btn btn-secondary btn-sm" type="button" onclick="shareCalculator('tool3')">Del beregning</button></div>
         <div class="layout">
 
             <div class="panel">
@@ -566,7 +569,8 @@
     </div>
 
     <div id="tool5" style="display:none;">
-        <p class="tool-intro">Dette værktøj viser, hvad din <strong>private pensionsopsparing</strong> kan vokse til frem mod din pensionsalder, og hvor meget den kan give dig om måneden bagefter. Afkastet regnes efter omkostninger og <strong>PAL-skat</strong> på 15,3 %. Folkepension og ATP er ikke med.</p>
+        <p class="tool-intro">Dette værktøj viser, hvad din <strong>private pensionsopsparing</strong> kan vokse til frem mod din pensionsalder, og hvor meget den kan give dig om måneden bagefter. Afkastet regnes efter omkostninger og <strong>PAL-skat</strong> på <span data-rule="PAL_SKAT">15,3</span> %. Folkepension og ATP er ikke med.</p>
+        <div class="tool-actions"><button class="btn btn-secondary btn-sm" type="button" onclick="shareCalculator('tool5')">Del beregning</button></div>
         <div class="layout">
 
             <div class="panel">
@@ -649,9 +653,9 @@
             </div>
 
             <div class="panel">
-                <div class="eyebrow">Regler og antagelser (2026)</div>
+                <div class="eyebrow">Regler og antagelser (<span data-rule="TAX_YEAR">2026</span>)</div>
                 <p class="explainer explainer-lead">
-                    <strong>PAL-skat:</strong> 15,3 % af afkastet trækkes hvert år af pensionsselskabet. <strong>Loft for indbetalinger 2026:</strong> ratepension 68.700 kr. om året med fradrag; aldersopsparing 9.900 kr. om året, eller 64.200 kr. når du har 7 år eller mindre til folkepensionsalderen. Indbetaler du mere, gælder andre regler.
+                    <strong>PAL-skat:</strong> <span data-rule="PAL_SKAT">15,3</span> % af afkastet trækkes hvert år af pensionsselskabet. <strong>Loft for indbetalinger <span data-rule="TAX_YEAR">2026</span>:</strong> ratepension <span data-rule="RATEPENSION_LIMIT">68.700</span> kr. om året med fradrag; aldersopsparing <span data-rule="ALDERSOPSPARING_LIMIT">9.900</span> kr. om året, eller <span data-rule="ALDERSOPSPARING_NEAR_LIMIT">64.200</span> kr. når du har 7 år eller mindre til folkepensionsalderen. Indbetaler du mere, gælder andre regler.
                     <strong>Folkepensionsalderen</strong> er vedtaget op til 70 år (født 1971-74); højere aldre er et skøn, som Folketinget først tager stilling til i 2030.
                     Afkastet er et fast gennemsnit – virkeligheden svinger. Beregningen er ikke rådgivning.
                     Kilder: <a href="https://skat.dk/borger/pension-og-efterloen/skat-af-pensionsafkast" target="_blank" rel="noopener">skat.dk</a>, <a href="https://star.dk/ydelser/pension-og-efterloen/folkepension-tidlig-pension-foertidspension-og-seniorpension/folkepension/folkepensionsalderen-nu-og-fremover/" target="_blank" rel="noopener">star.dk</a>.
@@ -673,6 +677,7 @@
     <!-- ===== Låneevne ===== -->
     <div id="housing1">
         <p class="tool-intro">Find ud af, hvor dyr en bolig du kan købe. Beregningen tager højde for de tre ting, banken typisk ser på: at din <strong>opsparing</strong> dækker mindst 5 % udbetaling og omkostningerne, din <strong>gældsfaktor</strong> (samlet gæld i forhold til indkomsten), og – hvis du vil – hvor stor en <strong>månedlig ydelse</strong> du kan betale.</p>
+        <div class="tool-actions"><button class="btn btn-secondary btn-sm" type="button" onclick="shareCalculator('housing1')">Del beregning</button></div>
         <div class="layout">
             <div class="panel">
                 <div class="eyebrow">Din økonomi</div>
@@ -734,9 +739,9 @@
         </div>
         <div class="full-width-below">
             <div class="panel">
-                <div class="eyebrow">Regler og antagelser (2026)</div>
+                <div class="eyebrow">Regler og antagelser (<span data-rule="TAX_YEAR">2026</span>)</div>
                 <p class="explainer explainer-lead">
-                    Du skal selv betale mindst <strong>5 %</strong> af prisen i udbetaling. Realkredit kan låne op til <strong>80 %</strong>; resten lånes i banken. <strong>Tinglysning 2026:</strong> skøde 1.850 kr. + 0,6 % af prisen, pantebreve 1.825 kr. + 1,25 % af lånet. Har du en gældsfaktor over 4 og belåner mere end 60 %, må du efter Finanstilsynets retningslinjer kun vælge lån med fast rente eller mindst 5 års rentetilpasning. Rentefradraget er ca. 33 % op til 50.000 kr. i renter pr. voksen og ca. 25 % derover.
+                    Du skal selv betale mindst <strong><span data-rule="MIN_UDBETALING">5</span> %</strong> af prisen i udbetaling. Realkredit kan låne op til <strong><span data-rule="MAX_REALKREDIT">80</span> %</strong>; resten lånes i banken. <strong>Tinglysning <span data-rule="TAX_YEAR">2026</span>:</strong> skøde <span data-rule="SKOEDE_FAST">1.850</span> kr. + <span data-rule="SKOEDE_PCT">0,6</span> % af prisen, pantebreve <span data-rule="PANT_FAST">1.825</span> kr. + <span data-rule="PANT_PCT">1,25</span> % af lånet. Har du en gældsfaktor over <span data-rule="HIGH_DEBT_FACTOR">4</span> og belåner mere end <span data-rule="HIGH_LTV">60</span> %, må du efter Finanstilsynets retningslinjer kun vælge lån med fast rente eller mindst 5 års rentetilpasning. Rentefradraget er ca. <span data-rule="RENTEFRADRAG_LOW">33</span> % op til <span data-rule="RENTEFRADRAG_THRESHOLD">50.000</span> kr. i renter pr. voksen og ca. <span data-rule="RENTEFRADRAG_HIGH">25</span> % derover.
                     Bankerne stiller også krav til dit rådighedsbeløb, og de ser forskelligt på det – brug resultatet som et pejlemærke. Ikke rådgivning.
                     Kilder: <a href="https://skat.dk/erhverv/afgifter-paa-varer-og-ydelser-punktafgifter/nyhedsbrev-afgifter/tinglysningsafgift-ny-afgiftssats-pr-1-januar-2026" target="_blank" rel="noopener">skat.dk</a>, <a href="https://www.nationalbanken.dk/media/4hfg5pa3/laaneregler-i-lyset-af-hoejere-renter.pdf" target="_blank" rel="noopener">Nationalbanken</a>.
                 </p>
@@ -747,6 +752,7 @@
     <!-- ===== Køb eller leje ===== -->
     <div id="housing2" style="display:none;">
         <p class="tool-intro">Sammenlign at <strong>købe</strong> en bolig med at <strong>leje</strong> og investere forskellen. Begge starter med samme beløb: køberens udbetaling og købsomkostninger. Lejeren investerer det, der ikke går til depositum, og hver måned investerer den af jer, der har de laveste boligudgifter, forskellen. Grafen viser jeres formue, hvis boligen blev solgt det år.</p>
+        <div class="tool-actions"><button class="btn btn-secondary btn-sm" type="button" onclick="shareCalculator('housing2')">Del beregning</button></div>
         <div class="layout">
             <div class="panel">
                 <div class="eyebrow">Køb</div>
@@ -804,7 +810,7 @@
                     </table>
                 </div>
                 <p class="explainer">
-                    Gevinst ved salg af din egen bolig er skattefri, og salgsomkostningerne er trukket fra formuen ved køb. Afkastet på investeringer angives efter skat for at holde det enkelt. Rentefradraget (ca. 33 % op til 50.000 kr. pr. voksen, ca. 25 % derover) er modregnet i køberens udgifter, ligesom bidrag. Boligskatten følger boligprisen. Ikke rådgivning.
+                    Gevinst ved salg af din egen bolig er skattefri, og salgsomkostningerne er trukket fra formuen ved køb. Afkastet på investeringer angives efter skat for at holde det enkelt. Rentefradraget (ca. <span data-rule="RENTEFRADRAG_LOW">33</span> % op til <span data-rule="RENTEFRADRAG_THRESHOLD">50.000</span> kr. pr. voksen, ca. <span data-rule="RENTEFRADRAG_HIGH">25</span> % derover) er modregnet i køberens udgifter, ligesom bidrag. Boligskatten følger boligprisen. Ikke rådgivning.
                 </p>
             </div>
         </div>
@@ -1163,5 +1169,6 @@
     <script src="js/net-worth.js"></script>
     <script src="js/monthly-status.js"></script>
     <script src="js/theme.js"></script>
+    <script src="js/share.js"></script>
 </body>
 </html>

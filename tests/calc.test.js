@@ -17,7 +17,7 @@ const {
     parseDanishAmount, findHeaderRowIndex, parseCSV,
     annuityPayment, purchaseCosts, loanSplit, interestDeductionValue, loanCapacity,
     simulateBuyVsRent, simulateDebtPayoff,
-    PAL_SKAT, PENSION_LIMITS_2026, folkepensionAge, simulatePension,
+    PAL_SKAT, PENSION_LIMITS, folkepensionAge, simulatePension,
     backupReminderDue, emergencyFundMonths, xirr, portfolioCashFlows
 } = calc;
 
@@ -485,7 +485,7 @@ describe('gældsafvikling', () => {
 describe('pension', () => {
     test('satser 2026', () => {
         assert.equal(PAL_SKAT, 0.153);
-        assert.deepEqual(PENSION_LIMITS_2026, { aldersopsparing: 9900, aldersopsparingNearPension: 64200, ratepension: 68700 });
+        assert.deepEqual(PENSION_LIMITS, { aldersopsparing: 9900, aldersopsparingNearPension: 64200, ratepension: 68700 });
     });
 
     test('folkepensionsalder: 67-70 er vedtaget, derover skøn', () => {

@@ -114,7 +114,7 @@ function update2(){
         strategyEl2.innerHTML = `Start med at realisere gevinst i <strong style="color:var(--akt)">år ${harvestStartYear}</strong> (ud af ${years} år i alt).<br><br>
       Det giver <strong style="color:var(--akt)">${DK.format(harvestAdvantage)} kr. mere</strong> end hvis du havde ventet og solgt det hele i sidste år.`;
     } else {
-        strategyEl2.innerHTML = `Bedst er slet ikke at realisere undervejs – vent til sidste år, og betal den progressive skat (27%/42%) af hele gevinsten på én gang. Her giver tidlig realisering ingen fordel.`;
+        strategyEl2.innerHTML = `Bedst er slet ikke at realisere undervejs – vent til sidste år, og betal den progressive skat (${pctNumber(AKT_TAX_LOW)}%/${pctNumber(AKT_TAX_HIGH)}%) af hele gevinsten på én gang. Her giver tidlig realisering ingen fordel.`;
     }
 }
 
