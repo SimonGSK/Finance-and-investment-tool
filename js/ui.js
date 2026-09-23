@@ -143,6 +143,13 @@ function infoDialog({title, message}){
     return openDialog({title, content: message, actions: [{label:'OK', variant:'primary'}]}).result.then(() => {});
 }
 
+/** Åbner hjælp og spørgsmål. Indholdet ligger i <template id="helpContent">. */
+function openHelp(){
+    const content = document.getElementById('helpContent').content.cloneNode(true);
+    fillRuleText(content);
+    openDialog({title:'Hjælp og spørgsmål', content: el('div', {}, [content]), wide:true, actions:[{label:'Luk', variant:'primary'}]});
+}
+
 let toastRegion = null;
 
 /**

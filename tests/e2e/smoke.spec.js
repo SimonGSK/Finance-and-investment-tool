@@ -148,3 +148,14 @@ test('et delt link genskaber beregningen', async ({ page, context }) => {
     await expect(fresh.locator('#brWinnerSub')).toHaveText(expected);
     expect(await fresh.evaluate(() => location.hash)).toBe('');
 });
+
+test('hjælp åbner med årets satser og kilder, og Esc lukker', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.getByRole('button', { name: 'Hjælp og spørgsmål' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Hjælp og spørgsmål' });
+    await dialog.getByText('Hvorfor beskattes en aktiesparekonto hvert år?').click();
+    await expect(dialog).toContainText('174.200 kr.');
+    await expect(dialog.locator('a[href^="https://skat.dk"]')).toHaveCount(5);
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+});

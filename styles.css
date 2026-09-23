@@ -949,6 +949,7 @@ table.data-table td.is-negative{ color:var(--ask); }
     .data-table-wrap{ overflow-x:auto; }
     table.data-table{ min-width:520px; }
     .settings-btn{ top:var(--s4); right:var(--s4); }
+    .help-btn{ right:calc(var(--s4) + 52px); }
     .settings-panel{ right:var(--s4); left:var(--s4); width:auto; }
     .budget-item-head{ display:none; }
     .debt-row-fields{ grid-template-columns:1fr; }
@@ -958,10 +959,22 @@ table.data-table td.is-negative{ color:var(--ask); }
     .budget-item-row > :nth-child(3){ grid-column:1; }
     .budget-item-row > .icon-remove{ grid-row:1; grid-column:2; }
 }
+.help-btn{ right:calc(var(--s5) + 52px); font-family:var(--font-display); font-size:20px; font-weight:600; color:var(--muted); }
+.help-btn:hover{ transform:none; color:var(--text); }
+/* Plads til annoncesøjlen, når den er slået til */
 @media (min-width:1401px){
-    .settings-btn{ right:200px; }
-    .settings-panel{ right:200px; }
+    body:has(.ad-slot:not([hidden])) .settings-btn{ right:200px; }
+    body:has(.ad-slot:not([hidden])) .help-btn{ right:252px; }
+    body:has(.ad-slot:not([hidden])) .settings-panel{ right:200px; }
 }
+.faq details{ border-bottom:1px solid var(--border); padding:var(--s3) 0; }
+.faq details:last-child{ border-bottom:none; }
+.faq summary{ cursor:pointer; font-weight:600; color:var(--text); list-style:none; display:flex; justify-content:space-between; gap:var(--s3); }
+.faq summary::-webkit-details-marker{ display:none; }
+.faq summary::after{ content:'+'; color:var(--subtle); font-weight:400; }
+.faq details[open] summary::after{ content:'−'; }
+.faq p{ margin:var(--s2) 0 0 0; font-size:14px; line-height:1.65; color:var(--muted); }
+.faq a, .explainer a{ color:var(--akt); }
 @media (prefers-reduced-motion:reduce){
     *{ transition:none !important; animation:none !important; }
 }

@@ -224,9 +224,12 @@ const RULE_TEXT = {
     RENTEFRADRAG_THRESHOLD: () => DK.format(RENTEFRADRAG.thresholdPerAdult)
 };
 
-/** Udfylder alle [data-rule]-elementer med årets tal. */
-function fillRuleText(){
-    document.querySelectorAll('[data-rule]').forEach(node => {
+/**
+ * Udfylder alle [data-rule]-elementer med årets tal.
+ * @param {ParentNode} [root] fx en dialog; udeladt = hele siden
+ */
+function fillRuleText(root = document){
+    root.querySelectorAll('[data-rule]').forEach(node => {
         const format = RULE_TEXT[node.dataset.rule];
         if(format) node.textContent = format();
     });
