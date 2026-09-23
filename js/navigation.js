@@ -141,8 +141,8 @@ function checkBackupReminder(){
     document.getElementById('backupBanner').hidden = !due;
     if(due){
         document.getElementById('backupBannerText').textContent = daysSinceBackup === null
-            ? '💾 Du har ikke taget en backup af dine data endnu. De findes kun i denne browser – download en backup, så du ikke mister dem.'
-            : `💾 Det er ${daysSinceBackup} dage siden, du sidst tog en backup. Download en ny, så dine seneste tal også er sikret.`;
+            ? 'Du har ikke taget en backup af dine data endnu. De findes kun i denne browser – download en backup, så du ikke mister dem.'
+            : `Det er ${daysSinceBackup} dage siden, du sidst tog en backup. Download en ny, så dine seneste tal også er sikret.`;
     }
 }
 
