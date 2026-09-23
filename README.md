@@ -64,7 +64,14 @@ The financial calculations, the tax and lending rules, the percentile lookup and
 npm test
 ```
 
-Several tests pin exact known outputs (for example, 25 years at 8% from 100.000 kr. gives 496.847 kr. in a depot with harvesting from year 19), so any change to the maths is caught immediately. The suite runs automatically on every push and pull request via GitHub Actions.
+Several tests pin exact known outputs (for example, 25 years at 8% from 100.000 kr. gives 496.847 kr. in a depot with harvesting from year 19), so any change to the maths is caught immediately. Browser tests in [`tests/e2e/`](tests/e2e/) run the whole page in Chromium with [Playwright](https://playwright.dev/). They check what unit tests can't see: that every section loads without JavaScript errors, that every chart exactly fills its box, that nothing scrolls sideways on a phone, and the budget dialog, monthly-status overwrite warning and share-link flows.
+
+```bash
+npx playwright install chromium   # once
+npm run test:e2e
+```
+
+Both suites run automatically on every push and pull request via GitHub Actions; failing browser runs upload a trace you can open with `npx playwright show-trace`.
 
 ## Project layout
 
@@ -88,7 +95,8 @@ js/budget.js            Budget
 js/net-worth.js         Formue: net worth, history, milestones, comparison
 js/navigation.js        Tab switching, settings panel, full backup import/export
 js/theme.js             Theme switching and re-theming charts
-tests/calc.test.js      Test suite for calc.js
+tests/calc.test.js      Unit tests for calc.js
+tests/e2e/              Browser tests (Playwright)
 src/Main.java           The original console prototype of tools 1 and 2 (Java 21)
 ```
 

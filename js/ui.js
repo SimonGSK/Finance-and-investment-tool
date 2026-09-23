@@ -42,6 +42,21 @@ function el(tag, props = {}, children = []){
 }
 
 /**
+ * Et .field med en label, der er koblet til feltet (for/id), så et klik på
+ * teksten fokuserer feltet, og skærmlæsere kan læse, hvad feltet er.
+ * @param {string} labelText
+ * @param {HTMLElement} control input eller select
+ * @param {Node[]} [extra] fx en fejlbesked under feltet
+ * @param {string} [className] ekstra klasse på .field
+ * @returns {HTMLElement}
+ */
+function fieldEl(labelText, control, extra = [], className = ''){
+    if(!control.id) control.id = 'f-' + Math.random().toString(36).slice(2);
+    return el('div', {className: 'field' + (className ? ' ' + className : '')},
+        [el('label', {textContent: labelText, htmlFor: control.id}), control, ...extra]);
+}
+
+/**
  * Åbner en dialog. Indholdet kan være en node eller en tekst. Hver knap i
  * `actions` lukker dialogen og opfylder løftet med sin `value`, medmindre dens
  * onClick returnerer false (bruges til validering).
