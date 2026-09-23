@@ -235,6 +235,14 @@ h1{
     flex:1;
     min-height:300px;
 }
+.panel.chart-panel-compact{
+    align-self:start;
+}
+.chart-panel-compact .chart-wrap{
+    flex:none;
+    min-height:0;
+    height:360px;
+}
 .chart-wrap.chart-wrap-standalone{
     flex:none;
     min-height:0;
