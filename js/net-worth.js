@@ -182,8 +182,10 @@ async function resetNetWorth(){
 }
 
 loadNetWorthFromStorage();
-NET_WORTH_CATEGORIES.forEach(cat => document.getElementById(cat.id).addEventListener('input', updateNetWorth));
-document.getElementById('netDebt').addEventListener('input', updateNetWorth);
+NET_WORTH_INPUT_IDS.forEach(id => document.getElementById(id).addEventListener('input', () => {
+    updateNetWorth();
+    markSaved('netWorthSaveStatus');
+}));
 document.getElementById('wealthAge').addEventListener('input', updateWealthComparison);
 updateNetWorth();
 
@@ -342,7 +344,7 @@ async function clearNetWorthHistory(){
 function renderNetWorthHistory(){
     const history = readNetWorthHistory();
     const chartData = {
-        labels: history.map(h => h.date),
+        labels: history.map(h => formatDanishDate(h.date)),
         datasets:[
             {
                 label:'Nettoformue',
@@ -404,7 +406,7 @@ function renderNetWorthHistory(){
 
     const historyTableBody = document.getElementById('netWorthHistoryTableBody');
     historyTableBody.innerHTML = history.map(h => `<tr>
-            <td>${h.date}</td>
+            <td data-csv="${h.date}">${formatDanishDate(h.date)}</td>
             <td>${DK.format(h.netCatKontanter || 0)} kr.</td>
             <td>${DK.format(h.netCatAktier || 0)} kr.</td>
             <td>${DK.format(h.netCatPension || 0)} kr.</td>
@@ -413,7 +415,7 @@ function renderNetWorthHistory(){
             <td>${DK.format(h.debt || 0)} kr.</td>
             <td>${DK.format(h.liquid ?? 0)} kr.</td>
             <td>${DK.format(h.value)} kr.</td>
-            <td><button class="btn btn-secondary" style="padding:4px 10px; font-size:12px;" onclick="deleteNetWorthEntry('${h.date}')">Slet</button></td>
+            <td><button class="btn btn-secondary btn-sm" aria-label="Slet datapunktet for ${formatDanishDate(h.date)}" onclick="deleteNetWorthEntry('${h.date}')">Slet</button></td>
         </tr>`).join('');
 
     const netWorthHasHistory = history.length > 0;
@@ -431,7 +433,7 @@ let netWorthCompositionChart = null;
  * @param {object[]} history øjebliksbillederne, sorteret efter dato
  */
 function renderNetWorthComposition(history){
-    const labels = history.map(h => h.date);
+    const labels = history.map(h => formatDanishDate(h.date));
     const datasets = [
         {label:'Kontanter', data: history.map(h => h.netCatKontanter || 0), backgroundColor:'#5FA894', borderColor:'#5FA894', fill:true, stack:'formue', pointRadius:0, tension:0.1},
         {label:'Aktier', data: history.map(h => h.netCatAktier || 0), backgroundColor:'#C9973F', borderColor:'#C9973F', fill:true, stack:'formue', pointRadius:0, tension:0.1},

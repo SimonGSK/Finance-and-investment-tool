@@ -88,6 +88,12 @@ function openDialog({title, content, actions = [], wide = false, onClose}){
 
     // Esc og klik på baggrunden lukker som "annullér".
     dialog.addEventListener('cancel', e => { e.preventDefault(); close(undefined); });
+    // Enter i et felt udfører dialogens hovedhandling, som i en almindelig formular.
+    dialog.addEventListener('keydown', e => {
+        if(e.key !== 'Enter' || !e.target.matches('input:not([type=checkbox]):not([type=radio]), select')) return;
+        const primary = dialog.querySelector('.dialog-footer .btn-primary');
+        if(primary){ e.preventDefault(); primary.click(); }
+    });
     dialog.addEventListener('click', e => { if(e.target === dialog) close(undefined); });
 
     document.body.append(dialog);
@@ -207,4 +213,65 @@ function importSummary(added, replaced, skipped){
     if(replaced) parts.push(`${replaced} erstattet`);
     if(skipped) parts.push(`${skipped} sprunget over pga. ugyldig dato`);
     return `${total} ${total === 1 ? 'datapunkt' : 'datapunkter'} importeret` + (parts.length ? ` (${parts.join(', ')})` : '') + '.';
+}
+
+// ---- Talfelter: grænser og tomme felter ----
+
+/**
+ * Viser en besked under et talfelt, der er uden for sine min/max-grænser eller
+ * ikke er et tal, og fjerner den igen, når feltet er i orden. Beregningen
+ * bruger stadig tallet - beskeden gør bare opmærksom på det.
+ * @param {HTMLInputElement} input
+ */
+function showRangeHint(input){
+    const v = input.validity;
+    let message = '';
+    if(v.badInput) message = 'Skriv et tal.';
+    else if(v.rangeUnderflow || v.rangeOverflow){
+        const fmt = x => DK.format(parseFloat(x)).replace(/^-/, '−');
+        message = input.min !== '' && input.max !== ''
+            ? `Skal være mellem ${fmt(input.min)} og ${fmt(input.max)}.`
+            : v.rangeUnderflow ? `Må ikke være under ${fmt(input.min)}.` : `Må ikke være over ${fmt(input.max)}.`;
+    }
+    let hint = input.nextElementSibling?.classList.contains('range-hint') ? input.nextElementSibling : null;
+    if(!message){
+        hint?.remove();
+        input.removeAttribute('aria-invalid');
+        return;
+    }
+    if(!hint){
+        hint = el('div', {className:'field-error range-hint', id: (input.id || 'n' + Math.random().toString(36).slice(2)) + '-hint', attrs:{role:'alert'}});
+        input.insertAdjacentElement('afterend', hint);
+        input.setAttribute('aria-describedby', hint.id);
+    }
+    hint.textContent = message;
+    input.setAttribute('aria-invalid', 'true');
+}
+
+document.addEventListener('input', e => {
+    if(e.target.matches('input[type=number]')) showRangeHint(e.target);
+});
+
+// Et felt, der efterlades tomt, sættes tilbage til sin standardværdi i stedet
+// for stille at tælle som 0. Felter uden standardværdi (fx nye budgetposter) røres ikke.
+document.addEventListener('change', e => {
+    const input = e.target;
+    if(!input.matches('input[type=number]') || input.value !== '' || input.validity.badInput || input.defaultValue === '') return;
+    input.value = input.defaultValue;
+    showRangeHint(input);
+    input.dispatchEvent(new Event('input', {bubbles:true}));
+    notify(`Feltet var tomt og er sat tilbage til ${DK.format(parseFloat(input.defaultValue))}.`);
+});
+
+/**
+ * Viser "Gemt kl. 14.32" i en statuslinje, efter brugeren har ændret noget,
+ * der gemmes automatisk.
+ * @param {string} id statuslinjens id
+ */
+function markSaved(id){
+    const node = document.getElementById(id);
+    if(!node) return;
+    const time = new Date().toLocaleTimeString('da-DK', {hour:'2-digit', minute:'2-digit'});
+    node.textContent = `✓ Gemt i denne browser kl. ${time}`;
+    node.classList.add('is-saved');
 }

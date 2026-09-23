@@ -24,7 +24,8 @@
 
     <div class="page-shell">
 
-        <aside class="ad-slot">
+        <!-- TODO: Fjern 'hidden' på begge .ad-slot, når AdSense-koden er sat ind. -->
+        <aside class="ad-slot" hidden>
             <!-- Google AdSense-annonce (venstre) indsættes her, når I har jeres AdSense-kode -->
             <!-- TODO: indsæt udgiver-ID i "ca-pub-xxxx..."-->
             <!-- TODO: indsæt data-ad-slot-nummer i 'data-ad-slot="xxxxx..."' -->
@@ -46,9 +47,9 @@
             <h1>Økonomiværktøjer</h1>
             <p class="subtitle">Brug værktøjerne og udforsk dit økonomiske potentiale.</p>
         </div>
-        <button class="settings-btn" id="settingsBtn" onclick="toggleSettings()">⚙️</button>
+        <button class="settings-btn" id="settingsBtn" onclick="toggleSettings()" aria-label="Indstillinger" aria-expanded="false" aria-controls="settingsPanel">⚙️</button>
     </div>
-            <div class="settings-panel" id="settingsPanel" style="display:none;">
+            <div class="settings-panel" id="settingsPanel" role="region" aria-label="Indstillinger" style="display:none;">
                 <div class="eyebrow" style="margin-bottom:12px;">Indstillinger</div>
                 <label class="toggle-row">
                     <input type="checkbox" id="lightTheme">
@@ -98,9 +99,9 @@
                 <div class="eyebrow">Parametre</div>
 
                 <div class="field">
-                    <label>Startbeløb</label>
+                    <label for="startCashNumber">Startbeløb</label>
                     <input type="number" id="startCashNumber" class="number-input" value="100000" min="0" step="1000">
-                    <input type="range" id="startCash" min="1000" max="500000" step="100" value="100000" list="askLimitMark">
+                    <input type="range" aria-label="Startbeløb (skyder)" id="startCash" min="1000" max="500000" step="100" value="100000" list="askLimitMark">
                     <datalist id="askLimitMark">
                         <option value="174200"></option>
                     </datalist>
@@ -108,15 +109,15 @@
                 </div>
 
                 <div class="field">
-                    <label>Antal år</label>
-                    <input type="number" id="yearsNumber" class="number-input" value="25">
-                    <input type="range" id="years" min="1" max="60" step="1" value="25">
+                    <label for="yearsNumber">Antal år</label>
+                    <input type="number" id="yearsNumber" min="1" max="80" class="number-input" value="25">
+                    <input type="range" aria-label="Antal år (skyder)" id="years" min="1" max="60" step="1" value="25">
                 </div>
 
                 <div class="field">
-                    <label>Forventet årligt afkast</label>
-                    <input type="number" id="yearlyReturnNumber" class="number-input" value="8" step="0.1">
-                    <input type="range" id="yearlyReturn" min="1" max="15" step="0.1" value="8">
+                    <label for="yearlyReturnNumber">Forventet årligt afkast</label>
+                    <input type="number" id="yearlyReturnNumber" min="-20" max="30" class="number-input" value="8" step="0.1">
+                    <input type="range" aria-label="Forventet årligt afkast (skyder)" id="yearlyReturn" min="1" max="15" step="0.1" value="8">
                 </div>
 
                 <label class="toggle-row">
@@ -130,9 +131,9 @@
                 </label>
 
                 <div class="field" id="inflationField" style="display:none;">
-                    <label>Forventet inflation</label>
-                    <input type="number" id="inflationNumber" class="number-input" value="2" step="0.1">
-                    <input type="range" id="inflation" min="0" max="8" step="0.1" value="2">
+                    <label for="inflationNumber">Forventet inflation</label>
+                    <input type="number" id="inflationNumber" min="-5" max="20" class="number-input" value="2" step="0.1">
+                    <input type="range" aria-label="Forventet inflation (skyder)" id="inflation" min="0" max="8" step="0.1" value="2">
                 </div>
             </div>
 
@@ -211,27 +212,27 @@
                 <div class="eyebrow">Parametre</div>
 
                 <div class="field">
-                    <label>Startbeløb</label>
+                    <label for="startCash2Number">Startbeløb</label>
                     <input type="number" id="startCash2Number" class="number-input" value="0" min="0" step="1000">
-                    <input type="range" id="startCash2" min="0" max="1000000" step="5000" value="0">
+                    <input type="range" aria-label="Startbeløb (skyder)" id="startCash2" min="0" max="1000000" step="5000" value="0">
                 </div>
 
                 <div class="field">
-                    <label>Månedlig investering</label>
+                    <label for="monthlyAmount2Number">Månedlig investering</label>
                     <input type="number" id="monthlyAmount2Number" class="number-input" value="3000" min="0" step="100">
-                    <input type="range" id="monthlyAmount2" min="0" max="20000" step="100" value="3000">
+                    <input type="range" aria-label="Månedlig investering (skyder)" id="monthlyAmount2" min="0" max="20000" step="100" value="3000">
                 </div>
 
                 <div class="field">
-                    <label>Antal år</label>
-                    <input type="number" id="years2Number" class="number-input" value="25">
-                    <input type="range" id="years2" min="1" max="60" step="1" value="25">
+                    <label for="years2Number">Antal år</label>
+                    <input type="number" id="years2Number" min="1" max="80" class="number-input" value="25">
+                    <input type="range" aria-label="Antal år (skyder)" id="years2" min="1" max="60" step="1" value="25">
                 </div>
 
                 <div class="field">
-                    <label>Forventet årligt afkast</label>
-                    <input type="number" id="yearlyReturn2Number" class="number-input" value="8" step="0.1">
-                    <input type="range" id="yearlyReturn2" min="1" max="15" step="0.1" value="8">
+                    <label for="yearlyReturn2Number">Forventet årligt afkast</label>
+                    <input type="number" id="yearlyReturn2Number" min="-20" max="30" class="number-input" value="8" step="0.1">
+                    <input type="range" aria-label="Forventet årligt afkast (skyder)" id="yearlyReturn2" min="1" max="15" step="0.1" value="8">
                 </div>
 
                 <div id="tool2InflationRow" style="display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-top:16px;">
@@ -241,9 +242,9 @@
                     </label>
 
                     <div class="field" id="inflationField2" style="display:none; flex:1; min-width:180px; margin:0;">
-                        <label>Forventet inflation</label>
-                        <input type="number" id="inflation2Number" class="number-input" value="2" step="0.1">
-                        <input type="range" id="inflation2" min="0" max="8" step="0.1" value="2">
+                        <label for="inflation2Number">Forventet inflation</label>
+                        <input type="number" id="inflation2Number" min="-5" max="20" class="number-input" value="2" step="0.1">
+                        <input type="range" aria-label="Forventet inflation (skyder)" id="inflation2" min="0" max="8" step="0.1" value="2">
                     </div>
                 </div>
             </div>
@@ -322,33 +323,33 @@
                 <div class="eyebrow">Parametre</div>
 
                 <div class="field">
-                    <label>Årligt forbrug (i dagens penge)</label>
+                    <label for="expenses3Number">Årligt forbrug (i dagens penge)</label>
                     <input type="number" id="expenses3Number" class="number-input" value="300000" min="0" step="1000">
-                    <input type="range" id="expenses3" min="50000" max="1000000" step="5000" value="300000">
+                    <input type="range" aria-label="Årligt forbrug (i dagens penge) (skyder)" id="expenses3" min="50000" max="1000000" step="5000" value="300000">
                 </div>
 
                 <div class="field">
-                    <label>Nuværende opsparing</label>
+                    <label for="startCash3Number">Nuværende opsparing</label>
                     <input type="number" id="startCash3Number" class="number-input" value="100000" min="0" step="1000">
-                    <input type="range" id="startCash3" min="0" max="2000000" step="10000" value="100000">
+                    <input type="range" aria-label="Nuværende opsparing (skyder)" id="startCash3" min="0" max="2000000" step="10000" value="100000">
                 </div>
 
                 <div class="field">
-                    <label>Månedlig investering</label>
+                    <label for="monthlyAmount3Number">Månedlig investering</label>
                     <input type="number" id="monthlyAmount3Number" class="number-input" value="5000" min="0" step="100">
-                    <input type="range" id="monthlyAmount3" min="0" max="30000" step="500" value="5000">
+                    <input type="range" aria-label="Månedlig investering (skyder)" id="monthlyAmount3" min="0" max="30000" step="500" value="5000">
                 </div>
 
                 <div class="field">
-                    <label>Forventet årligt afkast</label>
-                    <input type="number" id="yearlyReturn3Number" class="number-input" value="7" step="0.1">
-                    <input type="range" id="yearlyReturn3" min="1" max="15" step="0.1" value="7">
+                    <label for="yearlyReturn3Number">Forventet årligt afkast</label>
+                    <input type="number" id="yearlyReturn3Number" min="-20" max="30" class="number-input" value="7" step="0.1">
+                    <input type="range" aria-label="Forventet årligt afkast (skyder)" id="yearlyReturn3" min="1" max="15" step="0.1" value="7">
                 </div>
 
                 <div class="field">
-                    <label>Forventet inflation</label>
-                    <input type="number" id="inflation3Number" class="number-input" value="2" step="0.1">
-                    <input type="range" id="inflation3" min="0" max="8" step="0.1" value="2">
+                    <label for="inflation3Number">Forventet inflation</label>
+                    <input type="number" id="inflation3Number" min="-5" max="20" class="number-input" value="2" step="0.1">
+                    <input type="range" aria-label="Forventet inflation (skyder)" id="inflation3" min="0" max="8" step="0.1" value="2">
                 </div>
 
                 <label class="toggle-row">
@@ -445,31 +446,31 @@
                 <div class="eyebrow">Nyt datapunkt</div>
 
                 <div class="field">
-                    <label>Dato</label>
+                    <label for="ptDate">Dato</label>
                     <input type="date" id="ptDate" class="number-input">
                 </div>
                 <div class="field">
-                    <label>Værdi af portefølje (udregnes automatisk)</label>
+                    <label for="ptPortfolioValue">Værdi af portefølje (udregnes automatisk)</label>
                     <input type="number" id="ptPortfolioValue" class="number-input" value="0" readonly style="opacity:0.7; cursor:not-allowed;">
                 </div>
                 <div class="field">
-                    <label>Værdi af aktier</label>
+                    <label for="ptStockValue">Værdi af aktier</label>
                     <input type="number" id="ptStockValue" class="number-input" value="0" min="0" step="500">
                 </div>
                 <div class="field">
-                    <label>Kontantbeholdning</label>
+                    <label for="ptCash">Kontantbeholdning</label>
                     <input type="number" id="ptCash" class="number-input" value="0" min="0" step="500">
                 </div>
                 <div class="field">
-                    <label>Købt/solgt (denne periode, negativ ved netto-salg)</label>
+                    <label for="ptTraded">Købt/solgt (denne periode, negativ ved netto-salg)</label>
                     <input type="number" id="ptTraded" class="number-input" value="0" step="500">
                 </div>
                 <div class="field">
-                    <label>Indskud/udbetaling (denne periode, negativ ved udbetaling)</label>
+                    <label for="ptDeposit">Indskud/udbetaling (denne periode, negativ ved udbetaling)</label>
                     <input type="number" id="ptDeposit" class="number-input" value="0" step="500">
                 </div>
                 <div class="field">
-                    <label>Udbytte efter skat (denne periode)</label>
+                    <label for="ptDividend">Udbytte efter skat (denne periode)</label>
                     <input type="number" id="ptDividend" class="number-input" value="0" min="0" step="100">
                 </div>
 
@@ -578,11 +579,11 @@
                 </div>
                 <div class="field">
                     <label for="penReturn">Forventet årligt afkast (%)</label>
-                    <input type="number" id="penReturn" class="number-input" value="6" step="0.1">
+                    <input type="number" id="penReturn" min="-20" max="30" class="number-input" value="6" step="0.1">
                 </div>
                 <div class="field">
                     <label for="penCosts">Årlige omkostninger, ÅOP (%)</label>
-                    <input type="number" id="penCosts" class="number-input" value="0.6" min="0" step="0.1">
+                    <input type="number" id="penCosts" min="0" max="5" class="number-input" value="0.6" step="0.1">
                 </div>
                 <div class="field">
                     <label for="penPayoutYears">Udbetalingsperiode (år)</label>
@@ -596,7 +597,7 @@
                 </div>
                 <div class="field">
                     <label for="penInflation">Forventet inflation (%)</label>
-                    <input type="number" id="penInflation" class="number-input" value="2" step="0.1">
+                    <input type="number" id="penInflation" min="-5" max="20" class="number-input" value="2" step="0.1">
                 </div>
             </div>
 
@@ -691,10 +692,10 @@
                 <details>
                     <summary class="summary-toggle">Renter, løbetid og omkostninger</summary>
                     <div class="details-body">
-                        <div class="field"><label for="lcRkRate">Realkreditrente (%)</label><input type="number" id="lcRkRate" class="number-input" value="4" min="0" step="0.1"></div>
-                        <div class="field"><label for="lcBidrag">Bidragssats (%)</label><input type="number" id="lcBidrag" class="number-input" value="0.75" min="0" step="0.05"></div>
+                        <div class="field"><label for="lcRkRate">Realkreditrente (%)</label><input type="number" id="lcRkRate" min="0" max="20" class="number-input" value="4" step="0.1"></div>
+                        <div class="field"><label for="lcBidrag">Bidragssats (%)</label><input type="number" id="lcBidrag" min="0" max="3" class="number-input" value="0.75" step="0.05"></div>
                         <div class="field"><label for="lcRkYears">Løbetid, realkredit (år)</label><input type="number" id="lcRkYears" class="number-input" value="30" min="1" max="30" step="1"></div>
-                        <div class="field"><label for="lcBankRate">Rente, banklån (%)</label><input type="number" id="lcBankRate" class="number-input" value="6.5" min="0" step="0.1"></div>
+                        <div class="field"><label for="lcBankRate">Rente, banklån (%)</label><input type="number" id="lcBankRate" min="0" max="25" class="number-input" value="6.5" step="0.1"></div>
                         <div class="field"><label for="lcBankYears">Løbetid, banklån (år)</label><input type="number" id="lcBankYears" class="number-input" value="20" min="1" max="30" step="1"></div>
                         <div class="field"><label for="lcOtherCosts">Andre købsomkostninger (kr.)</label><input type="number" id="lcOtherCosts" class="number-input" value="25000" min="0" step="1000"><div class="limit-hint">Køberrådgiver, tilstandsrapport, gebyrer. Tinglysning regnes selv</div></div>
                     </div>
@@ -739,28 +740,28 @@
                 <div class="field"><label for="brDown">Udbetaling (kr.)</label><input type="number" id="brDown" class="number-input" value="300000" min="0" step="10000"><div class="limit-hint" id="brDownHint"></div></div>
                 <div class="field"><label for="brOwnerCosts">Ejerudgifter pr. måned (kr.)</label><input type="number" id="brOwnerCosts" class="number-input" value="2000" min="0" step="100"><div class="limit-hint">Forsikring, fællesudgifter, grundejerforening</div></div>
                 <div class="field"><label for="brPropertyTax">Boligskat pr. år (kr.)</label><input type="number" id="brPropertyTax" class="number-input" value="20000" min="0" step="1000"><div class="limit-hint">Ejendomsværdiskat + grundskyld – se vurderingsportalen.dk</div></div>
-                <div class="field"><label for="brMaintenance">Vedligehold pr. år (% af værdien)</label><input type="number" id="brMaintenance" class="number-input" value="1" min="0" step="0.1"></div>
-                <div class="field"><label for="brPriceGrowth">Boligprisstigning pr. år (%)</label><input type="number" id="brPriceGrowth" class="number-input" value="2" step="0.1"></div>
+                <div class="field"><label for="brMaintenance">Vedligehold pr. år (% af værdien)</label><input type="number" id="brMaintenance" min="0" max="10" class="number-input" value="1" step="0.1"></div>
+                <div class="field"><label for="brPriceGrowth">Boligprisstigning pr. år (%)</label><input type="number" id="brPriceGrowth" min="-20" max="30" class="number-input" value="2" step="0.1"></div>
 
                 <div class="eyebrow eyebrow-section">Leje</div>
                 <div class="field"><label for="brRent">Husleje pr. måned (kr.)</label><input type="number" id="brRent" class="number-input" value="13000" min="0" step="100"></div>
-                <div class="field"><label for="brRentGrowth">Lejestigning pr. år (%)</label><input type="number" id="brRentGrowth" class="number-input" value="2" step="0.1"></div>
+                <div class="field"><label for="brRentGrowth">Lejestigning pr. år (%)</label><input type="number" id="brRentGrowth" min="-20" max="30" class="number-input" value="2" step="0.1"></div>
                 <div class="field"><label for="brDeposit">Depositum (måneders husleje)</label><input type="number" id="brDeposit" class="number-input" value="3" min="0" max="3" step="1"></div>
 
                 <div class="eyebrow eyebrow-section">Øvrigt</div>
-                <div class="field"><label for="brReturn">Afkast på investeringer efter skat (%)</label><input type="number" id="brReturn" class="number-input" value="5" step="0.1"></div>
+                <div class="field"><label for="brReturn">Afkast på investeringer efter skat (%)</label><input type="number" id="brReturn" min="-20" max="30" class="number-input" value="5" step="0.1"></div>
                 <div class="field"><label for="brYears">Antal år</label><input type="number" id="brYears" class="number-input" value="15" min="1" max="40" step="1"></div>
                 <div class="field"><label for="brAdults">Antal voksne</label><select id="brAdults" class="number-input"><option value="1">1</option><option value="2" selected>2</option></select></div>
                 <details>
                     <summary class="summary-toggle">Lån og omkostninger</summary>
                     <div class="details-body">
-                        <div class="field"><label for="brRkRate">Realkreditrente (%)</label><input type="number" id="brRkRate" class="number-input" value="4" min="0" step="0.1"></div>
-                        <div class="field"><label for="brBidrag">Bidragssats (%)</label><input type="number" id="brBidrag" class="number-input" value="0.75" min="0" step="0.05"></div>
+                        <div class="field"><label for="brRkRate">Realkreditrente (%)</label><input type="number" id="brRkRate" min="0" max="20" class="number-input" value="4" step="0.1"></div>
+                        <div class="field"><label for="brBidrag">Bidragssats (%)</label><input type="number" id="brBidrag" min="0" max="3" class="number-input" value="0.75" step="0.05"></div>
                         <div class="field"><label for="brRkYears">Løbetid, realkredit (år)</label><input type="number" id="brRkYears" class="number-input" value="30" min="1" max="30" step="1"></div>
-                        <div class="field"><label for="brBankRate">Rente, banklån (%)</label><input type="number" id="brBankRate" class="number-input" value="6.5" min="0" step="0.1"></div>
+                        <div class="field"><label for="brBankRate">Rente, banklån (%)</label><input type="number" id="brBankRate" min="0" max="25" class="number-input" value="6.5" step="0.1"></div>
                         <div class="field"><label for="brBankYears">Løbetid, banklån (år)</label><input type="number" id="brBankYears" class="number-input" value="20" min="1" max="30" step="1"></div>
                         <div class="field"><label for="brOtherCosts">Andre købsomkostninger (kr.)</label><input type="number" id="brOtherCosts" class="number-input" value="25000" min="0" step="1000"><div class="limit-hint">Tinglysning regnes automatisk</div></div>
-                        <div class="field"><label for="brSellCosts">Salgsomkostninger (% af salgsprisen)</label><input type="number" id="brSellCosts" class="number-input" value="2.5" min="0" step="0.1"><div class="limit-hint">Ejendomsmægler, markedsføring, advokat</div></div>
+                        <div class="field"><label for="brSellCosts">Salgsomkostninger (% af salgsprisen)</label><input type="number" id="brSellCosts" min="0" max="10" class="number-input" value="2.5" step="0.1"><div class="limit-hint">Ejendomsmægler, markedsføring, advokat</div></div>
                     </div>
                 </details>
             </div>
@@ -801,6 +802,7 @@
         <div class="layout">
             <div class="panel">
                 <div class="eyebrow">Dine lån</div>
+                <div class="save-status" id="debtSaveStatus" role="status">Gemmes automatisk i denne browser</div>
                 <div id="debtRows"></div>
                 <button class="btn btn-secondary" type="button" onclick="addDebt()">+ Tilføj lån</button>
                 <div class="field eyebrow-section">
@@ -868,9 +870,10 @@
 
         <div class="panel">
             <div class="eyebrow">Kategorier</div>
+            <div class="save-status" id="budgetSaveStatus" role="status">Gemmes automatisk i denne browser</div>
 
             <div class="field">
-                <label>Samlet beløb (valgfrit – udfyld for at se "Penge tilbage")</label>
+                <label for="budgetTotalInput">Samlet beløb (valgfrit – udfyld for at se "Penge tilbage")</label>
                 <input type="number" id="budgetTotalInput" class="number-input" value="0" min="0" step="100">
             </div>
 
@@ -943,33 +946,34 @@
 
         <div class="panel">
             <div class="eyebrow">Aktiver</div>
+            <div class="save-status" id="netWorthSaveStatus" role="status">Gemmes automatisk i denne browser</div>
 
             <div class="field">
-                <label>Kontanter & opsparingskonti</label>
+                <label for="netCatKontanter">Kontanter & opsparingskonti</label>
                 <input type="number" id="netCatKontanter" class="number-input" value="0" min="0" step="500">
                 <div class="limit-hint">Inkl. fysiske kontanter og kontanter i dit aktiedepot</div>
             </div>
             <div class="field">
-                <label>Aktier & værdipapirer</label>
+                <label for="netCatAktier">Aktier & værdipapirer</label>
                 <input type="number" id="netCatAktier" class="number-input" value="0" min="0" step="500">
                 <div class="limit-hint">Kun værdien af selve aktierne</div>
             </div>
             <div class="field">
-                <label>Pension</label>
+                <label for="netCatPension">Pension</label>
                 <input type="number" id="netCatPension" class="number-input" value="0" min="0" step="500">
             </div>
             <div class="field">
-                <label>Friværdi i bolig</label>
+                <label for="netCatFrivaerdi">Friværdi i bolig</label>
                 <input type="number" id="netCatFrivaerdi" class="number-input" value="0" min="0" step="500">
             </div>
             <div class="field">
-                <label>Andet</label>
+                <label for="netCatAndet">Andet</label>
                 <input type="number" id="netCatAndet" class="number-input" value="0" min="0" step="500">
             </div>
 
             <div class="eyebrow eyebrow-section">Gæld</div>
             <div class="field">
-                <label>Anden gæld (billån, forbrugslån mv. – ikke realkredit, den indgår allerede i friværdien)</label>
+                <label for="netDebt">Anden gæld (billån, forbrugslån mv. – ikke realkredit, den indgår allerede i friværdien)</label>
                 <input type="number" id="netDebt" class="number-input" value="0" min="0" step="500">
             </div>
         </div>
@@ -992,7 +996,7 @@
             </p>
 
             <div class="field" style="max-width:220px; margin-bottom:14px;">
-                <label>Dato</label>
+                <label for="snapshotDate">Dato</label>
                 <input type="date" id="snapshotDate" class="number-input">
             </div>
 
@@ -1073,7 +1077,7 @@
             </p>
 
             <div class="field" style="max-width:200px;">
-                <label>Din alder</label>
+                <label for="wealthAge">Din alder</label>
                 <input type="number" id="wealthAge" class="number-input" value="30" min="18" max="90">
             </div>
 
@@ -1100,7 +1104,7 @@
 </div>
     </div>
 
-        <aside class="ad-slot">
+        <aside class="ad-slot" hidden>
             <!-- Google AdSense-annonce (højre) indsættes her, når I har jeres AdSense-kode -->
             <!-- TODO: indsæt udgiver-ID i "ca-pub-xxxx..."-->
             <!-- TODO: indsæt data-ad-slot-nummer i 'data-ad-slot="xxxxx..."' -->

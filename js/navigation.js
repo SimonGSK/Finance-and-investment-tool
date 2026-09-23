@@ -119,6 +119,8 @@ function importAllData(event){
             confirmLabel:'Erstat og genindlæs', danger:true
         });
         if(!ok) return;
+        // Ældre backups kan indeholde 'budgetMode' fra en fjernet funktion.
+        if(backup.budgetData && typeof backup.budgetData === 'object') delete backup.budgetData.budgetMode;
         found.forEach(key => localStorage.setItem(key, JSON.stringify(backup[key])));
         location.reload();
     };
@@ -138,12 +140,29 @@ if(!localStorage.getItem('hasSeenIntroBanner')){
 }
 
 /**
- * Åbner eller lukker indstillingspanelet under tandhjulet.
+ * Åbner eller lukker indstillingspanelet under tandhjulet. Esc eller et klik
+ * uden for panelet lukker det også.
+ * @param {boolean} [open] tving åben/lukket; udeladt skifter
  */
-function toggleSettings(){
+function toggleSettings(open){
     const panel = document.getElementById('settingsPanel');
-    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    const btn = document.getElementById('settingsBtn');
+    const show = open ?? panel.style.display === 'none';
+    panel.style.display = show ? 'block' : 'none';
+    btn.setAttribute('aria-expanded', String(show));
 }
+
+document.addEventListener('keydown', e => {
+    if(e.key === 'Escape' && document.getElementById('settingsPanel').style.display !== 'none' && !document.querySelector('dialog[open]')){
+        toggleSettings(false);
+        document.getElementById('settingsBtn').focus();
+    }
+});
+document.addEventListener('click', e => {
+    const panel = document.getElementById('settingsPanel');
+    if(panel.style.display === 'none') return;
+    if(!panel.contains(e.target) && !document.getElementById('settingsBtn').contains(e.target) && !e.target.closest('dialog')) toggleSettings(false);
+});
 
 document.getElementById('doubleDeduction').addEventListener('change', () => {
     setDoubleDeduction(document.getElementById('doubleDeduction').checked);
