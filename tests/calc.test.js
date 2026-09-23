@@ -14,7 +14,10 @@ const {
     monthlyAmount, categoryTotal, budgetSummary,
     upsertByDate, mergeByDate, changedFields, normalizeDate,
     CEPOS_WEALTH_TABLE, findNearestWealthRow, estimatePercentile,
-    parseDanishAmount, findHeaderRowIndex, parseCSV
+    parseDanishAmount, findHeaderRowIndex, parseCSV,
+    annuityPayment, purchaseCosts, loanSplit, interestDeductionValue, loanCapacity,
+    simulateBuyVsRent, simulateDebtPayoff,
+    PAL_SKAT, PENSION_LIMITS_2026, folkepensionAge, simulatePension
 } = calc;
 
 const approx = (actual, expected, tolerance = 1e-6) =>
@@ -337,5 +340,184 @@ describe('CSV', () => {
     test('springer tomme linjer over', () => {
         assert.deepEqual(parseCSV('a;b\n\n1;2\n   \n'), [['a', 'b'], ['1', '2']]);
         assert.deepEqual(parseCSV(''), []);
+    });
+});
+
+describe('bolig og lån: grundelementer', () => {
+    test('annuitetsydelse matcher den kendte formel', () => {
+        approx(annuityPayment(1000000, 0.04, 30), 4774.153, 0.001);
+        approx(annuityPayment(120000, 0, 10), 1000);
+        assert.equal(annuityPayment(0, 0.05, 30), 0);
+    });
+
+    test('tinglysning 2026: skøde 1.850 + 0,6 %, pant 1.825 + 1,25 % pr. lån', () => {
+        assert.deepEqual(purchaseCosts(3000000, 2400000, 450000, 0), { skoede: 19850, pant: 39275, other: 0, total: 59125 });
+        assert.equal(purchaseCosts(2000000, 0, 0, 15000).total, 1850 + 12000 + 15000);
+    });
+
+    test('realkredit højst 80 % af prisen, resten i banken', () => {
+        assert.deepEqual(loanSplit(3000000, 150000), { loan: 2850000, realkredit: 2400000, bank: 450000 });
+        assert.deepEqual(loanSplit(3000000, 1000000), { loan: 2000000, realkredit: 2000000, bank: 0 });
+        assert.deepEqual(loanSplit(1000000, 2000000), { loan: 0, realkredit: 0, bank: 0 });
+    });
+
+    test('rentefradrag: 33 % op til 50.000 kr. pr. voksen, 25 % derover', () => {
+        assert.equal(interestDeductionValue(40000, 1), 13200);
+        approx(interestDeductionValue(80000, 1), 50000 * 0.33 + 30000 * 0.25);
+        assert.equal(interestDeductionValue(80000, 2), 26400);
+        assert.equal(interestDeductionValue(-5, 1), 0);
+    });
+});
+
+describe('hvor meget kan jeg låne', () => {
+    const base = { income: 900000, savings: 400000, existingDebt: 50000, debtFactorLimit: 4, maxMonthlyPayment: 0,
+        realkreditRate: 0.04, bidragssats: 0.0075, realkreditYears: 30, bankRate: 0.065, bankYears: 20, otherCosts: 25000 };
+
+    test('gældsfaktoren begrænser: 4 × 900.000 - 50.000 i lån', () => {
+        const r = loanCapacity(base);
+        assert.equal(r.binding, 'debtFactor');
+        assert.equal(r.maxPrice, 3852000);
+        approx(r.details.debtFactor, 4, 0.001);
+        approx(r.details.loan, 3550000, 1000);
+    });
+
+    test('lille opsparing: udbetalingen på 5 % begrænser', () => {
+        const r = loanCapacity({ ...base, savings: 100000, income: 2000000 });
+        assert.equal(r.binding, 'downPayment');
+        assert.ok(r.details.downPayment >= 0.05 * r.maxPrice);
+        assert.ok(loanCapacity({ ...base, savings: 100000, income: 2000000 }).maxPrice < 100000 / 0.05);
+    });
+
+    test('ydelsesgrænsen overholdes, når den er sat', () => {
+        const r = loanCapacity({ ...base, maxMonthlyPayment: 12000 });
+        assert.equal(r.binding, 'payment');
+        assert.ok(r.details.monthly <= 12000);
+        const above = loanCapacity({ ...base, maxMonthlyPayment: 12000 });
+        assert.ok(above.limits.payment < above.limits.debtFactor);
+    });
+
+    test('ved maksprisen er alle krav opfyldt', () => {
+        for(const variant of [base, { ...base, savings: 150000 }, { ...base, maxMonthlyPayment: 15000 }, { ...base, existingDebt: 0, income: 500000 }]){
+            const r = loanCapacity(variant);
+            const d = r.details;
+            assert.ok(d.downPayment >= 0.05 * r.maxPrice - 1, 'udbetaling');
+            assert.ok(d.debtFactor <= variant.debtFactorLimit + 1e-9, 'gældsfaktor');
+            if(variant.maxMonthlyPayment) assert.ok(d.monthly <= variant.maxMonthlyPayment + 1e-6, 'ydelse');
+        }
+    });
+
+    test('opsparing, der ikke dækker omkostningerne, giver 0', () => {
+        assert.equal(loanCapacity({ ...base, savings: 20000 }).maxPrice, 0);
+    });
+});
+
+describe('køb eller leje', () => {
+    const zero = { realkreditRate: 0, bidragssats: 0, realkreditYears: 30, bankRate: 0, bankYears: 20,
+        propertyTaxYearly: 0, maintenancePct: 0, ownerCostsMonthly: 0, priceGrowth: 0, otherBuyCosts: 0,
+        sellCostsPct: 0, rentGrowth: 0, depositMonths: 3, investReturn: 0, adults: 1 };
+
+    test('kontantkøb uden udgifter: køber sparer præcis huslejen', () => {
+        const r = simulateBuyVsRent({ ...zero, price: 1000000, downPayment: 1000000, rentMonthly: 5000, years: 1 });
+        const skoede = 1850 + 6000;
+        assert.equal(r.upfront, 1000000 + skoede);
+        assert.equal(r.final.buyer, 1000000 + 12 * 5000);           // boligen + investeret husleje-besparelse
+        assert.equal(r.final.renter, 1000000 + skoede);              // hele startformuen, depositum retur
+        assert.equal(r.breakEvenYear, 1);
+    });
+
+    test('begge starter med samme formue minus køberens omkostninger', () => {
+        const r = simulateBuyVsRent({ ...zero, price: 2000000, downPayment: 100000, rentMonthly: 8000, years: 5 });
+        approx(r.series[0].renter - r.series[0].buyer, r.costs.total, 1e-6);
+    });
+
+    test('lån afdrages og restgælden falder', () => {
+        const r = simulateBuyVsRent({ ...zero, realkreditRate: 0.04, bankRate: 0.06, price: 3000000, downPayment: 150000, rentMonthly: 12000, years: 10 });
+        for(let i = 1; i < r.series.length; i++) assert.ok(r.series[i].debt < r.series[i - 1].debt);
+    });
+
+    test('højere boligprisstigning favoriserer køb', () => {
+        const p = { ...zero, realkreditRate: 0.04, price: 3000000, downPayment: 300000, rentMonthly: 13000, investReturn: 0.05, years: 15 };
+        const low = simulateBuyVsRent({ ...p, priceGrowth: 0 });
+        const high = simulateBuyVsRent({ ...p, priceGrowth: 0.04 });
+        assert.ok(high.final.buyer - high.final.renter > low.final.buyer - low.final.renter);
+    });
+});
+
+describe('gældsafvikling', () => {
+    test('rentefrit lån betales af på præcis antal måneder', () => {
+        const r = simulateDebtPayoff([{ name: 'A', balance: 12000, rate: 0, minPayment: 1000 }], 0, 'avalanche');
+        assert.equal(r.feasible, true);
+        assert.equal(r.months, 12);
+        assert.equal(r.totalInterest, 0);
+        assert.equal(r.balances.length, 13);
+        assert.equal(r.balances.at(-1), 0);
+    });
+
+    test('lavine giver aldrig mere rente end snebold', () => {
+        const debts = [
+            { name: 'Kreditkort', balance: 10000, rate: 0.20, minPayment: 200 },
+            { name: 'Billån', balance: 2000, rate: 0.05, minPayment: 100 },
+            { name: 'Forbrugslån', balance: 30000, rate: 0.12, minPayment: 600 }
+        ];
+        const av = simulateDebtPayoff(debts, 500, 'avalanche');
+        const sb = simulateDebtPayoff(debts, 500, 'snowball');
+        const min = simulateDebtPayoff(debts, 500, 'minimum');
+        assert.ok(av.totalInterest <= sb.totalInterest);
+        assert.ok(sb.totalInterest < min.totalInterest);
+        assert.ok(av.months <= min.months);
+        assert.equal(sb.payoff[0].name, 'Billån');            // mindste restgæld først
+        assert.equal(av.payoff[0].name, 'Kreditkort');         // højeste rente først
+    });
+
+    test('ydelse under renten bliver aldrig betalt', () => {
+        const r = simulateDebtPayoff([{ name: 'A', balance: 100000, rate: 0.24, minPayment: 1000 }], 0, 'avalanche');
+        assert.equal(r.feasible, false);
+        assert.equal(r.months, null);
+    });
+
+    test('restgælden falder hver måned, når ydelsen dækker renten', () => {
+        const r = simulateDebtPayoff([{ name: 'A', balance: 50000, rate: 0.08, minPayment: 1500 }], 200, 'snowball');
+        for(let i = 1; i < r.balances.length; i++) assert.ok(r.balances[i] < r.balances[i - 1]);
+    });
+});
+
+describe('pension', () => {
+    test('satser 2026', () => {
+        assert.equal(PAL_SKAT, 0.153);
+        assert.deepEqual(PENSION_LIMITS_2026, { aldersopsparing: 9900, aldersopsparingNearPension: 64200, ratepension: 68700 });
+    });
+
+    test('folkepensionsalder: 67-70 er vedtaget, derover skøn', () => {
+        assert.deepEqual(folkepensionAge(1960), { age: 67, legislated: true });
+        assert.deepEqual(folkepensionAge(1963), { age: 68, legislated: true });
+        assert.deepEqual(folkepensionAge(1970), { age: 69, legislated: true });
+        assert.deepEqual(folkepensionAge(1971), { age: 70, legislated: true });
+        assert.deepEqual(folkepensionAge(1976), { age: 71, legislated: false });
+        assert.deepEqual(folkepensionAge(1987, 6), { age: 72.5, legislated: false });
+        assert.deepEqual(folkepensionAge(1987, 7), { age: 73, legislated: false });
+        assert.deepEqual(folkepensionAge(2000), { age: 74, legislated: false });
+    });
+
+    test('uden afkast er formuen opsparing + indbetalinger, fordelt jævnt ud', () => {
+        const r = simulatePension({ currentAge: 60, retirementAge: 65, currentSavings: 100000, monthlyContribution: 1000,
+            annualReturn: 0, annualCosts: 0, inflation: 0, payoutYears: 10, payoutTaxRate: 0 });
+        assert.equal(r.balanceAtRetirement, 160000);
+        assert.equal(r.totalContributions, 60000);
+        approx(r.monthlyPayoutGross, 160000 / 120);
+    });
+
+    test('afkast efter omkostninger og PAL-skat', () => {
+        const r = simulatePension({ currentAge: 50, retirementAge: 51, currentSavings: 100000, monthlyContribution: 0,
+            annualReturn: 0.10, annualCosts: 0, inflation: 0, payoutYears: 10, payoutTaxRate: 0 });
+        approx(r.netAnnualReturn, 0.0847);
+        approx(r.balanceAtRetirement, 108470, 1e-6);
+    });
+
+    test('udbetalingen tømmer præcis formuen, og skat trækkes fra netto', () => {
+        const r = simulatePension({ currentAge: 30, retirementAge: 69, currentSavings: 100000, monthlyContribution: 4000,
+            annualReturn: 0.06, annualCosts: 0.006, inflation: 0.02, payoutYears: 20, payoutTaxRate: 0.37 });
+        approx(r.series.at(-1).balance, 0, 1e-3);
+        approx(r.monthlyPayoutNet, r.monthlyPayoutGross * 0.63);
+        assert.ok(r.balanceAtRetirementReal < r.balanceAtRetirement);
     });
 });

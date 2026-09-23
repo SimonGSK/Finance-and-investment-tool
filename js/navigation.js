@@ -4,64 +4,69 @@
  */
 
 /**
- * Viser ét af de fire investeringsværktøjer og skjuler de andre. Sørger også
- * for at den viste graf får målt sin størrelse - Chart.js kan ikke måle en
- * graf, der var skjult, da den blev tegnet.
- * @param {1|2|3|4} n
+ * Gentegner de synlige grafer i en container. Chart.js kan ikke måle en graf,
+ * der var skjult, da den blev tegnet, så det skal ske, når den bliver vist.
+ * @param {HTMLElement} container
+ */
+function resizeChartsIn(container){
+    container.querySelectorAll('canvas').forEach(canvas => {
+        if(canvas.offsetParent !== null) Chart.getChart(canvas)?.resize();
+    });
+}
+
+/**
+ * Viser ét værktøj i en gruppe af faner og skjuler de andre.
+ * @param {string} toolPrefix fx 'tool' for #tool1, #tool2 ...
+ * @param {string} buttonPrefix fx 'tabBtn' for #tabBtn1 ...
+ * @param {number} n
+ */
+function showToolIn(toolPrefix, buttonPrefix, n){
+    for(let i = 1; document.getElementById(toolPrefix + i); i++){
+        document.getElementById(toolPrefix + i).style.display = i === n ? 'block' : 'none';
+        document.getElementById(buttonPrefix + i)?.classList.toggle('active', i === n);
+    }
+    resizeChartsIn(document.getElementById(toolPrefix + n));
+}
+
+/**
+ * Viser et af investeringsværktøjerne. "Dobbelt fradrag" gælder kun de to
+ * første og flyttes derfor ind i det værktøj, der vises.
+ * @param {number} n 1 ASK vs. depot, 2 månedligt depot, 3 FIRE, 4 portefølje, 5 pension
  */
 function showTool(n){
-    document.getElementById('tool1').style.display = n===1 ? 'block' : 'none';
-    document.getElementById('tool2').style.display = n===2 ? 'block' : 'none';
-    document.getElementById('tool3').style.display = n===3 ? 'block' : 'none';
-    document.getElementById('tool4').style.display = n===4 ? 'block' : 'none';
-    document.getElementById('tabBtn1').classList.toggle('active', n===1);
-    document.getElementById('tabBtn2').classList.toggle('active', n===2);
-    document.getElementById('tabBtn3').classList.toggle('active', n===3);
-    document.getElementById('tabBtn4').classList.toggle('active', n===4);
-
+    showToolIn('tool', 'tabBtn', n);
     const ddRow = document.getElementById('doubleDeductionRow');
-    if(n===1){
+    if(n === 1){
         document.getElementById('payTaxExternally').closest('.toggle-row').insertAdjacentElement('afterend', ddRow);
-    } else if(n===2){
+    } else if(n === 2){
         document.getElementById('tool2InflationRow').insertAdjacentElement('afterend', ddRow);
     }
-    ddRow.style.display = (n===1 || n===2) ? 'flex' : 'none';
+    ddRow.style.display = (n === 1 || n === 2) ? 'flex' : 'none';
+}
 
-    if(n===1) chart.resize();
-    if(n===2) chart2.resize();
-    if(n===3) chart3.resize();
-    if(n===4){ ptChart1.resize(); ptChart2.resize(); ptChart3.resize(); ptChart4.resize(); }
+/**
+ * Viser et af værktøjerne under "Bolig & lån".
+ * @param {number} n 1 låneevne, 2 køb eller leje, 3 gældsafvikling
+ */
+function showHousingTool(n){
+    showToolIn('housing', 'housingTabBtn', n);
 }
 
 showTool(1);
 
 /**
- * Skifter mellem de tre hovedsektioner og gentegner sektionens grafer, så de
- * får den rigtige størrelse efter at have været skjult.
- * @param {'tools'|'budget'|'formue'} name
+ * Skifter hovedsektion og gentegner dens synlige grafer.
+ * @param {'tools'|'housing'|'budget'|'formue'} name
  */
 function showSection(name){
-    document.getElementById('section-tools').style.display = name==='tools' ? 'block' : 'none';
-    document.getElementById('section-budget').style.display = name==='budget' ? 'block' : 'none';
-    document.getElementById('section-formue').style.display = name==='formue' ? 'block' : 'none';
-    document.getElementById('topTabBtn1').classList.toggle('active', name==='tools');
-    document.getElementById('topTabBtn2').classList.toggle('active', name==='budget');
-    document.getElementById('topTabBtn3').classList.toggle('active', name==='formue');
-
-    if(name==='tools'){
-        const tool1Visible = document.getElementById('tool1').style.display !== 'none';
-        const tool2Visible = document.getElementById('tool2').style.display !== 'none';
-        const tool3Visible = document.getElementById('tool3').style.display !== 'none';
-        if(tool1Visible){ chart.resize(); }
-        else if(tool2Visible){ chart2.resize(); }
-        else if(tool3Visible){ chart3.resize(); }
-        else { ptChart1.resize(); ptChart2.resize(); ptChart3.resize(); ptChart4.resize(); }
-    }
-    if(name==='budget'){ budgetChart.resize(); }
-    if(name==='formue'){ netWorthChart.resize(); netWorthHistoryChart.resize(); if(netWorthCompositionChart) netWorthCompositionChart.resize(); }
+    document.querySelectorAll('[id^="section-"]').forEach(section => {
+        section.style.display = section.id === 'section-' + name ? 'block' : 'none';
+    });
+    document.querySelectorAll('.top-tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.section === name));
+    resizeChartsIn(document.getElementById('section-' + name));
 }
 
-const BACKUP_KEYS = ['budgetItems', 'budgetData', 'budgetCustomCategories', 'netWorthData', 'netWorthHistory', 'portfolioHistory', 'monthlyStatusLast'];
+const BACKUP_KEYS = ['budgetItems', 'budgetData', 'budgetCustomCategories', 'netWorthData', 'netWorthHistory', 'portfolioHistory', 'monthlyStatusLast', 'debtPayoffData'];
 
 /**
  * Downloader alle gemte data (budget, formue, historik, portefølje) som én

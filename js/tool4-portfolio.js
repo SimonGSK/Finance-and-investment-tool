@@ -4,36 +4,6 @@
  * og vises i fire grafer og en tabel. Kan importeres/eksporteres som CSV.
  */
 
-/**
- * Fælles Chart.js-opsætning for de fire porteføljegrafer: temafarver, mono-akser,
- * tooltip der viser alle serier for en dato.
- * @param {(c: object) => string} tooltipLabelFn formaterer én tooltip-linje
- * @returns {object} options-objekt til `new Chart`
- */
-function lineChartOptions(tooltipLabelFn){
-    return {
-        responsive:true,
-        maintainAspectRatio:false,
-        animation:{duration:250},
-        interaction:{mode:'index', intersect:false},
-        plugins:{
-            legend:{display:false},
-            tooltip:{
-                backgroundColor:CHART_COLOR('--tooltip-bg'),
-                borderColor:CHART_COLOR('--border'),
-                borderWidth:1,
-                titleColor:CHART_COLOR('--text'),
-                bodyColor:CHART_COLOR('--text'),
-                callbacks:{ label: tooltipLabelFn }
-            }
-        },
-        scales:{
-            x:{ grid:{color:CHART_COLOR('--chart-grid')}, ticks:{color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-mono'), size:11}} },
-            y:{ grid:{color:CHART_COLOR('--chart-grid')}, ticks:{color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-mono'), size:11}, callback: v => DK.format(v)} }
-        }
-    };
-}
-
 const ptTooltipLabel = c => `${c.dataset.label}: ${DK.format(c.raw)} kr.`;
 
 const ptCtx1 = document.getElementById('ptChart1').getContext('2d');
