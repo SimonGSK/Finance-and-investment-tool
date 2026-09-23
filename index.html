@@ -58,6 +58,7 @@
 
                 <div class="eyebrow" style="margin-top:18px; margin-bottom:10px;">Data</div>
                 <p class="explainer" style="margin:0 0 10px 0; padding-top:0; border-top:none;">Download for at gemme alle dine Budget-, Formue- og Portefølje-data i én fil, eller upload for at genindlæse gemt data.</p>
+                <p class="backup-status" id="backupStatus"></p>
                 <button class="btn btn-secondary" style="width:100%; margin-bottom:8px;" onclick="exportAllData()">Download alt (JSON)</button>
                 <button class="btn btn-secondary" style="width:100%;" onclick="document.getElementById('allDataUpload').click()">Upload alt (JSON)</button>
                 <input type="file" id="allDataUpload" accept=".json" style="display:none;" onchange="importAllData(event)">
@@ -66,6 +67,14 @@
         <div class="intro-banner" id="introBanner" style="display:none;">
             <span>👋 Data gemmes kun lokalt i denne browser – ingen konti, intet login, og intet sendes til en server. Rydder du browserdata, forsvinder dine tal.</span>
             <button onclick="dismissIntroBanner()" aria-label="Luk">✕</button>
+        </div>
+
+        <div class="intro-banner backup-banner" id="backupBanner" role="status" hidden>
+            <span id="backupBannerText"></span>
+            <div class="banner-actions">
+                <button class="btn btn-primary btn-sm" onclick="exportAllData()">Download backup</button>
+                <button class="btn btn-secondary btn-sm" onclick="snoozeBackupReminder()">Påmind mig om en uge</button>
+            </div>
         </div>
 
         <div class="top-tabs">
@@ -436,6 +445,11 @@
                     <div class="label">Udbytte i alt</div>
                     <div class="value ask" id="ptTotalDividend">–</div>
                     <div class="sub">efter skat, kumuleret</div>
+                </div>
+                <div class="stat">
+                    <div class="label">Dit afkast pr. år</div>
+                    <div class="value" id="ptAnnualReturn">–</div>
+                    <div class="sub" id="ptAnnualReturnSub">pengevægtet, tager højde for indskud</div>
                 </div>
             </div>
         </div>
@@ -989,6 +1003,19 @@
     </div>
 
     <div class="full-width-below">
+        <div class="panel">
+            <div class="eyebrow">Nødopsparing</div>
+            <div class="buffer-hero">
+                <div class="result-value" id="bufferMonths">–</div>
+                <div class="result-sub" id="bufferText"></div>
+            </div>
+            <div class="buffer-scale" aria-hidden="true">
+                <div class="progress-track"><div class="progress-fill" id="bufferFill" style="width:0%"></div></div>
+                <div class="buffer-marks"><span style="left:50%">3 mdr.</span><span style="left:100%">6 mdr.</span></div>
+            </div>
+            <p class="explainer">En tommelfingerregel er at have 3–6 måneders faste udgifter stående i kontanter til uforudsete udgifter som tandlæge, bilreparation eller jobskifte. Kun kontanter tæller med – aktier kan være faldet i værdi, lige når du får brug for pengene. Udgifterne er dit budget minus opsparing.</p>
+        </div>
+
         <div class="panel">
             <div class="eyebrow">Formuehistorik</div>
             <p class="explainer explainer-lead">

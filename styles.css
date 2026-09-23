@@ -773,6 +773,21 @@ select.number-input{ font-family:var(--font-sans); cursor:pointer; }
 
 /* ---- Calculators ---- */
 .details-body{ margin-top:var(--s4); }
+.intro-banner[hidden]{ display:none; }
+.backup-banner{ border-color:var(--akt); }
+.banner-actions{ display:flex; gap:var(--s2); flex-shrink:0; flex-wrap:wrap; }
+.banner-actions .btn + .btn{ margin-left:0; }
+.link-btn{ background:none; border:none; padding:0; color:var(--akt); font:inherit; font-weight:600; cursor:pointer; text-decoration:underline; }
+.backup-status{ margin:0 0 var(--s3) 0; font-size:12.5px; color:var(--muted); }
+.backup-status.is-stale{ color:var(--cross); }
+.buffer-hero{ margin-bottom:var(--s4); }
+.buffer-scale{ position:relative; padding-bottom:var(--s5); }
+.buffer-marks{ position:relative; height:0; }
+.buffer-marks span{
+    position:absolute; top:var(--s2); transform:translateX(-50%);
+    font-family:var(--font-mono); font-size:11px; color:var(--subtle); white-space:nowrap;
+}
+.buffer-marks span:last-child{ transform:translateX(-100%); }
 .save-status{ margin:calc(-1 * var(--s3)) 0 var(--s4) 0; font-size:12px; color:var(--subtle); }
 .save-status.is-saved{ color:var(--ask); }
 .panel.chart-panel-sticky{ align-self:start; position:sticky; top:var(--s5); }

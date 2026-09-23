@@ -278,6 +278,7 @@ function renderPortfolioHistory(){
         document.getElementById('ptTotalReturn').textContent = '–';
         document.getElementById('ptTotalDividend').textContent = '–';
     }
+    renderAnnualReturn(history);
 
     const ptHasData = enriched.length > 0;
     ['ptChart1Empty', 'ptChart2Empty', 'ptChart3Empty', 'ptChart4Empty'].forEach(id => {
@@ -297,5 +298,28 @@ function renderPortfolioHistory(){
         </tr>`).join('');
 }
 
-document.getElementById('ptDate').value = new Date().toISOString().slice(0,10);
+document.getElementById('ptDate').value = todayIso();
 renderPortfolioHistory();
+/**
+ * Det faktiske, pengevægtede afkast pr. år (XIRR) ud fra værdien og
+ * indskuddene. Under 3 måneders data vises intet, og under et år gøres der
+ * opmærksom på, at tallet er omregnet og usikkert.
+ * @param {{date:string, portfolioValue:number, deposit:number}[]} history sorteret efter dato
+ */
+function renderAnnualReturn(history){
+    const valueEl = document.getElementById('ptAnnualReturn');
+    const subEl = document.getElementById('ptAnnualReturnSub');
+    const days = history.length > 1 ? (Date.parse(history.at(-1).date) - Date.parse(history[0].date)) / DAY_MS : 0;
+    const rate = days >= 90 ? xirr(portfolioCashFlows(history)) : null;
+    valueEl.classList.remove('negative', 'akt');
+    if(rate === null){
+        valueEl.textContent = '–';
+        subEl.textContent = days < 90 ? 'kræver mindst 3 måneders datapunkter' : 'kan ikke beregnes ud fra dataene';
+        return;
+    }
+    valueEl.textContent = (rate >= 0 ? '+' : '−') + formatPct(Math.abs(rate));
+    valueEl.classList.add(rate < 0 ? 'negative' : 'akt');
+    subEl.textContent = days < 365
+        ? `omregnet til år fra ${Math.round(days / 30)} mdr. – usikkert over kort tid`
+        : `pengevægtet siden ${formatDanishDate(history[0].date)}`;
+}

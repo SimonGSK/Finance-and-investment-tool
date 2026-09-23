@@ -135,6 +135,32 @@ function updateWealthComparison(){
 }
 
 /**
+ * Hvor mange måneders udgifter kontanterne dækker. Udgifterne er budgettets
+ * sum minus opsparingsposterne.
+ */
+function updateEmergencyFund(){
+    const cash = parseFloat(document.getElementById('netCatKontanter').value) || 0;
+    const {sum, groupSums} = budgetSummary(getBudgetCategories(), loadBudgetItems());
+    const expenses = sum - groupSums.opsparing;
+    const months = emergencyFundMonths(cash, expenses);
+    const monthsEl = document.getElementById('bufferMonths');
+    const text = document.getElementById('bufferText');
+    const fill = document.getElementById('bufferFill');
+    if(months === null){
+        monthsEl.textContent = '–';
+        text.replaceChildren('Udfyld dit budget for at se, hvor mange måneders udgifter dine kontanter dækker. ',
+            el('button', {className:'link-btn', type:'button', textContent:'Gå til budget', onclick: () => showSection('budget')}));
+        fill.style.width = '0%';
+        return;
+    }
+    monthsEl.textContent = `${months.toFixed(1).replace('.', ',')} ${months >= 0.95 && months < 1.05 ? 'måned' : 'måneder'}`;
+    monthsEl.classList.toggle('negative', months < 3);
+    const verdict = months >= 6 ? 'Du har en solid buffer.' : months >= 3 ? 'Du er inden for anbefalingen.' : 'Under anbefalingen på 3 måneder.';
+    text.textContent = `Dine kontanter på ${DK.format(cash)} kr. dækker dine udgifter på ${DK.format(expenses)} kr. om måneden. ${verdict}`;
+    fill.style.width = Math.min(100, months / 6 * 100) + '%';
+}
+
+/**
  * Genberegner nøgletal, doughnut-grafen og sammenligningen ud fra felterne,
  * og gemmer dem. Kaldes ved hver ændring.
  */
@@ -158,6 +184,7 @@ function updateNetWorth(){
     saveNetWorthToStorage();
     renderRecordAndMilestones();
     updateWealthComparison();
+    updateEmergencyFund();
 }
 
 const NET_WORTH_INPUT_IDS = NET_WORTH_CATEGORIES.map(c => c.id).concat(['netDebt']);
@@ -528,5 +555,5 @@ function renderRecordAndMilestones(){
     }).join('');
 }
 
-document.getElementById('snapshotDate').value = new Date().toISOString().slice(0,10);
+document.getElementById('snapshotDate').value = todayIso();
 renderNetWorthHistory();
