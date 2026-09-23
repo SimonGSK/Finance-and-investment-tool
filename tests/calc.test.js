@@ -12,7 +12,7 @@ const {
     computeMonthlyFinalValueForStartYear, findBestMonthlyHarvestStartYear, computeMonthlySeries,
     computeFireSeries,
     monthlyAmount, categoryTotal, budgetSummary,
-    upsertByDate, mergeByDate,
+    upsertByDate, mergeByDate, changedFields, normalizeDate,
     CEPOS_WEALTH_TABLE, findNearestWealthRow, estimatePercentile,
     parseDanishAmount, findHeaderRowIndex, parseCSV
 } = calc;
@@ -235,6 +235,33 @@ describe('historik pr. dato', () => {
         assert.deepEqual(r.replacedDates, ['2026-07-31', '2026-08-31']);
         assert.equal(r.addedCount, 1);
         assert.deepEqual(r.history.map(x => x.v), [6, 7, 8]);
+    });
+});
+
+describe('ændringer og datoer', () => {
+    test('kun felter der faktisk ændres, kommer med', () => {
+        const fields = [['cash', 'Kontanter'], ['stocks', 'Aktier'], ['debt', 'Gæld']];
+        assert.deepEqual(changedFields({ cash: 100, stocks: 50 }, { cash: 100, stocks: 80, debt: 10 }, fields), [
+            { key: 'stocks', label: 'Aktier', from: 50, to: 80 },
+            { key: 'debt', label: 'Gæld', from: 0, to: 10 }
+        ]);
+        assert.deepEqual(changedFields({ cash: 1 }, { cash: 1 }, fields), []);
+    });
+
+    test('forstår ISO og danske datoformater', () => {
+        assert.equal(normalizeDate('2026-08-31'), '2026-08-31');
+        assert.equal(normalizeDate('31-08-2026'), '2026-08-31');
+        assert.equal(normalizeDate('31.08.2026'), '2026-08-31');
+        assert.equal(normalizeDate('1/9/2026'), '2026-09-01');
+        assert.equal(normalizeDate(' 2026-9-1 '), '2026-09-01');
+    });
+
+    test('afviser ugyldige datoer', () => {
+        assert.equal(normalizeDate('31-02-2026'), null);
+        assert.equal(normalizeDate('2026-13-01'), null);
+        assert.equal(normalizeDate('i går'), null);
+        assert.equal(normalizeDate(''), null);
+        assert.equal(normalizeDate(undefined), null);
     });
 });
 

@@ -71,6 +71,7 @@
         <button class="top-tab-btn active" id="topTabBtn1" onclick="showSection('tools')">Investering</button>
         <button class="top-tab-btn" id="topTabBtn2" onclick="showSection('budget')">Budget</button>
         <button class="top-tab-btn" id="topTabBtn3" onclick="showSection('formue')">Formue</button>
+        <button class="btn btn-accent monthly-status-btn" onclick="openMonthlyStatus()" title="Gem dine tal i både Formue og Porteføljetracker på én gang">+ Månedsstatus</button>
     </div>
 
     <div id="section-tools">
@@ -471,6 +472,7 @@
                 </div>
 
                 <button class="btn" onclick="savePortfolioSnapshot()">+ Gem datapunkt</button>
+                <button class="btn btn-accent" onclick="openMonthlyStatus()" title="Gem i både porteføljetrackeren og Formue på én gang">Månedsstatus</button>
                 <button class="btn btn-secondary" onclick="clearPortfolioHistory()">Ryd hele historikken</button>
             </div>
 
@@ -654,10 +656,12 @@
             <div class="field">
                 <label>Kontanter & opsparingskonti</label>
                 <input type="number" id="netCatKontanter" class="number-input" value="0" min="0" step="500">
+                <div class="limit-hint">Inkl. fysiske kontanter og kontanter i dit aktiedepot</div>
             </div>
             <div class="field">
                 <label>Aktier & værdipapirer</label>
                 <input type="number" id="netCatAktier" class="number-input" value="0" min="0" step="500">
+                <div class="limit-hint">Kun værdien af selve aktierne</div>
             </div>
             <div class="field">
                 <label>Pension</label>
@@ -702,6 +706,7 @@
             </div>
 
             <button class="btn" onclick="saveNetWorthSnapshot()">+ Gem formue for valgt dato</button>
+            <button class="btn btn-accent" onclick="openMonthlyStatus()" title="Gem i både Formue og porteføljetrackeren på én gang">Månedsstatus</button>
             <button class="btn btn-secondary" onclick="clearNetWorthHistory()">Ryd hele historikken</button>
             <div class="chart-wrap chart-wrap-standalone">
                 <canvas id="netWorthHistoryChart"></canvas>
@@ -830,6 +835,7 @@
     <script src="js/navigation.js"></script>
     <script src="js/budget.js"></script>
     <script src="js/net-worth.js"></script>
+    <script src="js/monthly-status.js"></script>
     <script src="js/theme.js"></script>
 </body>
 </html>

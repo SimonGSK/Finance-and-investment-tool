@@ -61,7 +61,7 @@ function showSection(name){
     if(name==='formue'){ netWorthChart.resize(); netWorthHistoryChart.resize(); if(netWorthCompositionChart) netWorthCompositionChart.resize(); }
 }
 
-const BACKUP_KEYS = ['budgetItems', 'budgetData', 'budgetCustomCategories', 'netWorthData', 'netWorthHistory', 'portfolioHistory'];
+const BACKUP_KEYS = ['budgetItems', 'budgetData', 'budgetCustomCategories', 'netWorthData', 'netWorthHistory', 'portfolioHistory', 'monthlyStatusLast'];
 
 /**
  * Downloader alle gemte data (budget, formue, historik, portefølje) som én

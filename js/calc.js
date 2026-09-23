@@ -416,6 +416,39 @@ function mergeByDate(history, entries){
     return { history: next, replacedDates, addedCount: incomingDates.length - replacedDates.length };
 }
 
+/**
+ * De felter, der er forskellige mellem to datapunkter - bruges til at vise
+ * præcis hvad en overskrivning ændrer. Manglende felter tæller som 0.
+ * @param {Object} oldEntry
+ * @param {Object} newEntry
+ * @param {[string, string][]} fields par af [nøgle, visningsnavn]
+ * @returns {{key:string, label:string, from:number, to:number}[]}
+ */
+function changedFields(oldEntry, newEntry, fields){
+    return fields
+        .map(([key, label]) => ({key, label, from: oldEntry[key] || 0, to: newEntry[key] || 0}))
+        .filter(c => c.from !== c.to);
+}
+
+/**
+ * Omsætter en dato fra en CSV-fil til 'YYYY-MM-DD'. Forstår vores eget format
+ * og de danske formater, Excel og Numbers ofte gemmer i (31-08-2026,
+ * 31.08.2026, 31/08/2026, også med 1-cifret dag/måned).
+ * @param {string} str
+ * @returns {string|null} ISO-datoen, eller null hvis den ikke er en gyldig dato
+ */
+function normalizeDate(str){
+    if(!str) return null;
+    const s = String(str).trim();
+    let y, m, d, match;
+    if((match = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/))){ [, y, m, d] = match; }
+    else if((match = s.match(/^(\d{1,2})[-./](\d{1,2})[-./](\d{4})$/))){ [, d, m, y] = match; }
+    else return null;
+    const iso = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const date = new Date(iso + 'T00:00:00Z');
+    return !isNaN(date) && date.toISOString().slice(0, 10) === iso ? iso : null;
+}
+
 // ==== Formue: placering i forhold til andre danskere ====
 
 /**
@@ -560,7 +593,7 @@ if(typeof module !== 'undefined' && module.exports){
         computeMonthlyFinalValueForStartYear, findBestMonthlyHarvestStartYear, computeMonthlySeries,
         computeFireSeries,
         monthlyAmount, categoryTotal, budgetSummary,
-        upsertByDate, mergeByDate,
+        upsertByDate, mergeByDate, changedFields, normalizeDate,
         CEPOS_WEALTH_TABLE, findNearestWealthRow, estimatePercentile,
         parseDanishAmount, findHeaderRowIndex, parseCSV
     };

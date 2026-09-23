@@ -160,14 +160,25 @@ function updateNetWorth(){
     updateWealthComparison();
 }
 
+const NET_WORTH_INPUT_IDS = NET_WORTH_CATEGORIES.map(c => c.id).concat(['netDebt']);
+
 /**
- * Nulstiller alle felter efter bekræftelse. Historikken bevares.
+ * Nulstiller alle felter efter bekræftelse - med fortryd. Historikken bevares.
  */
-function resetNetWorth(){
-    if(!confirm('Nulstil alle formuefelter? Det kan ikke fortrydes.')) return;
-    NET_WORTH_CATEGORIES.forEach(cat => document.getElementById(cat.id).value = 0);
-    document.getElementById('netDebt').value = 0;
+async function resetNetWorth(){
+    const ok = await confirmDialog({
+        title:'Nulstil formuefelterne?',
+        message:'Felterne for aktiver og gæld sættes til 0. Din gemte formuehistorik bevares.',
+        confirmLabel:'Nulstil', danger:true
+    });
+    if(!ok) return;
+    const previous = NET_WORTH_INPUT_IDS.map(id => [id, document.getElementById(id).value]);
+    NET_WORTH_INPUT_IDS.forEach(id => document.getElementById(id).value = 0);
     updateNetWorth();
+    notify('Formuefelterne er nulstillet.', {actionLabel:'Fortryd', onAction: () => {
+        previous.forEach(([id, v]) => document.getElementById(id).value = v);
+        updateNetWorth();
+    }});
 }
 
 loadNetWorthFromStorage();
@@ -178,107 +189,150 @@ updateNetWorth();
 
 let netWorthHistoryChart = null;
 
+/** @returns {Object[]} de gemte øjebliksbilleder, sorteret efter dato */
+function readNetWorthHistory(){
+    try{ return JSON.parse(localStorage.getItem('netWorthHistory') || '[]'); }
+    catch(e){ return []; }
+}
+
+/** @param {Object[]} history */
+function writeNetWorthHistory(history){
+    localStorage.setItem('netWorthHistory', JSON.stringify(history));
+}
+
+// Felterne i et øjebliksbillede, som de vises når et punkt overskrives.
+const NET_WORTH_FIELDS = [
+    ['netCatKontanter', 'Kontanter'], ['netCatAktier', 'Aktier'], ['netCatPension', 'Pension'],
+    ['netCatFrivaerdi', 'Friværdi'], ['netCatAndet', 'Andet'], ['debt', 'Gæld'], ['value', 'Nettoformue']
+];
+
+/**
+ * Bygger et øjebliksbillede ud fra tal for hver kategori og gælden.
+ * @param {string} date ISO-dato
+ * @param {{netCatKontanter:number, netCatAktier:number, netCatPension:number, netCatFrivaerdi:number, netCatAndet:number, debt:number}} amounts
+ * @returns {Object} med nettoformue (value) og likvid formue (liquid) udregnet
+ */
+function buildNetWorthEntry(date, amounts){
+    const entry = {date};
+    NET_WORTH_CATEGORIES.forEach(cat => { entry[cat.id] = amounts[cat.id] || 0; });
+    entry.debt = amounts.debt || 0;
+    entry.value = NET_WORTH_CATEGORIES.reduce((sum, cat) => sum + entry[cat.id], 0) - entry.debt;
+    entry.liquid = NET_WORTH_CATEGORIES.reduce((sum, cat) => cat.liquid ? sum + entry[cat.id] : sum, 0);
+    return entry;
+}
+
 /**
  * Indlæser historik fra en CSV-fil (vores eget format eller genexporteret fra
- * Numbers/Excel). Eksisterende punkter bevares; samme dato overskrives.
+ * Numbers/Excel). Datoer i danske formater forstås; rækker uden gyldig dato
+ * springes over. Erstatter importen eksisterende datoer, spørges der først.
  * @param {Event} event change-eventet fra <input type="file">
  */
 function importNetWorthCSV(event){
     const file = event.target.files[0];
     if(!file) return;
+    event.target.value = '';
     const reader = new FileReader();
-    reader.onload = function(e){
+    reader.onload = async function(e){
+        let entries, skipped = 0;
         try{
             const rows = parseCSV(e.target.result);
             const headerIndex = findHeaderRowIndex(rows);
             if(headerIndex === -1){
-                alert('CSV-filen ser ikke ud til at have det rigtige format (mangler "Dato"-kolonne).');
+                await infoDialog({title:'Forkert filformat', message:'Filen mangler en "Dato"-kolonne. Brug en CSV-fil, der er downloadet fra formuehistorikken her på siden.'});
                 return;
             }
             const headers = rows[headerIndex];
-            const dataRows = rows.slice(headerIndex + 1);
             const col = name => headers.indexOf(name);
-
-            let history = JSON.parse(localStorage.getItem('netWorthHistory') || '[]');
-            let importedCount = 0;
-
-            dataRows.forEach(row => {
-                const date = row[col('Dato')];
-                if(!date) return;
-                const entry = {
-                    date: date,
+            entries = [];
+            rows.slice(headerIndex + 1).forEach(row => {
+                const date = normalizeDate(row[col('Dato')]);
+                if(!date){ skipped++; return; }
+                const entry = buildNetWorthEntry(date, {
                     netCatKontanter: parseDanishAmount(row[col('Kontanter')]),
                     netCatAktier: parseDanishAmount(row[col('Aktier')]),
                     netCatPension: parseDanishAmount(row[col('Pension')]),
                     netCatFrivaerdi: parseDanishAmount(row[col('Friværdi')]),
                     netCatAndet: parseDanishAmount(row[col('Andet')]),
-                    debt: parseDanishAmount(row[col('Gæld')]),
-                    liquid: parseDanishAmount(row[col('Likvid')]),
-                    value: parseDanishAmount(row[col('Nettoformue')])
-                };
-                const existingIndex = history.findIndex(h => h.date === entry.date);
-                if(existingIndex >= 0){ history[existingIndex] = entry; }
-                else { history.push(entry); }
-                importedCount++;
+                    debt: parseDanishAmount(row[col('Gæld')])
+                });
+                // Filens egne totaler bruges, hvis de findes, så en import ikke ændrer gamle tal.
+                if(col('Likvid') >= 0) entry.liquid = parseDanishAmount(row[col('Likvid')]);
+                if(col('Nettoformue') >= 0) entry.value = parseDanishAmount(row[col('Nettoformue')]);
+                entries.push(entry);
             });
-
-            history.sort((a,b) => a.date.localeCompare(b.date));
-            localStorage.setItem('netWorthHistory', JSON.stringify(history));
-            renderNetWorthHistory();
-            alert(importedCount + ' datapunkt(er) importeret.');
         } catch(err){
-            alert('Kunne ikke læse CSV-filen. Tjek at det er en fil eksporteret fra dette værktøj.');
+            await infoDialog({title:'Filen kunne ikke læses', message:'Tjek at det er en CSV-fil, der er downloadet fra formuehistorikken her på siden.'});
+            return;
         }
-        event.target.value = '';
+        if(!entries.length){
+            await infoDialog({title:'Ingen datapunkter fundet', message:'Filen indeholder ingen rækker med en gyldig dato. Intet er ændret.'});
+            return;
+        }
+        const {history, replacedDates, addedCount} = mergeByDate(readNetWorthHistory(), entries);
+        if(replacedDates.length && !(await confirmImportOverwrite(replacedDates, entries.length))) return;
+        writeNetWorthHistory(history);
+        renderNetWorthHistory();
+        notify(importSummary(addedCount, replacedDates.length, skipped));
     };
     reader.readAsText(file, 'UTF-8');
 }
 
 /**
  * Gemmer felternes værdier som et øjebliksbillede for den valgte dato (i dag
- * som standard) og gentegner historikken.
+ * som standard). Findes der allerede et punkt på datoen, vises hvad der ændres,
+ * før det erstattes.
  */
-function saveNetWorthSnapshot(){
-    const netWorth = computeLiveNetWorth();
-    const liquidTotal = computeLiveLiquidTotal();
-    const selectedDate = document.getElementById('snapshotDate').value || new Date().toISOString().slice(0,10);
+async function saveNetWorthSnapshot(){
+    const date = document.getElementById('snapshotDate').value || todayIso();
+    const amounts = {debt: parseFloat(document.getElementById('netDebt').value) || 0};
+    NET_WORTH_CATEGORIES.forEach(cat => { amounts[cat.id] = parseFloat(document.getElementById(cat.id).value) || 0; });
+    const entry = buildNetWorthEntry(date, amounts);
 
-    const entry = {date: selectedDate, value: netWorth, liquid: liquidTotal};
-    NET_WORTH_CATEGORIES.forEach(cat => {
-        entry[cat.id] = parseFloat(document.getElementById(cat.id).value) || 0;
-    });
-    entry.debt = parseFloat(document.getElementById('netDebt').value) || 0;
-
-    let history = JSON.parse(localStorage.getItem('netWorthHistory') || '[]');
-    const existingIndex = history.findIndex(h => h.date === selectedDate);
-    if(existingIndex >= 0){
-        history[existingIndex] = entry;
-    } else {
-        history.push(entry);
+    const {history, replaced} = upsertByDate(readNetWorthHistory(), entry);
+    if(replaced){
+        const changes = changedFields(replaced, entry, NET_WORTH_FIELDS);
+        if(!changes.length){ notify(`Ingen ændringer – formuen for ${formatDanishDate(date)} var allerede gemt med de samme tal.`); return; }
+        if(!(await confirmOverwrite(date, [{title:'Formue', changes}]))) return;
     }
-    history.sort((a,b) => a.date.localeCompare(b.date));
-    localStorage.setItem('netWorthHistory', JSON.stringify(history));
+    writeNetWorthHistory(history);
     renderNetWorthHistory();
+    notify(replaced ? `Formuen for ${formatDanishDate(date)} er opdateret.` : `Formuen er gemt for ${formatDanishDate(date)}.`);
 }
 
 /**
+ * Sletter ét øjebliksbillede - med fortryd.
  * @param {string} date ISO-dato, fx '2026-09-21'
  */
 function deleteNetWorthEntry(date){
-    let history = JSON.parse(localStorage.getItem('netWorthHistory') || '[]');
-    history = history.filter(h => h.date !== date);
-    localStorage.setItem('netWorthHistory', JSON.stringify(history));
+    const history = readNetWorthHistory();
+    const removed = history.find(h => h.date === date);
+    if(!removed) return;
+    writeNetWorthHistory(history.filter(h => h.date !== date));
     renderNetWorthHistory();
+    notify(`Datapunktet for ${formatDanishDate(date)} er slettet.`, {actionLabel:'Fortryd', onAction: () => {
+        writeNetWorthHistory(upsertByDate(readNetWorthHistory(), removed).history);
+        renderNetWorthHistory();
+    }});
 }
 
 /**
- * Sletter hele formuehistorikken efter bekræftelse.
+ * Sletter hele formuehistorikken efter bekræftelse - med fortryd.
  */
-function clearNetWorthHistory(){
-    if(confirm('Er du sikker på, at du vil slette hele formuehistorikken? Det kan ikke fortrydes.')){
-        localStorage.removeItem('netWorthHistory');
+async function clearNetWorthHistory(){
+    const history = readNetWorthHistory();
+    if(!history.length){ notify('Der er ingen formuehistorik at slette.'); return; }
+    const ok = await confirmDialog({
+        title:'Slet hele formuehistorikken?',
+        message:`Alle ${history.length} gemte datapunkter slettes.`,
+        confirmLabel:'Slet historikken', danger:true
+    });
+    if(!ok) return;
+    localStorage.removeItem('netWorthHistory');
+    renderNetWorthHistory();
+    notify('Formuehistorikken er slettet.', {actionLabel:'Fortryd', onAction: () => {
+        writeNetWorthHistory(history);
         renderNetWorthHistory();
-    }
+    }});
 }
 
 /**
@@ -286,7 +340,7 @@ function clearNetWorthHistory(){
  * sammensætningen samt rekord og milepæle.
  */
 function renderNetWorthHistory(){
-    const history = JSON.parse(localStorage.getItem('netWorthHistory') || '[]');
+    const history = readNetWorthHistory();
     const chartData = {
         labels: history.map(h => h.date),
         datasets:[
@@ -424,7 +478,7 @@ function renderNetWorthComposition(history){
  * milepæl i MILESTONES med dato for hvornår den blev nået.
  */
 function renderRecordAndMilestones(){
-    const history = JSON.parse(localStorage.getItem('netWorthHistory') || '[]');
+    const history = readNetWorthHistory();
     const sortedByDate = history.slice().sort((a,b) => a.date.localeCompare(b.date));
     const latestEntry = sortedByDate.length > 0 ? sortedByDate[sortedByDate.length-1] : null;
     const liveNetWorth = latestEntry ? latestEntry.value : computeLiveNetWorth();

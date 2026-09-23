@@ -157,3 +157,54 @@ function changeList(rows){
         ])
     ]));
 }
+
+/**
+ * Advarer før et eksisterende datapunkt overskrives og viser præcis hvilke tal,
+ * der ændres. Er der ingen forskelle, spørges der ikke.
+ * @param {string} isoDate
+ * @param {{title:string, changes:{label:string, from:number, to:number}[]}[]} sections én pr. tracker
+ * @returns {Promise<boolean>} true hvis der må gemmes
+ */
+function confirmOverwrite(isoDate, sections){
+    const withChanges = sections.filter(s => s.changes.length);
+    if(!withChanges.length) return Promise.resolve(true);
+    const content = el('div', {}, [
+        el('p', {className:'dialog-text', textContent:`Der findes allerede data for ${formatDanishDate(isoDate)}. Gemmer du, bliver de erstattet af de nye tal:`}),
+        ...withChanges.flatMap(s => [
+            withChanges.length > 1 || sections.length > 1 ? el('div', {className:'eyebrow eyebrow-section', textContent:s.title}) : '',
+            changeList(s.changes)
+        ])
+    ]);
+    return confirmDialog({title:'Overskriv eksisterende data?', message:content, confirmLabel:'Erstat data', danger:true});
+}
+
+/**
+ * Bekræftelse før en CSV-import erstatter punkter, der allerede findes.
+ * @param {string[]} replacedDates ISO-datoer, der bliver erstattet
+ * @param {number} totalCount antal punkter i filen
+ * @returns {Promise<boolean>}
+ */
+function confirmImportOverwrite(replacedDates, totalCount){
+    const shown = replacedDates.slice(0, 6).map(formatDanishDate).join(', ');
+    const more = replacedDates.length > 6 ? ` og ${replacedDates.length - 6} mere` : '';
+    return confirmDialog({
+        title:'Erstat eksisterende datapunkter?',
+        message:`${replacedDates.length} af filens ${totalCount} datapunkter har en dato, du allerede har data for (${shown}${more}). De eksisterende tal for de datoer bliver erstattet af filens.`,
+        confirmLabel:'Importér og erstat', danger:true
+    });
+}
+
+/**
+ * Kort opsummering efter en import, fx "12 datapunkter importeret (3 erstattet, 1 sprunget over)".
+ * @param {number} added
+ * @param {number} replaced
+ * @param {number} skipped rækker uden gyldig dato
+ * @returns {string}
+ */
+function importSummary(added, replaced, skipped){
+    const total = added + replaced;
+    const parts = [];
+    if(replaced) parts.push(`${replaced} erstattet`);
+    if(skipped) parts.push(`${skipped} sprunget over pga. ugyldig dato`);
+    return `${total} ${total === 1 ? 'datapunkt' : 'datapunkter'} importeret` + (parts.length ? ` (${parts.join(', ')})` : '') + '.';
+}

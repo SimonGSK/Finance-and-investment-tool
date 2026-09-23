@@ -112,103 +112,143 @@ function updatePortfolioValueField(){
 document.getElementById('ptStockValue').addEventListener('input', updatePortfolioValueField);
 document.getElementById('ptCash').addEventListener('input', updatePortfolioValueField);
 
+/** @returns {Object[]} de gemte datapunkter, sorteret efter dato */
+function readPortfolioHistory(){
+    try{ return JSON.parse(localStorage.getItem('portfolioHistory') || '[]'); }
+    catch(e){ return []; }
+}
+
+/** @param {Object[]} history */
+function writePortfolioHistory(history){
+    localStorage.setItem('portfolioHistory', JSON.stringify(history));
+}
+
+// Felterne i et datapunkt, som de vises når et punkt overskrives.
+const PORTFOLIO_FIELDS = [
+    ['stockValue', 'Aktieværdi'], ['cash', 'Kontanter i depot'], ['portfolioValue', 'Porteføljeværdi'],
+    ['traded', 'Købt/solgt'], ['deposit', 'Indskud/udbetaling'], ['dividend', 'Udbytte']
+];
+
+/**
+ * Bygger et datapunkt; porteføljeværdien er altid aktier + kontanter i depot.
+ * @param {string} date ISO-dato
+ * @param {{stockValue:number, cash:number, traded:number, deposit:number, dividend:number}} v
+ * @returns {Object}
+ */
+function buildPortfolioEntry(date, v){
+    const stockValue = v.stockValue || 0, cash = v.cash || 0;
+    return {date, portfolioValue: stockValue + cash, stockValue, cash,
+        traded: v.traded || 0, deposit: v.deposit || 0, dividend: v.dividend || 0};
+}
+
 /**
  * Indlæser datapunkter fra en CSV-fil (vores eget format eller genexporteret
- * fra Numbers/Excel). Eksisterende punkter bevares; samme dato overskrives.
+ * fra Numbers/Excel). Datoer i danske formater forstås; rækker uden gyldig dato
+ * springes over. Erstatter importen eksisterende datoer, spørges der først.
  * @param {Event} event change-eventet fra <input type="file">
  */
 function importPortfolioCSV(event){
     const file = event.target.files[0];
     if(!file) return;
+    event.target.value = '';
     const reader = new FileReader();
-    reader.onload = function(e){
+    reader.onload = async function(e){
+        let entries, skipped = 0;
         try{
             const rows = parseCSV(e.target.result);
             const headerIndex = findHeaderRowIndex(rows);
             if(headerIndex === -1){
-                alert('CSV-filen ser ikke ud til at have det rigtige format (mangler "Dato"-kolonne).');
+                await infoDialog({title:'Forkert filformat', message:'Filen mangler en "Dato"-kolonne. Brug en CSV-fil, der er downloadet fra porteføljetrackeren her på siden.'});
                 return;
             }
             const headers = rows[headerIndex];
-            const dataRows = rows.slice(headerIndex + 1);
             const col = name => headers.indexOf(name);
-
-            let history = JSON.parse(localStorage.getItem('portfolioHistory') || '[]');
-            let importedCount = 0;
-
-            dataRows.forEach(row => {
-                const date = row[col('Dato')];
-                if(!date) return;
-                const entry = {
-                    date: date,
-                    portfolioValue: parseDanishAmount(row[col('Porteføljeværdi')]),
+            entries = [];
+            rows.slice(headerIndex + 1).forEach(row => {
+                const date = normalizeDate(row[col('Dato')]);
+                if(!date){ skipped++; return; }
+                entries.push(buildPortfolioEntry(date, {
                     stockValue: parseDanishAmount(row[col('Aktieværdi')]),
                     cash: parseDanishAmount(row[col('Kontant')]),
                     traded: parseDanishAmount(row[col('Købt/solgt')]),
                     deposit: parseDanishAmount(row[col('Indskud/udb.')]),
                     dividend: parseDanishAmount(row[col('Udbytte')])
-                };
-                const existingIndex = history.findIndex(h => h.date === entry.date);
-                if(existingIndex >= 0){ history[existingIndex] = entry; }
-                else { history.push(entry); }
-                importedCount++;
+                }));
             });
-
-            history.sort((a,b) => a.date.localeCompare(b.date));
-            localStorage.setItem('portfolioHistory', JSON.stringify(history));
-            renderPortfolioHistory();
-            alert(importedCount + ' datapunkt(er) importeret.');
         } catch(err){
-            alert('Kunne ikke læse CSV-filen. Tjek at det er en fil eksporteret fra dette værktøj.');
+            await infoDialog({title:'Filen kunne ikke læses', message:'Tjek at det er en CSV-fil, der er downloadet fra porteføljetrackeren her på siden.'});
+            return;
         }
-        event.target.value = '';
+        if(!entries.length){
+            await infoDialog({title:'Ingen datapunkter fundet', message:'Filen indeholder ingen rækker med en gyldig dato. Intet er ændret.'});
+            return;
+        }
+        const {history, replacedDates, addedCount} = mergeByDate(readPortfolioHistory(), entries);
+        if(replacedDates.length && !(await confirmImportOverwrite(replacedDates, entries.length))) return;
+        writePortfolioHistory(history);
+        renderPortfolioHistory();
+        notify(importSummary(addedCount, replacedDates.length, skipped));
     };
     reader.readAsText(file, 'UTF-8');
 }
 
 /**
  * Gemmer formularens værdier som et datapunkt for den valgte dato (i dag som
- * standard) og gentegner graferne.
+ * standard). Findes der allerede et punkt på datoen, vises hvad der ændres,
+ * før det erstattes.
  */
-function savePortfolioSnapshot(){
-    const entry = {
-        date: document.getElementById('ptDate').value || new Date().toISOString().slice(0,10),
-        portfolioValue: parseFloat(document.getElementById('ptPortfolioValue').value) || 0,
-        stockValue: parseFloat(document.getElementById('ptStockValue').value) || 0,
-        cash: parseFloat(document.getElementById('ptCash').value) || 0,
-        traded: parseFloat(document.getElementById('ptTraded').value) || 0,
-        deposit: parseFloat(document.getElementById('ptDeposit').value) || 0,
-        dividend: parseFloat(document.getElementById('ptDividend').value) || 0
-    };
-
-    let history = JSON.parse(localStorage.getItem('portfolioHistory') || '[]');
-    const existingIndex = history.findIndex(h => h.date === entry.date);
-    if(existingIndex >= 0){ history[existingIndex] = entry; }
-    else { history.push(entry); }
-    history.sort((a,b) => a.date.localeCompare(b.date));
-    localStorage.setItem('portfolioHistory', JSON.stringify(history));
+async function savePortfolioSnapshot(){
+    const date = document.getElementById('ptDate').value || todayIso();
+    const num = id => parseFloat(document.getElementById(id).value) || 0;
+    const entry = buildPortfolioEntry(date, {
+        stockValue: num('ptStockValue'), cash: num('ptCash'),
+        traded: num('ptTraded'), deposit: num('ptDeposit'), dividend: num('ptDividend')
+    });
+    const {history, replaced} = upsertByDate(readPortfolioHistory(), entry);
+    if(replaced){
+        const changes = changedFields(replaced, entry, PORTFOLIO_FIELDS);
+        if(!changes.length){ notify(`Ingen ændringer – datapunktet for ${formatDanishDate(date)} var allerede gemt med de samme tal.`); return; }
+        if(!(await confirmOverwrite(date, [{title:'Portefølje', changes}]))) return;
+    }
+    writePortfolioHistory(history);
     renderPortfolioHistory();
+    notify(replaced ? `Datapunktet for ${formatDanishDate(date)} er opdateret.` : `Datapunktet er gemt for ${formatDanishDate(date)}.`);
 }
 
 /**
- * Sletter datapunktet for en dato.
+ * Sletter ét datapunkt - med fortryd.
  * @param {string} date ISO-dato, fx '2026-09-21'
  */
 function deletePortfolioEntry(date){
-    let history = JSON.parse(localStorage.getItem('portfolioHistory') || '[]');
-    history = history.filter(h => h.date !== date);
-    localStorage.setItem('portfolioHistory', JSON.stringify(history));
+    const history = readPortfolioHistory();
+    const removed = history.find(h => h.date === date);
+    if(!removed) return;
+    writePortfolioHistory(history.filter(h => h.date !== date));
     renderPortfolioHistory();
+    notify(`Datapunktet for ${formatDanishDate(date)} er slettet.`, {actionLabel:'Fortryd', onAction: () => {
+        writePortfolioHistory(upsertByDate(readPortfolioHistory(), removed).history);
+        renderPortfolioHistory();
+    }});
 }
 
 /**
- * Sletter hele porteføljehistorikken efter bekræftelse.
+ * Sletter hele porteføljehistorikken efter bekræftelse - med fortryd.
  */
-function clearPortfolioHistory(){
-    if(confirm('Er du sikker på, at du vil slette hele porteføljehistorikken? Det kan ikke fortrydes.')){
-        localStorage.removeItem('portfolioHistory');
+async function clearPortfolioHistory(){
+    const history = readPortfolioHistory();
+    if(!history.length){ notify('Der er ingen porteføljehistorik at slette.'); return; }
+    const ok = await confirmDialog({
+        title:'Slet hele porteføljehistorikken?',
+        message:`Alle ${history.length} gemte datapunkter slettes.`,
+        confirmLabel:'Slet historikken', danger:true
+    });
+    if(!ok) return;
+    localStorage.removeItem('portfolioHistory');
+    renderPortfolioHistory();
+    notify('Porteføljehistorikken er slettet.', {actionLabel:'Fortryd', onAction: () => {
+        writePortfolioHistory(history);
         renderPortfolioHistory();
-    }
+    }});
 }
 
 /**
@@ -216,7 +256,7 @@ function clearPortfolioHistory(){
  * og tomme-tilstandene.
  */
 function renderPortfolioHistory(){
-    const history = JSON.parse(localStorage.getItem('portfolioHistory') || '[]');
+    const history = readPortfolioHistory();
 
     // Kumulerede tal - løbende sum hen over tid, i datorækkefølge
     let cumDeposit = 0, cumTraded = 0, cumDividend = 0;
