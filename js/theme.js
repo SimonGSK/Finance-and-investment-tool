@@ -31,11 +31,11 @@ function applyLineChartTheme(chartInstance){
     const tooltipBorder = getCSSVar('--border');
     const textColor = getCSSVar('--text');
 
-    chartInstance.options.scales.x.grid.color = gridColor;
-    chartInstance.options.scales.x.ticks.color = tickColor;
-    if(chartInstance.options.scales.x.title) chartInstance.options.scales.x.title.color = tickColor;
-    chartInstance.options.scales.y.grid.color = gridColor;
-    chartInstance.options.scales.y.ticks.color = tickColor;
+    Object.values(chartInstance.options.scales || {}).forEach(scale => {
+        if(scale.grid && scale.grid.drawOnChartArea !== false) scale.grid.color = gridColor;
+        if(scale.ticks) scale.ticks.color = tickColor;
+        if(scale.title) scale.title.color = tickColor;
+    });
     chartInstance.options.plugins.tooltip.backgroundColor = tooltipBg;
     chartInstance.options.plugins.tooltip.borderColor = tooltipBorder;
     chartInstance.options.plugins.tooltip.titleColor = textColor;
@@ -69,8 +69,8 @@ function applyDoughnutChartTheme(chartInstance){
  * Gentegner samtlige grafer på siden med det aktuelle tema.
  */
 function applyAllChartThemes(){
-    [chart, chart2, chart3, netWorthHistoryChart, ptChart1, ptChart2, ptChart3, ptChart4].forEach(applyLineChartTheme);
-    [budgetChart, netWorthChart].forEach(applyDoughnutChartTheme);
+    Object.values(Chart.instances).forEach(c =>
+        c.config.type === 'doughnut' ? applyDoughnutChartTheme(c) : applyLineChartTheme(c));
 }
 
 /**

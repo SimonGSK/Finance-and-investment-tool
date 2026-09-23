@@ -36,6 +36,36 @@ document.addEventListener('focus', function(e){
 }, true);
 
 /**
+ * Fælles Chart.js-opsætning for linjegrafer: temafarver, mono-akser med kr.-tal,
+ * og en tooltip der viser alle serier for samme x-værdi.
+ * @param {(c: object) => string} tooltipLabelFn formaterer én tooltip-linje
+ * @returns {object} options-objekt til `new Chart`
+ */
+function lineChartOptions(tooltipLabelFn){
+    return {
+        responsive:true,
+        maintainAspectRatio:false,
+        animation:{duration:250},
+        interaction:{mode:'index', intersect:false},
+        plugins:{
+            legend:{display:false},
+            tooltip:{
+                backgroundColor:CHART_COLOR('--tooltip-bg'),
+                borderColor:CHART_COLOR('--border'),
+                borderWidth:1,
+                titleColor:CHART_COLOR('--text'),
+                bodyColor:CHART_COLOR('--text'),
+                callbacks:{ label: tooltipLabelFn }
+            }
+        },
+        scales:{
+            x:{ grid:{color:CHART_COLOR('--chart-grid')}, ticks:{color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-mono'), size:11}} },
+            y:{ grid:{color:CHART_COLOR('--chart-grid')}, ticks:{color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-mono'), size:11}, callback: v => DK.format(v)} }
+        }
+    };
+}
+
+/**
  * Binder en <input type="range"> og en <input type="number"> sammen. Talfeltet er
  * sandheden: det er dét, beregningerne læser fra, så et indtastet beløb bruges
  * præcist som skrevet. Skyderen følger bare med visuelt og bliver derfor klemt
@@ -103,3 +133,53 @@ function downloadTableAsCSV(tbodyId, filename){
     URL.revokeObjectURL(url);
 }
 
+
+/**
+ * Tallet i et inputfelt; tomt eller ugyldigt giver `fallback`.
+ * @param {string} id
+ * @param {number} [fallback]
+ * @returns {number}
+ */
+function readNumber(id, fallback = 0){
+    const v = parseFloat(document.getElementById(id).value);
+    return isNaN(v) ? fallback : v;
+}
+
+/**
+ * Et procentfelt som decimaltal: "4,5" i feltet giver 0.045.
+ * @param {string} id
+ * @returns {number}
+ */
+function readPercent(id){
+    return readNumber(id) / 100;
+}
+
+/**
+ * @param {number} fraction fx 0.0457
+ * @param {number} [digits]
+ * @returns {string} fx "4,6 %"
+ */
+function formatPct(fraction, digits = 1){
+    return (fraction * 100).toFixed(digits).replace('.', ',') + ' %';
+}
+
+/**
+ * @param {number} months
+ * @returns {string} fx "3 år og 4 mdr.", "2 år" eller "7 mdr."
+ */
+function formatDuration(months){
+    const y = Math.floor(months / 12), m = months % 12;
+    if(!y) return `${m} mdr.`;
+    return m ? `${y} år og ${m} mdr.` : `${y} år`;
+}
+
+/**
+ * @param {number} months måneder fra i dag
+ * @returns {string} fx "sep. 2029"
+ */
+function monthsFromNow(months){
+    const d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() + months);
+    return d.toLocaleDateString('da-DK', {month:'short', year:'numeric'});
+}

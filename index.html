@@ -68,9 +68,10 @@
         </div>
 
         <div class="top-tabs">
-        <button class="top-tab-btn active" id="topTabBtn1" onclick="showSection('tools')">Investering</button>
-        <button class="top-tab-btn" id="topTabBtn2" onclick="showSection('budget')">Budget</button>
-        <button class="top-tab-btn" id="topTabBtn3" onclick="showSection('formue')">Formue</button>
+        <button class="top-tab-btn active" data-section="tools" onclick="showSection('tools')">Investering</button>
+        <button class="top-tab-btn" data-section="housing" onclick="showSection('housing')">Bolig & lån</button>
+        <button class="top-tab-btn" data-section="budget" onclick="showSection('budget')">Budget</button>
+        <button class="top-tab-btn" data-section="formue" onclick="showSection('formue')">Formue</button>
         <button class="btn btn-accent monthly-status-btn" onclick="openMonthlyStatus()" title="Gem dine tal i både Formue og Porteføljetracker på én gang">+ Månedsstatus</button>
     </div>
 
@@ -80,6 +81,7 @@
         <button class="tab-btn active" id="tabBtn1" onclick="showTool(1)">ASK vs. Aktiedepot</button>
         <button class="tab-btn" id="tabBtn2" onclick="showTool(2)">Aktiedepot: fast + månedligt</button>
         <button class="tab-btn" id="tabBtn3" onclick="showTool(3)">FIRE-beregner (4%-reglen)</button>
+        <button class="tab-btn" id="tabBtn5" onclick="showTool(5)">Pension</button>
         <button class="tab-btn" id="tabBtn4" onclick="showTool(4)">Porteføljetracker</button>
     </div>
 
@@ -548,6 +550,295 @@
         </div>
     </div>
 
+    <div id="tool5" style="display:none;">
+        <p class="tool-intro">Dette værktøj viser, hvad din <strong>private pensionsopsparing</strong> kan vokse til frem mod din pensionsalder, og hvor meget den kan give dig om måneden bagefter. Afkastet regnes efter omkostninger og <strong>PAL-skat</strong> på 15,3 %. Folkepension og ATP er ikke med.</p>
+        <div class="layout">
+
+            <div class="panel">
+                <div class="eyebrow">Parametre</div>
+
+                <div class="field">
+                    <label for="penBirthYear">Fødselsår</label>
+                    <input type="number" id="penBirthYear" class="number-input" value="1995" min="1940" max="2010" step="1">
+                    <div class="limit-hint" id="penFolkepensionHint"></div>
+                </div>
+                <div class="field">
+                    <label for="penRetirementAge">Pensionsalder (år)</label>
+                    <input type="number" id="penRetirementAge" class="number-input" value="74" min="55" max="80" step="1">
+                    <div class="limit-hint">Hvornår udbetalingen af din private pension starter</div>
+                </div>
+                <div class="field">
+                    <label for="penSavings">Nuværende pensionsopsparing (kr.)</label>
+                    <input type="number" id="penSavings" class="number-input" value="150000" min="0" step="1000">
+                </div>
+                <div class="field">
+                    <label for="penMonthly">Månedlig indbetaling (kr.)</label>
+                    <input type="number" id="penMonthly" class="number-input" value="4000" min="0" step="100">
+                    <div class="limit-hint">Dit eget og din arbejdsgivers bidrag – det, der faktisk sættes ind</div>
+                </div>
+                <div class="field">
+                    <label for="penReturn">Forventet årligt afkast (%)</label>
+                    <input type="number" id="penReturn" class="number-input" value="6" step="0.1">
+                </div>
+                <div class="field">
+                    <label for="penCosts">Årlige omkostninger, ÅOP (%)</label>
+                    <input type="number" id="penCosts" class="number-input" value="0.6" min="0" step="0.1">
+                </div>
+                <div class="field">
+                    <label for="penPayoutYears">Udbetalingsperiode (år)</label>
+                    <input type="number" id="penPayoutYears" class="number-input" value="20" min="1" max="40" step="1">
+                    <div class="limit-hint">Ratepension udbetales over 10-30 år</div>
+                </div>
+                <div class="field">
+                    <label for="penPayoutTax">Skat af udbetalingerne (%)</label>
+                    <input type="number" id="penPayoutTax" class="number-input" value="37" min="0" max="60" step="1">
+                    <div class="limit-hint">Rate og livrente: typisk 37-40 %. Aldersopsparing: 0 %</div>
+                </div>
+                <div class="field">
+                    <label for="penInflation">Forventet inflation (%)</label>
+                    <input type="number" id="penInflation" class="number-input" value="2" step="0.1">
+                </div>
+            </div>
+
+            <div class="panel chart-panel chart-panel-sticky">
+                <div class="legend">
+                    <span><i class="dot" style="background:var(--akt)"></i>Pensionsopsparing</span>
+                    <span><i class="dot" style="background:var(--neutral-series)"></i>I dagens købekraft</span>
+                </div>
+                <div class="chart-wrap"><canvas id="pensionChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="full-width-below">
+            <div class="stats">
+                <div class="stat">
+                    <div class="label">Opsparing ved pension</div>
+                    <div class="value akt" id="penAtRetirement">–</div>
+                    <div class="sub" id="penAtRetirementReal"></div>
+                </div>
+                <div class="stat">
+                    <div class="label">Udbetaling pr. måned efter skat</div>
+                    <div class="value ask" id="penPayoutNetReal">–</div>
+                    <div class="sub" id="penPayoutNetSub"></div>
+                </div>
+                <div class="stat">
+                    <div class="label">Du indbetaler i alt</div>
+                    <div class="value" id="penTotalContrib">–</div>
+                    <div class="sub" id="penYearsLeft"></div>
+                </div>
+                <div class="stat">
+                    <div class="label">Afkast efter omk. og PAL</div>
+                    <div class="value" id="penNetReturn">–</div>
+                    <div class="sub">pr. år</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="eyebrow">Regler og antagelser (2026)</div>
+                <p class="explainer explainer-lead">
+                    <strong>PAL-skat:</strong> 15,3 % af afkastet trækkes hvert år af pensionsselskabet. <strong>Loft for indbetalinger 2026:</strong> ratepension 68.700 kr. om året med fradrag; aldersopsparing 9.900 kr. om året, eller 64.200 kr. når du har 7 år eller mindre til folkepensionsalderen. Indbetaler du mere, gælder andre regler.
+                    <strong>Folkepensionsalderen</strong> er vedtaget op til 70 år (født 1971-74); højere aldre er et skøn, som Folketinget først tager stilling til i 2030.
+                    Afkastet er et fast gennemsnit – virkeligheden svinger. Beregningen er ikke rådgivning.
+                    Kilder: <a href="https://skat.dk/borger/pension-og-efterloen/skat-af-pensionsafkast" target="_blank" rel="noopener">skat.dk</a>, <a href="https://star.dk/ydelser/pension-og-efterloen/folkepension-tidlig-pension-foertidspension-og-seniorpension/folkepension/folkepensionsalderen-nu-og-fremover/" target="_blank" rel="noopener">star.dk</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div id="section-housing" style="display:none;">
+
+    <div class="tabs">
+        <button class="tab-btn active" id="housingTabBtn1" onclick="showHousingTool(1)">Hvor meget kan jeg låne?</button>
+        <button class="tab-btn" id="housingTabBtn2" onclick="showHousingTool(2)">Køb eller leje?</button>
+        <button class="tab-btn" id="housingTabBtn3" onclick="showHousingTool(3)">Gældsafvikling</button>
+    </div>
+
+    <!-- ===== Låneevne ===== -->
+    <div id="housing1">
+        <p class="tool-intro">Find ud af, hvor dyr en bolig du kan købe. Beregningen tager højde for de tre ting, banken typisk ser på: at din <strong>opsparing</strong> dækker mindst 5 % udbetaling og omkostningerne, din <strong>gældsfaktor</strong> (samlet gæld i forhold til indkomsten), og – hvis du vil – hvor stor en <strong>månedlig ydelse</strong> du kan betale.</p>
+        <div class="layout">
+            <div class="panel">
+                <div class="eyebrow">Din økonomi</div>
+                <div class="field">
+                    <label for="lcIncome">Husstandens årsindkomst før skat (kr.)</label>
+                    <input type="number" id="lcIncome" class="number-input" value="900000" min="0" step="10000">
+                </div>
+                <div class="field">
+                    <label for="lcSavings">Opsparing til udbetaling og omkostninger (kr.)</label>
+                    <input type="number" id="lcSavings" class="number-input" value="400000" min="0" step="10000">
+                </div>
+                <div class="field">
+                    <label for="lcDebt">Anden gæld (kr.)</label>
+                    <input type="number" id="lcDebt" class="number-input" value="0" min="0" step="10000">
+                    <div class="limit-hint">SU-lån, billån, forbrugslån</div>
+                </div>
+                <div class="field">
+                    <label for="lcAdults">Antal voksne</label>
+                    <select id="lcAdults" class="number-input"><option value="1">1</option><option value="2" selected>2</option></select>
+                </div>
+                <div class="field">
+                    <label for="lcDebtFactor">Højeste gældsfaktor</label>
+                    <input type="number" id="lcDebtFactor" class="number-input" value="4" min="1" max="8" step="0.1">
+                    <div class="limit-hint">Finanstilsynet ser over 4 som høj gæld</div>
+                </div>
+                <div class="field">
+                    <label for="lcMaxPayment">Højeste månedlige ydelse (kr.)</label>
+                    <input type="number" id="lcMaxPayment" class="number-input" value="0" min="0" step="500">
+                    <div class="limit-hint">Valgfri – 0 betyder ingen grænse</div>
+                </div>
+                <details>
+                    <summary class="summary-toggle">Renter, løbetid og omkostninger</summary>
+                    <div class="details-body">
+                        <div class="field"><label for="lcRkRate">Realkreditrente (%)</label><input type="number" id="lcRkRate" class="number-input" value="4" min="0" step="0.1"></div>
+                        <div class="field"><label for="lcBidrag">Bidragssats (%)</label><input type="number" id="lcBidrag" class="number-input" value="0.75" min="0" step="0.05"></div>
+                        <div class="field"><label for="lcRkYears">Løbetid, realkredit (år)</label><input type="number" id="lcRkYears" class="number-input" value="30" min="1" max="30" step="1"></div>
+                        <div class="field"><label for="lcBankRate">Rente, banklån (%)</label><input type="number" id="lcBankRate" class="number-input" value="6.5" min="0" step="0.1"></div>
+                        <div class="field"><label for="lcBankYears">Løbetid, banklån (år)</label><input type="number" id="lcBankYears" class="number-input" value="20" min="1" max="30" step="1"></div>
+                        <div class="field"><label for="lcOtherCosts">Andre købsomkostninger (kr.)</label><input type="number" id="lcOtherCosts" class="number-input" value="25000" min="0" step="1000"><div class="limit-hint">Køberrådgiver, tilstandsrapport, gebyrer. Tinglysning regnes selv</div></div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="panel">
+                <div class="eyebrow">Resultat</div>
+                <div class="result-hero">
+                    <div class="result-label">Du kan købe for op til</div>
+                    <div class="result-value" id="lcMaxPrice">–</div>
+                    <div class="result-sub" id="lcBinding"></div>
+                </div>
+                <div class="notice" id="lcWarning" hidden></div>
+                <div class="eyebrow eyebrow-section">Hvad begrænser dig?</div>
+                <div id="lcLimits"></div>
+                <div class="eyebrow eyebrow-section">Sådan hænger købet sammen</div>
+                <div class="data-table-wrap">
+                    <table class="data-table"><tbody id="lcBreakdown"></tbody></table>
+                </div>
+            </div>
+        </div>
+        <div class="full-width-below">
+            <div class="panel">
+                <div class="eyebrow">Regler og antagelser (2026)</div>
+                <p class="explainer explainer-lead">
+                    Du skal selv betale mindst <strong>5 %</strong> af prisen i udbetaling. Realkredit kan låne op til <strong>80 %</strong>; resten lånes i banken. <strong>Tinglysning 2026:</strong> skøde 1.850 kr. + 0,6 % af prisen, pantebreve 1.825 kr. + 1,25 % af lånet. Har du en gældsfaktor over 4 og belåner mere end 60 %, må du efter Finanstilsynets retningslinjer kun vælge lån med fast rente eller mindst 5 års rentetilpasning. Rentefradraget er ca. 33 % op til 50.000 kr. i renter pr. voksen og ca. 25 % derover.
+                    Bankerne stiller også krav til dit rådighedsbeløb, og de ser forskelligt på det – brug resultatet som et pejlemærke. Ikke rådgivning.
+                    Kilder: <a href="https://skat.dk/erhverv/afgifter-paa-varer-og-ydelser-punktafgifter/nyhedsbrev-afgifter/tinglysningsafgift-ny-afgiftssats-pr-1-januar-2026" target="_blank" rel="noopener">skat.dk</a>, <a href="https://www.nationalbanken.dk/media/4hfg5pa3/laaneregler-i-lyset-af-hoejere-renter.pdf" target="_blank" rel="noopener">Nationalbanken</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Køb eller leje ===== -->
+    <div id="housing2" style="display:none;">
+        <p class="tool-intro">Sammenlign at <strong>købe</strong> en bolig med at <strong>leje</strong> og investere forskellen. Begge starter med samme beløb: køberens udbetaling og købsomkostninger. Lejeren investerer det, der ikke går til depositum, og hver måned investerer den af jer, der har de laveste boligudgifter, forskellen. Grafen viser jeres formue, hvis boligen blev solgt det år.</p>
+        <div class="layout">
+            <div class="panel">
+                <div class="eyebrow">Køb</div>
+                <div class="field"><label for="brPrice">Boligpris (kr.)</label><input type="number" id="brPrice" class="number-input" value="3000000" min="0" step="50000"></div>
+                <div class="field"><label for="brDown">Udbetaling (kr.)</label><input type="number" id="brDown" class="number-input" value="300000" min="0" step="10000"><div class="limit-hint" id="brDownHint"></div></div>
+                <div class="field"><label for="brOwnerCosts">Ejerudgifter pr. måned (kr.)</label><input type="number" id="brOwnerCosts" class="number-input" value="2000" min="0" step="100"><div class="limit-hint">Forsikring, fællesudgifter, grundejerforening</div></div>
+                <div class="field"><label for="brPropertyTax">Boligskat pr. år (kr.)</label><input type="number" id="brPropertyTax" class="number-input" value="20000" min="0" step="1000"><div class="limit-hint">Ejendomsværdiskat + grundskyld – se vurderingsportalen.dk</div></div>
+                <div class="field"><label for="brMaintenance">Vedligehold pr. år (% af værdien)</label><input type="number" id="brMaintenance" class="number-input" value="1" min="0" step="0.1"></div>
+                <div class="field"><label for="brPriceGrowth">Boligprisstigning pr. år (%)</label><input type="number" id="brPriceGrowth" class="number-input" value="2" step="0.1"></div>
+
+                <div class="eyebrow eyebrow-section">Leje</div>
+                <div class="field"><label for="brRent">Husleje pr. måned (kr.)</label><input type="number" id="brRent" class="number-input" value="13000" min="0" step="100"></div>
+                <div class="field"><label for="brRentGrowth">Lejestigning pr. år (%)</label><input type="number" id="brRentGrowth" class="number-input" value="2" step="0.1"></div>
+                <div class="field"><label for="brDeposit">Depositum (måneders husleje)</label><input type="number" id="brDeposit" class="number-input" value="3" min="0" max="3" step="1"></div>
+
+                <div class="eyebrow eyebrow-section">Øvrigt</div>
+                <div class="field"><label for="brReturn">Afkast på investeringer efter skat (%)</label><input type="number" id="brReturn" class="number-input" value="5" step="0.1"></div>
+                <div class="field"><label for="brYears">Antal år</label><input type="number" id="brYears" class="number-input" value="15" min="1" max="40" step="1"></div>
+                <div class="field"><label for="brAdults">Antal voksne</label><select id="brAdults" class="number-input"><option value="1">1</option><option value="2" selected>2</option></select></div>
+                <details>
+                    <summary class="summary-toggle">Lån og omkostninger</summary>
+                    <div class="details-body">
+                        <div class="field"><label for="brRkRate">Realkreditrente (%)</label><input type="number" id="brRkRate" class="number-input" value="4" min="0" step="0.1"></div>
+                        <div class="field"><label for="brBidrag">Bidragssats (%)</label><input type="number" id="brBidrag" class="number-input" value="0.75" min="0" step="0.05"></div>
+                        <div class="field"><label for="brRkYears">Løbetid, realkredit (år)</label><input type="number" id="brRkYears" class="number-input" value="30" min="1" max="30" step="1"></div>
+                        <div class="field"><label for="brBankRate">Rente, banklån (%)</label><input type="number" id="brBankRate" class="number-input" value="6.5" min="0" step="0.1"></div>
+                        <div class="field"><label for="brBankYears">Løbetid, banklån (år)</label><input type="number" id="brBankYears" class="number-input" value="20" min="1" max="30" step="1"></div>
+                        <div class="field"><label for="brOtherCosts">Andre købsomkostninger (kr.)</label><input type="number" id="brOtherCosts" class="number-input" value="25000" min="0" step="1000"><div class="limit-hint">Tinglysning regnes automatisk</div></div>
+                        <div class="field"><label for="brSellCosts">Salgsomkostninger (% af salgsprisen)</label><input type="number" id="brSellCosts" class="number-input" value="2.5" min="0" step="0.1"><div class="limit-hint">Ejendomsmægler, markedsføring, advokat</div></div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="panel chart-panel chart-panel-sticky">
+                <div class="legend">
+                    <span><i class="dot" style="background:var(--akt)"></i>Formue ved køb</span>
+                    <span><i class="dot" style="background:var(--ask)"></i>Formue ved leje</span>
+                </div>
+                <div class="chart-wrap"><canvas id="buyRentChart"></canvas></div>
+            </div>
+        </div>
+        <div class="full-width-below">
+            <div class="stats">
+                <div class="stat"><div class="label" id="brWinnerLabel">Bedst efter 15 år</div><div class="value" id="brWinner">–</div><div class="sub" id="brWinnerSub"></div></div>
+                <div class="stat"><div class="label">Køb betaler sig efter</div><div class="value" id="brBreakEven">–</div><div class="sub" id="brBreakEvenSub"></div></div>
+                <div class="stat"><div class="label">Boligudgift år 1, køb</div><div class="value akt" id="brBuyMonthly">–</div><div class="sub">pr. måned efter rentefradrag</div></div>
+                <div class="stat"><div class="label">Boligudgift år 1, leje</div><div class="value ask" id="brRentMonthly">–</div><div class="sub">pr. måned</div></div>
+            </div>
+            <div class="panel">
+                <div class="eyebrow">År for år</div>
+                <div class="data-table-wrap">
+                    <table class="data-table">
+                        <thead><tr><th>År</th><th>Boligværdi</th><th>Restgæld</th><th>Formue ved køb</th><th>Formue ved leje</th><th>Forskel</th></tr></thead>
+                        <tbody id="brTableBody"></tbody>
+                    </table>
+                </div>
+                <p class="explainer">
+                    Gevinst ved salg af din egen bolig er skattefri, og salgsomkostningerne er trukket fra formuen ved køb. Afkastet på investeringer angives efter skat for at holde det enkelt. Rentefradraget (ca. 33 % op til 50.000 kr. pr. voksen, ca. 25 % derover) er modregnet i køberens udgifter, ligesom bidrag. Boligskatten følger boligprisen. Ikke rådgivning.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Gældsafvikling ===== -->
+    <div id="housing3" style="display:none;">
+        <p class="tool-intro">Skriv dine lån ind og se, hvornår du er <strong>gældfri</strong>, og hvor meget du betaler i rente. Et fast <strong>ekstra beløb</strong> om måneden sættes ind på ét lån ad gangen – og når et lån er betalt ud, går dets ydelse videre til det næste. <strong>Lavine</strong>-metoden tager den højeste rente først (billigst), <strong>snebold</strong>-metoden det mindste lån først (hurtigste sejre).</p>
+        <div class="layout">
+            <div class="panel">
+                <div class="eyebrow">Dine lån</div>
+                <div id="debtRows"></div>
+                <button class="btn btn-secondary" type="button" onclick="addDebt()">+ Tilføj lån</button>
+                <div class="field eyebrow-section">
+                    <label for="debtExtra">Ekstra afdrag pr. måned (kr.)</label>
+                    <input type="number" id="debtExtra" class="number-input" value="1000" min="0" step="100">
+                    <div class="limit-hint">Ud over lånenes minimumsydelser</div>
+                </div>
+                <div class="notice" id="debtWarning" hidden></div>
+            </div>
+            <div class="panel chart-panel chart-panel-sticky">
+                <div class="legend">
+                    <span><i class="dot" style="background:var(--akt)"></i>Lavine</span>
+                    <span><i class="dot" style="background:var(--ask)"></i>Snebold</span>
+                    <span><i class="dot" style="background:var(--neutral-series)"></i>Kun minimumsydelser</span>
+                </div>
+                <div class="chart-wrap"><canvas id="debtChart"></canvas></div>
+            </div>
+        </div>
+        <div class="full-width-below">
+            <div class="stats">
+                <div class="stat"><div class="label">Gældfri med lavine</div><div class="value akt" id="debtFreeAvalanche">–</div><div class="sub" id="debtFreeAvalancheSub"></div></div>
+                <div class="stat"><div class="label">Gældfri med snebold</div><div class="value ask" id="debtFreeSnowball">–</div><div class="sub" id="debtFreeSnowballSub"></div></div>
+                <div class="stat"><div class="label">Kun minimumsydelser</div><div class="value" id="debtFreeMinimum">–</div><div class="sub" id="debtFreeMinimumSub"></div></div>
+                <div class="stat"><div class="label">Du sparer i rente</div><div class="value akt" id="debtSaved">–</div><div class="sub">med lavine frem for kun minimum</div></div>
+            </div>
+            <div class="panel">
+                <div class="eyebrow">Hvornår er hvert lån betalt ud?</div>
+                <div class="data-table-wrap">
+                    <table class="data-table">
+                        <thead><tr><th>Lån</th><th>Lavine</th><th>Snebold</th><th>Kun minimum</th></tr></thead>
+                        <tbody id="debtTableBody"></tbody>
+                    </table>
+                </div>
+                <p class="explainer">Renten tilskrives månedligt. Minimumsydelserne betales altid på alle lån; ekstrabeløbet og ydelser fra lån, der er betalt ud, går til ét lån ad gangen. Ændrer du dine lån, gemmes de her i browseren. Ikke rådgivning.</p>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <div id="section-budget" style="display:none;">
@@ -832,6 +1123,10 @@
     <script src="js/tool2-monthly.js"></script>
     <script src="js/tool3-fire.js"></script>
     <script src="js/tool4-portfolio.js"></script>
+    <script src="js/pension.js"></script>
+    <script src="js/loan-capacity.js"></script>
+    <script src="js/buy-vs-rent.js"></script>
+    <script src="js/debt-payoff.js"></script>
     <script src="js/navigation.js"></script>
     <script src="js/budget.js"></script>
     <script src="js/net-worth.js"></script>

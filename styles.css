@@ -212,6 +212,8 @@ h1{
 .btn-sm{ font-size:12px; padding:6px 12px; }
 @media (max-width:1100px){
     .layout, .layout-net-worth{grid-template-columns:1fr;}
+    .panel.chart-panel-sticky{ position:static; }
+    .chart-panel-sticky .chart-wrap{ height:360px; }
 }
 @media (max-width:820px){
     .layout-wide{grid-template-columns:1fr;}
@@ -768,6 +770,56 @@ select.number-input{ font-family:var(--font-sans); cursor:pointer; }
 .fun-emoji{ width:1.6em; flex-shrink:0; text-align:center; font-size:18px; line-height:1; }
 .fun-item strong{ font-family:var(--font-mono); font-weight:500; color:var(--akt); min-width:6ch; text-align:right; }
 
+/* ---- Calculators ---- */
+.details-body{ margin-top:var(--s4); }
+.panel.chart-panel-sticky{ align-self:start; position:sticky; top:var(--s5); }
+.chart-panel-sticky .chart-wrap{ flex:none; min-height:0; height:520px; }
+.panel > details + .field,
+.panel > .field + details{ margin-top:var(--s4); }
+.result-hero{
+    padding:var(--s5); margin-bottom:var(--s2);
+    background:var(--panel-sunken); border:1px solid var(--border); border-radius:var(--r-md);
+}
+.result-label{ font-size:13.5px; color:var(--muted); }
+.result-value{ margin-top:var(--s1); font-family:var(--font-mono); font-size:34px; font-weight:500; letter-spacing:-0.02em; color:var(--akt); line-height:1.15; }
+.result-sub{ margin-top:var(--s2); font-size:13.5px; color:var(--muted); }
+.notice{
+    margin-top:var(--s4); padding:var(--s3) var(--s4);
+    border:1px solid var(--cross); border-radius:var(--r-md);
+    background:var(--panel-sunken); color:var(--text);
+    font-size:13.5px; line-height:1.6;
+}
+.notice[hidden]{ display:none; }
+.limit-row{ margin-bottom:var(--s4); }
+.limit-row:last-child{ margin-bottom:0; }
+.limit-row-head{ display:flex; justify-content:space-between; gap:var(--s3); margin-bottom:var(--s2); font-size:13.5px; }
+.limit-row-title{ color:var(--muted); }
+.limit-row-value{ font-family:var(--font-mono); color:var(--text); }
+.limit-row .progress-fill{ background:var(--neutral-series); }
+.limit-row.is-binding .progress-fill{ background:var(--akt); }
+.limit-row.is-binding .limit-row-title{ color:var(--text); font-weight:600; }
+.limit-row.is-binding .limit-row-value{ color:var(--akt); }
+.hint-warning{ color:var(--cross); }
+table.data-table tr.is-total td{ color:var(--text); font-weight:600; border-top:1px solid var(--border-strong); }
+table.data-table td.is-positive{ color:var(--akt); }
+table.data-table td.is-negative{ color:var(--ask); }
+#lcBreakdown td:first-child{ color:var(--muted); }
+.debt-row{
+    padding:var(--s3) var(--s4) var(--s4); margin-bottom:var(--s3);
+    background:var(--panel-sunken); border:1px solid var(--border); border-radius:var(--r-md);
+}
+.debt-row-head{ display:flex; align-items:center; gap:var(--s2); margin-bottom:var(--s2); }
+.debt-name{
+    flex:1; min-width:0; padding:var(--s1) 0;
+    background:transparent; border:none; border-bottom:1px dashed var(--border-strong);
+    color:var(--text); font-family:var(--font-sans); font-size:14.5px; font-weight:600;
+}
+.debt-name:focus{ outline:none; border-bottom-color:var(--akt); }
+.debt-row-fields{ display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:var(--s2); }
+.debt-field{ display:flex; flex-direction:column; gap:var(--s1); min-width:0; }
+.debt-field-label{ font-size:11.5px; color:var(--subtle); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.debt-field .number-input{ margin:0; padding:8px 10px; }
+
 /* ---- Monthly status ---- */
 .monthly-status-btn{ margin-left:auto; }
 .status-date{ max-width:220px; margin-bottom:var(--s4); }
@@ -880,6 +932,8 @@ select.number-input{ font-family:var(--font-sans); cursor:pointer; }
     .settings-btn{ top:var(--s4); right:var(--s4); }
     .settings-panel{ right:var(--s4); left:var(--s4); width:auto; }
     .budget-item-head{ display:none; }
+    .debt-row-fields{ grid-template-columns:1fr; }
+    .result-value{ font-size:28px; }
     .budget-item-row{ grid-template-columns:minmax(0,1fr) 34px; padding-bottom:var(--s3); margin-bottom:var(--s3); border-bottom:1px solid var(--border); }
     .budget-item-row > :nth-child(2),
     .budget-item-row > :nth-child(3){ grid-column:1; }

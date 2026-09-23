@@ -583,6 +583,367 @@ function parseCSV(text){
     });
 }
 
+// ==== Bolig og lån: regler (2026) ====
+
+// Tinglysningsafgift pr. 1. januar 2026 (skat.dk): skøde 1.850 kr. + 0,6 % af
+// prisen, pant 1.825 kr. + 1,25 % af lånets hovedstol.
+const TINGLYSNING = { skoedeFast: 1850, skoedePct: 0.006, pantFast: 1825, pantPct: 0.0125 };
+// Mindst 5 % udbetaling ved køb af ejerbolig; realkredit op til 80 % af prisen.
+const MIN_UDBETALING = 0.05;
+const MAX_REALKREDIT = 0.80;
+// Finanstilsynet: gældsfaktor over 4 kombineret med belåningsgrad over 60 %
+// betyder begrænsninger på lånetyper (fast rente eller mindst 5 års rentebinding, afdrag).
+const HIGH_DEBT_FACTOR = 4;
+const HIGH_LTV = 0.60;
+// Rentefradrag: ca. 33 % af renteudgifter op til 50.000 kr. pr. voksen, ca. 25 % derover.
+const RENTEFRADRAG = { lowRate: 0.33, highRate: 0.25, thresholdPerAdult: 50000 };
+
+/**
+ * Den faste månedlige ydelse på et annuitetslån.
+ * @param {number} principal lånets hovedstol i kr.
+ * @param {number} annualRate årlig rente som decimaltal, fx 0.04
+ * @param {number} years løbetid i år
+ * @returns {number} ydelse pr. måned (rente + afdrag), 0 hvis intet lån
+ */
+function annuityPayment(principal, annualRate, years){
+    if(principal <= 0 || years <= 0) return 0;
+    const n = Math.round(years * 12);
+    const r = annualRate / 12;
+    if(r === 0) return principal / n;
+    return principal * r / (1 - Math.pow(1 + r, -n));
+}
+
+/**
+ * Engangsomkostninger ved køb: tinglysning af skøde og pantebreve plus andre
+ * omkostninger (advokat/køberrådgiver, tilstandsrapport, lånesagsgebyrer ...).
+ * @param {number} price
+ * @param {number} realkreditLoan
+ * @param {number} bankLoan
+ * @param {number} otherCosts
+ * @returns {{skoede:number, pant:number, other:number, total:number}}
+ */
+function purchaseCosts(price, realkreditLoan, bankLoan, otherCosts){
+    const skoede = TINGLYSNING.skoedeFast + TINGLYSNING.skoedePct * price;
+    const pantFor = loan => loan > 0 ? TINGLYSNING.pantFast + TINGLYSNING.pantPct * loan : 0;
+    const pant = pantFor(realkreditLoan) + pantFor(bankLoan);
+    const other = otherCosts || 0;
+    return { skoede, pant, other, total: skoede + pant + other };
+}
+
+/**
+ * Fordeler lånet på realkredit (op til 80 % af prisen) og banklån (resten).
+ * @param {number} price
+ * @param {number} downPayment
+ * @returns {{loan:number, realkredit:number, bank:number}}
+ */
+function loanSplit(price, downPayment){
+    const loan = Math.max(0, price - downPayment);
+    const realkredit = Math.min(loan, MAX_REALKREDIT * price);
+    return { loan, realkredit, bank: loan - realkredit };
+}
+
+/**
+ * Værdien af rentefradraget for et års renteudgifter (inkl. bidrag).
+ * @param {number} annualInterest
+ * @param {number} adults antal voksne, der deler lånet (1 eller 2)
+ * @returns {number}
+ */
+function interestDeductionValue(annualInterest, adults){
+    if(annualInterest <= 0) return 0;
+    const threshold = RENTEFRADRAG.thresholdPerAdult * Math.max(1, adults || 1);
+    return Math.min(annualInterest, threshold) * RENTEFRADRAG.lowRate
+         + Math.max(0, annualInterest - threshold) * RENTEFRADRAG.highRate;
+}
+
+// ==== Hvor meget kan jeg låne? ====
+
+/**
+ * Den højeste boligpris, man kan købe, givet tre begrænsninger:
+ * 1) udbetaling: opsparingen skal dække omkostningerne og mindst 5 % af prisen,
+ * 2) gældsfaktor: samlet gæld efter købet højst `debtFactorLimit` × indkomsten,
+ * 3) ydelse: den samlede månedlige ydelse højst `maxMonthlyPayment` (0 = ingen grænse).
+ * Hele opsparingen bruges; det, der er tilbage efter omkostninger, er udbetaling.
+ * @param {{income:number, savings:number, existingDebt:number, debtFactorLimit:number,
+ *   maxMonthlyPayment:number, realkreditRate:number, bidragssats:number, realkreditYears:number,
+ *   bankRate:number, bankYears:number, otherCosts:number}} p satser som decimaltal
+ * @returns {{maxPrice:number, limits:{downPayment:number, debtFactor:number, payment:number|null},
+ *   binding:'downPayment'|'debtFactor'|'payment', details:Object}}
+ */
+function loanCapacity(p){
+    const evaluate = price => {
+        // Omkostningerne afhænger af lånene og omvendt - få gennemløb konvergerer.
+        let downPayment = p.savings;
+        for(let i = 0; i < 25; i++){
+            const s = loanSplit(price, Math.max(0, downPayment));
+            downPayment = p.savings - purchaseCosts(price, s.realkredit, s.bank, p.otherCosts).total;
+        }
+        const split = loanSplit(price, Math.max(0, downPayment));
+        const costs = purchaseCosts(price, split.realkredit, split.bank, p.otherCosts);
+        const realkreditPayment = annuityPayment(split.realkredit, p.realkreditRate, p.realkreditYears);
+        const bidrag = split.realkredit * p.bidragssats / 12;
+        const bankPayment = annuityPayment(split.bank, p.bankRate, p.bankYears);
+        return {
+            price, downPayment, ...split, costs,
+            realkreditPayment, bidrag, bankPayment,
+            monthly: realkreditPayment + bidrag + bankPayment,
+            debtFactor: p.income > 0 ? (split.loan + (p.existingDebt || 0)) / p.income : Infinity,
+            ltv: price > 0 ? split.loan / price : 0
+        };
+    };
+
+    const checks = {
+        downPayment: price => evaluate(price).downPayment >= MIN_UDBETALING * price - 1e-6,
+        debtFactor: price => evaluate(price).debtFactor <= p.debtFactorLimit + 1e-9,
+        payment: price => evaluate(price).monthly <= p.maxMonthlyPayment + 1e-6
+    };
+    // Alle tre er monotone i prisen, så den højeste gyldige pris findes ved halvering.
+    const maxBy = ok => {
+        if(!ok(0)) return 0;
+        let lo = 0, hi = Math.max(1, p.savings / MIN_UDBETALING);
+        if(ok(hi)) return hi;
+        for(let i = 0; i < 60; i++){
+            const mid = (lo + hi) / 2;
+            if(ok(mid)) lo = mid; else hi = mid;
+        }
+        return lo;
+    };
+    const limits = {
+        downPayment: maxBy(checks.downPayment),
+        debtFactor: maxBy(checks.debtFactor),
+        payment: p.maxMonthlyPayment > 0 ? maxBy(checks.payment) : null
+    };
+    const binding = Object.keys(limits)
+        .filter(k => limits[k] !== null)
+        .reduce((a, b) => limits[b] < limits[a] ? b : a);
+    const maxPrice = Math.floor(limits[binding] / 1000) * 1000;
+    return { maxPrice, limits, binding, details: evaluate(maxPrice) };
+}
+
+// ==== Køb eller leje? ====
+
+/**
+ * Sammenligner at købe en bolig med at leje og investere forskellen, måned for
+ * måned. Begge starter med samme formue: køberens udbetaling + købsomkostninger.
+ * Lejeren betaler depositum og investerer resten. Hver måned investerer den af
+ * de to, der har de laveste boligudgifter, forskellen. Gevinst ved salg af egen
+ * bolig er skattefri (parcelhusreglen); investeringsafkastet angives efter skat.
+ *
+ * @param {{price:number, downPayment:number, realkreditRate:number, bidragssats:number,
+ *   realkreditYears:number, bankRate:number, bankYears:number, propertyTaxYearly:number,
+ *   maintenancePct:number, ownerCostsMonthly:number, priceGrowth:number, otherBuyCosts:number,
+ *   sellCostsPct:number, rentMonthly:number, rentGrowth:number, depositMonths:number,
+ *   investReturn:number, adults:number, years:number}} p satser som decimaltal
+ * @returns {{series:{year:number, buyer:number, renter:number, homeValue:number, debt:number}[],
+ *   upfront:number, firstYearBuyerMonthly:number, firstYearRentMonthly:number, breakEvenYear:number|null,
+ *   final:{buyer:number, renter:number}}}
+ */
+function simulateBuyVsRent(p){
+    const split = loanSplit(p.price, p.downPayment);
+    const costs = purchaseCosts(p.price, split.realkredit, split.bank, p.otherBuyCosts);
+    const upfront = Math.min(p.downPayment, p.price) + costs.total;
+    const deposit = p.rentMonthly * p.depositMonths;
+
+    let rk = split.realkredit, bank = split.bank;
+    const rkPay = annuityPayment(rk, p.realkreditRate, p.realkreditYears);
+    const bankPay = annuityPayment(bank, p.bankRate, p.bankYears);
+    const monthlyFactor = Math.pow(1 + p.investReturn, 1 / 12);
+
+    let buyerInvest = 0;
+    let renterInvest = upfront - deposit;
+    let rent = p.rentMonthly;
+    let homeValue = p.price;
+    let propertyTax = p.propertyTaxYearly;
+    let firstYearBuyer = 0, firstYearRent = 0;
+
+    const netWorth = () => ({
+        buyer: homeValue * (1 - p.sellCostsPct) - rk - bank + buyerInvest,
+        renter: renterInvest + deposit
+    });
+    const series = [{ year: 0, ...netWorth(), homeValue, debt: rk + bank }];
+
+    for(let year = 1; year <= p.years; year++){
+        let yearInterest = 0;
+        const monthlyCosts = [];
+        for(let m = 0; m < 12; m++){
+            const rkInterest = rk * p.realkreditRate / 12;
+            const bidrag = rk * p.bidragssats / 12;
+            const rkPaid = rk > 0 ? Math.min(rkPay, rk + rkInterest) : 0;
+            rk = Math.max(0, rk + rkInterest - rkPaid);
+            const bankInterest = bank * p.bankRate / 12;
+            const bankPaid = bank > 0 ? Math.min(bankPay, bank + bankInterest) : 0;
+            bank = Math.max(0, bank + bankInterest - bankPaid);
+            yearInterest += rkInterest + bidrag + bankInterest;
+            monthlyCosts.push(rkPaid + bidrag + bankPaid
+                + propertyTax / 12 + homeValue * p.maintenancePct / 12 + p.ownerCostsMonthly);
+        }
+        // Rentefradraget modregnes jævnt over året.
+        const deductionMonthly = interestDeductionValue(yearInterest, p.adults) / 12;
+        for(let m = 0; m < 12; m++){
+            const buyerCost = monthlyCosts[m] - deductionMonthly;
+            if(year === 1){ firstYearBuyer += buyerCost / 12; firstYearRent += rent / 12; }
+            buyerInvest *= monthlyFactor;
+            renterInvest *= monthlyFactor;
+            const diff = buyerCost - rent;
+            if(diff > 0) renterInvest += diff; else buyerInvest -= diff;
+        }
+        homeValue *= 1 + p.priceGrowth;
+        propertyTax *= 1 + p.priceGrowth;
+        rent *= 1 + p.rentGrowth;
+        series.push({ year, ...netWorth(), homeValue, debt: rk + bank });
+    }
+    const breakEven = series.find(s => s.year > 0 && s.buyer >= s.renter);
+    return {
+        series, upfront, costs, split,
+        firstYearBuyerMonthly: firstYearBuyer, firstYearRentMonthly: firstYearRent,
+        breakEvenYear: breakEven ? breakEven.year : null,
+        final: { buyer: series.at(-1).buyer, renter: series.at(-1).renter }
+    };
+}
+
+// ==== Gældsafvikling ====
+
+const DEBT_MAX_MONTHS = 600;
+
+/**
+ * Afvikler flere lån måned for måned. Minimumsydelsen betales på alle lån;
+ * ekstrabeløbet - og ydelsen fra lån, der er betalt ud ("sneboldeffekten") -
+ * går til ét mållån ad gangen:
+ * 'avalanche' (lavine) = højeste rente først, 'snowball' (snebold) = mindste
+ * restgæld først, 'minimum' = kun minimumsydelser, ingen overførsel.
+ * @param {{name:string, balance:number, rate:number, minPayment:number}[]} debts rente som decimaltal
+ * @param {number} extraMonthly
+ * @param {'avalanche'|'snowball'|'minimum'} strategy
+ * @returns {{feasible:boolean, months:number, totalInterest:number, totalPaid:number,
+ *   payoff:{name:string, index:number, month:number}[], balances:number[]}} index = lånets plads blandt lånene med restgæld balances[m] = samlet restgæld efter m måneder
+ */
+function simulateDebtPayoff(debts, extraMonthly, strategy){
+    const state = debts
+        .filter(d => d.balance > 0)
+        .map((d, i) => ({ ...d, index: i, left: d.balance, paidOffMonth: null }));
+    const budget = state.reduce((s, d) => s + d.minPayment, 0) + (strategy === 'minimum' ? 0 : Math.max(0, extraMonthly));
+    const balances = [state.reduce((s, d) => s + d.left, 0)];
+    let totalInterest = 0, totalPaid = 0, month = 0;
+
+    const order = () => {
+        const open = state.filter(d => d.left > 0.005);
+        if(strategy === 'snowball') return open.sort((a, b) => a.left - b.left || b.rate - a.rate);
+        return open.sort((a, b) => b.rate - a.rate || a.left - b.left);
+    };
+
+    while(state.some(d => d.left > 0.005) && month < DEBT_MAX_MONTHS){
+        month++;
+        state.forEach(d => {
+            if(d.left <= 0.005) return;
+            const interest = d.left * d.rate / 12;
+            d.left += interest;
+            totalInterest += interest;
+        });
+        let available = budget;
+        state.forEach(d => {
+            if(d.left <= 0.005) return;
+            const pay = Math.min(d.minPayment, d.left, strategy === 'minimum' ? Infinity : available);
+            d.left -= pay; available -= pay; totalPaid += pay;
+        });
+        if(strategy !== 'minimum'){
+            for(const d of order()){
+                if(available <= 0) break;
+                const pay = Math.min(d.left, available);
+                d.left -= pay; available -= pay; totalPaid += pay;
+            }
+        }
+        state.forEach(d => { if(d.left <= 0.005 && d.paidOffMonth === null){ d.left = 0; d.paidOffMonth = month; } });
+        balances.push(state.reduce((s, d) => s + d.left, 0));
+    }
+    const feasible = state.every(d => d.left <= 0.005);
+    return {
+        feasible,
+        months: feasible ? month : null,
+        totalInterest, totalPaid,
+        payoff: state.filter(d => d.paidOffMonth !== null)
+            .sort((a, b) => a.paidOffMonth - b.paidOffMonth)
+            .map(d => ({ name: d.name, index: d.index, month: d.paidOffMonth })),
+        balances
+    };
+}
+
+// ==== Pension ====
+
+// Pensionsafkastskat (PAL) af afkast på pensionsordninger.
+const PAL_SKAT = 0.153;
+// Beløbsgrænser 2026 (skat.dk).
+const PENSION_LIMITS_2026 = { aldersopsparing: 9900, aldersopsparingNearPension: 64200, ratepension: 68700 };
+
+/**
+ * Folkepensionsalderen for et fødselstidspunkt. 67-70 år er vedtaget; højere
+ * aldre er Beskæftigelsesministeriets skøn, som endnu ikke er vedtaget.
+ * @param {number} birthYear
+ * @param {number} [birthMonth] 1-12, bruges kun ved grænserne midt i 1987 og 1996
+ * @returns {{age:number, legislated:boolean}}
+ */
+function folkepensionAge(birthYear, birthMonth = 1){
+    const key = birthYear * 12 + (birthMonth - 1);
+    const from = (y, m) => y * 12 + (m - 1);
+    const table = [
+        [from(1996, 7), 74, false], [from(1992, 1), 73.5, false], [from(1987, 7), 73, false],
+        [from(1983, 1), 72.5, false], [from(1979, 1), 71.5, false], [from(1975, 1), 71, false],
+        [from(1971, 1), 70, true], [from(1967, 1), 69, true], [from(1963, 1), 68, true]
+    ];
+    const row = table.find(([start]) => key >= start);
+    return row ? { age: row[1], legislated: row[2] } : { age: 67, legislated: true };
+}
+
+/**
+ * Pensionsopsparing frem til pensionsalderen og en jævn månedlig udbetaling
+ * bagefter. Afkastet fratrækkes omkostninger og PAL-skat. Udbetalingen er en
+ * annuitet over `payoutYears`, hvor restformuen fortsat forrentes.
+ * @param {{currentAge:number, retirementAge:number, currentSavings:number, monthlyContribution:number,
+ *   annualReturn:number, annualCosts:number, inflation:number, payoutYears:number, payoutTaxRate:number}} p
+ *   satser som decimaltal
+ * @returns {{netAnnualReturn:number, balanceAtRetirement:number, balanceAtRetirementReal:number,
+ *   monthlyPayoutGross:number, monthlyPayoutNet:number, monthlyPayoutNetReal:number,
+ *   totalContributions:number, series:{age:number, balance:number, balanceReal:number}[]}}
+ */
+function simulatePension(p){
+    const netAnnualReturn = (p.annualReturn - p.annualCosts) * (1 - PAL_SKAT);
+    const monthlyFactor = Math.pow(1 + netAnnualReturn, 1 / 12);
+    const yearsToRetirement = Math.max(0, Math.round((p.retirementAge - p.currentAge) * 12) / 12);
+    const deflate = (value, years) => value / Math.pow(1 + p.inflation, years);
+
+    let balance = p.currentSavings;
+    let totalContributions = 0;
+    const series = [{ age: p.currentAge, balance, balanceReal: balance }];
+    const accumulationMonths = Math.round(yearsToRetirement * 12);
+    for(let m = 1; m <= accumulationMonths; m++){
+        balance += p.monthlyContribution;
+        totalContributions += p.monthlyContribution;
+        balance *= monthlyFactor;
+        if(m % 12 === 0 || m === accumulationMonths){
+            const years = m / 12;
+            series.push({ age: p.currentAge + years, balance, balanceReal: deflate(balance, years) });
+        }
+    }
+    const balanceAtRetirement = balance;
+    // Samme effektive månedsrente som i opsparingsfasen, så formuen rammer præcis 0.
+    const payoutMonths = Math.round(p.payoutYears * 12);
+    const rm = monthlyFactor - 1;
+    const monthlyPayoutGross = payoutMonths <= 0 ? 0 : rm === 0 ? balance / payoutMonths : balance * rm / (1 - Math.pow(1 + rm, -payoutMonths));
+    for(let m = 1; m <= payoutMonths; m++){
+        balance = balance * monthlyFactor - monthlyPayoutGross;
+        if(m % 12 === 0){
+            const years = yearsToRetirement + m / 12;
+            series.push({ age: p.currentAge + years, balance: Math.max(0, balance), balanceReal: deflate(Math.max(0, balance), years) });
+        }
+    }
+    const monthlyPayoutNet = monthlyPayoutGross * (1 - p.payoutTaxRate);
+    return {
+        netAnnualReturn, balanceAtRetirement,
+        balanceAtRetirementReal: deflate(balanceAtRetirement, yearsToRetirement),
+        monthlyPayoutGross, monthlyPayoutNet,
+        monthlyPayoutNetReal: deflate(monthlyPayoutNet, yearsToRetirement),
+        totalContributions, series
+    };
+}
+
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
@@ -595,6 +956,10 @@ if(typeof module !== 'undefined' && module.exports){
         monthlyAmount, categoryTotal, budgetSummary,
         upsertByDate, mergeByDate, changedFields, normalizeDate,
         CEPOS_WEALTH_TABLE, findNearestWealthRow, estimatePercentile,
-        parseDanishAmount, findHeaderRowIndex, parseCSV
+        parseDanishAmount, findHeaderRowIndex, parseCSV,
+        TINGLYSNING, MIN_UDBETALING, MAX_REALKREDIT, HIGH_DEBT_FACTOR, HIGH_LTV, RENTEFRADRAG,
+        annuityPayment, purchaseCosts, loanSplit, interestDeductionValue, loanCapacity,
+        simulateBuyVsRent, simulateDebtPayoff,
+        PAL_SKAT, PENSION_LIMITS_2026, folkepensionAge, simulatePension
     };
 }
