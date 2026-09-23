@@ -106,6 +106,7 @@ body{
     text-align:center;
     padding:var(--s3);
 }
+.ad-slot[hidden]{ display:none; }
 @media (max-width:1400px){
     .ad-slot{ display:none; }
 }
@@ -772,6 +773,8 @@ select.number-input{ font-family:var(--font-sans); cursor:pointer; }
 
 /* ---- Calculators ---- */
 .details-body{ margin-top:var(--s4); }
+.save-status{ margin:calc(-1 * var(--s3)) 0 var(--s4) 0; font-size:12px; color:var(--subtle); }
+.save-status.is-saved{ color:var(--ask); }
 .panel.chart-panel-sticky{ align-self:start; position:sticky; top:var(--s5); }
 .chart-panel-sticky .chart-wrap{ flex:none; min-height:0; height:520px; }
 .panel > details + .field,

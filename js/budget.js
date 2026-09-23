@@ -49,6 +49,7 @@ function loadCustomCategories(){
 /** @param {{id:string, label:string, group:string, color:string}[]} cats */
 function saveCustomCategories(cats){
     localStorage.setItem('budgetCustomCategories', JSON.stringify(cats));
+    markSaved('budgetSaveStatus');
 }
 
 /**
@@ -69,6 +70,7 @@ function loadBudgetItems(){
 /** @param {Object<string, {label:string, amount:number, freq?:number}[]>} items */
 function saveBudgetItems(items){
     localStorage.setItem('budgetItems', JSON.stringify(items));
+    markSaved('budgetSaveStatus');
 }
 
 /** Gemmer det indtastede samlede beløb. */
@@ -423,5 +425,5 @@ async function resetBudget(){
 }
 
 loadBudgetFromStorage();
-document.getElementById('budgetTotalInput').addEventListener('input', updateBudget);
+document.getElementById('budgetTotalInput').addEventListener('input', () => { updateBudget(); markSaved('budgetSaveStatus'); });
 updateBudget();

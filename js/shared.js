@@ -111,7 +111,9 @@ function downloadTableAsCSV(tbodyId, filename){
     const table = tbody.closest('table');
     const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
     const rows = Array.from(tbody.querySelectorAll('tr')).map(tr =>
-        Array.from(tr.querySelectorAll('td')).map(td => td.textContent.trim())
+        // Celler kan gemme en maskinlæsbar værdi (fx ISO-datoen) i data-csv, så
+        // eksporten kan læses ind igen, selvom tabellen viser "30. sep. 2026".
+        Array.from(tr.querySelectorAll('td')).map(td => (td.dataset.csv ?? td.textContent).trim())
     );
 
     // Semikolon som separator (ikke komma), fordi danske Excel-opsætninger som

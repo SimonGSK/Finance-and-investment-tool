@@ -22,6 +22,7 @@ function loadDebtData(){
 
 function saveDebtData(data){
     localStorage.setItem('debtPayoffData', JSON.stringify(data));
+    markSaved('debtSaveStatus');
 }
 
 const debtChart = new Chart(document.getElementById('debtChart').getContext('2d'), {

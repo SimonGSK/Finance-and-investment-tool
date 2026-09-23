@@ -243,7 +243,7 @@ function renderPortfolioHistory(){
         };
     });
 
-    const labels = enriched.map(h => h.date);
+    const labels = enriched.map(h => formatDanishDate(h.date));
 
     ptChart1.data.labels = labels;
     ptChart1.data.datasets[0].data = enriched.map(h => h.portfolioValue);
@@ -286,14 +286,14 @@ function renderPortfolioHistory(){
 
     const ptTableBody = document.getElementById('ptTableBody');
     ptTableBody.innerHTML = enriched.map(h => `<tr>
-            <td>${h.date}</td>
+            <td data-csv="${h.date}">${formatDanishDate(h.date)}</td>
             <td>${DK.format(h.portfolioValue)} kr.</td>
             <td>${DK.format(h.stockValue)} kr.</td>
             <td>${DK.format(h.cash)} kr.</td>
             <td>${DK.format(h.traded)} kr.</td>
             <td>${DK.format(h.deposit)} kr.</td>
             <td>${DK.format(h.dividend)} kr.</td>
-            <td><button class="btn btn-secondary" style="padding:4px 10px; font-size:12px;" onclick="deletePortfolioEntry('${h.date}')">Slet</button></td>
+            <td><button class="btn btn-secondary btn-sm" aria-label="Slet datapunktet for ${formatDanishDate(h.date)}" onclick="deletePortfolioEntry('${h.date}')">Slet</button></td>
         </tr>`).join('');
 }
 
