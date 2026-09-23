@@ -17,7 +17,8 @@ const {
     parseDanishAmount, findHeaderRowIndex, parseCSV,
     annuityPayment, purchaseCosts, loanSplit, interestDeductionValue, loanCapacity,
     simulateBuyVsRent, simulateDebtPayoff,
-    PAL_SKAT, PENSION_LIMITS_2026, folkepensionAge, simulatePension
+    PAL_SKAT, PENSION_LIMITS_2026, folkepensionAge, simulatePension,
+    backupReminderDue, emergencyFundMonths, xirr, portfolioCashFlows
 } = calc;
 
 const approx = (actual, expected, tolerance = 1e-6) =>
@@ -519,5 +520,68 @@ describe('pension', () => {
         approx(r.series.at(-1).balance, 0, 1e-3);
         approx(r.monthlyPayoutNet, r.monthlyPayoutGross * 0.63);
         assert.ok(r.balanceAtRetirementReal < r.balanceAtRetirement);
+    });
+});
+
+describe('backup-påmindelse', () => {
+    const day = 24 * 60 * 60 * 1000, now = Date.parse('2026-09-24T12:00:00Z');
+    test('ingen data, ingen påmindelse', () => {
+        assert.equal(backupReminderDue({hasData:false, now, lastBackupAt:null, firstDataAt:now - 100 * day, snoozedUntil:null}).due, false);
+    });
+    test('aldrig taget backup: påmind efter 7 dage med data', () => {
+        assert.equal(backupReminderDue({hasData:true, now, lastBackupAt:null, firstDataAt:now - 6 * day, snoozedUntil:null}).due, false);
+        assert.equal(backupReminderDue({hasData:true, now, lastBackupAt:null, firstDataAt:now - 7 * day, snoozedUntil:null}).due, true);
+    });
+    test('seneste backup over 30 dage gammel', () => {
+        const r = backupReminderDue({hasData:true, now, lastBackupAt:now - 31 * day, firstDataAt:null, snoozedUntil:null});
+        assert.deepEqual(r, {due:true, daysSinceBackup:31});
+        assert.equal(backupReminderDue({hasData:true, now, lastBackupAt:now - 29 * day, firstDataAt:null, snoozedUntil:null}).due, false);
+    });
+    test('udsættelse respekteres, indtil den udløber', () => {
+        const base = {hasData:true, now, lastBackupAt:now - 60 * day, firstDataAt:null};
+        assert.equal(backupReminderDue({...base, snoozedUntil: now + day}).due, false);
+        assert.equal(backupReminderDue({...base, snoozedUntil: now - day}).due, true);
+    });
+});
+
+describe('nødopsparing', () => {
+    test('måneder dækket', () => {
+        assert.equal(emergencyFundMonths(90000, 30000), 3);
+        assert.equal(emergencyFundMonths(-5000, 30000), 0);
+        assert.equal(emergencyFundMonths(90000, 0), null);
+    });
+});
+
+describe('faktisk afkast (XIRR)', () => {
+    test('100 bliver til 110 på et år: 10 %', () => {
+        approx(xirr([{date:'2025-01-01', amount:-100}, {date:'2026-01-01', amount:110}]), 0.10, 1e-9);
+    });
+    test('nutidsværdien er 0 ved den fundne rente, også med ekstra indskud', () => {
+        const flows = [{date:'2024-01-01', amount:-10000}, {date:'2024-07-01', amount:-5000}, {date:'2025-03-15', amount:-2000}, {date:'2026-01-01', amount:19500}];
+        const r = xirr(flows);
+        const t0 = Date.parse('2024-01-01T00:00:00Z');
+        const npv = flows.reduce((s, f) => s + f.amount / Math.pow(1 + r, (Date.parse(f.date + 'T00:00:00Z') - t0) / (365 * 24 * 3600 * 1000)), 0);
+        approx(npv, 0, 1e-6);
+        assert.ok(r > 0 && r < 0.2);
+    });
+    test('tab giver negativ rente', () => {
+        assert.ok(xirr([{date:'2025-01-01', amount:-100}, {date:'2026-01-01', amount:80}]) < 0);
+    });
+    test('kan ikke bestemmes uden både ind- og udbetalinger', () => {
+        assert.equal(xirr([{date:'2025-01-01', amount:-100}]), null);
+        assert.equal(xirr([{date:'2025-01-01', amount:-100}, {date:'2026-01-01', amount:-10}]), null);
+    });
+    test('pengestrømme fra porteføljehistorik', () => {
+        const h = [
+            {date:'2025-01-31', portfolioValue:100000, deposit:5000},
+            {date:'2025-02-28', portfolioValue:106000, deposit:3000},
+            {date:'2025-03-31', portfolioValue:108000, deposit:0}
+        ];
+        assert.deepEqual(portfolioCashFlows(h), [
+            {date:'2025-01-31', amount:-100000},
+            {date:'2025-02-28', amount:-3000},
+            {date:'2025-03-31', amount:108000}
+        ]);
+        assert.deepEqual(portfolioCashFlows(h.slice(0, 1)), []);
     });
 });

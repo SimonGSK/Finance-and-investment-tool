@@ -17,9 +17,11 @@ function formatDanishDate(isoDate){
     return isNaN(d) ? isoDate : DANISH_DATE.format(d);
 }
 
-/** @returns {string} dagens dato som 'YYYY-MM-DD' i lokal tid */
-function todayIso(){
-    const d = new Date();
+/**
+ * @param {Date} [d] udeladt = nu
+ * @returns {string} datoen som 'YYYY-MM-DD' i lokal tid (ikke UTC, som toISOString ville give)
+ */
+function todayIso(d = new Date()){
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 

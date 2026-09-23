@@ -399,6 +399,8 @@ function updateBudget(){
 
     renderCategoryList();
     saveBudgetToStorage();
+    // Formue-sektionens nødopsparing bygger på budgettet (net-worth.js indlæses efter denne fil).
+    if(typeof updateEmergencyFund === 'function') updateEmergencyFund();
 }
 
 /**

@@ -83,11 +83,74 @@ function exportAllData(){
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'okonomivaerktoejer-backup-' + new Date().toISOString().slice(0,10) + '.json';
+    link.download = 'okonomivaerktoejer-backup-' + todayIso() + '.json';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    localStorage.setItem('lastBackupAt', String(Date.now()));
+    localStorage.removeItem('backupSnoozedUntil');
+    document.getElementById('backupBanner').hidden = true;
+    renderBackupStatus();
+    notify('Backup downloadet. Gem filen et sikkert sted, fx i din cloud-mappe.');
+}
+
+/** @returns {boolean} om der er data, der ville gå tabt uden backup */
+function hasUserData(){
+    const read = key => { try{ return JSON.parse(localStorage.getItem(key) || 'null'); } catch(e){ return null; } };
+    const items = read('budgetItems') || {};
+    return (read('netWorthHistory') || []).length > 0
+        || (read('portfolioHistory') || []).length > 0
+        || Object.values(items).some(list => list.length > 0)
+        || (read('budgetCustomCategories') || []).length > 0
+        || read('debtPayoffData') !== null
+        || read('monthlyStatusLast') !== null;
+}
+
+function readTimestamp(key){
+    const v = parseInt(localStorage.getItem(key), 10);
+    return isNaN(v) ? null : v;
+}
+
+/** Skriver "Seneste backup: …" i indstillingspanelet. */
+function renderBackupStatus(){
+    const last = readTimestamp('lastBackupAt');
+    const node = document.getElementById('backupStatus');
+    if(!last){
+        node.textContent = hasUserData() ? 'Seneste backup: aldrig' : '';
+        node.classList.toggle('is-stale', hasUserData());
+        return;
+    }
+    const days = Math.floor((Date.now() - last) / DAY_MS);
+    const ago = days === 0 ? 'i dag' : days === 1 ? 'i går' : `${days} dage siden`;
+    node.textContent = `Seneste backup: ${formatDanishDate(todayIso(new Date(last)))} (${ago})`;
+    node.classList.toggle('is-stale', days >= BACKUP_REMIND_AFTER_DAYS);
+}
+
+/** Viser backup-påmindelsen, hvis den er aktuel. */
+function checkBackupReminder(){
+    const now = Date.now();
+    const hasData = hasUserData();
+    if(hasData && !readTimestamp('firstDataAt')) localStorage.setItem('firstDataAt', String(now));
+    const {due, daysSinceBackup} = backupReminderDue({
+        hasData, now,
+        lastBackupAt: readTimestamp('lastBackupAt'),
+        firstDataAt: readTimestamp('firstDataAt'),
+        snoozedUntil: readTimestamp('backupSnoozedUntil')
+    });
+    document.getElementById('backupBanner').hidden = !due;
+    if(due){
+        document.getElementById('backupBannerText').textContent = daysSinceBackup === null
+            ? '💾 Du har ikke taget en backup af dine data endnu. De findes kun i denne browser – download en backup, så du ikke mister dem.'
+            : `💾 Det er ${daysSinceBackup} dage siden, du sidst tog en backup. Download en ny, så dine seneste tal også er sikret.`;
+    }
+}
+
+/** Udsætter påmindelsen en uge. */
+function snoozeBackupReminder(){
+    localStorage.setItem('backupSnoozedUntil', String(Date.now() + 7 * DAY_MS));
+    document.getElementById('backupBanner').hidden = true;
+    notify('Vi minder dig om det igen om en uge.');
 }
 
 /**
@@ -135,6 +198,8 @@ function dismissIntroBanner(){
     localStorage.setItem('hasSeenIntroBanner', 'true');
 }
 
+checkBackupReminder();
+
 if(!localStorage.getItem('hasSeenIntroBanner')){
     document.getElementById('introBanner').style.display = 'flex';
 }
@@ -150,6 +215,7 @@ function toggleSettings(open){
     const show = open ?? panel.style.display === 'none';
     panel.style.display = show ? 'block' : 'none';
     btn.setAttribute('aria-expanded', String(show));
+    if(show) renderBackupStatus();
 }
 
 document.addEventListener('keydown', e => {

@@ -944,6 +944,74 @@ function simulatePension(p){
     };
 }
 
+// ==== Backup, nødopsparing og faktisk afkast ====
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const BACKUP_REMIND_AFTER_DAYS = 30;
+const BACKUP_FIRST_REMIND_AFTER_DAYS = 7;
+
+/**
+ * Skal brugeren mindes om at tage backup? Kun hvis der er data at miste, og
+ * enten er seneste backup over 30 dage gammel, eller der aldrig er taget en
+ * og dataene er over 7 dage gamle. En udsættelse ("påmind mig senere") respekteres.
+ * @param {{hasData:boolean, now:number, lastBackupAt:number|null, firstDataAt:number|null, snoozedUntil:number|null}} s tidspunkter i ms
+ * @returns {{due:boolean, daysSinceBackup:number|null}}
+ */
+function backupReminderDue(s){
+    const daysSinceBackup = s.lastBackupAt ? Math.floor((s.now - s.lastBackupAt) / DAY_MS) : null;
+    if(!s.hasData || (s.snoozedUntil && s.now < s.snoozedUntil)) return {due:false, daysSinceBackup};
+    if(daysSinceBackup !== null) return {due: daysSinceBackup >= BACKUP_REMIND_AFTER_DAYS, daysSinceBackup};
+    const dataAge = s.firstDataAt ? (s.now - s.firstDataAt) / DAY_MS : 0;
+    return {due: dataAge >= BACKUP_FIRST_REMIND_AFTER_DAYS, daysSinceBackup};
+}
+
+/**
+ * Hvor mange måneders udgifter kontanterne dækker.
+ * @param {number} cash
+ * @param {number} monthlyExpenses
+ * @returns {number|null} null hvis udgifterne er ukendte
+ */
+function emergencyFundMonths(cash, monthlyExpenses){
+    if(!(monthlyExpenses > 0)) return null;
+    return Math.max(0, cash) / monthlyExpenses;
+}
+
+/**
+ * Årlig intern rente (XIRR) for en række ind- og udbetalinger på datoer.
+ * Negativ = penge ind i investeringen, positiv = penge ud (eller slutværdien).
+ * @param {{date:string, amount:number}[]} flows ISO-datoer
+ * @returns {number|null} fx 0.07 for 7 % om året; null hvis den ikke kan bestemmes
+ */
+function xirr(flows){
+    if(flows.length < 2 || !flows.some(f => f.amount < 0) || !flows.some(f => f.amount > 0)) return null;
+    const t0 = Date.parse(flows[0].date + 'T00:00:00Z');
+    const years = flows.map(f => (Date.parse(f.date + 'T00:00:00Z') - t0) / (365 * DAY_MS));
+    const npv = r => flows.reduce((sum, f, i) => sum + f.amount / Math.pow(1 + r, years[i]), 0);
+    let lo = -0.9999, hi = 1;
+    while(npv(lo) * npv(hi) > 0 && hi < 1e6) hi *= 2;
+    if(npv(lo) * npv(hi) > 0) return null;
+    for(let i = 0; i < 200; i++){
+        const mid = (lo + hi) / 2;
+        if(npv(lo) * npv(mid) <= 0) hi = mid; else lo = mid;
+    }
+    return (lo + hi) / 2;
+}
+
+/**
+ * Pengestrømmene til XIRR fra porteføljehistorikken: startværdien som et
+ * indskud på første dato, hver periodes indskud/udbetaling, og slutværdien.
+ * Udbytte, der bliver i depotet, indgår i værdien.
+ * @param {{date:string, portfolioValue:number, deposit:number}[]} history sorteret efter dato
+ * @returns {{date:string, amount:number}[]}
+ */
+function portfolioCashFlows(history){
+    if(history.length < 2) return [];
+    const flows = [{date: history[0].date, amount: -(history[0].portfolioValue || 0)}];
+    history.slice(1).forEach(h => { if(h.deposit) flows.push({date: h.date, amount: -h.deposit}); });
+    flows.push({date: history.at(-1).date, amount: history.at(-1).portfolioValue || 0});
+    return flows;
+}
+
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
@@ -960,6 +1028,7 @@ if(typeof module !== 'undefined' && module.exports){
         TINGLYSNING, MIN_UDBETALING, MAX_REALKREDIT, HIGH_DEBT_FACTOR, HIGH_LTV, RENTEFRADRAG,
         annuityPayment, purchaseCosts, loanSplit, interestDeductionValue, loanCapacity,
         simulateBuyVsRent, simulateDebtPayoff,
-        PAL_SKAT, PENSION_LIMITS_2026, folkepensionAge, simulatePension
+        PAL_SKAT, PENSION_LIMITS_2026, folkepensionAge, simulatePension,
+        backupReminderDue, emergencyFundMonths, xirr, portfolioCashFlows
     };
 }
