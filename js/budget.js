@@ -259,8 +259,8 @@ function openCategoryDialog(catId){
         const groupSelect = groupSelectEl(cat.group, e => updateCustomCategory(catId, {group:e.target.value}));
         content.append(el('div', {className:'dialog-section'}, [
             el('div', {className:'eyebrow', textContent:'Kategori'}),
-            el('div', {className:'field'}, [el('label', {textContent:'Navn'}), nameInput]),
-            el('div', {className:'field'}, [el('label', {textContent:'Gruppe (50/30/20)'}), groupSelect]),
+            fieldEl('Navn', nameInput),
+            fieldEl('Gruppe (50/30/20)', groupSelect),
             el('button', {className:'btn btn-danger', type:'button', textContent:'Slet kategori', onclick: () => deleteCustomCategory(catId, dialogHandle)})
         ]));
     }
@@ -330,8 +330,8 @@ function openNewCategoryDialog(){
     nameInput.addEventListener('input', () => { error.textContent = ''; nameInput.removeAttribute('aria-invalid'); });
 
     const content = el('div', {}, [
-        el('div', {className:'field'}, [el('label', {textContent:'Navn'}), nameInput, error]),
-        el('div', {className:'field'}, [el('label', {textContent:'Gruppe (50/30/20)'}), groupSelect])
+        fieldEl('Navn', nameInput, [error]),
+        fieldEl('Gruppe (50/30/20)', groupSelect)
     ]);
 
     let createdId = null;

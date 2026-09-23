@@ -185,7 +185,7 @@ function openMonthlyStatus(){
 
     const content = el('div', {}, [
         el('p', {className:'dialog-hint', textContent:intro}),
-        el('div', {className:'field status-date'}, [el('label', {textContent:'Dato'}), dateInput, dateError]),
+        fieldEl('Dato', dateInput, [dateError], 'status-date'),
         existingNote,
         ...sections,
         el('div', {className:'status-summary-box'}, [el('div', {className:'eyebrow', textContent:'Opsummering'}), summary])
