@@ -54,6 +54,7 @@ let ptChart2 = new Chart(ptCtx2, {
         ]},
     options:{
         responsive:true,
+        maintainAspectRatio:false,
         animation:{duration:250},
         interaction:{mode:'index', intersect:false},
         plugins:{
