@@ -11,7 +11,8 @@ const {
     computeAskSeries, computeAktFinalValueForStartYear, findBestHarvestStartYear, computeAktSeries,
     computeMonthlyFinalValueForStartYear, findBestMonthlyHarvestStartYear, computeMonthlySeries,
     computeFireSeries,
-    categoryTotal,
+    monthlyAmount, categoryTotal, budgetSummary,
+    upsertByDate, mergeByDate,
     CEPOS_WEALTH_TABLE, findNearestWealthRow, estimatePercentile,
     parseDanishAmount, findHeaderRowIndex, parseCSV
 } = calc;
@@ -181,6 +182,59 @@ describe('budget', () => {
         assert.equal(categoryTotal(items, 'bolig'), 8200);
         assert.equal(categoryTotal(items, 'mad'), 0);
         assert.equal(categoryTotal({}, 'bolig'), 0);
+    });
+
+    test('ikke-månedlige poster omregnes til pr. måned', () => {
+        assert.equal(monthlyAmount({ amount: 1200, freq: 12 }), 100);
+        assert.equal(monthlyAmount({ amount: 900, freq: 3 }), 300);
+        assert.equal(monthlyAmount({ amount: 500 }), 500);          // gamle poster uden freq er månedlige
+        assert.equal(monthlyAmount({ amount: 'x', freq: 12 }), 0);
+        const items = { forsikring: [{ amount: 6000, freq: 12 }, { amount: 250, freq: 1 }] };
+        assert.equal(categoryTotal(items, 'forsikring'), 750);
+    });
+
+    test('opsummering fordeler på 50/30/20-grupper', () => {
+        const cats = [{ id: 'a', group: 'behov' }, { id: 'b', group: 'onsker' }, { id: 'c', group: 'opsparing' }, { id: 'd', group: 'behov' }];
+        const items = { a: [{ amount: 5000 }], b: [{ amount: 3000 }], c: [{ amount: 24000, freq: 12 }], d: [{ amount: 1000 }] };
+        const s = budgetSummary(cats, items);
+        assert.deepEqual(s.values, [5000, 3000, 2000, 1000]);
+        assert.equal(s.sum, 11000);
+        assert.deepEqual(s.groupSums, { behov: 6000, onsker: 3000, opsparing: 2000 });
+    });
+
+    test('tomt budget giver nuller', () => {
+        const s = budgetSummary([{ id: 'a', group: 'behov' }], {});
+        assert.equal(s.sum, 0);
+        assert.deepEqual(s.groupSums, { behov: 0, onsker: 0, opsparing: 0 });
+    });
+});
+
+describe('historik pr. dato', () => {
+    const h = [{ date: '2026-07-31', v: 1 }, { date: '2026-08-31', v: 2 }];
+
+    test('ny dato indsættes sorteret, intet erstattes', () => {
+        const r = upsertByDate(h, { date: '2026-08-15', v: 9 });
+        assert.deepEqual(r.history.map(x => x.date), ['2026-07-31', '2026-08-15', '2026-08-31']);
+        assert.equal(r.replaced, null);
+    });
+
+    test('eksisterende dato erstattes, og det gamle punkt returneres', () => {
+        const r = upsertByDate(h, { date: '2026-08-31', v: 5 });
+        assert.equal(r.history.length, 2);
+        assert.equal(r.history[1].v, 5);
+        assert.deepEqual(r.replaced, { date: '2026-08-31', v: 2 });
+    });
+
+    test('den oprindelige liste ændres ikke', () => {
+        upsertByDate(h, { date: '2026-08-31', v: 5 });
+        assert.equal(h[1].v, 2);
+    });
+
+    test('fletning melder hvilke datoer der erstattes', () => {
+        const r = mergeByDate(h, [{ date: '2026-08-31', v: 7 }, { date: '2026-09-30', v: 8 }, { date: '2026-07-31', v: 6 }]);
+        assert.deepEqual(r.replacedDates, ['2026-07-31', '2026-08-31']);
+        assert.equal(r.addedCount, 1);
+        assert.deepEqual(r.history.map(x => x.v), [6, 7, 8]);
     });
 });
 
