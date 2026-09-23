@@ -47,6 +47,7 @@
             <h1>Økonomiværktøjer</h1>
             <p class="subtitle">Brug værktøjerne og udforsk dit økonomiske potentiale.</p>
         </div>
+        <button class="settings-btn help-btn" id="helpBtn" onclick="openHelp()" aria-label="Hjælp og spørgsmål" aria-haspopup="dialog">?</button>
         <button class="settings-btn" id="settingsBtn" onclick="toggleSettings()" aria-label="Indstillinger" aria-expanded="false" aria-controls="settingsPanel">⚙️</button>
     </div>
             <div class="settings-panel" id="settingsPanel" role="region" aria-label="Indstillinger" style="display:none;">
@@ -181,6 +182,7 @@
                 <details>
                     <summary class="summary-toggle">Forklaring</summary>
                     <p class="explainer">
+                        Kilder: <a href="https://skat.dk/borger/aktier-og-andre-vaerdipapirer/aktiesparekonto" target="_blank" rel="noopener">skat.dk: aktiesparekonto</a>, <a href="https://skat.dk/borger/aktier-og-andre-vaerdipapirer/skat-af-aktier" target="_blank" rel="noopener">skat.dk: skat af aktier</a>.<br><br>
                         Det er en afvejning: sælger du for tidligt, mister du renters rente på de kroner, der forlader depotet som skat, før det er nødvendigt. Venter du for længe, risikerer du i stedet, at en stor del af gevinsten bliver beskattet med den høje sats på <span data-rule="AKT_TAX_HIGH">42</span>% i sidste øjeblik. Værktøjet finder det optimale startår for realisering af gevinst, ved simpelthen at afprøve alle mulige år og vælge det, der reelt giver den højeste slutværdi. Jo højere det forventede afkast er, jo dyrere er det at betale skat tidligt (de kroner går glip af mere vækst), så høje afkast trækker det optimale startår tættere på sidste år. Ved lave afkast koster tidlig realisering til gengæld mindre i tabt vækst, så det kan bedre betale sig at sprede realiseringen ud over flere år.
                     </p>
                 </details>
@@ -1153,6 +1155,59 @@
         </aside>
     </div>
 
+
+    <template id="helpContent">
+        <div class="faq">
+            <details open>
+                <summary>Hvor gemmes mine data?</summary>
+                <p>Kun i din browser på denne enhed. Der er ingen konto, og intet sendes til en server. Rydder du browserdata, bruger et privat vindue eller skifter enhed eller browser, er tallene ikke med – derfor er backup vigtig.</p>
+            </details>
+            <details>
+                <summary>Hvordan tager jeg backup eller flytter mine data?</summary>
+                <p>Åbn indstillinger (tandhjulet) og vælg <strong>Download alt (JSON)</strong>. Filen kan indlæses igen – også i en anden browser – med <strong>Upload alt</strong>. Siden minder dig om det, hvis din seneste backup er mere end 30 dage gammel.</p>
+            </details>
+            <details>
+                <summary>Hvad er Månedsstatus?</summary>
+                <p>Ét skema, der gemmer samme dato i både Formue og Porteføljetracker. <strong>Kontanter</strong> er bank- og opsparingskonti, fysiske kontanter og kontanter i dit aktiedepot; <strong>Aktier</strong> er kun værdien af selve aktierne. Skemaet starter med dine seneste tal, så du kun retter det, der har ændret sig.</p>
+            </details>
+            <details>
+                <summary>Hvad sker der, hvis jeg gemmer på en dato, der allerede har data?</summary>
+                <p>Du får vist præcis, hvilke tal der ændres, før noget bliver overskrevet – og kan fortryde. Er tallene de samme, sker der ingenting.</p>
+            </details>
+            <details>
+                <summary>Kan jeg fortryde en sletning?</summary>
+                <p>Ja. Sletter du en budgetpost, en kategori, et lån eller et datapunkt, eller nulstiller du felterne, vises en besked nederst på skærmen med <strong>Fortryd</strong> i nogle sekunder.</p>
+            </details>
+            <details>
+                <summary>Hvordan deler jeg en beregning?</summary>
+                <p>Tryk <strong>Del beregning</strong> i en af lommeregnerne. Linket indeholder kun lommeregnerens tal. Dit budget, din formue, din portefølje og dine lån deles aldrig.</p>
+            </details>
+            <details>
+                <summary>Hvorfor beskattes en aktiesparekonto hvert år?</summary>
+                <p>En aktiesparekonto lagerbeskattes: årets gevinst beskattes med <span data-rule="ASK_TAX">17</span> %, uanset om du sælger. Et almindeligt aktiedepot beskattes først, når du sælger, med <span data-rule="AKT_TAX_LOW">27</span> % op til <span data-rule="TAX_LIMIT_27">79.400</span> kr. om året og <span data-rule="AKT_TAX_HIGH">42</span> % derover. Du kan højst indskyde <span data-rule="ASK_DEPOSIT_LIMIT">174.200</span> kr. på en aktiesparekonto.</p>
+            </details>
+            <details>
+                <summary>Hvad er den optimale realiseringsstrategi?</summary>
+                <p>I et aktiedepot kan du sælge og købe tilbage hvert år op til <span data-rule="AKT_TAX_LOW">27</span>%-grænsen, så gevinsten beskattes med den lave sats i stedet for delvist med <span data-rule="AKT_TAX_HIGH">42</span> % til sidst. Det koster dog renters rente at betale skatten tidligt, så værktøjet prøver alle startår og vælger det, der giver mest.</p>
+            </details>
+            <details>
+                <summary>Hvad betyder gældsfaktor og belåningsgrad?</summary>
+                <p><strong>Gældsfaktor</strong> er din samlede gæld delt med husstandens indkomst før skat. <strong>Belåningsgrad</strong> er lånet delt med boligens pris. Har du en gældsfaktor over <span data-rule="HIGH_DEBT_FACTOR">4</span> og en belåningsgrad over <span data-rule="HIGH_LTV">60</span> %, må du efter Finanstilsynets retningslinjer kun vælge lån med fast rente eller mindst 5 års rentetilpasning.</p>
+            </details>
+            <details>
+                <summary>Hvor kommer tallene fra?</summary>
+                <p>Satserne gælder for <span data-rule="TAX_YEAR">2026</span> og kommer fra <a href="https://skat.dk/borger/aktier-og-andre-vaerdipapirer/aktiesparekonto" target="_blank" rel="noopener">skat.dk: aktiesparekonto</a>, <a href="https://skat.dk/borger/aktier-og-andre-vaerdipapirer/skat-af-aktier" target="_blank" rel="noopener">skat.dk: skat af aktier</a>, <a href="https://skat.dk/borger/pension-og-efterloen/skat-af-pensionsafkast" target="_blank" rel="noopener">skat.dk: skat af pensionsafkast</a>, <a href="https://skat.dk/borger/pension-og-efterloen/fradrag-for-indbetalinger-til-pension" target="_blank" rel="noopener">skat.dk: fradrag for pension</a>, <a href="https://skat.dk/erhverv/afgifter-paa-varer-og-ydelser-punktafgifter/nyhedsbrev-afgifter/tinglysningsafgift-ny-afgiftssats-pr-1-januar-2026" target="_blank" rel="noopener">skat.dk: tinglysningsafgift</a>, <a href="https://star.dk/ydelser/pension-og-efterloen/folkepension-tidlig-pension-foertidspension-og-seniorpension/folkepension/folkepensionsalderen-nu-og-fremover/" target="_blank" rel="noopener">star.dk: folkepensionsalder</a> og <a href="https://www.nationalbanken.dk/media/4hfg5pa3/laaneregler-i-lyset-af-hoejere-renter.pdf" target="_blank" rel="noopener">Nationalbanken: låneregler</a>. Sammenligningen af formue bygger på CEPOS' opgørelse af Danmarks Statistiks tal.</p>
+            </details>
+            <details>
+                <summary>Er det her rådgivning?</summary>
+                <p>Nej. Værktøjerne regner med faste antagelser om afkast, renter og priser, som virkeligheden ikke følger. Brug dem til at forstå og sammenligne – og tal med en rådgiver, før du træffer store beslutninger.</p>
+            </details>
+            <details>
+                <summary>Genveje</summary>
+                <p><strong>Enter</strong> gemmer i en dialog, <strong>Esc</strong> lukker dialoger og indstillinger, og piletasterne i et talfelt ændrer beløbet i passende trin (fx 1.000 kr.).</p>
+            </details>
+        </div>
+    </template>
     <script src="js/calc.js"></script>
     <script src="js/shared.js"></script>
     <script src="js/ui.js"></script>
