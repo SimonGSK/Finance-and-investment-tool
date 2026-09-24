@@ -10,6 +10,9 @@ All data stays in your browser's `localStorage`. There are no accounts, no serve
 
 ### Investering
 
+The FIRE calculator can **fetch your numbers** from Formue (cash and shares by default; pension and home equity can be ticked) and your yearly spending and monthly saving from the budget.
+
+
 **ASK vs. Aktiedepot** — Compares a lump sum in a Danish stock savings account (*Aktiesparekonto*, flat 17% yearly tax on gains, 174.200 kr. deposit limit) against the same sum in a regular depot (*Aktiedepot*, 27%/42% progressive tax on realised gains, no limit). The depot side uses the tax-optimal realisation strategy described below. Supports paying the ASK tax from outside the account, the doubled 27% threshold for married couples, and inflation-adjusted ("today's purchasing power") display.
 
 **Aktiedepot: fast + månedligt** — A regular depot with an optional starting amount plus a fixed monthly contribution, again with the optimal realisation strategy. Shows total invested, net profit and percentage gain.
@@ -42,7 +45,7 @@ Every field has a small **?** that explains it, and each tool has a foldable *Hv
 
 ### Settings
 
-Light or dark theme (follows the system by default), and a one-file JSON backup/restore of all Budget, Formue and Portefølje data.
+Light or dark theme (follows the system by default), and a one-file JSON backup/restore of all Budget, Formue and Portefølje data. An optional reminder (on by default) appears around each month-end for people who track their numbers — from the last three days of a month to the 10th of the next — and opens *Månedsstatus* on the month's last day.
 
 ## The optimal realisation strategy
 

@@ -43,6 +43,7 @@ function showTool(n){
         document.getElementById('tool2InflationRow').insertAdjacentElement('afterend', ddRow);
     }
     ddRow.style.display = (n === 1 || n === 2) ? '' : 'none';
+    if(n === 3 && typeof updateFireImportButton === 'function') updateFireImportButton();
 }
 
 /**
@@ -148,6 +149,39 @@ function checkBackupReminder(){
     }
 }
 
+// ---- Påmindelse om månedsstatus ----
+
+let monthlyReminderState = null;
+
+/** Viser påmindelsen om at gemme månedens tal, hvis den er aktuel (se monthlyStatusReminder i calc.js). */
+function checkMonthlyReminder(){
+    const banner = document.getElementById('monthlyReminderBanner');
+    const latest = typeof latestStatusDate === 'function' ? latestStatusDate() : null;
+    monthlyReminderState = monthlyStatusReminder({
+        today: todayIso(),
+        latestSaved: latest,
+        dismissedMonth: localStorage.getItem('monthlyReminderDismissed'),
+        enabled: localStorage.getItem('monthlyReminderOff') !== '1'
+    });
+    banner.hidden = !monthlyReminderState.due;
+    if(monthlyReminderState.due){
+        const monthName = new Date(monthlyReminderState.month + '-15').toLocaleDateString('da-DK', {month:'long'});
+        document.getElementById('monthlyReminderText').textContent =
+            `Tid til månedsstatus: gem dine tal for ${monthName}, så din formue- og porteføljehistorik bliver ved med at være komplet.`;
+    }
+}
+
+function openMonthlyStatusFromReminder(){
+    openMonthlyStatus(monthlyReminderState?.suggestedDate);
+}
+
+/** "Ikke denne måned": skjuler påmindelsen, til næste måned slutter. */
+function dismissMonthlyReminder(){
+    if(monthlyReminderState?.month) localStorage.setItem('monthlyReminderDismissed', monthlyReminderState.month);
+    document.getElementById('monthlyReminderBanner').hidden = true;
+    notify('Du bliver mindet om det igen ved næste månedsskifte. Du kan slå påmindelsen fra i indstillingerne.');
+}
+
 /** Udsætter påmindelsen en uge. */
 function snoozeBackupReminder(){
     localStorage.setItem('backupSnoozedUntil', String(Date.now() + 7 * DAY_MS));
@@ -237,3 +271,15 @@ document.getElementById('doubleDeduction').addEventListener('change', () => {
     update();
     update2();
 });
+// Påmindelsen om månedsstatus: tjek ved indlæsning, og slå til/fra i indstillingerne.
+(function initMonthlyReminder(){
+    const toggle = document.getElementById('monthlyReminderToggle');
+    toggle.checked = localStorage.getItem('monthlyReminderOff') !== '1';
+    toggle.addEventListener('change', () => {
+        if(toggle.checked) localStorage.removeItem('monthlyReminderOff');
+        else localStorage.setItem('monthlyReminderOff', '1');
+        checkMonthlyReminder();
+    });
+    // Efter alle scripts: påmindelsen læser historikken fra net-worth.js, som indlæses senere.
+    document.addEventListener('DOMContentLoaded', checkMonthlyReminder);
+})();

@@ -140,3 +140,81 @@ bindSliderAndNumber('inflation3', 'inflation3Number', update3);
 showReal3Input.addEventListener('input', update3);
 
 update3();
+// ---- Hent mine tal fra Formue og Budget ----
+
+/** Tallene, FIRE-beregneren kan hente: formuen (felter eller seneste øjebliksbillede) og budgettet. */
+function fireImportSources(){
+    const figures = currentNetWorthFigures();
+    const {sum, groupSums} = budgetSummary(getBudgetCategories(), loadBudgetItems());
+    return {figures, expensesMonthly: sum - groupSums.opsparing, savingsMonthly: groupSums.opsparing};
+}
+
+/** Knappen vises kun, når Formue eller Budget har tal. */
+function updateFireImportButton(){
+    const {figures, expensesMonthly, savingsMonthly} = fireImportSources();
+    document.getElementById('fireImportBtn').hidden = !(figures.assets > 0 || expensesMonthly > 0 || savingsMonthly > 0);
+}
+
+/**
+ * Viser tallene fra Formue og Budget, lader brugeren vælge, hvad der tæller
+ * som opsparing til FIRE, og sætter dem ind - med fortryd.
+ */
+function openFireImport(){
+    const {figures, expensesMonthly, savingsMonthly} = fireImportSources();
+    // Pension og friværdi kan sjældent bruges før pensionsalderen, så de er fravalgt fra start.
+    const assetRows = NET_WORTH_CATEGORIES.filter(cat => figures[cat.id] > 0).map(cat => ({
+        cat, box: el('input', {type:'checkbox', checked: cat.liquid})
+    }));
+    const expensesBox = el('input', {type:'checkbox', checked: expensesMonthly > 0, disabled: !(expensesMonthly > 0)});
+    const savingsBox = el('input', {type:'checkbox', checked: savingsMonthly > 0, disabled: !(savingsMonthly > 0)});
+    const total = el('strong');
+    const refresh = () => {
+        const sum = assetRows.reduce((s, r) => s + (r.box.checked ? figures[r.cat.id] : 0), 0);
+        total.textContent = DK.format(sum) + ' kr.';
+    };
+    [...assetRows.map(r => r.box)].forEach(b => b.addEventListener('change', refresh));
+    refresh();
+
+    const row = (box, label, amount) => el('label', {className:'toggle-row import-row'}, [
+        box, el('span', {className:'toggle-text'}, [label]), el('span', {className:'import-amount', textContent: amount})
+    ]);
+    const source = figures.fromSnapshot
+        ? `Fra dit seneste øjebliksbillede (${formatDanishDate(figures.date)}).`
+        : 'Fra felterne i Formue.';
+
+    const content = el('div', {}, [
+        el('div', {className:'eyebrow', textContent:'Nuværende opsparing'}),
+        assetRows.length
+            ? el('div', {}, [
+                el('p', {className:'dialog-hint', textContent:`${source} Vælg det, du kan bruge, før du går på pension – pension og friværdi er derfor fravalgt.`}),
+                ...assetRows.map(r => row(r.box, r.cat.label, DK.format(figures[r.cat.id]) + ' kr.')),
+                el('p', {className:'import-total'}, ['I alt: ', total])
+            ])
+            : el('p', {className:'dialog-hint', textContent:'Der er ingen aktiver i Formue endnu.'}),
+        el('div', {className:'eyebrow', textContent:'Fra budgettet', attrs:{style:'margin-top:18px'}}),
+        row(expensesBox, 'Årligt forbrug (udgifter uden opsparing × 12)', expensesMonthly > 0 ? DK.format(expensesMonthly * 12) + ' kr.' : 'intet budget'),
+        row(savingsBox, 'Månedlig investering (opsparingsposterne)', savingsMonthly > 0 ? DK.format(savingsMonthly) + ' kr.' : 'ingen opsparing')
+    ]);
+
+    openDialog({
+        title:'Hent mine tal',
+        content,
+        actions:[
+            {label:'Annullér', variant:'secondary'},
+            {label:'Brug tallene', variant:'primary', onClick: () => {
+                const changes = [];
+                if(assetRows.length) changes.push(['startCash3Number', assetRows.reduce((s, r) => s + (r.box.checked ? figures[r.cat.id] : 0), 0)]);
+                if(expensesBox.checked) changes.push(['expenses3Number', Math.round(expensesMonthly * 12)]);
+                if(savingsBox.checked) changes.push(['monthlyAmount3Number', Math.round(savingsMonthly)]);
+                const previous = changes.map(([id]) => [id, document.getElementById(id).value]);
+                const apply = list => list.forEach(([id, v]) => {
+                    const input = document.getElementById(id);
+                    input.value = v;
+                    input.dispatchEvent(new Event('input', {bubbles:true}));
+                });
+                apply(changes);
+                notify('Dine tal er hentet ind i FIRE-beregneren.', {actionLabel:'Fortryd', onAction: () => apply(previous)});
+            }}
+        ]
+    });
+}

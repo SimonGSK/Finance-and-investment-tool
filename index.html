@@ -68,6 +68,10 @@
                     <input type="checkbox" id="lightTheme">
                     Lyst tema
                 </label>
+                <label class="toggle-row">
+                    <input type="checkbox" id="monthlyReminderToggle" checked>
+                    Påmind mig om månedsstatus ved hvert månedsskifte
+                </label>
 
                 <div class="eyebrow" style="margin-top:18px; margin-bottom:10px;">Data</div>
                 <p class="explainer" style="margin:0 0 10px 0; padding-top:0; border-top:none;">Download for at gemme alle dine Budget-, Formue- og Portefølje-data i én fil, eller upload for at genindlæse gemt data.</p>
@@ -93,6 +97,14 @@
             <div class="banner-actions">
                 <button class="btn btn-primary btn-sm" onclick="exportAllData()">Download backup</button>
                 <button class="btn btn-secondary btn-sm" onclick="snoozeBackupReminder()">Påmind mig om en uge</button>
+            </div>
+        </div>
+
+        <div class="intro-banner backup-banner" id="monthlyReminderBanner" role="status" hidden>
+            <span id="monthlyReminderText"></span>
+            <div class="banner-actions">
+                <button class="btn btn-primary btn-sm" type="button" onclick="openMonthlyStatusFromReminder()">Åbn månedsstatus</button>
+                <button class="btn btn-secondary btn-sm" type="button" onclick="dismissMonthlyReminder()">Ikke denne måned</button>
             </div>
         </div>
 
@@ -362,7 +374,10 @@
                 <summary>Hvad gør dette værktøj?</summary>
                 <p class="tool-intro">Dette værktøj kan bruges til at finde ud af, hvor mange år der går, før din opsparing er stor nok til at forsørge dit ønskede årlige forbrug via <strong>4%-reglen</strong> ("FIRE" – Financial Independence, Retire Early).</p>
             </details>
-            <div class="tool-actions"><button class="btn btn-secondary btn-sm" type="button" onclick="shareCalculator('tool3')">Del beregning</button></div>
+            <div class="tool-actions">
+                <button class="btn btn-secondary btn-sm" type="button" id="fireImportBtn" onclick="openFireImport()" hidden>Hent mine tal</button>
+                <button class="btn btn-secondary btn-sm" type="button" onclick="shareCalculator('tool3')">Del beregning</button>
+            </div>
         </div>
         <div class="layout">
 

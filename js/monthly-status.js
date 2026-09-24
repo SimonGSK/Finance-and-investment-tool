@@ -122,12 +122,13 @@ function latestStatusDate(){
 /**
  * Åbner skemaet. Viser løbende nettoformue, likvid formue og porteføljeværdi,
  * og advarer med præcise ændringer, hvis datoen allerede har data.
+ * @param {string} [initialDate] ISO-dato; ellers i dag (fx månedens sidste dag fra påmindelsen)
  */
-function openMonthlyStatus(){
+function openMonthlyStatus(initialDate){
     const values = monthlyStatusPrefill();
     const hasHistory = !!latestStatusDate();
 
-    const dateInput = el('input', {type:'date', className:'number-input', value:todayIso(), attrs:{'aria-describedby':'msDateError'}});
+    const dateInput = el('input', {type:'date', className:'number-input', value: (typeof initialDate === 'string' && initialDate) || todayIso(), attrs:{'aria-describedby':'msDateError'}});
     const dateError = el('div', {className:'field-error', id:'msDateError', attrs:{role:'alert'}});
     const existingNote = el('div', {className:'existing-note', attrs:{role:'status'}});
 
@@ -210,7 +211,10 @@ function openMonthlyStatus(){
                 saving = true;
                 saveMonthlyStatus(date, values).then(saved => {
                     saving = false;
-                    if(saved) handle.close(true);
+                    if(saved){
+                        handle.close(true);
+                        if(typeof checkMonthlyReminder === 'function') checkMonthlyReminder();
+                    }
                 });
                 return false;
             }}
