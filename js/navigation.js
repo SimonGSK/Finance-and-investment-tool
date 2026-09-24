@@ -37,11 +37,12 @@ function showTool(n){
     showToolIn('tool', 'tabBtn', n);
     const ddRow = document.getElementById('doubleDeductionRow');
     if(n === 1){
-        document.getElementById('payTaxExternally').closest('.toggle-row').insertAdjacentElement('afterend', ddRow);
+        const payTax = document.getElementById('payTaxExternally');
+        (payTax.closest('.toggle-wrap') || payTax.closest('.toggle-row')).insertAdjacentElement('afterend', ddRow);
     } else if(n === 2){
         document.getElementById('tool2InflationRow').insertAdjacentElement('afterend', ddRow);
     }
-    ddRow.style.display = (n === 1 || n === 2) ? 'flex' : 'none';
+    ddRow.style.display = (n === 1 || n === 2) ? '' : 'none';
 }
 
 /**
