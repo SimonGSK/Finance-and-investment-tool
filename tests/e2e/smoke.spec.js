@@ -558,3 +558,20 @@ test('historik: "Ret" retter et datapunkt, advarer ved en optaget dato og kan fo
     expect(after).toHaveLength(1);
     expect(after[0]).toMatchObject({date:'2026-07-31', netCatAktier:220000});
 });
+
+test('alderen i "Hvor rig er jeg?" huskes, og info-dialoger har kun ét luk-kryds', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.getByRole('button', { name: 'Formue', exact: true }).click();
+    await page.getByLabel('Din alder', { exact: true }).fill('41');
+    await page.reload();
+    await page.getByRole('button', { name: 'Formue', exact: true }).click();
+    await expect(page.getByLabel('Din alder', { exact: true })).toHaveValue('41');
+
+    await page.getByRole('button', { name: 'Se hele tabellen' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Formue efter alder' });
+    await expect(dialog.locator('.dialog-footer')).toHaveCount(0);
+    await expect(dialog.locator('tr.is-highlight td').first()).toHaveText('41 år');
+    await expect(dialog.getByRole('link', { name: 'Se kilden hos CEPOS' })).toBeInViewport();
+    await dialog.getByRole('button', { name: 'Luk' }).click();
+    await expect(dialog).toBeHidden();
+});
