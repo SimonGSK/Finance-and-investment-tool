@@ -39,8 +39,9 @@ const PENSION_LIMITS = { aldersopsparing: 9900, aldersopsparingNearPension: 6420
 let doubleDeductionEnabled = false;
 
 /**
- * Slår "dobbelt fradrag" til eller fra: er man gift med en, der ikke selv
- * investerer, kan man udnytte begges 27%-grænse og dermed realisere dobbelt
+ * Slår "dobbelt fradrag" til eller fra: gifte deler grænsen for 27 %-skat, og
+ * den del, ægtefællen ikke selv bruger, overføres automatisk. Ægtefællen må
+ * gerne investere - bruger vedkommende ikke sin del, kan man realisere dobbelt
  * så meget gevinst om året til den lave sats.
  * @param {boolean} enabled
  */
@@ -1101,6 +1102,28 @@ function simulateDebtPayoff(debts, extraMonthly, strategy){
     };
 }
 
+/**
+ * Sammenligner lavine og snebold: er de ens (samme rækkefølge), hvor meget
+ * billigere og hurtigere er lavine, og hvornår kommer første lån ud med hver.
+ * @param {ReturnType<typeof simulateDebtPayoff>} avalanche
+ * @param {ReturnType<typeof simulateDebtPayoff>} snowball
+ * @returns {{identical:boolean, interestSaved:number, monthsSaved:number,
+ *   firstAvalanche:{name:string, month:number}|null, firstSnowball:{name:string, month:number}|null}|null}
+ *   null hvis en af dem aldrig bliver betalt ud; interestSaved > 0 betyder, at lavine er billigst
+ */
+function compareDebtStrategies(avalanche, snowball){
+    if(!avalanche.feasible || !snowball.feasible) return null;
+    const interestSaved = snowball.totalInterest - avalanche.totalInterest;
+    const monthsSaved = snowball.months - avalanche.months;
+    const sameOrder = avalanche.payoff.map(p => p.index).join() === snowball.payoff.map(p => p.index).join();
+    return {
+        identical: sameOrder && Math.abs(interestSaved) < 1 && monthsSaved === 0,
+        interestSaved, monthsSaved,
+        firstAvalanche: avalanche.payoff[0] || null,
+        firstSnowball: snowball.payoff[0] || null
+    };
+}
+
 // ==== Pension ====
 
 /**
@@ -1288,6 +1311,7 @@ function goalProgress(g){
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
+        compareDebtStrategies,
         csvNumber, budgetExportRows,
         parseNumberToken, parseAmount, isExpression,
         TAX_YEAR, ASK_DEPOSIT_LIMIT, TAX_LIMIT_27, ASK_TAX, AKT_TAX_LOW, AKT_TAX_HIGH,

@@ -378,6 +378,7 @@ function updateBudget(){
             const node = document.getElementById(id);
             node.textContent = pct(key).toFixed(0) + '%';
             node.classList.toggle('negative', sum > 0 && isOff(pct(key)));
+            document.getElementById(id + 'Sum').textContent = `${DK.format(groupSums[key])} kr. pr. måned`;
         });
 
     document.getElementById('budgetSumDisplay').textContent = DK.format(sum) + ' kr.';

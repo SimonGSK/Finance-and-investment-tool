@@ -5,10 +5,11 @@
  * Beregningen ligger i calc.js (simulateDebtPayoff).
  */
 
+// Eksemplet er valgt, så lavine og snebold tager lånene i forskellig rækkefølge.
 const DEFAULT_DEBTS = [
-    {name:'Kreditkort', balance:15000, rate:22, minPayment:500},
-    {name:'Billån', balance:60000, rate:6.5, minPayment:1500},
-    {name:'SU-lån', balance:80000, rate:4, minPayment:800}
+    {name:'Kreditkort', balance:25000, rate:22, minPayment:600},
+    {name:'Forbrugslån', balance:8000, rate:12, minPayment:300},
+    {name:'Billån', balance:60000, rate:6.5, minPayment:1500}
 ];
 
 /** @returns {{debts:{name:string, balance:number, rate:number, minPayment:number}[], extra:number}} rente i procent */
@@ -28,7 +29,8 @@ function saveDebtData(data){
 const debtChart = new Chart(document.getElementById('debtChart').getContext('2d'), {
     type:'line',
     data:{labels:[], datasets:[
-        {label:'Lavine', data:[], borderColor:CHART_COLOR('--akt'), backgroundColor:CHART_COLOR('--akt'), themeVar:'--akt', tension:0.1, pointRadius:0, borderWidth:2.5},
+        // Lavine tegnes bredere, så den stadig kan ses, hvis snebold ligger oven i den.
+        {label:'Lavine', data:[], borderColor:CHART_COLOR('--akt'), backgroundColor:CHART_COLOR('--akt'), themeVar:'--akt', tension:0.1, pointRadius:0, borderWidth:5},
         {label:'Snebold', data:[], borderColor:CHART_COLOR('--ask'), backgroundColor:CHART_COLOR('--ask'), themeVar:'--ask', tension:0.1, pointRadius:0, borderWidth:2.5},
         {label:'Kun minimumsydelser', data:[], borderColor:CHART_COLOR('--neutral-series'), backgroundColor:CHART_COLOR('--neutral-series'), themeVar:'--neutral-series', tension:0.1, pointRadius:0, borderWidth:2, borderDash:[4,4]}
     ]},
@@ -99,6 +101,27 @@ function removeDebt(index){
     }});
 }
 
+/** Én-to sætninger om forskellen på lavine og snebold for netop disse lån. */
+function strategyComparisonText(debts, results){
+    const c = compareDebtStrategies(results.avalanche, results.snowball);
+    if(!c) return '';
+    if(debts.length === 1) return 'Med ét lån er lavine og snebold det samme.';
+    if(c.identical) return 'Med dine lån giver lavine og snebold præcis det samme, fordi de betaler lånene i samme rækkefølge: det lån med den højeste rente er også det mindste. Derfor ligger de to linjer oven i hinanden.';
+    const parts = [];
+    if(c.interestSaved >= 1){
+        parts.push(`Lavine sparer dig ${DK.format(c.interestSaved)} kr. i rente` + (c.monthsSaved > 0 ? ` og gør dig gældfri ${formatDuration(c.monthsSaved)} før.` : '.'));
+    } else if(c.interestSaved <= -1){
+        parts.push(`Med dine lån er snebold faktisk billigst: den sparer ${DK.format(-c.interestSaved)} kr. i rente.`);
+    } else {
+        parts.push('Lavine og snebold koster næsten det samme i rente med dine lån.');
+    }
+    if(c.firstSnowball && c.firstAvalanche && c.firstSnowball.month < c.firstAvalanche.month){
+        parts.push(`Snebold giver til gengæld den første sejr hurtigere: ${c.firstSnowball.name} er betalt ud efter ${formatDuration(c.firstSnowball.month)} mod ${formatDuration(c.firstAvalanche.month)} for det første lån med lavine.`);
+    }
+    parts.push('Grafen viser den samlede gæld, så forskellen kan være svær at se.');
+    return parts.join(' ');
+}
+
 /** Genberegner de tre strategier og opdaterer graf, nøgletal og tabel. */
 function updateDebtPayoff(){
     const data = loadDebtData();
@@ -129,6 +152,8 @@ function updateDebtPayoff(){
     describe('debtFreeAvalanche', 'debtFreeAvalancheSub', results.avalanche);
     describe('debtFreeSnowball', 'debtFreeSnowballSub', results.snowball);
     describe('debtFreeMinimum', 'debtFreeMinimumSub', results.minimum);
+
+    document.getElementById('debtCompare').textContent = debts.length ? strategyComparisonText(debts, results) : '';
 
     const saved = results.minimum.feasible && results.avalanche.feasible
         ? results.minimum.totalInterest - results.avalanche.totalInterest : null;

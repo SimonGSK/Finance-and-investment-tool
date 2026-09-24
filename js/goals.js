@@ -6,12 +6,12 @@
  */
 
 const GOAL_METRICS = [
-    {key:'value', label:'Nettoformue'},
-    {key:'liquid', label:'Likvid formue'},
-    {key:'netCatKontanter', label:'Kontanter'},
-    {key:'netCatAktier', label:'Aktier'},
-    {key:'netCatPension', label:'Pension'},
-    {key:'netCatFrivaerdi', label:'Friværdi'}
+    {key:'value', label:'Nettoformue', phrase:'Din nettoformue'},
+    {key:'liquid', label:'Likvid formue', phrase:'Din likvide formue'},
+    {key:'netCatKontanter', label:'Kontanter', phrase:'Dine kontanter'},
+    {key:'netCatAktier', label:'Aktier', phrase:'Dine aktier'},
+    {key:'netCatPension', label:'Pension', phrase:'Din pension'},
+    {key:'netCatFrivaerdi', label:'Friværdi', phrase:'Din friværdi'}
 ];
 
 /** @returns {{id:string, name:string, metric:string, target:number, deadline:string|null}[]} */
@@ -56,7 +56,8 @@ function renderGoals(){
         else if(goal.deadline && g.monthsLeft === 0){ statusText = 'Fristen er overskredet.'; statusClass = 'is-bad'; }
         else {
             const parts = [];
-            if(g.neededPerMonth !== null) parts.push(`Læg ca. ${DK.format(g.neededPerMonth)} kr. til om måneden for at nå det i tide.`);
+            // Det er værdien, der skal stige - via opsparing, kursstigninger eller afdrag - ikke nødvendigvis et beløb, man selv lægger til.
+            if(g.neededPerMonth !== null) parts.push(`${metric.phrase} skal stige med ca. ${DK.format(g.neededPerMonth)} kr. om måneden i snit for at nå målet i tide.`);
             if(trend !== null){
                 parts.push(`Dit tempo det seneste år: ${trend >= 0 ? '+' : '−'}${DK.format(Math.abs(trend))} kr./md.`);
                 if(g.onTrack === true){ parts.push('Du er på sporet.'); statusClass = 'is-good'; }

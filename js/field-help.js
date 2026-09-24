@@ -25,7 +25,7 @@ const FIELD_HELP = {
     inflationNumber: INFLATION_HELP,
     payTaxExternally: 'På en aktiesparekonto trækkes skatten normalt fra kontoen hvert år. Slår du dette til, betaler du den med andre penge, så kontoen vokser uberørt – og for at sammenligne fair, indsættes samme beløb på aktiedepotet.',
     showRealValue: REAL_VALUE_HELP,
-    doubleDeduction: `Er du gift, og investerer din ægtefælle ikke selv, kan I samlet have dobbelt så meget aktieindkomst til den lave sats på ${pctNumber(AKT_TAX_LOW)} %.`,
+    doubleDeduction: `Gifte deler grænsen for ${pctNumber(AKT_TAX_LOW)} %-skat: ${DK.format(TAX_LIMIT_27 * 2)} kr. tilsammen, og den del, din ægtefælle ikke selv bruger, overføres automatisk til dig. Din ægtefælle må gerne investere – det afgørende er, at ægtefællens egen aktieindkomst (gevinster og udbytter) ikke bruger af grænsen. Bruger ægtefællen noget af den, har du kun resten.`,
     // Aktiedepot: fast + månedligt
     startCash2Number: 'Beløbet du investerer fra start. Kan være 0, hvis du kun sparer op hver måned.',
     monthlyAmount2Number: 'Det faste beløb, du investerer hver måned.',

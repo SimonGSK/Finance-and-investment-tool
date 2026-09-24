@@ -323,3 +323,35 @@ test('feedback: knappen er skjult uden adresse, og en besked sendes med værktø
     await expect(dialog.getByLabel('Din besked')).toHaveValue('Anden besked');
     await expect(dialog.getByRole('button', { name: 'Send' })).toBeEnabled();
 });
+
+test('gældsafvikling forklarer forskellen på lavine og snebold, og etiketterne kan læses', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.getByRole('button', { name: 'Bolig & lån' }).click();
+    await page.evaluate(() => showHousingTool(3));
+    await expect(page.locator('#debtCompare')).toContainText('Lavine sparer dig');
+    await expect(page.locator('#debtCompare')).toContainText('Forbrugslån er betalt ud efter 7 mdr.');
+    const clipped = await page.locator('.debt-field-label').evaluateAll(ls => ls.filter(l => l.scrollWidth > l.clientWidth + 1).length);
+    expect(clipped).toBe(0);
+
+    // Samme rækkefølge: siden siger, at de er ens.
+    await page.evaluate(() => {
+        localStorage.setItem('debtPayoffData', JSON.stringify({extra: 1000, debts: [
+            {name:'Kreditkort', balance:15000, rate:22, minPayment:500}, {name:'Billån', balance:60000, rate:6.5, minPayment:1500}]}));
+        renderDebtRows(); updateDebtPayoff();
+    });
+    await expect(page.locator('#debtCompare')).toContainText('præcis det samme');
+});
+
+test('budget: 50/30/20 viser både andel og beløb pr. måned', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => localStorage.setItem('budgetItems', JSON.stringify({catBolig:[{label:'Husleje', amount:9000}], catOpsparing:[{label:'Aktier', amount:3000}]})));
+    await page.reload();
+    await page.getByRole('button', { name: 'Budget', exact: true }).click();
+    await expect(page.locator('#ruleBehov')).toHaveText('75%');
+    await expect(page.locator('#ruleBehovSum')).toHaveText('9.000 kr. pr. måned');
+    await expect(page.locator('#ruleOpsparingSum')).toHaveText('3.000 kr. pr. måned');
+    await expect(page.locator('#ruleBehov')).toHaveCSS('color', await page.evaluate(() => {
+        const probe = document.createElement('span'); probe.style.color = getComputedStyle(document.documentElement).getPropertyValue('--cross');
+        document.body.append(probe); const c = getComputedStyle(probe).color; probe.remove(); return c;
+    }));
+});
