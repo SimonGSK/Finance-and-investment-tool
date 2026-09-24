@@ -10,7 +10,7 @@
  */
 
 const FEEDBACK = {
-    endpoint: ''
+    endpoint: 'https://formspree.io/f/xppwljwj'
 };
 
 const FEEDBACK_KINDS = ['Idé eller ønske', 'Fejl', 'Andet'];
