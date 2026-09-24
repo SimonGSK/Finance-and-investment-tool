@@ -846,6 +846,10 @@ select.number-input{ font-family:var(--font-sans); cursor:pointer; }
 .goal-status.is-bad{ color:var(--cross); }
 .progress-fill.is-done{ background:var(--ask); }
 .wealth-table-wrap{ max-height:55vh; margin-bottom:var(--s4); }
+.dialog.dialog-table{ width:min(980px, calc(100vw - 32px)); }
+.wealth-table-wrap table.data-table{ min-width:0; }
+.wealth-table-wrap table.data-table th,
+.wealth-table-wrap table.data-table td{ padding:8px 10px; font-size:12.5px; white-space:nowrap; }
 table.data-table tr.is-highlight td{ background:var(--akt-soft); color:var(--text); font-weight:600; }
 table.data-table tr.is-highlight td:first-child{ color:var(--akt); }
 .tool-actions{ margin:calc(-1 * var(--s3)) 0 var(--s5) 0; }
@@ -1134,3 +1138,21 @@ table.data-table td.is-negative{ color:var(--ask); }
 table.data-table.etf-rules th, table.data-table.etf-rules td{ text-align:left; font-family:var(--font-sans); font-size:13px; line-height:1.45; vertical-align:top; }
 table.data-table.etf-rules td:first-child{ color:var(--text); font-weight:600; }
 .stat.is-dim .value{ opacity:0.45; }
+
+/* Ret/Slet i historiktabellerne */
+.row-actions{ display:flex; gap:var(--s2); justify-content:flex-end; }
+.row-actions .btn + .btn{ margin-left:0; }
+
+/* Lille to-knaps-vælger (fx Gæld tilbage / Rente betalt) */
+.seg{ display:inline-flex; align-self:flex-start; padding:3px; margin-bottom:var(--s3); background:var(--panel-sunken); border:1px solid var(--border); border-radius:var(--r-pill); }
+.seg button{ border:0; background:transparent; color:var(--muted); font:600 13px var(--font-sans); padding:6px 14px; border-radius:var(--r-pill); cursor:pointer; transition:all 0.18s var(--ease); }
+.seg button:hover{ color:var(--text); }
+.seg button[aria-pressed="true"]{ background:var(--panel); color:var(--text); box-shadow:var(--shadow-sm); }
+/* Lavine og snebold side om side */
+.method-grid{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:var(--s4); margin:var(--s4) 0; }
+.method{ padding:var(--s4); border:1px solid var(--border); border-radius:var(--r-md); background:var(--panel-sunken); font-size:14px; line-height:1.6; }
+.method h3{ display:flex; align-items:center; gap:var(--s2); margin:0 0 var(--s2); font-size:15px; font-weight:600; color:var(--text); }
+.method p{ margin:0 0 var(--s2); color:var(--muted); }
+.method ul{ margin:0; padding-left:1.2em; color:var(--muted); }
+.method li + li{ margin-top:var(--s1); }
+@media (max-width:640px){ .method-grid{ grid-template-columns:1fr; } }

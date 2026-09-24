@@ -74,7 +74,7 @@
                 </label>
 
                 <div class="eyebrow" style="margin-top:18px; margin-bottom:10px;">Data</div>
-                <p class="explainer" style="margin:0 0 10px 0; padding-top:0; border-top:none;">Download for at gemme alle dine Budget-, Formue- og Portefølje-data i én fil, eller upload for at genindlæse gemt data.</p>
+                <p class="explainer" style="margin:0 0 10px 0; padding-top:0; border-top:none;">Download for at gemme alle dine data i én fil – budget, formue med historik og mål, porteføljen, dine lån og indstillingerne – eller upload for at genindlæse dem.</p>
                 <p class="backup-status" id="backupStatus"></p>
                 <button class="btn btn-secondary" style="width:100%; margin-bottom:8px;" onclick="exportAllData()">Download alt (JSON)</button>
                 <button class="btn btn-secondary" style="width:100%;" onclick="document.getElementById('allDataUpload').click()">Upload alt (JSON)</button>
@@ -629,9 +629,8 @@
         <div class="tool-head">
             <details class="tool-about">
                 <summary>Hvad gør dette værktøj?</summary>
-                <p class="tool-intro">Slå op, om en ETF eller fond står på Skattestyrelsens <strong>positivliste</strong>, og se hvad det betyder for skatten. Sammenlign derefter, hvad den samme investering giver efter skat, afhængigt af hvordan den beskattes: på listen, ikke på listen, som aktier der beskattes ved salg, eller på en aktiesparekonto.</p>
+                <p class="tool-intro">Slå op, om en ETF eller fond står på Skattestyrelsens <strong>positivliste</strong>, og se hvordan de forskellige typer investeringer beskattes. Om en fond står på listen, afgør, om gevinsten beskattes som aktieindkomst eller som den dyrere kapitalindkomst – og om den må ligge på en aktiesparekonto.</p>
             </details>
-            <div class="tool-actions"><button class="btn btn-secondary btn-sm" type="button" onclick="shareCalculator('tool6')">Del beregning</button></div>
         </div>
 
         <div class="panel etf-lookup">
@@ -642,75 +641,29 @@
                 <div class="limit-hint">ISIN-koden (12 tegn) står på fondens faktaark og hos din bank eller netbank.</div>
             </div>
             <div id="etfResults" class="etf-results" role="status" aria-live="polite"></div>
+            <div class="etf-verdict etf-dk-note">
+                <p><strong>Danske udbyttebetalende fonde står ikke på listen – og skal heller ikke.</strong> Positivlisten gælder kun <em>akkumulerende</em> fonde og udenlandske ETF'er. En dansk udbyttebetalende (udloddende) investeringsforening, der er <strong>aktiebaseret</strong>, beskattes altid som <strong>aktieindkomst efter realisationsprincippet</strong>: gevinsten beskattes først, når du sælger, og udbyttet hvert år. Er den obligationsbaseret, beskattes den som kapitalindkomst.</p>
+            </div>
             <p class="explainer" id="etfSource"></p>
         </div>
 
-        <div class="layout">
-            <div class="panel">
-                <div class="eyebrow">Sammenlign beskatningen</div>
-                <div class="field">
-                    <label for="etfStart">Startbeløb (kr.)</label>
-                    <input type="number" id="etfStart" class="number-input" value="100000" min="0" step="1000">
-                </div>
-                <div class="field">
-                    <label for="etfMonthly">Månedlig investering (kr.)</label>
-                    <input type="number" id="etfMonthly" class="number-input" value="2000" min="0" step="100">
-                </div>
-                <div class="field">
-                    <label for="etfYears">Antal år</label>
-                    <input type="number" id="etfYears" class="number-input" value="20" min="1" max="60" step="1">
-                </div>
-                <div class="field">
-                    <label for="etfReturn">Forventet årligt afkast (%)</label>
-                    <input type="number" id="etfReturn" class="number-input" value="7" min="-20" max="30" step="0.1">
-                </div>
-                <div class="field">
-                    <label for="etfCapitalTax">Skat af kapitalindkomst (%)</label>
-                    <input type="number" id="etfCapitalTax" class="number-input" value="37" min="0" max="60" step="1">
-                    <div class="limit-hint">Typisk ca. 37 %; op til ca. 42 % over <span data-rule="CAPITAL_INCOME_LIMIT">55.000</span> kr. i positiv kapitalindkomst</div>
-                </div>
-                <label class="toggle-row">
-                    <input type="checkbox" id="etfDouble">
-                    Gift, og din ægtefælle bruger ikke selv sin del af <span data-rule="AKT_TAX_LOW">27</span>%-grænsen
-                </label>
+        <div class="panel">
+            <div class="eyebrow">Sådan beskattes det (<span data-rule="TAX_YEAR">2026</span>)</div>
+            <div class="data-table-wrap">
+                <table class="data-table etf-rules">
+                    <thead><tr><th>Type</th><th>Hvordan</th><th>Sats</th><th>På aktiesparekonto?</th></tr></thead>
+                    <tbody>
+                        <tr><td>ETF/fond på positivlisten</td><td>Lager: årets gevinst beskattes hvert år, også uden salg</td><td>Aktieindkomst: <span data-rule="AKT_TAX_LOW">27</span> % / <span data-rule="AKT_TAX_HIGH">42</span> %</td><td>Ja</td></tr>
+                        <tr><td>Udenlandsk ETF/fond, ikke på listen</td><td>Lager: årets gevinst hvert år</td><td>Kapitalindkomst: ca. 37–42 %</td><td>Nej</td></tr>
+                        <tr><td>Dansk udbyttebetalende aktiefond</td><td>Realisation: gevinsten ved salg, udbyttet hvert år</td><td>Aktieindkomst: <span data-rule="AKT_TAX_LOW">27</span> % / <span data-rule="AKT_TAX_HIGH">42</span> %</td><td>Ja</td></tr>
+                        <tr><td>Dansk udbyttebetalende obligationsfond</td><td>Realisation: gevinsten ved salg, udbyttet hvert år</td><td>Kapitalindkomst: ca. 37–42 %</td><td>Nej</td></tr>
+                        <tr><td>Børsnoterede aktier</td><td>Realisation: gevinsten ved salg, udbyttet hvert år</td><td>Aktieindkomst: <span data-rule="AKT_TAX_LOW">27</span> % / <span data-rule="AKT_TAX_HIGH">42</span> %</td><td>Ja</td></tr>
+                        <tr><td>Aktiesparekonto</td><td>Lager</td><td><span data-rule="ASK_TAX">17</span> %</td><td>Loft: <span data-rule="ASK_DEPOSIT_LIMIT">174.200</span> kr. i indskud</td></tr>
+                        <tr><td>Pension</td><td>Lager (PAL-skat)</td><td><span data-rule="PAL_SKAT">15,3</span> %</td><td>–</td></tr>
+                    </tbody>
+                </table>
             </div>
-
-            <div class="panel chart-panel chart-panel-sticky">
-                <div class="legend">
-                    <span><i class="dot" style="background:var(--akt)"></i>På positivlisten</span>
-                    <span><i class="dot" style="background:var(--cross)"></i>Ikke på listen</span>
-                    <span><i class="dot" style="background:var(--neutral-series)"></i>Aktier (skat ved salg)</span>
-                    <span><i class="dot" style="background:var(--ask)"></i>Aktiesparekonto</span>
-                </div>
-                <div class="chart-wrap"><canvas id="etfChart"></canvas></div>
-            </div>
-        </div>
-
-        <div class="full-width-below">
-            <div class="stats">
-                <div class="stat"><div class="label">På positivlisten</div><div class="value akt" id="etfAbis">–</div><div class="sub" id="etfAbisSub"></div></div>
-                <div class="stat"><div class="label">Ikke på listen</div><div class="value cross" id="etfCapital">–</div><div class="sub" id="etfCapitalSub"></div></div>
-                <div class="stat"><div class="label">Aktier (skat ved salg)</div><div class="value" id="etfRealisation">–</div><div class="sub" id="etfRealisationSub"></div></div>
-                <div class="stat"><div class="label">Aktiesparekonto</div><div class="value ask" id="etfAsk">–</div><div class="sub" id="etfAskSub"></div></div>
-            </div>
-            <p class="compare-note" id="etfNote" role="status"></p>
-
-            <div class="panel">
-                <div class="eyebrow">Sådan beskattes det (<span data-rule="TAX_YEAR">2026</span>)</div>
-                <div class="data-table-wrap">
-                    <table class="data-table etf-rules">
-                        <thead><tr><th>Type</th><th>Hvordan</th><th>Sats</th><th>På aktiesparekonto?</th></tr></thead>
-                        <tbody>
-                            <tr><td>ETF/fond på positivlisten</td><td>Lager: årets gevinst hvert år, også uden salg</td><td>Aktieindkomst: <span data-rule="AKT_TAX_LOW">27</span> % / <span data-rule="AKT_TAX_HIGH">42</span> %</td><td>Ja</td></tr>
-                            <tr><td>ETF/fond ikke på listen</td><td>Lager: årets gevinst hvert år</td><td>Kapitalindkomst: ca. 37–42 %</td><td>Nej</td></tr>
-                            <tr><td>Aktier og danske udloddende aktiefonde</td><td>Realisation: gevinsten ved salg (udbytter hvert år)</td><td>Aktieindkomst: <span data-rule="AKT_TAX_LOW">27</span> % / <span data-rule="AKT_TAX_HIGH">42</span> %</td><td>Ja, hvis børsnoteret/aktiebaseret</td></tr>
-                            <tr><td>Aktiesparekonto</td><td>Lager</td><td><span data-rule="ASK_TAX">17</span> %</td><td>Loft: <span data-rule="ASK_DEPOSIT_LIMIT">174.200</span> kr.</td></tr>
-                            <tr><td>Pension</td><td>Lager (PAL-skat)</td><td><span data-rule="PAL_SKAT">15,3</span> %</td><td>–</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <p class="explainer">27 %-grænsen er <span data-rule="TAX_LIMIT_27">79.400</span> kr. om året (det dobbelte for ægtepar). Beregningen antager et fast afkast hvert år, at skatten betales af investeringen, og at aktierne sælges på én gang til sidst – sælger du over flere år, bliver skatten lavere. Udbytter er ikke med. Ikke rådgivning. Kilde: <a href="https://skat.dk/erhverv/ekapital/vaerdipapirer/beviser-og-aktier-i-investeringsforeninger-og-selskaber-ifpa" target="_blank" rel="noopener">Skattestyrelsens liste over aktiebaserede investeringsselskaber</a>.</p>
-            </div>
+            <p class="explainer"><strong>Lager</strong> betyder, at du betaler skat af årets stigning, selvom du ikke har solgt; falder værdien, kan tabet trækkes fra senere gevinster. <strong>Realisation</strong> betyder, at gevinsten først beskattes, når du sælger – så skatten udskydes, og pengene kan imens give afkast. <strong>Aktieindkomst</strong> beskattes med <span data-rule="AKT_TAX_LOW">27</span> % op til <span data-rule="TAX_LIMIT_27">79.400</span> kr. om året (det dobbelte for ægtepar) og <span data-rule="AKT_TAX_HIGH">42</span> % derover. <strong>Kapitalindkomst</strong> beskattes med ca. 37 % for de fleste og op til ca. 42 %, hvis du har over <span data-rule="CAPITAL_INCOME_LIMIT">55.000</span> kr. i positiv kapitalindkomst og din samlede indkomst giver mellemskat. Ikke rådgivning. Kilde: <a href="https://skat.dk/erhverv/ekapital/vaerdipapirer/beviser-og-aktier-i-investeringsforeninger-og-selskaber-ifpa" target="_blank" rel="noopener">Skattestyrelsens liste over aktiebaserede investeringsselskaber</a>.</p>
         </div>
     </div>
 
@@ -999,6 +952,10 @@
                 <div class="notice" id="debtWarning" hidden></div>
             </div>
             <div class="panel chart-panel chart-panel-sticky">
+                <div class="seg" id="debtViewToggle" role="group" aria-label="Vis i grafen">
+                    <button type="button" data-view="balance" aria-pressed="true" onclick="setDebtChartView('balance')">Gæld tilbage</button>
+                    <button type="button" data-view="interest" aria-pressed="false" onclick="setDebtChartView('interest')">Rente betalt</button>
+                </div>
                 <div class="legend">
                     <span><i class="dot" style="background:var(--akt)"></i>Lavine</span>
                     <span><i class="dot" style="background:var(--ask)"></i>Snebold</span>
@@ -1015,6 +972,30 @@
                 <div class="stat"><div class="label">Du sparer i rente</div><div class="value akt" id="debtSaved">–</div><div class="sub">med lavine frem for kun minimum</div></div>
             </div>
             <p class="compare-note" id="debtCompare" role="status"></p>
+
+            <div class="panel">
+                <div class="eyebrow">Lavine eller snebold – hvad er forskellen?</div>
+                <p class="explainer explainer-lead">Begge metoder starter ens: du betaler minimumsydelsen på alle lån og lægger et fast <strong>ekstra beløb</strong> oven i hver måned. Forskellen er, <em>hvilket</em> lån ekstrabeløbet går til. Når det lån er betalt ud, ruller dets ydelse videre til det næste – derfor vokser beløbet, du afdrager med, som en lavine eller en snebold.</p>
+                <div class="method-grid">
+                    <div class="method">
+                        <h3><i class="dot" style="background:var(--akt)"></i>Lavine: højeste rente først</h3>
+                        <p>Ekstrabeløbet går til lånet med den <strong>højeste rente</strong>, uanset hvor stort det er.</p>
+                        <ul>
+                            <li><strong>Fordel:</strong> Du betaler mindst muligt i rente og er som regel hurtigst gældfri.</li>
+                            <li><strong>Ulempe:</strong> Er det dyreste lån stort, kan der gå lang tid, før det første lån forsvinder.</li>
+                        </ul>
+                    </div>
+                    <div class="method">
+                        <h3><i class="dot" style="background:var(--ask)"></i>Snebold: mindste lån først</h3>
+                        <p>Ekstrabeløbet går til lånet med den <strong>mindste restgæld</strong>, uanset renten.</p>
+                        <ul>
+                            <li><strong>Fordel:</strong> Du får hurtige sejre – lån forsvinder tidligt, og du har færre regninger at holde styr på. Mange finder det mere motiverende.</li>
+                            <li><strong>Ulempe:</strong> Har de små lån lav rente, mens et stort lån har høj rente, koster det ekstra i rente.</li>
+                        </ul>
+                    </div>
+                </div>
+                <p class="explainer">Er dit mindste lån også det dyreste, giver de to metoder præcis det samme. Den bedste metode er den, du holder fast i – og begge er langt bedre end kun at betale minimumsydelserne.</p>
+            </div>
             <div class="panel">
                 <div class="eyebrow">Hvornår er hvert lån betalt ud?</div>
                 <div class="data-table-wrap">
@@ -1205,13 +1186,13 @@
                 <div class="progress-track"><div class="progress-fill" id="bufferFill" style="width:0%"></div></div>
                 <div class="buffer-marks"><span style="left:50%">3 mdr.</span><span style="left:100%">6 mdr.</span></div>
             </div>
-            <p class="explainer">En tommelfingerregel er at have 3–6 måneders faste udgifter stående i kontanter til uforudsete udgifter som tandlæge, bilreparation eller jobskifte. Kun kontanter tæller med – aktier kan være faldet i værdi, lige når du får brug for pengene. Udgifterne er dit budget minus opsparing.</p>
+            <p class="explainer">En tommelfingerregel er at have 3–6 måneders faste udgifter stående i kontanter til uforudsete udgifter som tandlæge, bilreparation eller jobskifte. Kun kontanter tæller med – aktier kan være faldet i værdi, lige når du får brug for pengene. Udgifterne hentes automatisk fra din <strong>Budget</strong>-fane: kun kategorierne under <strong>Behov</strong> og <strong>Ønsker</strong> tæller med – opsparingsposterne gør ikke, for dem kan du holde pause med, hvis det brænder på.</p>
         </div>
 
         <div class="panel">
             <div class="eyebrow">Formuehistorik</div>
             <p class="explainer explainer-lead">
-                Gem et øjebliksbillede af din nettoformue for at følge udviklingen over tid. Vælg en tidligere dato, hvis du vil eftertilføje historiske tal. Data gemmes kun lokalt i din browser – ikke på en server, og er derfor ikke tilgængelig fra andre enheder eller browsere.
+                Gem din formue for en dato – helst med <strong>Månedsstatus</strong> ved hver måneds udgang – for at følge udviklingen over tid. Vælg en tidligere dato, hvis du vil eftertilføje historiske tal. Data gemmes kun lokalt i din browser – ikke på en server, og er derfor ikke tilgængelig fra andre enheder eller browsere.
             </p>
 
             <div class="field" style="max-width:220px; margin-bottom:14px;">
@@ -1224,7 +1205,7 @@
             <button class="btn btn-secondary" onclick="clearNetWorthHistory()">Ryd hele historikken</button>
             <div class="chart-wrap chart-wrap-standalone">
                 <canvas id="netWorthHistoryChart"></canvas>
-                <div class="chart-empty-state" id="netWorthHistoryChartEmpty">Ingen data endnu – gem et øjebliksbillede af din formue for at se udviklingen her.</div>
+                <div class="chart-empty-state" id="netWorthHistoryChartEmpty">Ingen data endnu – gem en månedsstatus for at se udviklingen her.</div>
             </div>
 
                 <div class="data-table-wrap" style="max-height:280px;">
@@ -1264,7 +1245,7 @@
                 </div>
                 <div class="chart-wrap chart-wrap-standalone">
                     <canvas id="netWorthCompositionChart"></canvas>
-                    <div class="chart-empty-state" id="netWorthCompositionChartEmpty">Ingen data endnu – gem et øjebliksbillede af din formue for at se sammensætningen her.</div>
+                    <div class="chart-empty-state" id="netWorthCompositionChartEmpty">Ingen data endnu – gem en månedsstatus for at se sammensætningen her.</div>
                 </div>
             </div>
 

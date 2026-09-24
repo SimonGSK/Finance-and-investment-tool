@@ -58,12 +58,6 @@ const FIELD_HELP = {
     penPayoutYears: 'Hvor mange år opsparingen fordeles over. Ratepension udbetales over 10-30 år; en livrente udbetales resten af livet.',
     penPayoutTax: 'Rate- og livrente beskattes som indkomst, typisk 37-40 %. Aldersopsparing udbetales skattefrit – sæt da 0 %.',
     etfSearch: 'ISIN er en international kode på 12 tegn, der starter med landet, fx IE for Irland og LU for Luxembourg. Du finder den på fondens faktaark, i din netbank eller på Morningstar. Du kan også søge på dele af navnet.',
-    etfStart: 'Det beløb, du investerer fra start.',
-    etfMonthly: 'Det, du sætter ind hver måned. Bemærk, at en aktiesparekonto har et loft for, hvor meget du i alt må indskyde.',
-    etfYears: 'Hvor mange år du beholder investeringen, før du bruger pengene.',
-    etfReturn: 'Forventet afkast pr. år efter fondens omkostninger. Globale aktier har historisk givet omkring 6-8 % om året i gennemsnit, men med store udsving.',
-    etfCapitalTax: `Skatten på positiv kapitalindkomst: ca. 37 % for de fleste (kommuneskat og bundskat). Har du over ${DK.format(CAPITAL_INCOME_LIMIT)} kr. i positiv kapitalindkomst (${DK.format(CAPITAL_INCOME_LIMIT * 2)} kr. for ægtepar), og giver din samlede indkomst mellemskat, er satsen op til ca. 42 %.`,
-    etfDouble: `Gifte deler grænsen for ${pctNumber(AKT_TAX_LOW)} %-skat: ${DK.format(TAX_LIMIT_27 * 2)} kr. tilsammen. Bruger din ægtefælle ikke sin del, kan du få mere af gevinsten beskattet med den lave sats.`,
     penInflation: INFLATION_HELP,
     // Hvor meget kan jeg låne?
     lcIncome: 'Den samlede indkomst før skat for alle, der skal stå på lånet.',
@@ -109,7 +103,7 @@ const FIELD_HELP = {
     netCatFrivaerdi: 'Boligens værdi minus restgælden på realkredit- og boliglån.',
     netCatAndet: 'Andre værdier af betydning, fx bil, båd eller sommerhus (fratrukket gælden i dem).',
     netDebt: 'Gæld, der ikke hører til boligen: fx billån, SU-lån, forbrugslån og kreditkort.',
-    snapshotDate: 'Datoen øjebliksbilledet gælder for. Vælg en tidligere dato for at tilføje historiske tal.',
+    snapshotDate: 'Datoen, tallene gælder for. Vælg en tidligere dato for at tilføje historiske tal.',
     wealthAge: 'Din alder. Du sammenlignes med alle danskere på præcis samme alder.'
 };
 

@@ -5,11 +5,13 @@
  * Beregningen ligger i calc.js (simulateDebtPayoff).
  */
 
-// Eksemplet er valgt, så lavine og snebold tager lånene i forskellig rækkefølge.
+// Eksemplet er valgt, så forskellen på lavine og snebold er tydelig: det dyreste
+// lån er også det største, og de mindste lån har lav eller ingen rente.
 const DEFAULT_DEBTS = [
-    {name:'Kreditkort', balance:25000, rate:22, minPayment:600},
-    {name:'Forbrugslån', balance:8000, rate:12, minPayment:300},
-    {name:'Billån', balance:60000, rate:6.5, minPayment:1500}
+    {name:'Kreditkort', balance:60000, rate:24, minPayment:1500},
+    {name:'Afbetaling (mobil)', balance:4000, rate:0, minPayment:400},
+    {name:'SU-lån', balance:10000, rate:4, minPayment:300},
+    {name:'Billån', balance:40000, rate:7, minPayment:1000}
 ];
 
 /** @returns {{debts:{name:string, balance:number, rate:number, minPayment:number}[], extra:number}} rente i procent */
@@ -34,8 +36,18 @@ const debtChart = new Chart(document.getElementById('debtChart').getContext('2d'
         {label:'Snebold', data:[], borderColor:CHART_COLOR('--ask'), backgroundColor:CHART_COLOR('--ask'), themeVar:'--ask', tension:0.1, pointRadius:0, borderWidth:2.5},
         {label:'Kun minimumsydelser', data:[], borderColor:CHART_COLOR('--neutral-series'), backgroundColor:CHART_COLOR('--neutral-series'), themeVar:'--neutral-series', tension:0.1, pointRadius:0, borderWidth:2, borderDash:[4,4]}
     ]},
-    options: lineChartOptions(c => `${c.dataset.label}: ${DK.format(c.raw)} kr. tilbage`)
+    options: lineChartOptions(c => `${c.dataset.label}: ${DK.format(c.raw)} kr. ${debtChartView === 'interest' ? 'i rente betalt' : 'tilbage'}`)
 });
+
+// Grafen kan vise gælden tilbage eller renten betalt i alt. Forskellen på lavine
+// og snebold er kun renten, så den ses tydeligst i "Rente betalt".
+let debtChartView = 'balance';
+
+function setDebtChartView(view){
+    debtChartView = view;
+    document.querySelectorAll('#debtViewToggle button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === view)));
+    updateDebtPayoff();
+}
 debtChart.options.scales.x.title = {display:true, text:'År', color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-sans'), size:12}};
 debtChart.options.scales.x.ticks.callback = function(value){
     const month = this.getLabelForValue(value);
@@ -118,7 +130,7 @@ function strategyComparisonText(debts, results){
     if(c.firstSnowball && c.firstAvalanche && c.firstSnowball.month < c.firstAvalanche.month){
         parts.push(`Snebold giver til gengæld den første sejr hurtigere: ${c.firstSnowball.name} er betalt ud efter ${formatDuration(c.firstSnowball.month)} mod ${formatDuration(c.firstAvalanche.month)} for det første lån med lavine.`);
     }
-    parts.push('Grafen viser den samlede gæld, så forskellen kan være svær at se.');
+    parts.push('Forskellen er renten, så den ses tydeligst, når du vælger "Rente betalt" over grafen.');
     return parts.join(' ');
 }
 
@@ -138,9 +150,10 @@ function updateDebtPayoff(){
 
     const longest = Math.max(...Object.values(results).map(r => r.balances.length));
     debtChart.data.labels = Array.from({length: longest}, (_, m) => m);
-    debtChart.data.datasets[0].data = results.avalanche.balances;
-    debtChart.data.datasets[1].data = results.snowball.balances;
-    debtChart.data.datasets[2].data = results.minimum.balances;
+    const series = debtChartView === 'interest' ? 'interestPaid' : 'balances';
+    debtChart.data.datasets[0].data = results.avalanche[series];
+    debtChart.data.datasets[1].data = results.snowball[series];
+    debtChart.data.datasets[2].data = results.minimum[series];
     debtChart.update();
 
     const describe = (idValue, idSub, r) => {

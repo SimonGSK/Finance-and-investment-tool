@@ -24,7 +24,7 @@ function saveGoals(goals){
     localStorage.setItem('netWorthGoals', JSON.stringify(goals));
 }
 
-/** Nuværende værdi af et mål: Formue-felterne, eller det seneste øjebliksbillede, hvis de er tomme. */
+/** Nuværende værdi af et mål: Formue-felterne, eller det seneste datapunkt, hvis de er tomme. */
 function currentGoalValue(metric){
     return currentNetWorthFigures()[metric] || 0;
 }
@@ -62,7 +62,7 @@ function renderGoals(){
                 else if(g.onTrack === false){ parts.push('Det rækker ikke helt.'); statusClass = 'is-bad'; }
                 else if(g.monthsAtTrend !== null) parts.push(`I det tempo når du det om ca. ${formatDuration(Math.ceil(g.monthsAtTrend))}.`);
             } else {
-                parts.push('Gem øjebliksbilleder over mindst en måned for at se dit tempo.');
+                parts.push('Gem din månedsstatus over mindst en måned for at se dit tempo.');
             }
             statusText = parts.join(' ');
         }

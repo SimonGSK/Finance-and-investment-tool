@@ -733,14 +733,14 @@ describe('lavine mod snebold', () => {
     });
 });
 
-describe('formuetal: felterne eller seneste øjebliksbillede', () => {
+describe('formuetal: felterne eller seneste datapunkt', () => {
     const history = [
         {date:'2026-08-31', value:520000, liquid:320000, netCatKontanter:110000, netCatAktier:210000, netCatPension:230000, netCatFrivaerdi:0, netCatAndet:0, debt:30000},
         {date:'2026-07-31', value:500000, liquid:300000, netCatKontanter:100000, netCatAktier:200000, netCatPension:200000, netCatFrivaerdi:0, netCatAndet:0, debt:0}
     ];
     const zero = {netCatKontanter:0, netCatAktier:0, netCatPension:0, netCatFrivaerdi:0, netCatAndet:0, debt:0};
 
-    test('tomme felter bruger det seneste øjebliksbillede', () => {
+    test('tomme felter bruger det seneste datapunkt', () => {
         const f = calc.pickNetWorthFigures(zero, history);
         assert.equal(f.fromSnapshot, true);
         assert.equal(f.date, '2026-08-31');
@@ -760,7 +760,7 @@ describe('formuetal: felterne eller seneste øjebliksbillede', () => {
         assert.equal(f.fromSnapshot, false);
         assert.equal(f.value, 0);
     });
-    test('ældre øjebliksbilleder med kun value virker også', () => {
+    test('ældre datapunkter med kun value virker også', () => {
         const f = calc.pickNetWorthFigures(zero, [{date:'2025-12-31', value:400000}]);
         assert.equal(f.value, 400000);
         assert.equal(f.liquid, 0);
@@ -791,35 +791,19 @@ describe('påmindelse om månedsstatus', () => {
     });
 });
 
-describe('ETF-beskatning', () => {
-    const near = (a, b, msg) => assert.ok(Math.abs(a - b) < 0.01, `${msg}: ${a} ≠ ${b}`);
-    test('ét år, 10 % afkast på 100.000 kr.: hver beskatning for sig', () => {
-        const r = calc.simulateFundTaxation({start:100000, monthly:0, years:1, yearlyReturn:1.10, capitalTaxRate:0.37});
-        near(r.modes.abis.finalAfterTax, 107300, 'positivlisten 27 %');
-        near(r.modes.capital.finalAfterTax, 106300, 'kapitalindkomst 37 %');
-        near(r.modes.realisation.finalAfterTax, 107300, 'realisation 27 %');
-        near(r.modes.ask.finalAfterTax, 108300, 'ASK 17 %');
-        assert.equal(r.deposited, 100000);
-        assert.equal(r.askOverLimit, false);
-    });
-    test('gevinst over grænsen beskattes med 42 % af det overskydende', () => {
-        const r = calc.simulateFundTaxation({start:1000000, monthly:0, years:1, yearlyReturn:1.10, taxLimit:79400});
-        near(r.modes.abis.totalTax, 79400 * 0.27 + 20600 * 0.42, 'progression');
-    });
-    test('over 20 år: ASK er billigst og kapitalindkomst dyrest', () => {
-        const r = calc.simulateFundTaxation({start:100000, monthly:0, years:20, yearlyReturn:1.07});
-        assert.ok(r.modes.ask.finalAfterTax > r.modes.abis.finalAfterTax);
-        assert.ok(r.modes.abis.finalAfterTax > r.modes.capital.finalAfterTax);
-        assert.equal(r.modes.abis.values.length, 21);
-    });
-    test('uden afkast ingen skat, og tab føres videre', () => {
-        const flat = calc.simulateFundTaxation({start:50000, monthly:1000, years:3, yearlyReturn:1});
-        for(const m of Object.values(flat.modes)) assert.equal(Math.round(m.totalTax), 0);
-        near(flat.modes.abis.finalAfterTax, 86000, 'kun indskud');
-        const down = calc.simulateFundTaxation({start:100000, monthly:0, years:2, yearlyReturn:0.9});
-        assert.equal(down.modes.capital.totalTax, 0);
-    });
-    test('ASK-loftet: advarsel, når indskuddene overstiger det', () => {
-        assert.equal(calc.simulateFundTaxation({start:100000, monthly:2000, years:5, yearlyReturn:1.07}).askOverLimit, true);
+describe('gældsafvikling: rente betalt over tid', () => {
+    test('interestPaid vokser måned for måned og ender i den samlede rente', () => {
+        const debts = [{name:'Kreditkort', balance:60000, rate:0.24, minPayment:1500}, {name:'Afbetaling', balance:4000, rate:0, minPayment:400},
+            {name:'SU-lån', balance:10000, rate:0.04, minPayment:300}, {name:'Billån', balance:40000, rate:0.07, minPayment:1000}];
+        const a = calc.simulateDebtPayoff(debts, 1000, 'avalanche');
+        const s = calc.simulateDebtPayoff(debts, 1000, 'snowball');
+        assert.equal(a.interestPaid.length, a.balances.length);
+        assert.equal(a.interestPaid[0], 0);
+        assert.ok(a.interestPaid.every((v, i) => i === 0 || v >= a.interestPaid[i - 1]));
+        assert.equal(a.interestPaid.at(-1), a.totalInterest);
+        // Standardlånene er valgt, så forskellen er tydelig: snebold koster over 9.000 kr. mere.
+        assert.ok(s.totalInterest - a.totalInterest > 9000);
+        assert.equal(s.payoff[0].name, 'Afbetaling');
+        assert.equal(a.payoff.find(p => p.name === 'Kreditkort').month < s.payoff.find(p => p.name === 'Kreditkort').month, true);
     });
 });

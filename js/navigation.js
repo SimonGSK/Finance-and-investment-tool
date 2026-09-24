@@ -69,6 +69,8 @@ function showSection(name){
 }
 
 const BACKUP_KEYS = ['budgetItems', 'budgetData', 'budgetCustomCategories', 'netWorthData', 'netWorthHistory', 'portfolioHistory', 'monthlyStatusLast', 'debtPayoffData', 'netWorthGoals'];
+// Indstillinger gemmes som rå tekst (ikke JSON) og lægges derfor i et eget 'settings'-afsnit i filen.
+const BACKUP_SETTING_KEYS = ['theme', 'monthlyReminderOff'];
 
 /**
  * Downloader alle gemte data (budget, formue, historik, portefølje) som én
@@ -80,6 +82,9 @@ function exportAllData(){
         const raw = localStorage.getItem(key);
         if(raw !== null) backup[key] = JSON.parse(raw);
     });
+    const settings = {};
+    BACKUP_SETTING_KEYS.forEach(key => { const v = localStorage.getItem(key); if(v !== null) settings[key] = v; });
+    if(Object.keys(settings).length) backup.settings = settings;
     const json = JSON.stringify(backup, null, 2);
     const blob = new Blob([json], {type:'application/json'});
     const url = URL.createObjectURL(blob);
@@ -221,6 +226,9 @@ function importAllData(event){
         // Ældre backups kan indeholde 'budgetMode' fra en fjernet funktion.
         if(backup.budgetData && typeof backup.budgetData === 'object') delete backup.budgetData.budgetMode;
         found.forEach(key => localStorage.setItem(key, JSON.stringify(backup[key])));
+        if(backup.settings && typeof backup.settings === 'object'){
+            BACKUP_SETTING_KEYS.forEach(key => { if(typeof backup.settings[key] === 'string') localStorage.setItem(key, backup.settings[key]); });
+        }
         location.reload();
     };
     reader.readAsText(file, 'UTF-8');

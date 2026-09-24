@@ -10,7 +10,7 @@ All data stays in your browser's `localStorage`. There are no accounts, no serve
 
 ### Investering
 
-**ETF'er og fonde** looks up a fund by ISIN or name on Skattestyrelsens positive list (5.000+ funds, loaded only when you search) and explains the tax, then compares the same investment after tax: on the list (lager, 27/42 %), not on the list (capital income), shares taxed on sale, and ASK.
+**ETF'er og fonde** looks up a fund by ISIN or name on Skattestyrelsens positive list (5.000+ funds, loaded only when you search) and explains how each kind of investment is taxed — including why Danish dividend-paying funds aren't on the list (they're taxed on realisation).
 
 The FIRE calculator can **fetch your numbers** from Formue (cash and shares by default; pension and home equity can be ticked) and your yearly spending and monthly saving from the budget.
 
@@ -39,7 +39,7 @@ Build a monthly budget from itemised posts in 15 categories plus your own, each 
 
 ### Formue
 
-Enter your assets (cash, stocks, pension, home equity, other) and debt to get your net worth and liquid wealth. Save dated snapshots to build a history — or use **Månedsstatus** to save the same date into both the Formue history and the portfolio tracker in one go — see how the composition has changed over time, set your own goals (with the monthly saving needed to reach them by a deadline and whether your pace over the last year is enough), track milestones, and compare your net worth to other Danes of exactly your age using CEPOS's per-age table (2024 data at 2026 levels, pension counted after 40% tax, as CEPOS does). The full table opens with your age highlighted. Plus a light-hearted "your wealth equals *n* bananas / iPhones / Porsches" comparison.
+Enter your assets (cash, stocks, pension, home equity, other) and debt to get your net worth and liquid wealth. Save a dated *månedsstatus* to build a history (rows can be edited or deleted) — or use **Månedsstatus** to save the same date into both the Formue history and the portfolio tracker in one go — see how the composition has changed over time, set your own goals (with the monthly saving needed to reach them by a deadline and whether your pace over the last year is enough), track milestones, and compare your net worth to other Danes of exactly your age using CEPOS's per-age table (2024 data at 2026 levels, pension counted after 40% tax, as CEPOS does). The full table opens with your age highlighted. Plus a light-hearted "your wealth equals *n* bananas / iPhones / Porsches" comparison.
 
 ### Everywhere
 
@@ -97,7 +97,7 @@ js/tool2-monthly.js     Aktiedepot with monthly contributions
 js/tool3-fire.js        FIRE calculator
 js/tool4-portfolio.js   Portfolio tracker
 js/pension.js           Pension
-js/etf-tax.js           ETF'er og fonde: positive-list lookup and tax comparison
+js/etf-tax.js           ETF'er og fonde: positive-list lookup
 data/positivliste.json  Skattestyrelsens positive list (built by scripts/build-positivliste.py)
 js/loan-capacity.js     Hvor meget kan jeg låne?
 js/buy-vs-rent.js       Køb eller leje?

@@ -332,7 +332,15 @@ test('gældsafvikling forklarer forskellen på lavine og snebold, og etiketterne
     await page.getByRole('button', { name: 'Bolig & lån' }).click();
     await page.evaluate(() => showHousingTool(3));
     await expect(page.locator('#debtCompare')).toContainText('Lavine sparer dig');
-    await expect(page.locator('#debtCompare')).toContainText('Forbrugslån er betalt ud efter 7 mdr.');
+    await expect(page.locator('#debtCompare')).toContainText('9.540 kr. i rente');
+    await expect(page.locator('#debtCompare')).toContainText('Afbetaling (mobil) er betalt ud efter 3 mdr.');
+
+    // "Rente betalt" viser den akkumulerede rente, hvor forskellen er tydelig.
+    await page.getByRole('button', { name: 'Rente betalt' }).click();
+    await expect(page.getByRole('button', { name: 'Rente betalt' })).toHaveAttribute('aria-pressed', 'true');
+    const lastInterest = await page.evaluate(() => debtChart.data.datasets.map(d => Math.round(d.data.at(-1))));
+    expect(lastInterest[1] - lastInterest[0]).toBeGreaterThan(9000);
+    await page.getByRole('button', { name: 'Gæld tilbage' }).click();
     const clipped = await page.locator('.debt-field-label').evaluateAll(ls => ls.filter(l => l.scrollWidth > l.clientWidth + 1).length);
     expect(clipped).toBe(0);
 
@@ -359,7 +367,7 @@ test('budget: 50/30/20 viser både andel og beløb pr. måned', async ({ page })
     }));
 });
 
-test('formue: tomme felter viser det seneste øjebliksbillede overalt, og tallene kan hentes ind', async ({ page }) => {
+test('formue: tomme felter viser det seneste datapunkt overalt, og tallene kan hentes ind', async ({ page }) => {
     await page.goto('/index.html');
     await page.evaluate(() => {
         localStorage.setItem('netWorthHistory', JSON.stringify([
@@ -370,7 +378,7 @@ test('formue: tomme felter viser det seneste øjebliksbillede overalt, og tallen
     await page.reload();
     await page.getByRole('button', { name: 'Formue', exact: true }).click();
     const note = page.locator('#netWorthSourceNote');
-    await expect(note).toContainText('seneste øjebliksbillede (31. aug. 2026)');
+    await expect(note).toContainText('seneste månedsstatus (31. aug. 2026)');
     await expect(page.locator('#netWorthTotal')).toHaveText('520.000 kr.');
     await expect(page.locator('#netLiquidTotal')).toHaveText('320.000 kr.');
     await expect(page.locator('#bufferMonths')).toHaveText('10,0 måneder');
@@ -496,7 +504,7 @@ test('udskriv overblik: rapporten har formue, budget, lån og mål og er det ene
     await expect(page.locator('.top-tabs')).toBeHidden();
 });
 
-test('ETF: opslag på positivlisten, en ISIN der ikke er på listen, og sammenligningen', async ({ page }) => {
+test('ETF: opslag på positivlisten, en ISIN der ikke er på listen, og danske udbyttebetalende fonde', async ({ page }) => {
     await page.goto('/index.html');
     await page.getByRole('button', { name: "ETF'er og fonde" }).click();
     const search = page.getByLabel('Søg på ISIN eller navn', { exact: true });
@@ -513,13 +521,40 @@ test('ETF: opslag på positivlisten, en ISIN der ikke er på listen, og sammenli
     await search.fill('ishares msci world');
     await expect(results.locator('.etf-hit').first()).toBeVisible();
 
-    // 100.000 kr. i ét år med 10 %: 27 % / 37 % / 27 % / 17 % skat af 10.000 kr.
-    for(const [id, v] of [['etfStart', '100000'], ['etfMonthly', '0'], ['etfYears', '1'], ['etfReturn', '10']]){
-        await page.locator('#' + id).fill(v);
-    }
-    await expect(page.locator('#etfAbis')).toHaveText('107.300 kr.');
-    await expect(page.locator('#etfCapital')).toHaveText('106.300 kr.');
-    await expect(page.locator('#etfRealisation')).toHaveText('107.300 kr.');
-    await expect(page.locator('#etfAsk')).toHaveText('108.300 kr.');
-    await expect(page.locator('#etfNote')).toContainText('1.000 kr. mere');
+    // Danske udbyttebetalende fonde forklares altid.
+    await expect(page.locator('.etf-dk-note')).toContainText('realisationsprincippet');
+    await search.fill('DK0060189041');
+    await expect(results).toContainText('helt normalt, at den ikke står på listen');
+});
+
+test('historik: "Ret" retter et datapunkt, advarer ved en optaget dato og kan fortrydes', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => localStorage.setItem('netWorthHistory', JSON.stringify([
+        {date:'2026-07-31', value:300000, liquid:300000, netCatKontanter:100000, netCatAktier:200000, netCatPension:0, netCatFrivaerdi:0, netCatAndet:0, debt:0},
+        {date:'2026-08-31', value:320000, liquid:320000, netCatKontanter:100000, netCatAktier:220000, netCatPension:0, netCatFrivaerdi:0, netCatAndet:0, debt:0}
+    ])));
+    await page.reload();
+    await page.getByRole('button', { name: 'Formue', exact: true }).click();
+    await page.getByRole('button', { name: 'Ret datapunktet for 31. aug. 2026' }).click();
+    let dialog = page.getByRole('dialog', { name: 'Ret formue for 31. aug. 2026' });
+    await dialog.getByLabel('Aktier & værdipapirer (kr.)').fill('220000 + 5000');
+    await dialog.getByLabel('Aktier & værdipapirer (kr.)').press('Enter');
+    await expect(dialog).toBeHidden();
+    const read = () => page.evaluate(() => JSON.parse(localStorage.getItem('netWorthHistory')));
+    expect((await read())[1]).toMatchObject({date:'2026-08-31', netCatAktier:225000, value:325000});
+
+    await page.locator('.toast').getByRole('button', { name: 'Fortryd' }).click();
+    expect((await read())[1].netCatAktier).toBe(220000);
+
+    // Flyttes datoen til en dato med data, vises ændringerne først.
+    await page.getByRole('button', { name: 'Ret datapunktet for 31. aug. 2026' }).click();
+    dialog = page.getByRole('dialog', { name: 'Ret formue for 31. aug. 2026' });
+    await dialog.getByLabel('Dato').fill('2026-07-31');
+    await dialog.getByRole('button', { name: 'Gem ændringer' }).click();
+    const warning = page.getByRole('dialog', { name: 'Overskriv eksisterende data?' });
+    await expect(warning).toContainText('200.000 kr.');
+    await warning.getByRole('button', { name: 'Erstat data' }).click();
+    const after = await read();
+    expect(after).toHaveLength(1);
+    expect(after[0]).toMatchObject({date:'2026-07-31', netCatAktier:220000});
 });

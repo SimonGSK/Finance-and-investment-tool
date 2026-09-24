@@ -27,7 +27,7 @@ function reportNetWorth(){
     if(!(f.assets > 0) && !f.debt && !history.length) return null;
     const rows = NET_WORTH_CATEGORIES.filter(c => f[c.id]).map(c => [c.label, f.assets > 0 ? Math.round(f[c.id] / f.assets * 100) + ' %' : '', reportKr(f[c.id])]);
     const parts = [];
-    if(f.fromSnapshot) parts.push(el('p', {className:'report-note', textContent:`Tal fra seneste øjebliksbillede, ${formatDanishDate(f.date)}.`}));
+    if(f.fromSnapshot) parts.push(el('p', {className:'report-note', textContent:`Tal fra seneste månedsstatus, ${formatDanishDate(f.date)}.`}));
     parts.push(reportTable(['Aktiv', 'Andel', 'Beløb'], rows, {totalRows: [
         ['Aktiver i alt', '', reportKr(f.assets)], ['Gæld', '', reportKr(-f.debt)], ['Nettoformue', '', reportKr(f.value)], ['Heraf likvid (kontanter + aktier)', '', reportKr(f.liquid)]
     ]}));

@@ -202,6 +202,18 @@ function deletePortfolioEntry(date){
 }
 
 /**
+ * Retter ét datapunkt i porteføljehistorikken (se editHistoryEntry i ui.js).
+ * @param {string} date ISO-dato
+ */
+function editPortfolioEntry(date){
+    editHistoryEntry({
+        date, title:'Portefølje', read: readPortfolioHistory, write: writePortfolioHistory, render: renderPortfolioHistory,
+        inputs: [['stockValue', 'Aktieværdi (kr.)'], ['cash', 'Kontanter i depot (kr.)'], ['traded', 'Købt/solgt (kr.)'], ['deposit', 'Indskud/udbetaling (kr.)'], ['dividend', 'Udbytte (kr.)']],
+        build: buildPortfolioEntry, fields: PORTFOLIO_FIELDS
+    });
+}
+
+/**
  * Sletter hele porteføljehistorikken efter bekræftelse - med fortryd.
  */
 async function clearPortfolioHistory(){
@@ -294,7 +306,10 @@ function renderPortfolioHistory(){
             <td>${DK.format(h.traded)} kr.</td>
             <td>${DK.format(h.deposit)} kr.</td>
             <td>${DK.format(h.dividend)} kr.</td>
-            <td><button class="btn btn-secondary btn-sm" aria-label="Slet datapunktet for ${formatDanishDate(h.date)}" onclick="deletePortfolioEntry('${h.date}')">Slet</button></td>
+            <td><div class="row-actions">
+                <button class="btn btn-secondary btn-sm" aria-label="Ret datapunktet for ${formatDanishDate(h.date)}" onclick="editPortfolioEntry('${h.date}')">Ret</button>
+                <button class="btn btn-secondary btn-sm" aria-label="Slet datapunktet for ${formatDanishDate(h.date)}" onclick="deletePortfolioEntry('${h.date}')">Slet</button>
+            </div></td>
         </tr>`).join('');
 }
 
