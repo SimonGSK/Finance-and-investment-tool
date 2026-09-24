@@ -593,7 +593,8 @@ input[type=range]::-moz-range-thumb{
     color:var(--muted);
     max-width:1600px;
 }
-.intro-banner button{
+/* Kun lukkeknappen (✕) - ikke .btn-knapperne i .banner-actions. */
+.intro-banner > button{
     background:transparent;
     border:none;
     color:var(--subtle);
@@ -605,7 +606,7 @@ input[type=range]::-moz-range-thumb{
     border-radius:var(--r-sm);
     transition:all 0.18s var(--ease);
 }
-.intro-banner button:hover{
+.intro-banner > button:hover{
     color:var(--text);
     background:var(--panel);
 }
@@ -1074,3 +1075,16 @@ table.data-table td.is-negative{ color:var(--ask); }
 /* ---- App-installation ---- */
 #installAppRow[hidden]{ display:none; }
 .install-steps{ margin:0 0 var(--s4); padding-left:1.4em; line-height:1.8; }
+
+/* hidden skal altid skjule - også elementer, hvis klasse sætter display (fx .btn). */
+[hidden]{ display:none !important; }
+
+/* ---- Hent mine tal (FIRE) ---- */
+.import-row{ align-items:center; padding:var(--s2) 0; border-bottom:1px solid var(--border); }
+.import-row .toggle-text{ flex:1; }
+.import-amount{ font-family:var(--font-mono); font-size:13px; color:var(--muted); white-space:nowrap; }
+.import-row input:disabled + .toggle-text{ color:var(--subtle); }
+.import-total{ margin:var(--s3) 0 0; text-align:right; font-size:14px; }
+.import-total strong{ font-family:var(--font-mono); }
+.tool-head .tool-actions{ display:flex; gap:var(--s2); flex-wrap:wrap; justify-content:flex-end; }
+.tool-head .tool-actions .btn + .btn{ margin-left:0; }

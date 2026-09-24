@@ -518,6 +518,7 @@ function renderNetWorthHistory(){
     renderNetWorthComposition(history);
     // Nøgletal, mål osv. kan bygge på det seneste øjebliksbillede, så de genberegnes også.
     updateNetWorth();
+    if(typeof checkMonthlyReminder === 'function') checkMonthlyReminder();
 }
 
 let netWorthCompositionChart = null;

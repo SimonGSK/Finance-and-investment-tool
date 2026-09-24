@@ -422,3 +422,52 @@ test('app: manifest og ikoner findes, og siden virker offline efter første bes�
     expect(await page.evaluate(() => typeof Chart)).toBe('function');       // også Chart.js fra CDN'en
     await context.setOffline(false);
 });
+
+test('FIRE: "Hent mine tal" henter likvid formue og budgettet, med fortryd', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => showTool(3));
+    await expect(page.getByRole('button', { name: 'Hent mine tal' })).toBeHidden();
+
+    await page.evaluate(() => {
+        localStorage.setItem('netWorthData', JSON.stringify({netCatKontanter:'50000', netCatAktier:'250000', netCatPension:'400000', netCatFrivaerdi:'0', netCatAndet:'0', netDebt:'0'}));
+        localStorage.setItem('budgetItems', JSON.stringify({catBolig:[{label:'Husleje', amount:10000}], catMad:[{label:'Mad', amount:4000}], catOpsparing:[{label:'Aktier', amount:6000}]}));
+    });
+    await page.reload();
+    await page.evaluate(() => showTool(3));
+    await page.getByRole('button', { name: 'Hent mine tal' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Hent mine tal' });
+    await expect(dialog.locator('.import-total')).toContainText('300.000 kr.');     // kontanter + aktier, uden pension
+    await dialog.getByText('Pension', { exact: true }).click();
+    await expect(dialog.locator('.import-total')).toContainText('700.000 kr.');
+    await dialog.getByText('Pension', { exact: true }).click();
+    await dialog.getByRole('button', { name: 'Brug tallene' }).click();
+    await expect(page.locator('#startCash3Number')).toHaveValue('300000');
+    await expect(page.locator('#expenses3Number')).toHaveValue('168000');
+    await expect(page.locator('#monthlyAmount3Number')).toHaveValue('6000');
+    await page.locator('.toast').getByRole('button', { name: 'Fortryd' }).click();
+    await expect(page.locator('#startCash3Number')).toHaveValue('100000');
+});
+
+test('påmindelse om månedsstatus: vises ved månedsskiftet og åbner skemaet på månedens sidste dag', async ({ page }) => {
+    await page.clock.setFixedTime(new Date('2026-10-03T12:00:00'));
+    await page.goto('/index.html');
+    await expect(page.locator('#monthlyReminderBanner')).toBeHidden();     // ny bruger: ingen påmindelse
+    await page.evaluate(() => localStorage.setItem('netWorthHistory', JSON.stringify([{date:'2026-08-31', value:1000, liquid:1000, netCatKontanter:1000, netCatAktier:0, netCatPension:0, netCatFrivaerdi:0, netCatAndet:0, debt:0}])));
+    await page.reload();
+    const banner = page.locator('#monthlyReminderBanner');
+    await expect(banner).toContainText('september');
+    await banner.getByRole('button', { name: 'Åbn månedsstatus' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Månedsstatus' });
+    await expect(dialog.getByLabel('Dato')).toHaveValue('2026-09-30');
+    await dialog.getByRole('button', { name: 'Gem i begge' }).click();
+    await expect(dialog).toBeHidden();
+    await expect(banner).toBeHidden();
+
+    // "Ikke denne måned" huskes.
+    await page.evaluate(() => localStorage.setItem('netWorthHistory', JSON.stringify([{date:'2026-08-31', value:1000, liquid:1000, netCatKontanter:1000, netCatAktier:0, netCatPension:0, netCatFrivaerdi:0, netCatAndet:0, debt:0}])));
+    await page.evaluate(() => localStorage.removeItem('portfolioHistory'));
+    await page.reload();
+    await banner.getByRole('button', { name: 'Ikke denne måned' }).click();
+    await page.reload();
+    await expect(banner).toBeHidden();
+});
