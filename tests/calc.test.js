@@ -790,3 +790,36 @@ describe('påmindelse om månedsstatus', () => {
         assert.equal(r('2026-09-30', '2026-08-31', {enabled:false}).due, false);
     });
 });
+
+describe('ETF-beskatning', () => {
+    const near = (a, b, msg) => assert.ok(Math.abs(a - b) < 0.01, `${msg}: ${a} ≠ ${b}`);
+    test('ét år, 10 % afkast på 100.000 kr.: hver beskatning for sig', () => {
+        const r = calc.simulateFundTaxation({start:100000, monthly:0, years:1, yearlyReturn:1.10, capitalTaxRate:0.37});
+        near(r.modes.abis.finalAfterTax, 107300, 'positivlisten 27 %');
+        near(r.modes.capital.finalAfterTax, 106300, 'kapitalindkomst 37 %');
+        near(r.modes.realisation.finalAfterTax, 107300, 'realisation 27 %');
+        near(r.modes.ask.finalAfterTax, 108300, 'ASK 17 %');
+        assert.equal(r.deposited, 100000);
+        assert.equal(r.askOverLimit, false);
+    });
+    test('gevinst over grænsen beskattes med 42 % af det overskydende', () => {
+        const r = calc.simulateFundTaxation({start:1000000, monthly:0, years:1, yearlyReturn:1.10, taxLimit:79400});
+        near(r.modes.abis.totalTax, 79400 * 0.27 + 20600 * 0.42, 'progression');
+    });
+    test('over 20 år: ASK er billigst og kapitalindkomst dyrest', () => {
+        const r = calc.simulateFundTaxation({start:100000, monthly:0, years:20, yearlyReturn:1.07});
+        assert.ok(r.modes.ask.finalAfterTax > r.modes.abis.finalAfterTax);
+        assert.ok(r.modes.abis.finalAfterTax > r.modes.capital.finalAfterTax);
+        assert.equal(r.modes.abis.values.length, 21);
+    });
+    test('uden afkast ingen skat, og tab føres videre', () => {
+        const flat = calc.simulateFundTaxation({start:50000, monthly:1000, years:3, yearlyReturn:1});
+        for(const m of Object.values(flat.modes)) assert.equal(Math.round(m.totalTax), 0);
+        near(flat.modes.abis.finalAfterTax, 86000, 'kun indskud');
+        const down = calc.simulateFundTaxation({start:100000, monthly:0, years:2, yearlyReturn:0.9});
+        assert.equal(down.modes.capital.totalTax, 0);
+    });
+    test('ASK-loftet: advarsel, når indskuddene overstiger det', () => {
+        assert.equal(calc.simulateFundTaxation({start:100000, monthly:2000, years:5, yearlyReturn:1.07}).askOverLimit, true);
+    });
+});

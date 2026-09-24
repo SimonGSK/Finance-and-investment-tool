@@ -211,6 +211,7 @@ function pctNumber(fraction){
 const RULE_TEXT = {
     TAX_YEAR: () => String(TAX_YEAR),
     ASK_DEPOSIT_LIMIT: () => DK.format(ASK_DEPOSIT_LIMIT),
+    CAPITAL_INCOME_LIMIT: () => DK.format(CAPITAL_INCOME_LIMIT),
     TAX_LIMIT_27: () => DK.format(TAX_LIMIT_27),
     AKT_TAX_LOW: () => pctNumber(AKT_TAX_LOW),
     AKT_TAX_HIGH: () => pctNumber(AKT_TAX_HIGH),

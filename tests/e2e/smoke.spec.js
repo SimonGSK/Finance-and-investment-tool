@@ -7,7 +7,7 @@ const { test, expect } = require('@playwright/test');
 // Alle steder på siden, der kan vises: [sektion, funktion der viser værktøjet, nummer]
 const VIEWS = [
     ['tools', 'showTool', 1], ['tools', 'showTool', 2], ['tools', 'showTool', 3],
-    ['tools', 'showTool', 4], ['tools', 'showTool', 5],
+    ['tools', 'showTool', 4], ['tools', 'showTool', 5], ['tools', 'showTool', 6],
     ['housing', 'showHousingTool', 1], ['housing', 'showHousingTool', 2], ['housing', 'showHousingTool', 3],
     ['budget', null, null], ['formue', null, null]
 ];
@@ -494,4 +494,32 @@ test('udskriv overblik: rapporten har formue, budget, lån og mål og er det ene
     await page.emulateMedia({ media: 'print' });
     await expect(report).toBeVisible();
     await expect(page.locator('.top-tabs')).toBeHidden();
+});
+
+test('ETF: opslag på positivlisten, en ISIN der ikke er på listen, og sammenligningen', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.getByRole('button', { name: "ETF'er og fonde" }).click();
+    const search = page.getByLabel('Søg på ISIN eller navn', { exact: true });
+    await search.fill('ie00b4l5y983');
+    const results = page.locator('#etfResults');
+    await expect(results.locator('.etf-hit')).toHaveCount(1);
+    await expect(results).toContainText('iShares Core MSCI World UCITS ETF');
+    await expect(results).toContainText('På positivlisten 2026');
+
+    await search.fill('IE00BK5BQT80');
+    await expect(results).toContainText('står ikke på listen for 2026');
+    await expect(results).toContainText('kapitalindkomst');
+
+    await search.fill('ishares msci world');
+    await expect(results.locator('.etf-hit').first()).toBeVisible();
+
+    // 100.000 kr. i ét år med 10 %: 27 % / 37 % / 27 % / 17 % skat af 10.000 kr.
+    for(const [id, v] of [['etfStart', '100000'], ['etfMonthly', '0'], ['etfYears', '1'], ['etfReturn', '10']]){
+        await page.locator('#' + id).fill(v);
+    }
+    await expect(page.locator('#etfAbis')).toHaveText('107.300 kr.');
+    await expect(page.locator('#etfCapital')).toHaveText('106.300 kr.');
+    await expect(page.locator('#etfRealisation')).toHaveText('107.300 kr.');
+    await expect(page.locator('#etfAsk')).toHaveText('108.300 kr.');
+    await expect(page.locator('#etfNote')).toContainText('1.000 kr. mere');
 });

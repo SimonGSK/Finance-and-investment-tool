@@ -124,6 +124,7 @@
         <button class="tab-btn" id="tabBtn2" onclick="showTool(2)">Aktiedepot: fast + månedligt</button>
         <button class="tab-btn" id="tabBtn3" onclick="showTool(3)">FIRE-beregner (4%-reglen)</button>
         <button class="tab-btn" id="tabBtn5" onclick="showTool(5)">Pension</button>
+        <button class="tab-btn" id="tabBtn6" onclick="showTool(6)">ETF'er og fonde</button>
         <button class="tab-btn" id="tabBtn4" onclick="showTool(4)">Porteføljetracker</button>
     </div>
 
@@ -620,6 +621,95 @@
                 <button class="btn btn-secondary" onclick="downloadTableAsCSV('ptTableBody', 'portefoeljetracker.csv')">Download som CSV</button>
                 <button class="btn btn-secondary" onclick="document.getElementById('portfolioCsvUpload').click()">Upload CSV</button>
                 <input type="file" id="portfolioCsvUpload" accept=".csv" style="display:none;" onchange="importPortfolioCSV(event)">
+            </div>
+        </div>
+    </div>
+
+    <div id="tool6" style="display:none;">
+        <div class="tool-head">
+            <details class="tool-about">
+                <summary>Hvad gør dette værktøj?</summary>
+                <p class="tool-intro">Slå op, om en ETF eller fond står på Skattestyrelsens <strong>positivliste</strong>, og se hvad det betyder for skatten. Sammenlign derefter, hvad den samme investering giver efter skat, afhængigt af hvordan den beskattes: på listen, ikke på listen, som aktier der beskattes ved salg, eller på en aktiesparekonto.</p>
+            </details>
+            <div class="tool-actions"><button class="btn btn-secondary btn-sm" type="button" onclick="shareCalculator('tool6')">Del beregning</button></div>
+        </div>
+
+        <div class="panel etf-lookup">
+            <div class="eyebrow">Er den på positivlisten?</div>
+            <div class="field">
+                <label for="etfSearch">Søg på ISIN eller navn</label>
+                <input type="search" id="etfSearch" class="number-input etf-search" placeholder="Fx IE00B4L5Y983 eller MSCI World" autocomplete="off" spellcheck="false">
+                <div class="limit-hint">ISIN-koden (12 tegn) står på fondens faktaark og hos din bank eller netbank.</div>
+            </div>
+            <div id="etfResults" class="etf-results" role="status" aria-live="polite"></div>
+            <p class="explainer" id="etfSource"></p>
+        </div>
+
+        <div class="layout">
+            <div class="panel">
+                <div class="eyebrow">Sammenlign beskatningen</div>
+                <div class="field">
+                    <label for="etfStart">Startbeløb (kr.)</label>
+                    <input type="number" id="etfStart" class="number-input" value="100000" min="0" step="1000">
+                </div>
+                <div class="field">
+                    <label for="etfMonthly">Månedlig investering (kr.)</label>
+                    <input type="number" id="etfMonthly" class="number-input" value="2000" min="0" step="100">
+                </div>
+                <div class="field">
+                    <label for="etfYears">Antal år</label>
+                    <input type="number" id="etfYears" class="number-input" value="20" min="1" max="60" step="1">
+                </div>
+                <div class="field">
+                    <label for="etfReturn">Forventet årligt afkast (%)</label>
+                    <input type="number" id="etfReturn" class="number-input" value="7" min="-20" max="30" step="0.1">
+                </div>
+                <div class="field">
+                    <label for="etfCapitalTax">Skat af kapitalindkomst (%)</label>
+                    <input type="number" id="etfCapitalTax" class="number-input" value="37" min="0" max="60" step="1">
+                    <div class="limit-hint">Typisk ca. 37 %; op til ca. 42 % over <span data-rule="CAPITAL_INCOME_LIMIT">55.000</span> kr. i positiv kapitalindkomst</div>
+                </div>
+                <label class="toggle-row">
+                    <input type="checkbox" id="etfDouble">
+                    Gift, og din ægtefælle bruger ikke selv sin del af <span data-rule="AKT_TAX_LOW">27</span>%-grænsen
+                </label>
+            </div>
+
+            <div class="panel chart-panel chart-panel-sticky">
+                <div class="legend">
+                    <span><i class="dot" style="background:var(--akt)"></i>På positivlisten</span>
+                    <span><i class="dot" style="background:var(--cross)"></i>Ikke på listen</span>
+                    <span><i class="dot" style="background:var(--neutral-series)"></i>Aktier (skat ved salg)</span>
+                    <span><i class="dot" style="background:var(--ask)"></i>Aktiesparekonto</span>
+                </div>
+                <div class="chart-wrap"><canvas id="etfChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="full-width-below">
+            <div class="stats">
+                <div class="stat"><div class="label">På positivlisten</div><div class="value akt" id="etfAbis">–</div><div class="sub" id="etfAbisSub"></div></div>
+                <div class="stat"><div class="label">Ikke på listen</div><div class="value cross" id="etfCapital">–</div><div class="sub" id="etfCapitalSub"></div></div>
+                <div class="stat"><div class="label">Aktier (skat ved salg)</div><div class="value" id="etfRealisation">–</div><div class="sub" id="etfRealisationSub"></div></div>
+                <div class="stat"><div class="label">Aktiesparekonto</div><div class="value ask" id="etfAsk">–</div><div class="sub" id="etfAskSub"></div></div>
+            </div>
+            <p class="compare-note" id="etfNote" role="status"></p>
+
+            <div class="panel">
+                <div class="eyebrow">Sådan beskattes det (<span data-rule="TAX_YEAR">2026</span>)</div>
+                <div class="data-table-wrap">
+                    <table class="data-table etf-rules">
+                        <thead><tr><th>Type</th><th>Hvordan</th><th>Sats</th><th>På aktiesparekonto?</th></tr></thead>
+                        <tbody>
+                            <tr><td>ETF/fond på positivlisten</td><td>Lager: årets gevinst hvert år, også uden salg</td><td>Aktieindkomst: <span data-rule="AKT_TAX_LOW">27</span> % / <span data-rule="AKT_TAX_HIGH">42</span> %</td><td>Ja</td></tr>
+                            <tr><td>ETF/fond ikke på listen</td><td>Lager: årets gevinst hvert år</td><td>Kapitalindkomst: ca. 37–42 %</td><td>Nej</td></tr>
+                            <tr><td>Aktier og danske udloddende aktiefonde</td><td>Realisation: gevinsten ved salg (udbytter hvert år)</td><td>Aktieindkomst: <span data-rule="AKT_TAX_LOW">27</span> % / <span data-rule="AKT_TAX_HIGH">42</span> %</td><td>Ja, hvis børsnoteret/aktiebaseret</td></tr>
+                            <tr><td>Aktiesparekonto</td><td>Lager</td><td><span data-rule="ASK_TAX">17</span> %</td><td>Loft: <span data-rule="ASK_DEPOSIT_LIMIT">174.200</span> kr.</td></tr>
+                            <tr><td>Pension</td><td>Lager (PAL-skat)</td><td><span data-rule="PAL_SKAT">15,3</span> %</td><td>–</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="explainer">27 %-grænsen er <span data-rule="TAX_LIMIT_27">79.400</span> kr. om året (det dobbelte for ægtepar). Beregningen antager et fast afkast hvert år, at skatten betales af investeringen, og at aktierne sælges på én gang til sidst – sælger du over flere år, bliver skatten lavere. Udbytter er ikke med. Ikke rådgivning. Kilde: <a href="https://skat.dk/erhverv/ekapital/vaerdipapirer/beviser-og-aktier-i-investeringsforeninger-og-selskaber-ifpa" target="_blank" rel="noopener">Skattestyrelsens liste over aktiebaserede investeringsselskaber</a>.</p>
             </div>
         </div>
     </div>
@@ -1329,6 +1419,7 @@
     <script src="js/tool3-fire.js"></script>
     <script src="js/tool4-portfolio.js"></script>
     <script src="js/pension.js"></script>
+    <script src="js/etf-tax.js"></script>
     <script src="js/loan-capacity.js"></script>
     <script src="js/buy-vs-rent.js"></script>
     <script src="js/debt-payoff.js"></script>

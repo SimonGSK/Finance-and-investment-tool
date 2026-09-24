@@ -11,6 +11,7 @@ const SHAREABLE_TOOLS = {
     tool2: {show: () => { showSection('tools'); showTool(2); }, extra: ['doubleDeduction']},
     tool3: {show: () => { showSection('tools'); showTool(3); }},
     tool5: {show: () => { showSection('tools'); showTool(5); }},
+    tool6: {show: () => { showSection('tools'); showTool(6); }},
     housing1: {show: () => { showSection('housing'); showHousingTool(1); }},
     housing2: {show: () => { showSection('housing'); showHousingTool(2); }}
 };
@@ -23,7 +24,7 @@ const SHAREABLE_TOOLS = {
  */
 function shareableFields(toolId){
     const inside = [...document.getElementById(toolId).querySelectorAll('input[id], select[id]')]
-        .filter(f => f.type !== 'range' && f.type !== 'file');
+        .filter(f => f.type !== 'range' && f.type !== 'file' && f.type !== 'search');
     const extra = (SHAREABLE_TOOLS[toolId].extra || []).map(id => document.getElementById(id));
     return inside.concat(extra);
 }
