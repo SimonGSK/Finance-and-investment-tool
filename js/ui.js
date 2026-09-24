@@ -243,19 +243,24 @@ function importSummary(added, replaced, skipped){
 
 /**
  * Viser en besked under et talfelt, der er uden for sine min/max-grænser eller
- * ikke er et tal, og fjerner den igen, når feltet er i orden. Beregningen
+ * ikke kan regnes ud, og fjerner den igen, når feltet er i orden. Beregningen
  * bruger stadig tallet - beskeden gør bare opmærksom på det.
- * @param {HTMLInputElement} input
+ * @param {HTMLInputElement} input et felt med data-number (se number-fields.js)
  */
 function showRangeHint(input){
-    const v = input.validity;
+    const text = input.value.trim();
+    const value = parseFloat(text);
     let message = '';
-    if(v.badInput) message = 'Skriv et tal.';
-    else if(v.rangeUnderflow || v.rangeOverflow){
-        const fmt = x => DK.format(parseFloat(x)).replace(/^-/, '−');
-        message = input.min !== '' && input.max !== ''
-            ? `Skal være mellem ${fmt(input.min)} og ${fmt(input.max)}.`
-            : v.rangeUnderflow ? `Må ikke være under ${fmt(input.min)}.` : `Må ikke være over ${fmt(input.max)}.`;
+    if(text !== '' && !/^-?\d+(\.\d+)?$/.test(text)) message = 'Kunne ikke regne det ud. Skriv et tal eller fx 1.200 + 350.';
+    else if(text !== ''){
+        const min = input.min !== '' ? parseFloat(input.min) : -Infinity;
+        const max = input.max !== '' ? parseFloat(input.max) : Infinity;
+        const fmt = x => DK.format(x).replace(/^-/, '−');
+        if(value < min || value > max){
+            message = isFinite(min) && isFinite(max)
+                ? `Skal være mellem ${fmt(min)} og ${fmt(max)}.`
+                : value < min ? `Må ikke være under ${fmt(min)}.` : `Må ikke være over ${fmt(max)}.`;
+        }
     }
     let hint = input.nextElementSibling?.classList.contains('range-hint') ? input.nextElementSibling : null;
     if(!message){
@@ -273,14 +278,14 @@ function showRangeHint(input){
 }
 
 document.addEventListener('input', e => {
-    if(e.target.matches('input[type=number]')) showRangeHint(e.target);
+    if(e.target.matches('input[data-number]')) showRangeHint(e.target);
 });
 
 // Et felt, der efterlades tomt, sættes tilbage til sin standardværdi i stedet
 // for stille at tælle som 0. Felter uden standardværdi (fx nye budgetposter) røres ikke.
 document.addEventListener('change', e => {
     const input = e.target;
-    if(!input.matches('input[type=number]') || input.value !== '' || input.validity.badInput || input.defaultValue === '') return;
+    if(!input.matches('input[data-number]') || input.value.trim() !== '' || input.defaultValue === '') return;
     input.value = input.defaultValue;
     showRangeHint(input);
     input.dispatchEvent(new Event('input', {bubbles:true}));

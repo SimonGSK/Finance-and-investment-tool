@@ -636,6 +636,108 @@ function parseDanishAmount(str){
 }
 
 /**
+ * Læser ét tal skrevet på dansk eller med punktum som decimaltegn.
+ * "1.000" og "1.000.000" er tusinder, "2,5" og "2.5" er to en halv, "1.000,50"
+ * er tusind og en halv. Et punktum efterfulgt af præcis tre cifre er tusinder
+ * (som i dansk), undtagen efter "0" - "0.125" er et decimaltal.
+ * @param {string} token kun cifre, punktum og komma
+ * @returns {number|null} null hvis det ikke er et gyldigt tal
+ */
+function parseNumberToken(token){
+    if(!/^[\d.,]+$/.test(token) || !/\d/.test(token)) return null;
+    const dots = (token.match(/\./g) || []).length;
+    const commas = (token.match(/,/g) || []).length;
+    let plain;
+    if(dots && commas){
+        // "1.000,50": punktum er tusinder, komma er decimaltegn
+        if(commas > 1 || !/^\d{1,3}(\.\d{3})+,\d*$/.test(token)) return null;
+        plain = token.replace(/\./g, '').replace(',', '.');
+    } else if(commas){
+        if(commas > 1) return null;
+        plain = token.replace(',', '.');
+    } else if(dots > 1 || /^[1-9]\d{0,2}\.\d{3}$/.test(token)){
+        if(!/^\d{1,3}(\.\d{3})+$/.test(token)) return null;
+        plain = token.replace(/\./g, '');
+    } else {
+        plain = token;
+    }
+    if(plain === '.' ) return null;
+    const n = Number(plain);
+    return isFinite(n) ? n : null;
+}
+
+/**
+ * Regner et lille regnestykke ud, så man kan skrive fx "12.500 + 3.200" eller
+ * "450 * 12" i et talfelt. Forstår + − * / (også × og ÷), parenteser, fortegn
+ * og danske tal (se parseNumberToken). "kr." og mellemrum ignoreres.
+ * Evaluerer uden eval() - kun tal og de fire regnearter.
+ * @param {string} text
+ * @returns {number|null} resultatet, eller null hvis det ikke kan regnes ud
+ *   (ufuldstændigt, ugyldigt eller division med 0)
+ */
+function parseAmount(text){
+    if(text === null || text === undefined) return null;
+    const src = String(text).replace(/kr\.?/gi, '').replace(/[\s ]/g, '')
+        .replace(/[×xX]/g, '*').replace(/÷/g, '/').replace(/[−–]/g, '-');
+    if(!src) return null;
+    const tokens = src.match(/[\d.,]+|[-+*/()]|./g);
+    let i = 0;
+    const peek = () => tokens[i];
+
+    function number(){
+        const t = tokens[i];
+        if(t === '('){
+            i++;
+            const v = sum();
+            if(tokens[i] !== ')') throw 0;
+            i++;
+            return v;
+        }
+        if(t === '-' || t === '+'){ i++; const v = number(); return t === '-' ? -v : v; }
+        const n = t === undefined ? null : parseNumberToken(t);
+        if(n === null) throw 0;
+        i++;
+        return n;
+    }
+    function product(){
+        let v = number();
+        while(peek() === '*' || peek() === '/'){
+            const op = tokens[i++];
+            const r = number();
+            if(op === '/' && r === 0) throw 0;
+            v = op === '*' ? v * r : v / r;
+        }
+        return v;
+    }
+    function sum(){
+        let v = product();
+        while(peek() === '+' || peek() === '-'){
+            const op = tokens[i++];
+            const r = product();
+            v = op === '+' ? v + r : v - r;
+        }
+        return v;
+    }
+
+    try{
+        const v = sum();
+        if(i !== tokens.length || !isFinite(v)) return null;
+        return Math.round(v * 1e10) / 1e10;   // 0,1 + 0,2 = 0,3 - ikke 0,30000000000000004
+    } catch(e){
+        return null;
+    }
+}
+
+/**
+ * Er teksten et regnestykke (og ikke bare ét tal, evt. med fortegn)?
+ * @param {string} text
+ * @returns {boolean}
+ */
+function isExpression(text){
+    return /\d\s*[-+*/×xX÷−–]|[()]/.test(String(text).trim().replace(/^[-+−–]/, ''));
+}
+
+/**
  * Finder overskriftsrækken ved at lede efter "Dato" i de første fem linjer -
  * Numbers/Excel indsætter sommetider en ekstra "tabelnavn"-linje øverst.
  * @param {string[][]} rows rækker fra parseCSV
@@ -1140,6 +1242,7 @@ function goalProgress(g){
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
+        parseNumberToken, parseAmount, isExpression,
         TAX_YEAR, ASK_DEPOSIT_LIMIT, TAX_LIMIT_27, ASK_TAX, AKT_TAX_LOW, AKT_TAX_HIGH,
         setDoubleDeduction, effectiveTaxLimit,
         monthlyReturnFactor, toRealValue,

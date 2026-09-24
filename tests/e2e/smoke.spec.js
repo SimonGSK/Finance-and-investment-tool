@@ -84,7 +84,8 @@ test('budget: en post tilføjes i dialogen, og diagrammets boks er lige så høj
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('button', { name: '+ Tilføj post' }).click();
     await dialog.getByLabel('Navn på post').fill('Husleje');
-    await dialog.getByLabel('Beløb i kroner').fill('9000');
+    await dialog.getByLabel('Beløb i kroner').fill('4500*2');
+    await dialog.getByLabel('Beløb i kroner').press('Tab');   // regnes ud, når feltet forlades
     await dialog.getByLabel('Hvor ofte betales posten').selectOption('3');
     await expect(dialog.locator('.dialog-total strong')).toHaveText('3.000 kr.');
     await dialog.getByRole('button', { name: 'Færdig' }).click();
@@ -236,4 +237,36 @@ test('"?" ved et felt viser en forklaring, og værktøjets beskrivelse kan folde
     await expect(about.locator('.tool-intro')).toBeHidden();
     await about.getByText('Hvad gør dette værktøj?').click();
     await expect(about.locator('.tool-intro')).toBeVisible();
+});
+
+test('man kan regne i et talfelt, og pil op/ned tæller i feltets step', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.getByRole('button', { name: 'Formue', exact: true }).click();
+    const field = page.getByLabel('Aktier & værdipapirer', { exact: true });
+    await field.fill('');
+    const before = await page.evaluate(() => computeLiveNetWorth());
+    await field.pressSequentially('12.500 + 3.200*2');
+    await expect(page.locator('#netCatAktier + .calc-hint')).toHaveText('= 18.900');
+    await field.press('Enter');
+    await expect(field).toHaveValue('18900');
+    await expect(page.locator('.calc-hint')).toHaveCount(0);
+    expect(await page.evaluate(() => computeLiveNetWorth())).toBe(before + 18900);
+
+    await field.fill('2,5 +');
+    await field.press('Tab');
+    await expect(field).toHaveValue('2,5 +');
+    await expect(page.locator('#netCatAktier ~ .range-hint')).toContainText('Kunne ikke regne det ud');
+
+    const amount = page.locator('#startCashNumber');
+    await page.evaluate(() => { showSection('tools'); showTool(1); });
+    await amount.fill('950');
+    await amount.press('ArrowUp');
+    await expect(amount).toHaveValue('1000');   // step 1.000: op til næste hele tusind
+    await amount.press('ArrowUp');
+    await expect(amount).toHaveValue('2000');
+    await amount.press('ArrowDown');
+    await amount.press('ArrowDown');
+    await amount.press('ArrowDown');
+    await expect(amount).toHaveValue('0');      // stopper ved min
+    await expect(page.locator('#startCash')).toHaveValue('1000');   // skyderen følger med (dens min er 1.000)
 });
