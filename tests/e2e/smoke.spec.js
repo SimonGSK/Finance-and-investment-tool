@@ -292,8 +292,11 @@ test('budgettet kan downloades som CSV til fx en rådgiver', async ({ page }) =>
 
 test('feedback: knappen er skjult uden adresse, og en besked sendes med værktøjets navn', async ({ page }) => {
     await page.goto('/index.html');
+    await expect(page.locator('#feedbackBtn')).toBeVisible();
+    await page.evaluate(() => { FEEDBACK.endpoint = ''; updateFeedbackButton(); });
     await expect(page.locator('#feedbackBtn')).toBeHidden();
 
+    await page.route('https://formspree.io/f/xppwljwj', route => route.abort());
     let sent = null;
     await page.route('https://formspree.io/f/test', route => {
         sent = route.request().postDataJSON();
