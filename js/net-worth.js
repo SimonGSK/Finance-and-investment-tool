@@ -33,7 +33,16 @@ let netWorthChart = new Chart(netWorthCtx, {
             legend:{
                 display:true,
                 position:'bottom',
-                labels:{ color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-sans'), size:11}, boxWidth:12, padding:12 }
+                labels:{
+                    color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-sans'), size:11}, boxWidth:12, padding:12,
+                    generateLabels: chart => {
+                        const base = Chart.overrides.doughnut.plugins.legend.labels.generateLabels(chart);
+                        const data = chart.data.datasets[0].data;
+                        const total = data.reduce((a, b) => a + b, 0);
+                        return base.map((item, i) => ({...item, fontColor: chart.options.plugins.legend.labels.color,
+                            text: total > 0 ? `${item.text} ${Math.round(data[i] / total * 100)} %` : item.text}));
+                    }
+                }
             },
             tooltip:{
                 backgroundColor:CHART_COLOR('--tooltip-bg'),
@@ -41,7 +50,10 @@ let netWorthChart = new Chart(netWorthCtx, {
                 borderWidth:1,
                 titleColor:CHART_COLOR('--text'),
                 bodyColor:CHART_COLOR('--text'),
-                callbacks:{ label: c => `${c.label}: ${DK.format(c.raw)} kr.` }
+                callbacks:{ label: c => {
+                    const total = c.dataset.data.reduce((a, b) => a + b, 0);
+                    return `${c.label}: ${DK.format(c.raw)} kr. (${total > 0 ? Math.round(c.raw / total * 100) : 0} %)`;
+                }}
             }
         }
     }
@@ -122,16 +134,49 @@ function renderPurchasingPower(netWorth){
  */
 function updateWealthComparison(){
     const netWorth = computeLiveNetWorth();
-    const age = parseInt(document.getElementById('wealthAge').value) || 30;
-    const row = findNearestWealthRow(age);
-    const percentile = estimatePercentile(netWorth, row);
+    const pension = parseFloat(document.getElementById('netCatPension').value) || 0;
+    const comparable = comparableNetWorth(netWorth, pension);
+    const age = readNumber('wealthAge', 30);
+    const row = findWealthRow(age);
+    const percentile = estimatePercentile(comparable, row);
 
-    document.getElementById('wealthCompareValue').textContent = DK.format(netWorth) + ' kr.';
-    document.getElementById('wealthPercentile').textContent = 'Top ' + Math.max(1, 100-percentile) + '%';
-    document.getElementById('wealthPercentileSub').textContent = 'du har mere end ca. ' + percentile + '% af din aldersgruppe';
+    document.getElementById('wealthCompareValue').textContent = DK.format(comparable) + ' kr.';
+    document.getElementById('wealthCompareSub').textContent = pension > 0
+        ? `pension talt med efter 40 % skat (${DK.format(netWorth)} kr. før)`
+        : 'som CEPOS opgør den';
+    document.getElementById('wealthPercentile').textContent = 'Top ' + Math.max(1, 100 - percentile) + '%';
+    document.getElementById('wealthPercentileSub').textContent = `du har mere end ca. ${percentile}% af dem på ${row.age} år`;
     document.getElementById('wealthMedian').textContent = DK.format(row.p50) + ' kr.';
+    document.getElementById('wealthAverage').textContent = `Gennemsnit: ${DK.format(row.avg)} kr.`;
 
     renderPurchasingPower(netWorth);
+}
+
+/**
+ * Hele CEPOS-tabellen i en dialog, med din alder fremhævet og rullet frem.
+ */
+function openWealthTable(){
+    const age = findWealthRow(readNumber('wealthAge', 30)).age;
+    const cols = [['avg', 'Gns.'], ['p10', 'Bund 10 %'], ['p25', 'Bund 25 %'], ['p50', 'Median'], ['p75', 'Top 25 %'], ['p90', 'Top 10 %'], ['p95', 'Top 5 %'], ['p99', 'Top 1 %']];
+    const body = el('tbody', {}, CEPOS_WEALTH_TABLE.map(r => el('tr', {className: r.age === age ? 'is-highlight' : ''}, [
+        el('td', {textContent: r.age + ' år'}),
+        ...cols.map(([k]) => el('td', {textContent: DK.format(r[k])}))
+    ])));
+    const content = el('div', {}, [
+        el('p', {className:'dialog-hint', textContent:`Nettoformue i kr. for hver alder. Din alder (${age} år) er fremhævet. Grænserne betyder fx, at 10 % af alle ${age}-årige har mindst det beløb, der står under "Top 10 %".`}),
+        el('div', {className:'data-table-wrap wealth-table-wrap'}, [
+            el('table', {className:'data-table'}, [
+                el('thead', {}, [el('tr', {}, [el('th', {textContent:'Alder'}), ...cols.map(([, label]) => el('th', {textContent: label}))])]),
+                body
+            ])
+        ]),
+        el('p', {className:'explainer'}, [
+            `CEPOS-beregninger på Danmarks Statistiks personregistre: ${CEPOS_SOURCE.dataYear}-data opregnet til ${CEPOS_SOURCE.level}-niveau med lønudviklingen. Pensionen er opgjort efter en beregnet skat på 40 %. Afrundet til nærmeste 1.000 kr. `,
+            el('a', {href: CEPOS_SOURCE.url, target:'_blank', rel:'noopener', textContent:'Se kilden hos CEPOS'}), '.'
+        ])
+    ]);
+    const {dialog} = openDialog({title:'Formue efter alder', content, wide:true, actions:[{label:'Luk', variant:'primary'}]});
+    dialog.querySelector('tr.is-highlight')?.scrollIntoView({block:'center'});
 }
 
 /**
@@ -185,6 +230,7 @@ function updateNetWorth(){
     renderRecordAndMilestones();
     updateWealthComparison();
     updateEmergencyFund();
+    if(typeof renderGoals === 'function') renderGoals();
 }
 
 const NET_WORTH_INPUT_IDS = NET_WORTH_CATEGORIES.map(c => c.id).concat(['netDebt']);
@@ -451,6 +497,7 @@ function renderNetWorthHistory(){
 
     renderNetWorthComposition(history);
     renderRecordAndMilestones();
+    if(typeof renderGoals === 'function') renderGoals();
 }
 
 let netWorthCompositionChart = null;
@@ -481,12 +528,29 @@ function renderNetWorthComposition(history){
             options:{
                 responsive:true,
                 maintainAspectRatio:false,
+                // Hele sammensætningen for den dato, musen er over - ikke kun det
+                // nærmeste punkt, som er usynligt og svært at ramme.
+                interaction:{mode:'index', intersect:false},
+                elements:{point:{hoverRadius:4}},
                 plugins:{
                     legend:{display:false},
                     tooltip:{
                         backgroundColor:CHART_COLOR('--tooltip-bg'), borderColor:CHART_COLOR('--border'), borderWidth:1,
-                        titleColor:CHART_COLOR('--text'), bodyColor:CHART_COLOR('--text'),
-                        callbacks:{ label: c => `${c.dataset.label}: ${DK.format(c.raw)} kr.` }
+                        titleColor:CHART_COLOR('--text'), bodyColor:CHART_COLOR('--text'), footerColor:CHART_COLOR('--text'),
+                        itemSort: (a, b) => b.datasetIndex === 5 ? -1 : a.datasetIndex === 5 ? 1 : b.raw - a.raw,
+                        callbacks:{
+                            label: c => {
+                                if(c.dataset.label === 'Gæld') return `Gæld: −${DK.format(-c.raw)} kr.`;
+                                const assets = c.chart.data.datasets.slice(0, 5).reduce((s, ds) => s + (ds.data[c.dataIndex] || 0), 0);
+                                const share = assets > 0 ? Math.round(c.raw / assets * 100) : 0;
+                                return `${c.dataset.label}: ${DK.format(c.raw)} kr. (${share} %)`;
+                            },
+                            footer: items => {
+                                const i = items[0].dataIndex;
+                                const net = items[0].chart.data.datasets.reduce((s, ds) => s + (ds.data[i] || 0), 0);
+                                return `Nettoformue: ${DK.format(net)} kr.`;
+                            }
+                        }
                     }
                 },
                 scales:{

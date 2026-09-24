@@ -477,47 +477,122 @@ function normalizeDate(str){
 // ==== Formue: placering i forhold til andre danskere ====
 
 /**
- * Uddrag af CEPOS' formueopgørelse (Danmarks Statistik, 2022-tal opregnet til
- * 2025-niveau): nettoformue-percentiler pr. alder. 16 alderstrin i stedet for
- * alle 73 - der regnes lineært imellem.
- * @type {{age:number, p10:number, p25:number, p50:number, p75:number, p90:number, p95:number, p99:number}[]}
+ * CEPOS: nettoformue efter alder, én række pr. alder fra 18 til 90 år, med
+ * gennemsnit og percentilgrænser (p10 = bund 10 %, p90 = top 10 % osv.).
+ * Beregnet ud fra 2024-data opregnet til 2026-niveau med lønudviklingen;
+ * pensionsformuen er opgjort efter en beregnet skat på 40 %. Afrundet til
+ * nærmeste 1.000 kr. Kilde: CEPOS-beregninger på Danmarks Statistiks
+ * personregistre (cepos.dk, 26. februar 2026).
+ * @type {{age:number, avg:number, p10:number, p25:number, p50:number, p75:number, p90:number, p95:number, p99:number}[]}
  */
 const CEPOS_WEALTH_TABLE = [
-    {age:18, p10:3000, p25:10000, p50:38000, p75:88000, p90:175000, p95:282000, p99:926000},
-    {age:20, p10:1000, p25:16000, p50:57000, p75:136000, p90:269000, p95:433000, p99:1320000},
-    {age:25, p10:-96000, p25:9000, p50:82000, p75:240000, p90:591000, p95:938000, p99:2330000},
-    {age:30, p10:-196000, p25:21000, p50:221000, p75:598000, p90:1113000, p95:1584000, p99:3956000},
-    {age:35, p10:-153000, p25:99000, p50:475000, p75:1041000, p90:1792000, p95:2515000, p99:6636000},
-    {age:40, p10:-43000, p25:233000, p50:790000, p75:1551000, p90:2619000, p95:3718000, p99:10912000},
-    {age:45, p10:34000, p25:464000, p50:1180000, p75:2165000, p90:3629000, p95:5340000, p99:17385000},
-    {age:50, p10:115000, p25:695000, p50:1549000, p75:2763000, p90:4753000, p95:7199000, p99:24047000},
-    {age:55, p10:173000, p25:842000, p50:1815000, p75:3245000, p90:5613000, p95:8607000, p99:28417000},
-    {age:60, p10:262000, p25:1028000, p50:2147000, p75:3804000, p90:6391000, p95:9414000, p99:26968000},
-    {age:65, p10:366000, p25:1207000, p50:2415000, p75:4182000, p90:6768000, p95:9571000, p99:24358000},
-    {age:70, p10:309000, p25:1019000, p50:2214000, p75:4002000, p90:6597000, p95:9446000, p99:23098000},
-    {age:75, p10:257000, p25:828000, p50:1919000, p75:3584000, p90:6122000, p95:8991000, p99:22813000},
-    {age:80, p10:167000, p25:574000, p50:1515000, p75:3013000, p90:5380000, p95:8038000, p99:20629000},
-    {age:85, p10:117000, p25:380000, p50:1159000, p75:2446000, p90:4463000, p95:6554000, p99:17001000},
-    {age:90, p10:85000, p25:265000, p50:925000, p75:2164000, p90:4046000, p95:5999000, p99:14732000}
+    {age:18, avg:209000, p10:3000, p25:10000, p50:37000, p75:90000, p90:181000, p95:300000, p99:1052000},
+    {age:19, avg:182000, p10:3000, p25:12000, p50:43000, p75:106000, p90:221000, p95:362000, p99:1200000},
+    {age:20, avg:200000, p10:3000, p25:17000, p50:58000, p75:139000, p90:277000, p95:450000, p99:1478000},
+    {age:21, avg:280000, p10:3000, p25:22000, p50:78000, p75:183000, p90:372000, p95:617000, p99:1841000},
+    {age:22, avg:288000, p10:0, p25:20000, p50:73000, p75:190000, p90:437000, p95:749000, p99:2191000},
+    {age:23, avg:381000, p10:-12000, p25:18000, p50:72000, p75:196000, p90:482000, p95:825000, p99:2298000},
+    {age:24, avg:320000, p10:-36000, p25:17000, p50:76000, p75:215000, p90:552000, p95:927000, p99:2645000},
+    {age:25, avg:358000, p10:-62000, p25:15000, p50:82000, p75:238000, p90:615000, p95:1009000, p99:2984000},
+    {age:26, avg:390000, p10:-90000, p25:13000, p50:96000, p75:279000, p90:693000, p95:1106000, p99:3177000},
+    {age:27, avg:480000, p10:-121000, p25:13000, p50:115000, p75:341000, p90:801000, p95:1256000, p99:3544000},
+    {age:28, avg:463000, p10:-143000, p25:13000, p50:145000, p75:423000, p90:931000, p95:1409000, p99:3918000},
+    {age:29, avg:548000, p10:-162000, p25:16000, p50:178000, p75:508000, p90:1059000, p95:1564000, p99:4097000},
+    {age:30, avg:561000, p10:-178000, p25:21000, p50:212000, p75:594000, p90:1199000, p95:1778000, p99:4507000},
+    {age:31, avg:676000, p10:-187000, p25:27000, p50:255000, p75:696000, p90:1349000, p95:1955000, p99:4856000},
+    {age:32, avg:711000, p10:-186000, p25:37000, p50:296000, p75:786000, p90:1494000, p95:2151000, p99:5208000},
+    {age:33, avg:787000, p10:-187000, p25:46000, p50:343000, p75:877000, p90:1636000, p95:2353000, p99:5638000},
+    {age:34, avg:815000, p10:-178000, p25:57000, p50:390000, p75:976000, p90:1791000, p95:2546000, p99:6137000},
+    {age:35, avg:991000, p10:-171000, p25:70000, p50:442000, p75:1089000, p90:1960000, p95:2768000, p99:6541000},
+    {age:36, avg:1063000, p10:-151000, p25:88000, p50:502000, p75:1187000, p90:2124000, p95:2993000, p99:6893000},
+    {age:37, avg:1197000, p10:-133000, p25:108000, p50:561000, p75:1286000, p90:2306000, p95:3282000, p99:8159000},
+    {age:38, avg:1295000, p10:-110000, p25:131000, p50:629000, p75:1425000, p90:2534000, p95:3585000, p99:8603000},
+    {age:39, avg:1356000, p10:-88000, p25:154000, p50:689000, p75:1534000, p90:2700000, p95:3854000, p99:8948000},
+    {age:40, avg:1547000, p10:-55000, p25:178000, p50:750000, p75:1627000, p90:2899000, p95:4124000, p99:10096000},
+    {age:41, avg:1728000, p10:-35000, p25:202000, p50:821000, p75:1766000, p90:3130000, p95:4508000, p99:11523000},
+    {age:42, avg:1803000, p10:-16000, p25:234000, p50:895000, p75:1863000, p90:3296000, p95:4721000, p99:11556000},
+    {age:43, avg:1881000, p10:-9000, p25:269000, p50:967000, p75:1978000, p90:3547000, p95:5041000, p99:13206000},
+    {age:44, avg:2022000, p10:0, p25:305000, p50:1040000, p75:2118000, p90:3780000, p95:5461000, p99:14794000},
+    {age:45, avg:2169000, p10:6000, p25:359000, p50:1130000, p75:2264000, p90:4032000, p95:5841000, p99:16171000},
+    {age:46, avg:2335000, p10:17000, p25:415000, p50:1227000, p75:2401000, p90:4276000, p95:6237000, p99:17793000},
+    {age:47, avg:2541000, p10:26000, p25:457000, p50:1300000, p75:2532000, p90:4466000, p95:6531000, p99:19003000},
+    {age:48, avg:2654000, p10:44000, p25:518000, p50:1387000, p75:2681000, p90:4712000, p95:6873000, p99:19927000},
+    {age:49, avg:2981000, p10:61000, p25:564000, p50:1460000, p75:2796000, p90:4938000, p95:7260000, p99:23123000},
+    {age:50, avg:3073000, p10:72000, p25:602000, p50:1559000, p75:2936000, p90:5234000, p95:7739000, p99:24444000},
+    {age:51, avg:3154000, p10:88000, p25:645000, p50:1608000, p75:3050000, p90:5416000, p95:8099000, p99:25652000},
+    {age:52, avg:3349000, p10:105000, p25:693000, p50:1683000, p75:3164000, p90:5621000, p95:8392000, p99:28110000},
+    {age:53, avg:3433000, p10:122000, p25:724000, p50:1733000, p75:3272000, p90:5876000, p95:8859000, p99:28510000},
+    {age:54, avg:3515000, p10:117000, p25:730000, p50:1755000, p75:3312000, p90:5927000, p95:8950000, p99:27685000},
+    {age:55, avg:3630000, p10:140000, p25:770000, p50:1808000, p75:3420000, p90:6156000, p95:9285000, p99:29180000},
+    {age:56, avg:3689000, p10:139000, p25:798000, p50:1869000, p75:3527000, p90:6321000, p95:9452000, p99:31693000},
+    {age:57, avg:3834000, p10:167000, p25:844000, p50:1943000, p75:3643000, p90:6499000, p95:9865000, p99:32804000},
+    {age:58, avg:3761000, p10:196000, p25:904000, p50:2005000, p75:3752000, p90:6602000, p95:9871000, p99:30746000},
+    {age:59, avg:3795000, p10:206000, p25:931000, p50:2074000, p75:3880000, p90:6884000, p95:10203000, p99:31304000},
+    {age:60, avg:3924000, p10:211000, p25:927000, p50:2085000, p75:3909000, p90:6891000, p95:10409000, p99:31045000},
+    {age:61, avg:4074000, p10:231000, p25:992000, p50:2185000, p75:4076000, p90:7149000, p95:10632000, p99:33052000},
+    {age:62, avg:4054000, p10:242000, p25:1021000, p50:2248000, p75:4157000, p90:7253000, p95:10630000, p99:32270000},
+    {age:63, avg:4118000, p10:268000, p25:1083000, p50:2332000, p75:4305000, p90:7365000, p95:10884000, p99:30486000},
+    {age:64, avg:4130000, p10:262000, p25:1096000, p50:2396000, p75:4410000, p90:7535000, p95:11009000, p99:30214000},
+    {age:65, avg:4238000, p10:299000, p25:1144000, p50:2436000, p75:4499000, p90:7623000, p95:10898000, p99:30245000},
+    {age:66, avg:4213000, p10:315000, p25:1122000, p50:2414000, p75:4479000, p90:7573000, p95:10908000, p99:29313000},
+    {age:67, avg:4126000, p10:301000, p25:1094000, p50:2419000, p75:4437000, p90:7563000, p95:10824000, p99:28348000},
+    {age:68, avg:4125000, p10:295000, p25:1042000, p50:2375000, p75:4409000, p90:7473000, p95:10788000, p99:28531000},
+    {age:69, avg:3885000, p10:272000, p25:978000, p50:2292000, p75:4327000, p90:7413000, p95:10807000, p99:28046000},
+    {age:70, avg:3855000, p10:239000, p25:882000, p50:2167000, p75:4170000, p90:7237000, p95:10353000, p99:25262000},
+    {age:71, avg:3608000, p10:226000, p25:798000, p50:2051000, p75:4068000, p90:6993000, p95:10112000, p99:25168000},
+    {age:72, avg:3647000, p10:216000, p25:766000, p50:2009000, p75:4035000, p90:7004000, p95:10309000, p99:26839000},
+    {age:73, avg:3647000, p10:203000, p25:708000, p50:1944000, p75:4002000, p90:7083000, p95:10323000, p99:26023000},
+    {age:74, avg:3609000, p10:192000, p25:647000, p50:1825000, p75:3833000, p90:6787000, p95:9949000, p99:26888000},
+    {age:75, avg:3401000, p10:186000, p25:626000, p50:1805000, p75:3769000, p90:6753000, p95:9896000, p99:24987000},
+    {age:76, avg:3544000, p10:179000, p25:599000, p50:1768000, p75:3735000, p90:6788000, p95:10094000, p99:27814000},
+    {age:77, avg:3395000, p10:176000, p25:568000, p50:1701000, p75:3657000, p90:6651000, p95:9944000, p99:26016000},
+    {age:78, avg:3480000, p10:160000, p25:533000, p50:1652000, p75:3586000, p90:6732000, p95:10046000, p99:27963000},
+    {age:79, avg:3454000, p10:143000, p25:475000, p50:1541000, p75:3462000, p90:6533000, p95:9832000, p99:26813000},
+    {age:80, avg:3470000, p10:136000, p25:440000, p50:1484000, p75:3328000, p90:6293000, p95:9408000, p99:27360000},
+    {age:81, avg:3264000, p10:125000, p25:408000, p50:1412000, p75:3258000, p90:6266000, p95:9445000, p99:25793000},
+    {age:82, avg:3056000, p10:116000, p25:370000, p50:1312000, p75:3095000, p90:6021000, p95:9032000, p99:23585000},
+    {age:83, avg:3084000, p10:106000, p25:327000, p50:1237000, p75:2897000, p90:5597000, p95:8554000, p99:25328000},
+    {age:84, avg:2867000, p10:97000, p25:298000, p50:1154000, p75:2745000, p90:5353000, p95:8070000, p99:21852000},
+    {age:85, avg:2506000, p10:97000, p25:287000, p50:1108000, p75:2708000, p90:5392000, p95:8058000, p99:18545000},
+    {age:86, avg:2565000, p10:102000, p25:285000, p50:1076000, p75:2644000, p90:5190000, p95:7882000, p99:20458000},
+    {age:87, avg:2413000, p10:94000, p25:260000, p50:1024000, p75:2558000, p90:4905000, p95:7244000, p99:19130000},
+    {age:88, avg:2370000, p10:90000, p25:250000, p50:970000, p75:2461000, p90:4878000, p95:7422000, p99:19636000},
+    {age:89, avg:2159000, p10:86000, p25:243000, p50:934000, p75:2316000, p90:4756000, p95:7003000, p99:17386000},
+    {age:90, avg:2331000, p10:81000, p25:224000, p50:883000, p75:2310000, p90:4695000, p95:7073000, p99:16473000}
 ];
 
+// CEPOS tæller pensionen efter en beregnet skat på 40 %, så brugerens pension
+// skal regnes om på samme måde, før formuerne kan sammenlignes.
+const CEPOS_PENSION_TAX = 0.40;
+const CEPOS_SOURCE = { dataYear: 2024, level: 2026, published: '2026-02-26',
+    url: 'https://cepos.dk/artikler/0130-hvor-stor-formue-har-du-sammenlignet-med-andre-pa-din-alder/' };
+
 /**
- * Rækken i CEPOS_WEALTH_TABLE, der ligger tættest på alderen (klemt til 18-90).
+ * Rækken for en alder (klemt til 18-90, da tabellen har én række pr. alder).
  * @param {number} age
- * @returns {{age:number, p10:number, p25:number, p50:number, p75:number, p90:number, p95:number, p99:number}}
+ * @returns {{age:number, avg:number, p10:number, p25:number, p50:number, p75:number, p90:number, p95:number, p99:number}}
  */
-function findNearestWealthRow(age){
-    const clampedAge = Math.max(18, Math.min(90, age));
-    return CEPOS_WEALTH_TABLE.reduce((closest, row) =>
-        Math.abs(row.age - clampedAge) < Math.abs(closest.age - clampedAge) ? row : closest
-    );
+function findWealthRow(age){
+    const clamped = Math.max(18, Math.min(90, Math.round(age)));
+    return CEPOS_WEALTH_TABLE[clamped - 18];
+}
+
+/**
+ * Nettoformuen opgjort som i CEPOS' tal: pensionen tæller med efter en
+ * beregnet skat på 40 %.
+ * @param {number} netWorth nettoformue med pensionen før skat
+ * @param {number} pension pensionsformuen før skat
+ * @returns {number}
+ */
+function comparableNetWorth(netWorth, pension){
+    return netWorth - Math.max(0, pension) * CEPOS_PENSION_TAX;
 }
 
 /**
  * Cirka-percentil for en nettoformue i sin aldersgruppe: interpolerer lineært
  * imellem de kendte procentgrænser (10/25/50/75/90/95/99).
  * @param {number} netWorth nettoformue i kr.
- * @param {{p10:number, p25:number, p50:number, p75:number, p90:number, p95:number, p99:number}} row aldersrækken fra findNearestWealthRow
+ * @param {{p10:number, p25:number, p50:number, p75:number, p90:number, p95:number, p99:number}} row aldersrækken fra findWealthRow
  * @returns {number} 0-100, hvor 50 betyder "mere end halvdelen af aldersgruppen"
  */
 function estimatePercentile(netWorth, row){
@@ -1019,6 +1094,49 @@ function portfolioCashFlows(history){
     return flows;
 }
 
+// ==== Mål i Formue ====
+
+/**
+ * Gennemsnitlig ændring pr. måned i et felt over den seneste periode (højst 12
+ * måneder tilbage fra seneste datapunkt), ud fra historikken.
+ * @param {{date:string}[]} history sorteret efter dato
+ * @param {string} key fx 'value' (nettoformue) eller 'netCatAktier'
+ * @returns {number|null} null ved under to punkter eller under en måneds spænd
+ */
+function monthlyTrend(history, key){
+    if(history.length < 2) return null;
+    const last = history.at(-1);
+    const lastTime = Date.parse(last.date + 'T00:00:00Z');
+    const window = history.filter(h => lastTime - Date.parse(h.date + 'T00:00:00Z') <= 366 * DAY_MS);
+    const first = window[0];
+    const months = (lastTime - Date.parse(first.date + 'T00:00:00Z')) / (DAY_MS * 30.44);
+    if(months < 1) return null;
+    return ((last[key] || 0) - (first[key] || 0)) / months;
+}
+
+/**
+ * Fremdrift mod et mål: hvor langt man er, hvad der mangler, hvad der skal
+ * spares op pr. måned for at nå fristen, og om det nuværende tempo rækker.
+ * @param {{target:number, current:number, deadline?:string|null, today:string, trend?:number|null}} g datoer som ISO
+ * @returns {{pct:number, remaining:number, reached:boolean, monthsLeft:number|null, neededPerMonth:number|null,
+ *   monthsAtTrend:number|null, onTrack:boolean|null}}
+ */
+function goalProgress(g){
+    const remaining = Math.max(0, g.target - g.current);
+    const reached = g.current >= g.target;
+    const pct = g.target > 0 ? Math.max(0, Math.min(1, g.current / g.target)) : 0;
+    const monthsLeft = g.deadline
+        ? Math.max(0, (Date.parse(g.deadline + 'T00:00:00Z') - Date.parse(g.today + 'T00:00:00Z')) / (DAY_MS * 30.44))
+        : null;
+    const neededPerMonth = !reached && monthsLeft !== null && monthsLeft > 0 ? remaining / monthsLeft : null;
+    const trend = g.trend ?? null;
+    const monthsAtTrend = !reached && trend !== null && trend > 0 ? remaining / trend : null;
+    let onTrack = null;
+    if(reached) onTrack = true;
+    else if(monthsLeft !== null && trend !== null) onTrack = monthsLeft > 0 && trend >= neededPerMonth;
+    return { pct, remaining, reached, monthsLeft, neededPerMonth, monthsAtTrend, onTrack };
+}
+
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
@@ -1030,12 +1148,13 @@ if(typeof module !== 'undefined' && module.exports){
         computeFireSeries,
         monthlyAmount, categoryTotal, budgetSummary,
         upsertByDate, mergeByDate, changedFields, normalizeDate,
-        CEPOS_WEALTH_TABLE, findNearestWealthRow, estimatePercentile,
+        CEPOS_WEALTH_TABLE, CEPOS_PENSION_TAX, CEPOS_SOURCE, findWealthRow, comparableNetWorth, estimatePercentile,
         parseDanishAmount, findHeaderRowIndex, parseCSV,
         TINGLYSNING, MIN_UDBETALING, MAX_REALKREDIT, HIGH_DEBT_FACTOR, HIGH_LTV, RENTEFRADRAG,
         annuityPayment, purchaseCosts, loanSplit, interestDeductionValue, loanCapacity,
         simulateBuyVsRent, simulateDebtPayoff,
         PAL_SKAT, PENSION_LIMITS, folkepensionAge, simulatePension,
-        backupReminderDue, emergencyFundMonths, xirr, portfolioCashFlows
+        backupReminderDue, emergencyFundMonths, xirr, portfolioCashFlows,
+        monthlyTrend, goalProgress
     };
 }

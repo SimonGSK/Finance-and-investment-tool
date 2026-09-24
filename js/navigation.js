@@ -66,7 +66,7 @@ function showSection(name){
     resizeChartsIn(document.getElementById('section-' + name));
 }
 
-const BACKUP_KEYS = ['budgetItems', 'budgetData', 'budgetCustomCategories', 'netWorthData', 'netWorthHistory', 'portfolioHistory', 'monthlyStatusLast', 'debtPayoffData'];
+const BACKUP_KEYS = ['budgetItems', 'budgetData', 'budgetCustomCategories', 'netWorthData', 'netWorthHistory', 'portfolioHistory', 'monthlyStatusLast', 'debtPayoffData', 'netWorthGoals'];
 
 /**
  * Downloader alle gemte data (budget, formue, historik, portefølje) som én
@@ -104,7 +104,8 @@ function hasUserData(){
         || Object.values(items).some(list => list.length > 0)
         || (read('budgetCustomCategories') || []).length > 0
         || read('debtPayoffData') !== null
-        || read('monthlyStatusLast') !== null;
+        || read('monthlyStatusLast') !== null
+        || (read('netWorthGoals') || []).length > 0;
 }
 
 function readTimestamp(key){
