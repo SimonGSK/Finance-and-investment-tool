@@ -116,10 +116,20 @@ function downloadTableAsCSV(tbodyId, filename){
         Array.from(tr.querySelectorAll('td')).map(td => (td.dataset.csv ?? td.textContent).trim())
     );
 
+    downloadCSV([headers, ...rows], filename);
+}
+
+/**
+ * Downloader rækker som CSV i dansk Excel-venligt format: semikolon som
+ * separator, alle felter i anførselstegn, og en BOM så æøå vises rigtigt.
+ * @param {string[][]} rows første række er overskrifterne
+ * @param {string} filename
+ */
+function downloadCSV(rows, filename){
     // Semikolon som separator (ikke komma), fordi danske Excel-opsætninger som
     // udgangspunkt forventer det - komma bruges jo allerede som decimaltegn i vores tal.
-    const csvLines = [headers, ...rows].map(row =>
-        row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(';')
+    const csvLines = rows.map(row =>
+        row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(';')
     );
     // \uFEFF (byte-order-mark) forrest hjælper Excel med at genkende dansk tegnsæt (æøå) korrekt.
     const csvContent = '\uFEFF' + csvLines.join('\r\n');

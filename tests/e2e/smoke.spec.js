@@ -270,3 +270,22 @@ test('man kan regne i et talfelt, og pil op/ned tæller i feltets step', async (
     await expect(amount).toHaveValue('0');      // stopper ved min
     await expect(page.locator('#startCash')).toHaveValue('1000');   // skyderen følger med (dens min er 1.000)
 });
+
+test('budgettet kan downloades som CSV til fx en rådgiver', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        localStorage.setItem('budgetItems', JSON.stringify({catBolig: [{label:'Husleje', amount:9000, freq:1}], catOpsparing: [{label:'Aktier', amount:3000, freq:1}]}));
+        localStorage.setItem('budgetData', JSON.stringify({budgetTotalInput: '15000'}));
+    });
+    await page.reload();
+    await page.getByRole('button', { name: 'Budget', exact: true }).click();
+    const [download] = await Promise.all([
+        page.waitForEvent('download'),
+        page.getByRole('button', { name: 'Download budget' }).click()
+    ]);
+    expect(download.suggestedFilename()).toMatch(/^budget-\d{4}-\d{2}-\d{2}\.csv$/);
+    const text = require('fs').readFileSync(await download.path(), 'utf8');
+    expect(text.startsWith('﻿"Gruppe";"Kategori";"Post"')).toBe(true);
+    expect(text).toContain('"Behov";"Bolig";"Husleje";"9000";"pr. måned";"9000";"108000"');
+    expect(text).toContain('"Penge tilbage";"";"";"";"";"3000";"36000"');
+});
