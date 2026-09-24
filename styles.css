@@ -1070,3 +1070,7 @@ table.data-table td.is-negative{ color:var(--ask); }
 @media (prefers-reduced-motion:reduce){
     *{ transition:none !important; animation:none !important; }
 }
+
+/* ---- App-installation ---- */
+#installAppRow[hidden]{ display:none; }
+.install-steps{ margin:0 0 var(--s4); padding-left:1.4em; line-height:1.8; }

@@ -102,6 +102,10 @@ js/net-worth.js         Formue: net worth, history, milestones, comparison
 js/goals.js             Formue goals
 js/navigation.js        Tab switching, settings panel, full backup import/export
 js/feedback.js          Feedback button and form (sent via Formspree)
+js/pwa.js               "Install as app" button; registers the service worker
+sw.js                   Service worker: network first, cached copy offline
+manifest.webmanifest    App name, colours and icons
+icons/                  App icons (icon.svg is the source; PNGs rendered from it)
 js/theme.js             Theme switching and re-theming charts
 tests/calc.test.js      Unit tests for calc.js
 tests/e2e/              Browser tests (Playwright)
@@ -115,6 +119,10 @@ Every yearly figure — ASK limit, 27%/42% threshold, tinglysning, PAL, pension 
 ## Sharing a calculation
 
 Each calculator has a **Del beregning** button that copies a link reopening it with the same inputs. The inputs live after the `#` in the link, which browsers never send to a server. The trackers, budget and debt list can't be shared this way — they're personal data, and a link must never overwrite what someone has saved.
+
+## Install as an app
+
+The site is a Progressive Web App. In Chrome, Edge or on Android, **Installér som app** in the settings panel installs it; on iPhone/iPad it's Safari's **Share → Add to Home Screen** (the button explains this). The service worker (`sw.js`) fetches from the network first, so a new version is picked up as soon as you're online, and falls back to cached copies offline. On install it caches every file `index.html` refers to, so nothing needs updating when files are added. Note that on iOS the installed app has its own storage, separate from Safari — move data with *Download alt / Upload alt*.
 
 ## Feedback
 
