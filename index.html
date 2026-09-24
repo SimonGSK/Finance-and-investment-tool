@@ -1101,6 +1101,12 @@
             </div>
 
         <div class="panel">
+            <div class="eyebrow">Mine mål</div>
+            <div id="goalsContainer"></div>
+            <button class="btn btn-secondary" type="button" onclick="openGoalDialog()">+ Nyt mål</button>
+        </div>
+
+        <div class="panel">
             <div class="eyebrow">Milepæle</div>
             <div id="milestonesContainer"></div>
         </div>
@@ -1108,7 +1114,7 @@
         <div class="panel">
             <div class="eyebrow">Hvor rig er jeg?</div>
             <p class="explainer explainer-lead">
-                Sammenlign din nuværende nettoformue (fra felterne ovenfor) med andre danskere på din alder. Baseret på et uddrag af CEPOS' formueopgørelse (oprindeligt fra Danmarks Statistik, 2022-tal opregnet til 2025-niveau) – kun til sjov og inspiration, ikke en videnskabelig præcis sammenligning.
+                Sammenlign din nettoformue med andre danskere på præcis din alder. Tallene er CEPOS' beregninger på Danmarks Statistiks registre (2024-data opregnet til 2026-niveau). Som hos CEPOS tæller din pension med efter en beregnet skat på 40 %, så tallet her kan være lavere end din nettoformue ovenfor. Kun til inspiration.
             </p>
 
             <div class="field" style="max-width:200px;">
@@ -1120,6 +1126,7 @@
                 <div class="stat">
                     <div class="label">Din nettoformue</div>
                     <div class="value akt" id="wealthCompareValue">0 kr.</div>
+                    <div class="sub" id="wealthCompareSub"></div>
                 </div>
                 <div class="stat">
                     <div class="label">Placering</div>
@@ -1127,10 +1134,12 @@
                     <div class="sub" id="wealthPercentileSub"></div>
                 </div>
                 <div class="stat">
-                    <div class="label">Median for din aldersgruppe</div>
+                    <div class="label">Median for din alder</div>
                     <div class="value" id="wealthMedian">–</div>
+                    <div class="sub" id="wealthAverage"></div>
                 </div>
             </div>
+            <button class="btn btn-secondary btn-sm wealth-table-btn" type="button" onclick="openWealthTable()">Se hele tabellen</button>
 
             <div class="eyebrow eyebrow-section">Din formue svarer til...</div>
             <div id="purchasingPowerContainer" style="font-size:14px; line-height:1.9; color:var(--text);"></div>
@@ -1223,6 +1232,7 @@
     <script src="js/budget.js"></script>
     <script src="js/net-worth.js"></script>
     <script src="js/monthly-status.js"></script>
+    <script src="js/goals.js"></script>
     <script src="js/theme.js"></script>
     <script src="js/share.js"></script>
 </body>

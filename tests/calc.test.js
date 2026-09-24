@@ -13,12 +13,13 @@ const {
     computeFireSeries,
     monthlyAmount, categoryTotal, budgetSummary,
     upsertByDate, mergeByDate, changedFields, normalizeDate,
-    CEPOS_WEALTH_TABLE, findNearestWealthRow, estimatePercentile,
+    CEPOS_WEALTH_TABLE, CEPOS_PENSION_TAX, findWealthRow, comparableNetWorth, estimatePercentile,
     parseDanishAmount, findHeaderRowIndex, parseCSV,
     annuityPayment, purchaseCosts, loanSplit, interestDeductionValue, loanCapacity,
     simulateBuyVsRent, simulateDebtPayoff,
     PAL_SKAT, PENSION_LIMITS, folkepensionAge, simulatePension,
-    backupReminderDue, emergencyFundMonths, xirr, portfolioCashFlows
+    backupReminderDue, emergencyFundMonths, xirr, portfolioCashFlows,
+    monthlyTrend, goalProgress
 } = calc;
 
 const approx = (actual, expected, tolerance = 1e-6) =>
@@ -270,15 +271,34 @@ describe('ændringer og datoer', () => {
 });
 
 describe('formue: placering', () => {
-    test('nærmeste aldersrække vælges, og alderen klemmes til 18-90', () => {
-        assert.equal(findNearestWealthRow(33).age, 35);
-        assert.equal(findNearestWealthRow(32).age, 30);
-        assert.equal(findNearestWealthRow(17).age, 18);
-        assert.equal(findNearestWealthRow(120).age, 90);
+    test('én række pr. alder fra 18 til 90, og alderen klemmes', () => {
+        assert.equal(CEPOS_WEALTH_TABLE.length, 73);
+        CEPOS_WEALTH_TABLE.forEach((row, i) => assert.equal(row.age, 18 + i));
+        assert.equal(findWealthRow(33).age, 33);
+        assert.equal(findWealthRow(27).age, 27);
+        assert.equal(findWealthRow(17).age, 18);
+        assert.equal(findWealthRow(120).age, 90);
+    });
+
+    test('CEPOS 2026: kendte tal for 40-årige', () => {
+        assert.deepEqual(findWealthRow(40), { age: 40, avg: 1547000, p10: -55000, p25: 178000, p50: 750000, p75: 1627000, p90: 2899000, p95: 4124000, p99: 10096000 });
+    });
+
+    test('percentilgrænserne stiger inden for hver alder', () => {
+        for(const r of CEPOS_WEALTH_TABLE){
+            const seq = [r.p10, r.p25, r.p50, r.p75, r.p90, r.p95, r.p99];
+            for(let i = 1; i < seq.length; i++) assert.ok(seq[i] >= seq[i - 1], `alder ${r.age}`);
+        }
+    });
+
+    test('pensionen tæller med efter 40 % skat, som i CEPOS\' tal', () => {
+        assert.equal(CEPOS_PENSION_TAX, 0.40);
+        assert.equal(comparableNetWorth(1000000, 500000), 800000);
+        assert.equal(comparableNetWorth(1000000, 0), 1000000);
     });
 
     test('percentilen rammer de kendte grænser præcist', () => {
-        const row = findNearestWealthRow(30);
+        const row = findWealthRow(30);
         assert.equal(estimatePercentile(row.p10, row), 10);
         assert.equal(estimatePercentile(row.p50, row), 50);
         assert.equal(estimatePercentile(row.p90, row), 90);
@@ -286,7 +306,7 @@ describe('formue: placering', () => {
     });
 
     test('percentilen er begrænset til 0-100 og stiger med formuen', () => {
-        const row = findNearestWealthRow(40);
+        const row = findWealthRow(40);
         assert.equal(estimatePercentile(-1e9, row), 0);
         assert.equal(estimatePercentile(1e12, row), 100);
         let last = -1;
@@ -294,14 +314,6 @@ describe('formue: placering', () => {
             const p = estimatePercentile(v, row);
             assert.ok(p >= last, `faldt ved ${v}`);
             last = p;
-        }
-    });
-
-    test('tabellen dækker 18-90 år i stigende orden', () => {
-        assert.equal(CEPOS_WEALTH_TABLE[0].age, 18);
-        assert.equal(CEPOS_WEALTH_TABLE.at(-1).age, 90);
-        for (let i = 1; i < CEPOS_WEALTH_TABLE.length; i++) {
-            assert.ok(CEPOS_WEALTH_TABLE[i].age > CEPOS_WEALTH_TABLE[i - 1].age);
         }
     });
 });
@@ -583,5 +595,41 @@ describe('faktisk afkast (XIRR)', () => {
             {date:'2025-03-31', amount:108000}
         ]);
         assert.deepEqual(portfolioCashFlows(h.slice(0, 1)), []);
+    });
+});
+
+describe('mål', () => {
+    const h = [
+        { date: '2025-09-30', value: 400000 },
+        { date: '2026-03-31', value: 460000 },
+        { date: '2026-09-30', value: 520000 }
+    ];
+    test('månedlig udvikling over det seneste år', () => {
+        approx(monthlyTrend(h, 'value'), 120000 / (365 / 30.44), 1);
+        assert.equal(monthlyTrend(h.slice(0, 1), 'value'), null);
+        assert.equal(monthlyTrend([{ date: '2026-09-01', value: 1 }, { date: '2026-09-15', value: 2 }], 'value'), null);
+    });
+    test('kun det seneste år tæller med', () => {
+        const old = [{ date: '2020-01-31', value: 0 }, ...h];
+        approx(monthlyTrend(old, 'value'), monthlyTrend(h, 'value'), 1e-9);
+    });
+    test('fremdrift og krævet opsparing pr. måned', () => {
+        const g = goalProgress({ target: 1000000, current: 520000, deadline: '2030-09-30', today: '2026-09-30', trend: 12000 });
+        approx(g.pct, 0.52);
+        assert.equal(g.remaining, 480000);
+        assert.equal(g.reached, false);
+        approx(g.neededPerMonth, 480000 / ((Date.parse('2030-09-30') - Date.parse('2026-09-30')) / (86400000 * 30.44)), 1e-6);
+        assert.equal(g.onTrack, true);
+        approx(g.monthsAtTrend, 40);
+    });
+    test('bag efter, når tempoet ikke rækker', () => {
+        assert.equal(goalProgress({ target: 1000000, current: 520000, deadline: '2027-09-30', today: '2026-09-30', trend: 10000 }).onTrack, false);
+    });
+    test('nået mål og mål uden frist', () => {
+        assert.deepEqual(goalProgress({ target: 100, current: 150, today: '2026-09-30' }),
+            { pct: 1, remaining: 0, reached: true, monthsLeft: null, neededPerMonth: null, monthsAtTrend: null, onTrack: true });
+        const noDeadline = goalProgress({ target: 100, current: 50, today: '2026-09-30', trend: null });
+        assert.equal(noDeadline.onTrack, null);
+        assert.equal(noDeadline.neededPerMonth, null);
     });
 });

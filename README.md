@@ -34,7 +34,7 @@ Build a monthly budget from itemised posts in 15 categories plus your own, each 
 
 ### Formue
 
-Enter your assets (cash, stocks, pension, home equity, other) and debt to get your net worth and liquid wealth. Save dated snapshots to build a history — or use **Månedsstatus** to save the same date into both the Formue history and the portfolio tracker in one go — see how the composition has changed over time, track milestones, and compare your net worth to other Danes your age (based on CEPOS's summary of Danmarks Statistik wealth data). Plus a light-hearted "your wealth equals *n* bananas / iPhones / Porsches" comparison.
+Enter your assets (cash, stocks, pension, home equity, other) and debt to get your net worth and liquid wealth. Save dated snapshots to build a history — or use **Månedsstatus** to save the same date into both the Formue history and the portfolio tracker in one go — see how the composition has changed over time, set your own goals (with the monthly saving needed to reach them by a deadline and whether your pace over the last year is enough), track milestones, and compare your net worth to other Danes of exactly your age using CEPOS's per-age table (2024 data at 2026 levels, pension counted after 40% tax, as CEPOS does). The full table opens with your age highlighted. Plus a light-hearted "your wealth equals *n* bananas / iPhones / Porsches" comparison.
 
 ### Settings
 
@@ -112,7 +112,7 @@ Each calculator has a **Del beregning** button that copies a link reopening it w
 
 - Tax rules reflect Danish law as of 2026: 17% flat ASK tax, 27%/42% progressive depot tax with a 79.400 kr. threshold, and a 174.200 kr. ASK deposit limit; 15.3% PAL tax; tinglysning of 1.850 kr. + 0.6% (deed) and 1.825 kr. + 1.25% (mortgage deeds); interest deduction of ~33% up to 50.000 kr. per adult and ~25% above. These figures are normally adjusted yearly and are **not** indexed in this tool.
 - All projections assume a constant annual return. Real markets do not move in a straight line.
-- The wealth comparison uses a 16-row extract of CEPOS's age-by-age table, interpolated linearly, and is for curiosity only.
+- The wealth comparison uses CEPOS's full table (one row per age, 18–90; 2024 data projected to 2026 levels, rounded to 1.000 kr.). Pension is counted after a notional 40% tax, as in CEPOS's figures, so the comparable net worth can be lower than the one shown in Formue. For curiosity only.
 - This is a personal-finance calculator, **not financial or tax advice**. Consult a professional before making investment decisions.
 
 ## License

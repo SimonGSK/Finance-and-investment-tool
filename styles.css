@@ -773,6 +773,25 @@ select.number-input{ font-family:var(--font-sans); cursor:pointer; }
 
 /* ---- Calculators ---- */
 .details-body{ margin-top:var(--s4); }
+.wealth-table-btn{ margin-top:var(--s4); }
+.goal-row{
+    display:block; width:100%; margin-bottom:var(--s3); padding:var(--s4);
+    background:var(--panel-sunken); border:1px solid var(--border); border-radius:var(--r-md);
+    color:var(--text); font:inherit; text-align:left; cursor:pointer;
+    transition:border-color 0.15s var(--ease);
+}
+.goal-row:hover{ border-color:var(--akt); }
+.goal-head{ display:flex; justify-content:space-between; gap:var(--s3); margin-bottom:var(--s2); flex-wrap:wrap; }
+.goal-name{ font-weight:600; }
+.goal-amount{ font-family:var(--font-mono); font-size:13px; color:var(--muted); }
+.goal-facts{ margin-top:var(--s2); font-size:12.5px; color:var(--subtle); font-family:var(--font-mono); }
+.goal-status{ margin-top:var(--s1); font-size:13.5px; color:var(--muted); }
+.goal-status.is-good{ color:var(--ask); }
+.goal-status.is-bad{ color:var(--cross); }
+.progress-fill.is-done{ background:var(--ask); }
+.wealth-table-wrap{ max-height:55vh; margin-bottom:var(--s4); }
+table.data-table tr.is-highlight td{ background:var(--akt-soft); color:var(--text); font-weight:600; }
+table.data-table tr.is-highlight td:first-child{ color:var(--akt); }
 .tool-actions{ margin:calc(-1 * var(--s3)) 0 var(--s5) 0; }
 .intro-banner[hidden]{ display:none; }
 .backup-banner{ border-color:var(--akt); }

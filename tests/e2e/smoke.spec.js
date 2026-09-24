@@ -159,3 +159,53 @@ test('hjælp åbner med årets satser og kilder, og Esc lukker', async ({ page }
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();
 });
+
+test('formue: mål oprettes i en dialog, og hele alderstabellen fremhæver din alder', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.getByRole('button', { name: 'Formue', exact: true }).click();
+    await page.getByLabel('Aktier & værdipapirer').fill('300000');
+
+    await page.getByRole('button', { name: '+ Nyt mål' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Nyt mål' });
+    await dialog.getByRole('button', { name: 'Opret mål' }).click();
+    await expect(dialog.locator('.field-error')).toHaveText('Giv målet et navn.');
+    await dialog.getByLabel('Navn').fill('Første million');
+    await dialog.getByLabel('Hvad vil du måle?').selectOption('netCatAktier');
+    await dialog.getByLabel('Mål (kr.)').fill('1000000');
+    await dialog.getByRole('button', { name: 'Opret mål' }).click();
+    await expect(dialog).toBeHidden();
+    await expect(page.locator('.goal-row')).toContainText('300.000 / 1.000.000 kr.');
+    await expect(page.locator('.goal-facts')).toContainText('30 %');
+
+    await page.getByLabel('Din alder').fill('27');
+    await page.getByRole('button', { name: 'Se hele tabellen' }).click();
+    const table = page.getByRole('dialog', { name: 'Formue efter alder' });
+    await expect(table.locator('tbody tr')).toHaveCount(73);
+    await expect(table.locator('tr.is-highlight td').first()).toHaveText('27 år');
+    await expect(table.locator('tr.is-highlight')).toBeInViewport();
+});
+
+test('formue: sammensætningen viser alle kategorier for datoen, man peger på', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => localStorage.setItem('netWorthHistory', JSON.stringify([
+        {date:'2026-07-31', value:500000, liquid:300000, netCatKontanter:100000, netCatAktier:200000, netCatPension:200000, netCatFrivaerdi:0, netCatAndet:0, debt:0},
+        {date:'2026-08-31', value:520000, liquid:320000, netCatKontanter:110000, netCatAktier:210000, netCatPension:230000, netCatFrivaerdi:0, netCatAndet:0, debt:30000}
+    ])));
+    await page.reload();
+    await page.getByRole('button', { name: 'Formue', exact: true }).click();
+    const canvas = page.locator('#netWorthCompositionChart');
+    await canvas.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400);
+    const box = await canvas.boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.move(box.x + box.width - 20, box.y + box.height / 2, { steps: 5 });
+    await page.waitForTimeout(300);
+    const tip = await page.evaluate(() => {
+        const t = netWorthCompositionChart.tooltip;
+        return {opacity: t.opacity, lines: t.body.map(b => b.lines.join('')), footer: t.footer};
+    });
+    expect(tip.opacity).toBeGreaterThan(0);
+    expect(tip.lines).toHaveLength(6);
+    expect(tip.lines[0]).toBe('Pension: 230.000 kr. (42 %)');
+    expect(tip.footer).toEqual(['Nettoformue: 520.000 kr.']);
+});
