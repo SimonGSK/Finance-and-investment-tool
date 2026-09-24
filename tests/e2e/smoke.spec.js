@@ -400,3 +400,25 @@ test('afkrydsningsfelter: teksten holder sammen, og "?" bliver i panelet', async
         expect(bad, `værktøj ${n}`).toEqual([]);
     }
 });
+
+test('app: manifest og ikoner findes, og siden virker offline efter første besøg', async ({ page, context }) => {
+    await page.goto('/index.html');
+    const manifest = await page.evaluate(async () => (await fetch(document.querySelector('link[rel=manifest]').href)).json());
+    expect(manifest.display).toBe('standalone');
+    for(const icon of manifest.icons){
+        expect((await page.request.get('/' + icon.src)).status(), icon.src).toBe(200);
+    }
+    await page.evaluate(() => navigator.serviceWorker.ready);
+    await page.reload();
+    await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
+
+    await context.setOffline(true);
+    await page.reload();
+    await expect(page.locator('h1')).toBeVisible();
+    await page.getByRole('button', { name: 'Formue', exact: true }).click();
+    await page.getByLabel('Aktier & værdipapirer', { exact: true }).fill('1000 + 500');
+    await page.getByLabel('Aktier & værdipapirer', { exact: true }).press('Enter');
+    await expect(page.locator('#netWorthTotal')).toHaveText('1.500 kr.');   // scripts kører offline
+    expect(await page.evaluate(() => typeof Chart)).toBe('function');       // også Chart.js fra CDN'en
+    await context.setOffline(false);
+});
