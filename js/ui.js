@@ -140,14 +140,14 @@ function confirmDialog({title, message, confirmLabel, cancelLabel = 'Annullér',
  * @returns {Promise<void>}
  */
 function infoDialog({title, message}){
-    return openDialog({title, content: message, actions: [{label:'OK', variant:'primary'}]}).result.then(() => {});
+    return openDialog({title, content: message}).result.then(() => {});
 }
 
 /** Åbner hjælp og spørgsmål. Indholdet ligger i <template id="helpContent">. */
 function openHelp(){
     const content = document.getElementById('helpContent').content.cloneNode(true);
     fillRuleText(content);
-    openDialog({title:'Hjælp og spørgsmål', content: el('div', {}, [content]), wide:true, actions:[{label:'Luk', variant:'primary'}]});
+    openDialog({title:'Hjælp og spørgsmål', content: el('div', {}, [content]), wide:true});
 }
 
 let toastRegion = null;

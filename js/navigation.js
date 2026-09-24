@@ -70,7 +70,7 @@ function showSection(name){
 
 const BACKUP_KEYS = ['budgetItems', 'budgetData', 'budgetCustomCategories', 'netWorthData', 'netWorthHistory', 'portfolioHistory', 'monthlyStatusLast', 'debtPayoffData', 'netWorthGoals'];
 // Indstillinger gemmes som rå tekst (ikke JSON) og lægges derfor i et eget 'settings'-afsnit i filen.
-const BACKUP_SETTING_KEYS = ['theme', 'monthlyReminderOff'];
+const BACKUP_SETTING_KEYS = ['theme', 'monthlyReminderOff', 'wealthAge'];
 
 /**
  * Downloader alle gemte data (budget, formue, historik, portefølje) som én

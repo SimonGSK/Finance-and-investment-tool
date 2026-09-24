@@ -96,13 +96,20 @@ const budgetCenterText = {
         if(sum <= 0) return;
         const {ctx, chartArea:{left, right, top, bottom}} = chart;
         const x = (left + right) / 2, y = (top + bottom) / 2;
-        const size = Math.max(16, Math.min(34, Math.min(right - left, bottom - top) / 9));
+        const label = DK.format(sum) + ' kr.';
+        // Teksten skal kunne være inde i hullet - på en telefon er det smalt, så den gøres mindre.
+        const hole = (chart.getDatasetMeta(0).data[0]?.innerRadius || (right - left) / 3) * 2 * 0.82;
+        let size = Math.max(16, Math.min(34, Math.min(right - left, bottom - top) / 9));
         ctx.save();
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillStyle = getCSSVar('--text');
         ctx.font = `500 ${size}px ${getCSSVar('--font-mono')}`;
-        ctx.fillText(DK.format(sum) + ' kr.', x, y - size * 0.35);
+        while(size > 11 && ctx.measureText(label).width > hole){
+            size -= 1;
+            ctx.font = `500 ${size}px ${getCSSVar('--font-mono')}`;
+        }
+        ctx.fillText(label, x, y - size * 0.35);
         ctx.fillStyle = getCSSVar('--subtle');
         ctx.font = `400 ${Math.round(size * 0.42)}px ${getCSSVar('--font-sans')}`;
         ctx.fillText('pr. måned', x, y + size * 0.6);

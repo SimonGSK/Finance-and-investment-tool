@@ -54,8 +54,7 @@ async function installApp(){
                 el('li', {}, ['Tryk ', el('strong', {textContent:'Tilføj'}), '.'])
             ]),
             el('p', {className:'dialog-hint', textContent:'På iPhone og iPad har appen sin egen lagerplads, adskilt fra Safari. Vil du have dine tal med, så tryk Download alt her i Safari først, og Upload alt i appen bagefter.'})
-        ]),
-        actions: [{label:'Forstået', variant:'primary'}]
+        ])
     });
 }
 

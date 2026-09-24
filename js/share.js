@@ -48,7 +48,7 @@ async function shareCalculator(toolId){
         const input = el('input', {type:'text', className:'number-input', value:url, readOnly:true, attrs:{'aria-label':'Link til beregningen'}});
         openDialog({title:'Del beregningen', content: el('div', {}, [
             el('p', {className:'dialog-hint', textContent:'Kopiér linket herunder. Den, der åbner det, ser de samme tal.'}), input
-        ]), actions:[{label:'Luk', variant:'primary'}]});
+        ])});
         input.select();
     }
 }

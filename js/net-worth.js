@@ -183,7 +183,7 @@ function openWealthTable(){
         el('td', {textContent: r.age + ' år'}),
         ...cols.map(([k]) => el('td', {textContent: DK.format(r[k])}))
     ])));
-    const content = el('div', {}, [
+    const content = el('div', {className:'wealth-dialog'}, [
         el('p', {className:'dialog-hint', textContent:`Nettoformue i kr. for hver alder. Din alder (${age} år) er fremhævet. Grænserne betyder fx, at 10 % af alle ${age}-årige har mindst det beløb, der står under "Top 10 %".`}),
         el('div', {className:'data-table-wrap wealth-table-wrap'}, [
             el('table', {className:'data-table'}, [
@@ -196,7 +196,7 @@ function openWealthTable(){
             el('a', {href: CEPOS_SOURCE.url, target:'_blank', rel:'noopener', textContent:'Se kilden hos CEPOS'}), '.'
         ])
     ]);
-    const {dialog} = openDialog({title:'Formue efter alder', content, wide:true, actions:[{label:'Luk', variant:'primary'}]});
+    const {dialog} = openDialog({title:'Formue efter alder', content, wide:true});
     dialog.classList.add('dialog-table');   // bred nok til hele tabellen uden vandret scroll
     dialog.querySelector('tr.is-highlight')?.scrollIntoView({block:'center'});
 }
@@ -276,11 +276,21 @@ async function resetNetWorth(){
 }
 
 loadNetWorthFromStorage();
+// Alderen i "Hvor rig er jeg?" huskes, så den ikke springer tilbage til standarden ved hver indlæsning.
+try{
+    const savedAge = localStorage.getItem('wealthAge');
+    if(savedAge !== null && savedAge.trim() !== '') document.getElementById('wealthAge').value = savedAge;
+} catch(e){ /* intet gemt */ }
 NET_WORTH_INPUT_IDS.forEach(id => document.getElementById(id).addEventListener('input', () => {
     updateNetWorth();
     markSaved('netWorthSaveStatus');
 }));
-document.getElementById('wealthAge').addEventListener('input', updateWealthComparison);
+document.getElementById('wealthAge').addEventListener('input', () => {
+    const age = document.getElementById('wealthAge').value.trim();
+    // Kun gyldige aldre gemmes - et halvt skrevet tal skal ikke overskrive den gemte alder.
+    if(/^\d{1,3}$/.test(age)) localStorage.setItem('wealthAge', age);
+    updateWealthComparison();
+});
 updateNetWorth();
 
 let netWorthHistoryChart = null;
