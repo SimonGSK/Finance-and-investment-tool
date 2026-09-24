@@ -1,6 +1,6 @@
 /**
  * @file Formue: aktiver og gæld, nettoformue og likvid formue, daterede
- * øjebliksbilleder (historik), formuesammensætning over tid, rekord og
+ * datapunkter (historik), formuesammensætning over tid, rekord og
  * milepæle, og sammenligning med andre danskere på samme alder. Felterne
  * gemmes under 'netWorthData', historikken under 'netWorthHistory'.
  */
@@ -87,7 +87,7 @@ function loadNetWorthFromStorage(){
 
 /**
  * Tallene, Formue-siden regner med: felterne, eller det seneste
- * øjebliksbillede, hvis felterne er tomme (se pickNetWorthFigures i calc.js).
+ * datapunkt, hvis felterne er tomme (se pickNetWorthFigures i calc.js).
  */
 function currentNetWorthFigures(){
     const fields = {debt: parseFloat(document.getElementById('netDebt').value) || 0};
@@ -105,13 +105,13 @@ function computeLiveLiquidTotal(){
     return currentNetWorthFigures().liquid;
 }
 
-/** Viser, når tallene kommer fra et øjebliksbillede, med en knap til at hente dem ind i felterne. */
+/** Viser, når tallene kommer fra et datapunkt, med en knap til at hente dem ind i felterne. */
 function renderNetWorthSourceNote(figures){
     const note = document.getElementById('netWorthSourceNote');
     note.hidden = !figures.fromSnapshot;
     if(!figures.fromSnapshot) return;
     note.replaceChildren(
-        `Felterne er tomme, så tallene er fra dit seneste øjebliksbillede (${formatDanishDate(figures.date)}). Udfyld felterne for at se dagens tal. `,
+        `Felterne er tomme, så tallene er fra din seneste månedsstatus (${formatDanishDate(figures.date)}). Udfyld felterne for at se dagens tal. `,
         el('button', {className:'link-btn', type:'button', textContent:'Hent tallene ind i felterne', onclick: () => {
             NET_WORTH_CATEGORIES.forEach(cat => { document.getElementById(cat.id).value = figures[cat.id]; });
             document.getElementById('netDebt').value = figures.debt;
@@ -197,6 +197,7 @@ function openWealthTable(){
         ])
     ]);
     const {dialog} = openDialog({title:'Formue efter alder', content, wide:true, actions:[{label:'Luk', variant:'primary'}]});
+    dialog.classList.add('dialog-table');   // bred nok til hele tabellen uden vandret scroll
     dialog.querySelector('tr.is-highlight')?.scrollIntoView({block:'center'});
 }
 
@@ -222,7 +223,7 @@ function updateEmergencyFund(){
     monthsEl.textContent = `${months.toFixed(1).replace('.', ',')} ${months >= 0.95 && months < 1.05 ? 'måned' : 'måneder'}`;
     monthsEl.classList.toggle('negative', months < 3);
     const verdict = months >= 6 ? 'Du har en solid buffer.' : months >= 3 ? 'Du er inden for anbefalingen.' : 'Under anbefalingen på 3 måneder.';
-    text.textContent = `Dine kontanter på ${DK.format(cash)} kr. dækker dine udgifter på ${DK.format(expenses)} kr. om måneden. ${verdict}`;
+    text.textContent = `Dine kontanter på ${DK.format(cash)} kr. dækker dine udgifter på ${DK.format(expenses)} kr. om måneden (behov og ønsker fra dit budget). ${verdict}`;
     fill.style.width = Math.min(100, months / 6 * 100) + '%';
 }
 
@@ -261,7 +262,7 @@ const NET_WORTH_INPUT_IDS = NET_WORTH_CATEGORIES.map(c => c.id).concat(['netDebt
 async function resetNetWorth(){
     const ok = await confirmDialog({
         title:'Nulstil formuefelterne?',
-        message:'Felterne for aktiver og gæld sættes til 0. Din gemte formuehistorik bevares, og har du gemt øjebliksbilleder, viser siden det seneste, indtil du udfylder felterne igen.',
+        message:'Felterne for aktiver og gæld sættes til 0. Din gemte formuehistorik bevares, og har du gemt en månedsstatus, viser siden den seneste, indtil du udfylder felterne igen.',
         confirmLabel:'Nulstil', danger:true
     });
     if(!ok) return;
@@ -284,7 +285,7 @@ updateNetWorth();
 
 let netWorthHistoryChart = null;
 
-/** @returns {Object[]} de gemte øjebliksbilleder, sorteret efter dato */
+/** @returns {Object[]} de gemte datapunkter, sorteret efter dato */
 function readNetWorthHistory(){
     try{ return JSON.parse(localStorage.getItem('netWorthHistory') || '[]'); }
     catch(e){ return []; }
@@ -295,14 +296,14 @@ function writeNetWorthHistory(history){
     localStorage.setItem('netWorthHistory', JSON.stringify(history));
 }
 
-// Felterne i et øjebliksbillede, som de vises når et punkt overskrives.
+// Felterne i et datapunkt, som de vises når et punkt overskrives.
 const NET_WORTH_FIELDS = [
     ['netCatKontanter', 'Kontanter'], ['netCatAktier', 'Aktier'], ['netCatPension', 'Pension'],
     ['netCatFrivaerdi', 'Friværdi'], ['netCatAndet', 'Andet'], ['debt', 'Gæld'], ['value', 'Nettoformue']
 ];
 
 /**
- * Bygger et øjebliksbillede ud fra tal for hver kategori og gælden.
+ * Bygger et datapunkt ud fra tal for hver kategori og gælden.
  * @param {string} date ISO-dato
  * @param {{netCatKontanter:number, netCatAktier:number, netCatPension:number, netCatFrivaerdi:number, netCatAndet:number, debt:number}} amounts
  * @returns {Object} med nettoformue (value) og likvid formue (liquid) udregnet
@@ -373,7 +374,7 @@ function importNetWorthCSV(event){
 }
 
 /**
- * Gemmer felternes værdier som et øjebliksbillede for den valgte dato (i dag
+ * Gemmer felternes værdier som et datapunkt for den valgte dato (i dag
  * som standard). Findes der allerede et punkt på datoen, vises hvad der ændres,
  * før det erstattes.
  */
@@ -395,7 +396,7 @@ async function saveNetWorthSnapshot(){
 }
 
 /**
- * Sletter ét øjebliksbillede - med fortryd.
+ * Sletter ét datapunkt - med fortryd.
  * @param {string} date ISO-dato, fx '2026-09-21'
  */
 function deleteNetWorthEntry(date){
@@ -408,6 +409,18 @@ function deleteNetWorthEntry(date){
         writeNetWorthHistory(upsertByDate(readNetWorthHistory(), removed).history);
         renderNetWorthHistory();
     }});
+}
+
+/**
+ * Retter ét datapunkt i formuehistorikken (se editHistoryEntry i ui.js).
+ * @param {string} date ISO-dato
+ */
+function editNetWorthEntry(date){
+    editHistoryEntry({
+        date, title:'Formue', read: readNetWorthHistory, write: writeNetWorthHistory, render: renderNetWorthHistory,
+        inputs: NET_WORTH_CATEGORIES.map(c => [c.id, c.label + ' (kr.)']).concat([['debt', 'Gæld (kr.)']]),
+        build: buildNetWorthEntry, fields: NET_WORTH_FIELDS
+    });
 }
 
 /**
@@ -508,7 +521,10 @@ function renderNetWorthHistory(){
             <td>${DK.format(h.debt || 0)} kr.</td>
             <td>${DK.format(h.liquid ?? 0)} kr.</td>
             <td>${DK.format(h.value)} kr.</td>
-            <td><button class="btn btn-secondary btn-sm" aria-label="Slet datapunktet for ${formatDanishDate(h.date)}" onclick="deleteNetWorthEntry('${h.date}')">Slet</button></td>
+            <td><div class="row-actions">
+                <button class="btn btn-secondary btn-sm" aria-label="Ret datapunktet for ${formatDanishDate(h.date)}" onclick="editNetWorthEntry('${h.date}')">Ret</button>
+                <button class="btn btn-secondary btn-sm" aria-label="Slet datapunktet for ${formatDanishDate(h.date)}" onclick="deleteNetWorthEntry('${h.date}')">Slet</button>
+            </div></td>
         </tr>`).join('');
 
     const netWorthHasHistory = history.length > 0;
@@ -516,7 +532,7 @@ function renderNetWorthHistory(){
     document.getElementById('netWorthCompositionChartEmpty').style.display = netWorthHasHistory ? 'none' : 'flex';
 
     renderNetWorthComposition(history);
-    // Nøgletal, mål osv. kan bygge på det seneste øjebliksbillede, så de genberegnes også.
+    // Nøgletal, mål osv. kan bygge på det seneste datapunkt, så de genberegnes også.
     updateNetWorth();
     if(typeof checkMonthlyReminder === 'function') checkMonthlyReminder();
 }
@@ -524,8 +540,8 @@ function renderNetWorthHistory(){
 let netWorthCompositionChart = null;
 
 /**
- * Stablet arealgraf over aktivtyper og gæld pr. øjebliksbillede.
- * @param {object[]} history øjebliksbillederne, sorteret efter dato
+ * Stablet arealgraf over aktivtyper og gæld pr. datapunkt.
+ * @param {object[]} history datapunkterne, sorteret efter dato
  */
 function renderNetWorthComposition(history){
     const labels = history.map(h => formatDanishDate(h.date));
@@ -613,7 +629,7 @@ function renderRecordAndMilestones(){
         }
     } else {
         document.getElementById('recordValue').textContent = '–';
-        document.getElementById('recordDate').textContent = 'Gem et øjebliksbillede for at starte din rekord';
+        document.getElementById('recordDate').textContent = 'Gem en månedsstatus for at starte din rekord';
         document.getElementById('recordLiquidValue').textContent = '–';
         document.getElementById('recordLiquidDate').textContent = '';
     }

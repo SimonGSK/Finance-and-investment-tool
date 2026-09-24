@@ -11,7 +11,6 @@ const SHAREABLE_TOOLS = {
     tool2: {show: () => { showSection('tools'); showTool(2); }, extra: ['doubleDeduction']},
     tool3: {show: () => { showSection('tools'); showTool(3); }},
     tool5: {show: () => { showSection('tools'); showTool(5); }},
-    tool6: {show: () => { showSection('tools'); showTool(6); }},
     housing1: {show: () => { showSection('housing'); showHousingTool(1); }},
     housing2: {show: () => { showSection('housing'); showHousingTool(2); }}
 };

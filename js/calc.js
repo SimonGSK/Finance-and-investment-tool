@@ -17,8 +17,7 @@ const AKT_TAX_LOW = 0.27;
 const AKT_TAX_HIGH = 0.42;
 // ETF'er og fonde, der ikke står på positivlisten, beskattes som kapitalindkomst:
 // ca. 37 % (kommune- og bundskat), op til ca. 42 % for positiv nettokapitalindkomst
-// over 55.000 kr. (110.000 kr. for ægtepar), hvis den samlede indkomst giver mellemskat.
-const CAPITAL_TAX_RATE = 0.37;
+// over denne grænse (det dobbelte for ægtepar), hvis den samlede indkomst giver mellemskat.
 const CAPITAL_INCOME_LIMIT = 55000;
 
 // Bolig. Tinglysningsafgift pr. 1. januar 2026 (skat.dk): skøde 1.850 kr. + 0,6 % af
@@ -458,77 +457,14 @@ function budgetExportRows({categories, groups, items, frequencies, total = 0}){
     return rows;
 }
 
-// ==== ETF'er og fonde: fire måder at blive beskattet på ====
-
-/**
- * Samme investering - startbeløb, månedlige indskud og et fast årligt afkast -
- * beskattet på fire måder. Skatten betales af investeringen, og tab føres
- * videre til de næste år.
- *  - abis: ETF/fond på positivlisten i frie midler: lager, aktieindkomst 27/42 %
- *  - capital: ETF/fond ikke på listen: lager, kapitalindkomst (capitalTaxRate)
- *  - realisation: aktier eller dansk udloddende aktiefond: 27/42 % først ved salg
- *    (her: alt sælges på én gang til sidst; udbytter er ikke med)
- *  - ask: aktiesparekonto: lager, 17 %
- * @param {{start:number, monthly:number, years:number, yearlyReturn:number,
- *   capitalTaxRate?:number, taxLimit?:number}} p yearlyReturn som faktor, fx 1.07
- * @returns {{deposited:number, askOverLimit:boolean, modes:Object<'abis'|'capital'|'realisation'|'ask',
- *   {values:number[], finalAfterTax:number, totalTax:number}>}} values[år] = værdi efter skat
- *   (for realisation: hvad man ville stå med, hvis man solgte det år)
- */
-function simulateFundTaxation({start, monthly, years, yearlyReturn, capitalTaxRate = CAPITAL_TAX_RATE, taxLimit = TAX_LIMIT_27}){
-    const m = monthlyReturnFactor(yearlyReturn);
-    const aktTax = gain => Math.min(gain, taxLimit) * AKT_TAX_LOW + Math.max(0, gain - taxLimit) * AKT_TAX_HIGH;
-    const deposited = start + monthly * 12 * years;
-
-    // Lagerbeskatning: årets gevinst (fratrukket tidligere tab) beskattes hvert år.
-    const lager = taxOf => {
-        let value = start, lossCarry = 0, totalTax = 0;
-        const values = [start];
-        for(let y = 1; y <= years; y++){
-            const begin = value;
-            for(let i = 0; i < 12; i++){ value = (value + monthly) * m; }
-            const net = value - begin - monthly * 12 - lossCarry;
-            const tax = net > 0 ? taxOf(net) : 0;
-            lossCarry = net > 0 ? 0 : -net;
-            value -= tax; totalTax += tax;
-            values.push(value);
-        }
-        return {values, finalAfterTax: value, totalTax};
-    };
-
-    // Realisation: ingen skat undervejs; hvert års værdi vises som "hvis du solgte nu".
-    const realisation = (() => {
-        let value = start, paidIn = start, lastTax = 0;
-        const values = [start];
-        for(let y = 1; y <= years; y++){
-            for(let i = 0; i < 12; i++){ value = (value + monthly) * m; }
-            paidIn += monthly * 12;
-            lastTax = aktTax(Math.max(0, value - paidIn));
-            values.push(value - lastTax);
-        }
-        return {values, finalAfterTax: values[years], totalTax: years ? lastTax : 0};
-    })();
-
-    return {
-        deposited,
-        askOverLimit: deposited > ASK_DEPOSIT_LIMIT,
-        modes: {
-            abis: lager(aktTax),
-            capital: lager(gain => gain * capitalTaxRate),
-            realisation,
-            ask: lager(gain => gain * ASK_TAX)
-        }
-    };
-}
-
-// ==== Formue: felterne eller seneste øjebliksbillede ====
+// ==== Formue: felterne eller seneste datapunkt ====
 
 const NET_WORTH_ASSET_KEYS = ['netCatKontanter', 'netCatAktier', 'netCatPension', 'netCatFrivaerdi', 'netCatAndet'];
 const NET_WORTH_LIQUID_KEYS = ['netCatKontanter', 'netCatAktier'];
 
 /**
  * De formuetal, siden skal vise: felterne, eller - hvis alle felter er tomme
- * eller 0 og der er gemt øjebliksbilleder - det seneste øjebliksbillede. Så
+ * eller 0 og der er gemt datapunkter - det seneste datapunkt. Så
  * viser nøgletal, nødopsparing, mål og sammenligning ikke 0, bare fordi
  * felterne er nulstillet.
  * @param {Object<string, number>} fields kategorierne (NET_WORTH_ASSET_KEYS) og debt
@@ -546,7 +482,7 @@ function pickNetWorthFigures(fields, history){
     const figures = {fromSnapshot, date: fromSnapshot ? latest.date : null};
     keys.forEach(k => { figures[k] = Number(src[k]) || 0; });
     const sumOf = list => list.reduce((sum, k) => sum + figures[k], 0);
-    // Ældre øjebliksbilleder kan mangle kategorierne, men har altid value (og ofte liquid).
+    // Ældre datapunkter kan mangle kategorierne, men har altid value (og ofte liquid).
     figures.value = fromSnapshot && typeof latest.value === 'number' ? latest.value : sumOf(NET_WORTH_ASSET_KEYS) - figures.debt;
     figures.liquid = fromSnapshot && typeof latest.liquid === 'number' ? latest.liquid : sumOf(NET_WORTH_LIQUID_KEYS);
     figures.assets = figures.value + figures.debt;
@@ -1150,7 +1086,8 @@ const DEBT_MAX_MONTHS = 600;
  * @param {number} extraMonthly
  * @param {'avalanche'|'snowball'|'minimum'} strategy
  * @returns {{feasible:boolean, months:number, totalInterest:number, totalPaid:number,
- *   payoff:{name:string, index:number, month:number}[], balances:number[]}} index = lånets plads blandt lånene med restgæld balances[m] = samlet restgæld efter m måneder
+ *   payoff:{name:string, index:number, month:number}[], balances:number[], interestPaid:number[]}} index = lånets plads blandt lånene med restgæld;
+ *   balances[m] = samlet restgæld efter m måneder; interestPaid[m] = rente betalt i alt efter m måneder
  */
 function simulateDebtPayoff(debts, extraMonthly, strategy){
     const state = debts
@@ -1158,6 +1095,7 @@ function simulateDebtPayoff(debts, extraMonthly, strategy){
         .map((d, i) => ({ ...d, index: i, left: d.balance, paidOffMonth: null }));
     const budget = state.reduce((s, d) => s + d.minPayment, 0) + (strategy === 'minimum' ? 0 : Math.max(0, extraMonthly));
     const balances = [state.reduce((s, d) => s + d.left, 0)];
+    const interestPaid = [0];
     let totalInterest = 0, totalPaid = 0, month = 0;
 
     const order = () => {
@@ -1189,6 +1127,7 @@ function simulateDebtPayoff(debts, extraMonthly, strategy){
         }
         state.forEach(d => { if(d.left <= 0.005 && d.paidOffMonth === null){ d.left = 0; d.paidOffMonth = month; } });
         balances.push(state.reduce((s, d) => s + d.left, 0));
+        interestPaid.push(totalInterest);
     }
     const feasible = state.every(d => d.left <= 0.005);
     return {
@@ -1198,7 +1137,7 @@ function simulateDebtPayoff(debts, extraMonthly, strategy){
         payoff: state.filter(d => d.paidOffMonth !== null)
             .sort((a, b) => a.paidOffMonth - b.paidOffMonth)
             .map(d => ({ name: d.name, index: d.index, month: d.paidOffMonth })),
-        balances
+        balances, interestPaid
     };
 }
 
@@ -1440,7 +1379,7 @@ function goalProgress(g){
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
-        CAPITAL_TAX_RATE, CAPITAL_INCOME_LIMIT, simulateFundTaxation,
+        CAPITAL_INCOME_LIMIT,
         monthlyStatusReminder,
         pickNetWorthFigures,
         compareDebtStrategies,

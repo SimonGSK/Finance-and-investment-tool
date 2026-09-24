@@ -304,3 +304,62 @@ function markSaved(id){
     node.textContent = `✓ Gemt i denne browser kl. ${time}`;
     node.classList.add('is-saved');
 }
+
+/**
+ * Retter ét datapunkt i en historik (Formue eller porteføljetrackeren): dato
+ * og tal i en dialog. Flyttes datoen til en dato, der allerede har data, vises
+ * præcis hvad der overskrives først. Rettelsen kan fortrydes.
+ * @param {object} p
+ * @param {string} p.date datapunktets nuværende dato
+ * @param {string} p.title fx 'Formue' - bruges i overskrifter og beskeder
+ * @param {() => Object[]} p.read
+ * @param {(history:Object[]) => void} p.write
+ * @param {() => void} p.render
+ * @param {[string, string][]} p.inputs de felter, der kan rettes: [nøgle, etiket]
+ * @param {(date:string, values:Object<string, number>) => Object} p.build bygger datapunktet
+ * @param {[string, string][]} p.fields felterne, der vises i en overskrivnings-advarsel
+ */
+function editHistoryEntry({date, title, read, write, render, inputs, build, fields}){
+    const entry = read().find(h => h.date === date);
+    if(!entry) return;
+    const dateInput = el('input', {type:'date', className:'number-input', value: date});
+    const numberInputs = inputs.map(([key]) => el('input', {type:'number', className:'number-input', value: entry[key] || 0, step: 100}));
+    const error = el('div', {className:'field-error', attrs:{role:'alert'}});
+    dateInput.addEventListener('input', () => { error.textContent = ''; dateInput.removeAttribute('aria-invalid'); });
+
+    const save = () => {
+        const newDate = normalizeDate(dateInput.value);
+        if(!newDate){
+            error.textContent = 'Vælg en gyldig dato.';
+            dateInput.setAttribute('aria-invalid', 'true');
+            dateInput.focus();
+            return false;
+        }
+        const values = Object.fromEntries(inputs.map(([key], i) => [key, parseFloat(numberInputs[i].value) || 0]));
+        const updated = build(newDate, values);
+        const previous = read();
+        const others = previous.filter(h => h.date !== date);
+        const clash = newDate !== date ? others.find(h => h.date === newDate) : null;
+        const commit = () => {
+            write(upsertByDate(others, updated).history);
+            render();
+            notify(`${title} for ${formatDanishDate(newDate)} er rettet.`, {actionLabel:'Fortryd', onAction: () => { write(previous); render(); }});
+        };
+        if(!clash){ commit(); return; }
+        confirmOverwrite(newDate, [{title, changes: changedFields(clash, updated, fields)}]).then(ok => {
+            if(ok){ commit(); handle.close(); }
+        });
+        return false;
+    };
+
+    const handle = openDialog({
+        title: `Ret ${title.toLowerCase()} for ${formatDanishDate(date)}`,
+        content: el('div', {}, [
+            fieldEl('Dato', dateInput),
+            ...inputs.map(([, label], i) => fieldEl(label, numberInputs[i])),
+            error
+        ]),
+        actions: [{label:'Annullér', variant:'secondary'}, {label:'Gem ændringer', variant:'primary', onClick: save}]
+    });
+    numberInputs[0]?.focus();
+}

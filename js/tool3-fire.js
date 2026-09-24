@@ -142,7 +142,7 @@ showReal3Input.addEventListener('input', update3);
 update3();
 // ---- Hent mine tal fra Formue og Budget ----
 
-/** Tallene, FIRE-beregneren kan hente: formuen (felter eller seneste øjebliksbillede) og budgettet. */
+/** Tallene, FIRE-beregneren kan hente: formuen (felter eller seneste datapunkt) og budgettet. */
 function fireImportSources(){
     const figures = currentNetWorthFigures();
     const {sum, groupSums} = budgetSummary(getBudgetCategories(), loadBudgetItems());
@@ -179,7 +179,7 @@ function openFireImport(){
         box, el('span', {className:'toggle-text'}, [label]), el('span', {className:'import-amount', textContent: amount})
     ]);
     const source = figures.fromSnapshot
-        ? `Fra dit seneste øjebliksbillede (${formatDanishDate(figures.date)}).`
+        ? `Fra din seneste månedsstatus (${formatDanishDate(figures.date)}).`
         : 'Fra felterne i Formue.';
 
     const content = el('div', {}, [
