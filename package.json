@@ -1,6 +1,7 @@
 {
   "name": "stock-portfolio-tool",
   "private": true,
+  "license": "UNLICENSED",
   "description": "Danske økonomiværktøjer: ASK vs. aktiedepot, månedlig opsparing, FIRE, porteføljetracker, budget og formue.",
   "scripts": {
     "test": "node --test 'tests/**/*.test.js'",

@@ -129,4 +129,4 @@ The speech-bubble button under the settings gear opens a feedback form. Messages
 
 ## License
 
-[MIT](LICENSE) — free to use, copy, modify and distribute, including commercially, as long as the original copyright notice is included.
+© 2026 Simon Grynnerup Skouboe. **All rights reserved** — see [LICENSE](LICENSE). You are welcome to use the website, but the code, design and text may not be copied, modified or redistributed without permission. Versions published before 24 September 2026 were MIT-licensed, and copies obtained under that license stay under it.
