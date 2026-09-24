@@ -101,7 +101,7 @@
 
     <label class="toggle-row" id="doubleDeductionRow" style="margin-top:14px; margin-bottom:20px;">
         <input type="checkbox" id="doubleDeduction">
-        Dobbelt fradrag (du er gift med en, der ikke selv investerer, og kan derfor udnytte begges <span data-rule="AKT_TAX_LOW">27</span>%-grænse)
+        Dobbelt fradrag (du er gift, og din ægtefælle bruger ikke selv sin del af <span data-rule="AKT_TAX_LOW">27</span>%-grænsen)
     </label>
 
     <div id="tool1">
@@ -893,6 +893,7 @@
                 <div class="stat"><div class="label">Kun minimumsydelser</div><div class="value" id="debtFreeMinimum">–</div><div class="sub" id="debtFreeMinimumSub"></div></div>
                 <div class="stat"><div class="label">Du sparer i rente</div><div class="value akt" id="debtSaved">–</div><div class="sub">med lavine frem for kun minimum</div></div>
             </div>
+            <p class="compare-note" id="debtCompare" role="status"></p>
             <div class="panel">
                 <div class="eyebrow">Hvornår er hvert lån betalt ud?</div>
                 <div class="data-table-wrap">
@@ -972,14 +973,17 @@
                 <div class="stat">
                     <div class="label">Behov (mål: ≤50%)</div>
                     <div class="value ask" id="ruleBehov">0%</div>
+                    <div class="sub" id="ruleBehovSum">0 kr. pr. måned</div>
                 </div>
                 <div class="stat">
                     <div class="label">Ønsker (mål: ≤30%)</div>
                     <div class="value ask" id="ruleOnsker">0%</div>
+                    <div class="sub" id="ruleOnskerSum">0 kr. pr. måned</div>
                 </div>
                 <div class="stat">
                     <div class="label">Opsparing (mål: ≥20%)</div>
                     <div class="value ask" id="ruleOpsparing">0%</div>
+                    <div class="sub" id="ruleOpsparingSum">0 kr. pr. måned</div>
                 </div>
             </div>
         </div>

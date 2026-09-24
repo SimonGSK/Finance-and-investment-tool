@@ -181,8 +181,9 @@ function formatPct(fraction, digits = 1){
  */
 function formatDuration(months){
     const y = Math.floor(months / 12), m = months % 12;
-    if(!y) return `${m} mdr.`;
-    return m ? `${y} år og ${m} mdr.` : `${y} år`;
+    const mdr = `${m} ${m === 1 ? 'md.' : 'mdr.'}`;
+    if(!y) return mdr;
+    return m ? `${y} år og ${mdr}` : `${y} år`;
 }
 
 /**

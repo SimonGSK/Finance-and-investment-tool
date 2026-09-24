@@ -494,7 +494,9 @@ input[type=range]::-moz-range-thumb{
     margin-top:var(--s2);
     font-family:var(--font-mono);
 }
-.value.negative{
+/* .stat foran, så den slår farven fra .stat .value.ask/.akt (fx 50/30/20 uden for målet). */
+.value.negative,
+.stat .value.negative{
     color:var(--cross);
 }
 
@@ -902,8 +904,10 @@ table.data-table td.is-negative{ color:var(--ask); }
 .debt-name:focus{ outline:none; border-bottom-color:var(--akt); }
 .debt-row-fields{ display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:var(--s2); }
 .debt-field{ display:flex; flex-direction:column; gap:var(--s1); min-width:0; }
-.debt-field-label{ font-size:11.5px; color:var(--subtle); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.debt-field .number-input{ margin:0; padding:8px 10px; }
+/* Etiketterne må gerne fylde to linjer; felterne står stadig på linje, fordi de skubbes ned i bunden. */
+.debt-field-label{ font-size:11.5px; line-height:1.35; color:var(--subtle); }
+.debt-field .number-input{ margin:0; margin-top:auto; padding:8px 10px; }
+.compare-note{ max-width:1600px; margin:0 0 var(--s5); font-size:14px; line-height:1.6; color:var(--muted); }
 
 /* ---- Monthly status ---- */
 .monthly-status-btn{ margin-left:auto; }

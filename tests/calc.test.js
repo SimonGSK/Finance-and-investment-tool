@@ -710,3 +710,25 @@ describe('budget til download', () => {
         assert.equal(rows.find(r => r[0] === 'Penge tilbage'), undefined);
     });
 });
+
+describe('lavine mod snebold', () => {
+    const run = (debts, s) => calc.simulateDebtPayoff(debts, 1000, s);
+    test('samme rækkefølge giver præcis det samme', () => {
+        const debts = [{name:'Kreditkort', balance:15000, rate:0.22, minPayment:500}, {name:'Billån', balance:60000, rate:0.065, minPayment:1500}];
+        const c = calc.compareDebtStrategies(run(debts, 'avalanche'), run(debts, 'snowball'));
+        assert.equal(c.identical, true);
+    });
+    test('forskellig rækkefølge: lavine er billigst, snebold giver den første sejr', () => {
+        const debts = [{name:'Kreditkort', balance:25000, rate:0.22, minPayment:600}, {name:'Forbrugslån', balance:8000, rate:0.12, minPayment:300}, {name:'Billån', balance:60000, rate:0.065, minPayment:1500}];
+        const c = calc.compareDebtStrategies(run(debts, 'avalanche'), run(debts, 'snowball'));
+        assert.equal(c.identical, false);
+        assert.ok(c.interestSaved > 800 && c.interestSaved < 1000, String(c.interestSaved));
+        assert.equal(c.monthsSaved, 1);
+        assert.deepEqual([c.firstSnowball.name, c.firstSnowball.month], ['Forbrugslån', 7]);
+        assert.deepEqual([c.firstAvalanche.name, c.firstAvalanche.month], ['Kreditkort', 19]);
+    });
+    test('ingen sammenligning, hvis gælden aldrig bliver betalt ud', () => {
+        const debts = [{name:'Lån', balance:100000, rate:0.2, minPayment:100}];
+        assert.equal(calc.compareDebtStrategies(calc.simulateDebtPayoff(debts, 0, 'avalanche'), calc.simulateDebtPayoff(debts, 0, 'snowball')), null);
+    });
+});
