@@ -79,6 +79,7 @@
                 <button class="btn btn-secondary" style="width:100%; margin-bottom:8px;" onclick="exportAllData()">Download alt (JSON)</button>
                 <button class="btn btn-secondary" style="width:100%;" onclick="document.getElementById('allDataUpload').click()">Upload alt (JSON)</button>
                 <input type="file" id="allDataUpload" accept=".json" style="display:none;" onchange="importAllData(event)">
+                <button class="btn btn-secondary" style="width:100%; margin-top:8px;" type="button" onclick="printOverview()">Udskriv overblik (PDF)</button>
 
                 <div id="installAppRow" hidden>
                     <div class="eyebrow" style="margin-top:18px; margin-bottom:10px;">App</div>
@@ -945,7 +946,10 @@
             <summary>Hvad gør dette værktøj?</summary>
             <p class="tool-intro">Byg dit budget op fra bunden, eller indtast et samlet beløb og fordel det ud på kategorier for at se, hvor meget der er tilbage.</p>
         </details>
-        <div class="tool-actions"><button class="btn btn-secondary btn-sm" type="button" onclick="downloadBudget()">Download budget</button></div>
+        <div class="tool-actions">
+            <button class="btn btn-secondary btn-sm" type="button" onclick="printOverview()">Udskriv overblik</button>
+            <button class="btn btn-secondary btn-sm" type="button" onclick="downloadBudget()">Download budget</button>
+        </div>
     </div>
 
     <button class="btn btn-secondary" onclick="resetBudget()">Nulstil felter</button>
@@ -1331,11 +1335,14 @@
     <script src="js/navigation.js"></script>
     <script src="js/feedback.js"></script>
     <script src="js/pwa.js"></script>
+    <script src="js/report.js"></script>
     <script src="js/budget.js"></script>
     <script src="js/net-worth.js"></script>
     <script src="js/monthly-status.js"></script>
     <script src="js/goals.js"></script>
     <script src="js/theme.js"></script>
     <script src="js/share.js"></script>
+    <!-- Udfyldes af printOverview() og vises kun ved udskrift -->
+    <div id="printReport" aria-hidden="true"></div>
 </body>
 </html>

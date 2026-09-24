@@ -471,3 +471,27 @@ test('påmindelse om månedsstatus: vises ved månedsskiftet og åbner skemaet p
     await page.reload();
     await expect(banner).toBeHidden();
 });
+
+test('udskriv overblik: rapporten har formue, budget, lån og mål og er det eneste, der udskrives', async ({ page }) => {
+    await page.addInitScript(() => { window.print = () => { window.__printed = true; }; });
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        localStorage.setItem('netWorthData', JSON.stringify({netCatKontanter:'50000', netCatAktier:'250000', netCatPension:'0', netCatFrivaerdi:'0', netCatAndet:'0', netDebt:'20000'}));
+        localStorage.setItem('budgetItems', JSON.stringify({catBolig:[{label:'Husleje', amount:9000}], catOpsparing:[{label:'Aktier', amount:3000}]}));
+        localStorage.setItem('debtPayoffData', JSON.stringify({extra: 500, debts:[{name:'Billån', balance:20000, rate:6, minPayment:1000}]}));
+        localStorage.setItem('netWorthGoals', JSON.stringify([{id:'g1', name:'Første million', metric:'value', target:1000000, deadline:null}]));
+    });
+    await page.reload();
+    await page.getByRole('button', { name: 'Budget', exact: true }).click();
+    await page.getByRole('button', { name: 'Udskriv overblik' }).click();
+    expect(await page.evaluate(() => window.__printed)).toBe(true);
+    const report = page.locator('#printReport');
+    await expect(report.locator('h2')).toHaveText(['Formue', 'Budget', 'Lån', 'Mål']);
+    await expect(report).toContainText('Nettoformue');
+    await expect(report).toContainText('280.000 kr.');
+    await expect(report).toContainText('Første million');
+
+    await page.emulateMedia({ media: 'print' });
+    await expect(report).toBeVisible();
+    await expect(page.locator('.top-tabs')).toBeHidden();
+});

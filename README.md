@@ -33,7 +33,7 @@ The FIRE calculator can **fetch your numbers** from Formue (cash and shares by d
 
 ### Budget
 
-Build a monthly budget from itemised posts in 15 categories plus your own, each edited in its own dialog. Posts can be monthly, quarterly, half-yearly or yearly. Shows the split across needs / wants / savings against the 50/30/20 rule, and projects yearly savings. **Download budget** saves a CSV (opens in Excel or Numbers) with every post per month and per year plus a 50/30/20 summary, e.g. to show a financial advisor.
+Build a monthly budget from itemised posts in 15 categories plus your own, each edited in its own dialog. Posts can be monthly, quarterly, half-yearly or yearly. Shows the split across needs / wants / savings against the 50/30/20 rule, and projects yearly savings. **Udskriv overblik** prints (or saves as PDF) a one-page overview of net worth, budget, loans, goals and portfolio; **Download budget** saves a CSV (opens in Excel or Numbers) with every post per month and per year plus a 50/30/20 summary, e.g. to show a financial advisor.
 
 ### Formue
 
@@ -106,6 +106,7 @@ js/goals.js             Formue goals
 js/navigation.js        Tab switching, settings panel, full backup import/export
 js/feedback.js          Feedback button and form (sent via Formspree)
 js/pwa.js               "Install as app" button; registers the service worker
+js/report.js            Printable one-page overview (Udskriv overblik)
 sw.js                   Service worker: network first, cached copy offline
 manifest.webmanifest    App name, colours and icons
 icons/                  App icons (icon.svg is the source; PNGs rendered from it)
