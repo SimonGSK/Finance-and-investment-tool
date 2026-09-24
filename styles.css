@@ -1111,3 +1111,26 @@ table.data-table td.is-negative{ color:var(--ask); }
     .report-note{ margin:5pt 0 0; color:#444; font-size:9.5pt; }
     .report-foot{ margin-top:16pt; font-size:8.5pt; color:#777; border-top:1px solid #ddd; padding-top:6pt; }
 }
+
+/* ---- ETF'er og fonde ---- */
+.etf-lookup{ max-width:1600px; margin-bottom:var(--s5); }
+.etf-search{ font-family:var(--font-sans); }
+.etf-results:empty{ display:none; }
+.etf-hit-list{ list-style:none; margin:0 0 var(--s3); padding:0; }
+.etf-hit{ display:grid; grid-template-columns:1fr auto; gap:2px var(--s3); align-items:center; padding:var(--s3) 0; border-bottom:1px solid var(--border); }
+.etf-hit-name{ font-weight:600; color:var(--text); }
+.etf-hit-meta{ grid-column:1; font-family:var(--font-mono); font-size:12px; color:var(--muted); }
+.etf-badge{ grid-row:1 / span 2; grid-column:2; font-size:12px; font-weight:600; color:var(--ask); border:1px solid var(--ask); border-radius:var(--r-pill); padding:3px 10px; white-space:nowrap; }
+.etf-verdict{ margin:var(--s3) 0 0; padding:var(--s3) var(--s4); border-radius:var(--r-md); background:var(--panel-sunken); font-size:13.5px; line-height:1.6; border:1px solid var(--border); }
+.etf-verdict p{ margin:0 0 var(--s2); }
+.etf-verdict p:last-child{ margin-bottom:0; }
+.etf-verdict.is-on{ border-color:var(--ask); }
+.etf-verdict.is-off{ border-color:var(--cross); }
+@media (max-width:640px){
+    .etf-hit{ grid-template-columns:1fr; }
+    .etf-badge{ grid-row:auto; grid-column:1; justify-self:start; margin-top:var(--s1); }
+}
+/* Regeltabellen er tekst, ikke tal: venstrestillet og i brødtekst-skriften. */
+table.data-table.etf-rules th, table.data-table.etf-rules td{ text-align:left; font-family:var(--font-sans); font-size:13px; line-height:1.45; vertical-align:top; }
+table.data-table.etf-rules td:first-child{ color:var(--text); font-weight:600; }
+.stat.is-dim .value{ opacity:0.45; }

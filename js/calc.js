@@ -15,6 +15,11 @@ const TAX_LIMIT_27 = 79400;
 const ASK_TAX = 0.17;
 const AKT_TAX_LOW = 0.27;
 const AKT_TAX_HIGH = 0.42;
+// ETF'er og fonde, der ikke står på positivlisten, beskattes som kapitalindkomst:
+// ca. 37 % (kommune- og bundskat), op til ca. 42 % for positiv nettokapitalindkomst
+// over 55.000 kr. (110.000 kr. for ægtepar), hvis den samlede indkomst giver mellemskat.
+const CAPITAL_TAX_RATE = 0.37;
+const CAPITAL_INCOME_LIMIT = 55000;
 
 // Bolig. Tinglysningsafgift pr. 1. januar 2026 (skat.dk): skøde 1.850 kr. + 0,6 % af
 // prisen, pant 1.825 kr. + 1,25 % af lånets hovedstol.
@@ -451,6 +456,69 @@ function budgetExportRows({categories, groups, items, frequencies, total = 0}){
         rows.push(['Penge tilbage', '', '', '', '', csvNumber(total - sum), csvNumber((total - sum) * 12), '', '']);
     }
     return rows;
+}
+
+// ==== ETF'er og fonde: fire måder at blive beskattet på ====
+
+/**
+ * Samme investering - startbeløb, månedlige indskud og et fast årligt afkast -
+ * beskattet på fire måder. Skatten betales af investeringen, og tab føres
+ * videre til de næste år.
+ *  - abis: ETF/fond på positivlisten i frie midler: lager, aktieindkomst 27/42 %
+ *  - capital: ETF/fond ikke på listen: lager, kapitalindkomst (capitalTaxRate)
+ *  - realisation: aktier eller dansk udloddende aktiefond: 27/42 % først ved salg
+ *    (her: alt sælges på én gang til sidst; udbytter er ikke med)
+ *  - ask: aktiesparekonto: lager, 17 %
+ * @param {{start:number, monthly:number, years:number, yearlyReturn:number,
+ *   capitalTaxRate?:number, taxLimit?:number}} p yearlyReturn som faktor, fx 1.07
+ * @returns {{deposited:number, askOverLimit:boolean, modes:Object<'abis'|'capital'|'realisation'|'ask',
+ *   {values:number[], finalAfterTax:number, totalTax:number}>}} values[år] = værdi efter skat
+ *   (for realisation: hvad man ville stå med, hvis man solgte det år)
+ */
+function simulateFundTaxation({start, monthly, years, yearlyReturn, capitalTaxRate = CAPITAL_TAX_RATE, taxLimit = TAX_LIMIT_27}){
+    const m = monthlyReturnFactor(yearlyReturn);
+    const aktTax = gain => Math.min(gain, taxLimit) * AKT_TAX_LOW + Math.max(0, gain - taxLimit) * AKT_TAX_HIGH;
+    const deposited = start + monthly * 12 * years;
+
+    // Lagerbeskatning: årets gevinst (fratrukket tidligere tab) beskattes hvert år.
+    const lager = taxOf => {
+        let value = start, lossCarry = 0, totalTax = 0;
+        const values = [start];
+        for(let y = 1; y <= years; y++){
+            const begin = value;
+            for(let i = 0; i < 12; i++){ value = (value + monthly) * m; }
+            const net = value - begin - monthly * 12 - lossCarry;
+            const tax = net > 0 ? taxOf(net) : 0;
+            lossCarry = net > 0 ? 0 : -net;
+            value -= tax; totalTax += tax;
+            values.push(value);
+        }
+        return {values, finalAfterTax: value, totalTax};
+    };
+
+    // Realisation: ingen skat undervejs; hvert års værdi vises som "hvis du solgte nu".
+    const realisation = (() => {
+        let value = start, paidIn = start, lastTax = 0;
+        const values = [start];
+        for(let y = 1; y <= years; y++){
+            for(let i = 0; i < 12; i++){ value = (value + monthly) * m; }
+            paidIn += monthly * 12;
+            lastTax = aktTax(Math.max(0, value - paidIn));
+            values.push(value - lastTax);
+        }
+        return {values, finalAfterTax: values[years], totalTax: years ? lastTax : 0};
+    })();
+
+    return {
+        deposited,
+        askOverLimit: deposited > ASK_DEPOSIT_LIMIT,
+        modes: {
+            abis: lager(aktTax),
+            capital: lager(gain => gain * capitalTaxRate),
+            realisation,
+            ask: lager(gain => gain * ASK_TAX)
+        }
+    };
 }
 
 // ==== Formue: felterne eller seneste øjebliksbillede ====
@@ -1372,6 +1440,7 @@ function goalProgress(g){
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
+        CAPITAL_TAX_RATE, CAPITAL_INCOME_LIMIT, simulateFundTaxation,
         monthlyStatusReminder,
         pickNetWorthFigures,
         compareDebtStrategies,

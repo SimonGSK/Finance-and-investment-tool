@@ -10,6 +10,8 @@ All data stays in your browser's `localStorage`. There are no accounts, no serve
 
 ### Investering
 
+**ETF'er og fonde** looks up a fund by ISIN or name on Skattestyrelsens positive list (5.000+ funds, loaded only when you search) and explains the tax, then compares the same investment after tax: on the list (lager, 27/42 %), not on the list (capital income), shares taxed on sale, and ASK.
+
 The FIRE calculator can **fetch your numbers** from Formue (cash and shares by default; pension and home equity can be ticked) and your yearly spending and monthly saving from the budget.
 
 
@@ -95,6 +97,8 @@ js/tool2-monthly.js     Aktiedepot with monthly contributions
 js/tool3-fire.js        FIRE calculator
 js/tool4-portfolio.js   Portfolio tracker
 js/pension.js           Pension
+js/etf-tax.js           ETF'er og fonde: positive-list lookup and tax comparison
+data/positivliste.json  Skattestyrelsens positive list (built by scripts/build-positivliste.py)
 js/loan-capacity.js     Hvor meget kan jeg låne?
 js/buy-vs-rent.js       Køb eller leje?
 js/debt-payoff.js       Gældsafvikling
@@ -119,6 +123,14 @@ src/Main.java           The original console prototype of tools 1 and 2 (Java 21
 ## Updating for a new tax year
 
 Every yearly figure — ASK limit, 27%/42% threshold, tinglysning, PAL, pension limits, lending rules, interest deduction — sits in one block at the top of [`js/calc.js`](js/calc.js). The explanatory text on the page reads its numbers from that block (`data-rule` in the HTML), so a yearly update is: edit the block, adjust the tests that pin exact values, run `npm test`.
+
+**The positive list** (Skattestyrelsens *Liste over aktiebaserede investeringsselskaber*) is published as an Excel file, usually updated during the year. To refresh `data/positivliste.json`, download the newest file from [skat.dk](https://skat.dk/erhverv/ekapital/vaerdipapirer/beviser-og-aktier-i-investeringsforeninger-og-selskaber-ifpa) and run:
+
+```
+python3 scripts/build-positivliste.py <file.xlsx> <year> <published-date>
+```
+
+It uses only Python's standard library and keeps the ISIN, name, tax residence and the first year each fund was registered.
 
 ## Sharing a calculation
 
