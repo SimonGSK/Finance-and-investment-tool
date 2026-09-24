@@ -36,6 +36,10 @@ Build a monthly budget from itemised posts in 15 categories plus your own, each 
 
 Enter your assets (cash, stocks, pension, home equity, other) and debt to get your net worth and liquid wealth. Save dated snapshots to build a history — or use **Månedsstatus** to save the same date into both the Formue history and the portfolio tracker in one go — see how the composition has changed over time, set your own goals (with the monthly saving needed to reach them by a deadline and whether your pace over the last year is enough), track milestones, and compare your net worth to other Danes of exactly your age using CEPOS's per-age table (2024 data at 2026 levels, pension counted after 40% tax, as CEPOS does). The full table opens with your age highlighted. Plus a light-hearted "your wealth equals *n* bananas / iPhones / Porsches" comparison.
 
+### Everywhere
+
+Every field has a small **?** that explains it, and each tool has a foldable *Hvad gør dette værktøj?* box. Number fields accept simple arithmetic — type `12.500 + 3.200` or `450 * 12` and the result is filled in when you press Enter or leave the field. Danish (`1.000`, `2,5`) and English (`2.5`) decimals both work, and the arrow keys still step the value.
+
 ### Settings
 
 Light or dark theme (follows the system by default), and a one-file JSON backup/restore of all Budget, Formue and Portefølje data.
@@ -81,6 +85,8 @@ styles.css              Design tokens (dark + light themes), layout, components
 js/calc.js              Pure calculation logic - the only file the tests import
 js/shared.js            DOM helpers: slider/number binding, CSV download, chart colours and options
 js/ui.js                Dialogs, confirmations, undo toasts, Danish date formatting
+js/field-help.js        The "?" explanations next to each field
+js/number-fields.js     Number fields you can calculate in (12.500 + 3.200, 450 * 12)
 js/tool1-ask-akt.js     ASK vs. Aktiedepot
 js/tool2-monthly.js     Aktiedepot with monthly contributions
 js/tool3-fire.js        FIRE calculator
@@ -93,6 +99,7 @@ js/monthly-status.js    Månedsstatus (saves to both trackers)
 js/share.js             Shareable calculator links
 js/budget.js            Budget
 js/net-worth.js         Formue: net worth, history, milestones, comparison
+js/goals.js             Formue goals
 js/navigation.js        Tab switching, settings panel, full backup import/export
 js/theme.js             Theme switching and re-theming charts
 tests/calc.test.js      Unit tests for calc.js

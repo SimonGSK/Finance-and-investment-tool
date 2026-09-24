@@ -633,3 +633,41 @@ describe('mål', () => {
         assert.equal(noDeadline.neededPerMonth, null);
     });
 });
+
+describe('regnestykker i talfelter', () => {
+    const { parseAmount, isExpression } = calc;
+    test('almindelige tal på dansk og med punktum', () => {
+        assert.equal(parseAmount('1000'), 1000);
+        assert.equal(parseAmount('1.000'), 1000);
+        assert.equal(parseAmount('1.000.000'), 1000000);
+        assert.equal(parseAmount('2,5'), 2.5);
+        assert.equal(parseAmount('2.5'), 2.5);
+        assert.equal(parseAmount('0.125'), 0.125);
+        assert.equal(parseAmount('1.000,50'), 1000.5);
+        assert.equal(parseAmount('12 500 kr.'), 12500);
+        assert.equal(parseAmount('-300'), -300);
+    });
+    test('de fire regnearter med rigtig rækkefølge og parenteser', () => {
+        assert.equal(parseAmount('12.500 + 3.200'), 15700);
+        assert.equal(parseAmount('450*12'), 5400);
+        assert.equal(parseAmount('100 + 200 * 3'), 700);
+        assert.equal(parseAmount('(100 + 200) * 3'), 900);
+        assert.equal(parseAmount('60000/12'), 5000);
+        assert.equal(parseAmount('5.000 − 1.200'), 3800);
+        assert.equal(parseAmount('3 × 2,5'), 7.5);
+        assert.equal(parseAmount('0,1 + 0,2'), 0.3);
+        assert.equal(parseAmount('10 - -5'), 15);
+    });
+    test('ugyldigt eller ufuldstændigt giver null', () => {
+        for(const bad of ['', '   ', '100 +', '*5', '(1+2', '1+2)', 'abc', '10/0', '1,2,3', '1.2.3', '1.00,5', '5 5 +']){
+            assert.equal(parseAmount(bad), null, bad);
+        }
+    });
+    test('genkender regnestykker', () => {
+        assert.equal(isExpression('100+200'), true);
+        assert.equal(isExpression('(5)'), true);
+        assert.equal(isExpression('-300'), false);
+        assert.equal(isExpression('1.000,50'), false);
+        assert.equal(isExpression('2.5'), false);
+    });
+});

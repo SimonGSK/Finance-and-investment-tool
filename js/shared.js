@@ -30,7 +30,7 @@ function CHART_COLOR(name){
 // 'true' til sidst (capture-fasen) er nødvendigt, fordi 'focus' ikke bobler
 // op igennem DOM'et som de fleste andre events.
 document.addEventListener('focus', function(e){
-    if(e.target.matches && e.target.matches('input[type="number"].number-input')){
+    if(e.target.matches && e.target.matches('input[data-number]')){
         e.target.select();
     }
 }, true);

@@ -973,6 +973,7 @@ table.data-table td.is-negative{ color:var(--ask); }
 .change-to{ color:var(--text); }
 .field-error{ margin-top:var(--s2); font-size:12.5px; color:var(--cross); }
 .number-input[aria-invalid="true"]{ border-color:var(--cross); }
+.calc-hint{ margin-top:var(--s2); font-family:var(--font-mono); font-size:12.5px; color:var(--akt); }
 
 /* ---- Toast ---- */
 .toast-region{
