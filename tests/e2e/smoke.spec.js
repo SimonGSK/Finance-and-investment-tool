@@ -289,3 +289,37 @@ test('budgettet kan downloades som CSV til fx en rådgiver', async ({ page }) =>
     expect(text).toContain('"Behov";"Bolig";"Husleje";"9000";"pr. måned";"9000";"108000"');
     expect(text).toContain('"Penge tilbage";"";"";"";"";"3000";"36000"');
 });
+
+test('feedback: knappen er skjult uden adresse, og en besked sendes med værktøjets navn', async ({ page }) => {
+    await page.goto('/index.html');
+    await expect(page.locator('#feedbackBtn')).toBeHidden();
+
+    let sent = null;
+    await page.route('https://formspree.io/f/test', route => {
+        sent = route.request().postDataJSON();
+        route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' });
+    });
+    await page.evaluate(() => { FEEDBACK.endpoint = 'https://formspree.io/f/test'; updateFeedbackButton(); });
+    await page.getByRole('button', { name: 'Bolig & lån' }).click();
+    await page.getByRole('button', { name: 'Giv feedback' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Giv feedback' });
+    await dialog.getByRole('button', { name: 'Send' }).click();
+    await expect(dialog.locator('.field-error')).toHaveText('Skriv lidt om, hvad du tænker.');
+    await dialog.getByLabel('Hvad handler det om?').selectOption('Fejl');
+    await dialog.getByLabel('Din besked').fill('Grafen blinker, når jeg skifter fane.');
+    await dialog.getByRole('button', { name: 'Send' }).click();
+    await expect(dialog).toBeHidden();
+    await expect(page.locator('.toast')).toContainText('Tak for din feedback');
+    expect(sent).toMatchObject({ Type: 'Fejl', Besked: 'Grafen blinker, når jeg skifter fane.', _subject: 'Feedback: Fejl' });
+    expect(sent['Værktøj']).toMatch(/^Bolig & lån \/ /);
+    expect(sent.email).toBeUndefined();
+
+    // Fejler afsendelsen, bliver dialogen og teksten stående.
+    await page.route('https://formspree.io/f/test', route => route.fulfill({ status: 500, body: '' }));
+    await page.getByRole('button', { name: 'Giv feedback' }).click();
+    await dialog.getByLabel('Din besked').fill('Anden besked');
+    await dialog.getByRole('button', { name: 'Send' }).click();
+    await expect(dialog.locator('.field-error')).toContainText('kunne ikke sendes');
+    await expect(dialog.getByLabel('Din besked')).toHaveValue('Anden besked');
+    await expect(dialog.getByRole('button', { name: 'Send' })).toBeEnabled();
+});
