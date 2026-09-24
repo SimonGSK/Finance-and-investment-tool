@@ -101,6 +101,7 @@ js/budget.js            Budget
 js/net-worth.js         Formue: net worth, history, milestones, comparison
 js/goals.js             Formue goals
 js/navigation.js        Tab switching, settings panel, full backup import/export
+js/feedback.js          Feedback button and form (sent via Formspree)
 js/theme.js             Theme switching and re-theming charts
 tests/calc.test.js      Unit tests for calc.js
 tests/e2e/              Browser tests (Playwright)
@@ -114,6 +115,10 @@ Every yearly figure — ASK limit, 27%/42% threshold, tinglysning, PAL, pension 
 ## Sharing a calculation
 
 Each calculator has a **Del beregning** button that copies a link reopening it with the same inputs. The inputs live after the `#` in the link, which browsers never send to a server. The trackers, budget and debt list can't be shared this way — they're personal data, and a link must never overwrite what someone has saved.
+
+## Feedback
+
+The speech-bubble button under the settings gear opens a feedback form. Messages are sent to [Formspree](https://formspree.io), which emails them on and keeps them in a dashboard. Only what the visitor writes is sent (plus which tool they were on) — never their budget or other numbers. The button is hidden until an endpoint is set: create a free form on formspree.io and put its address in `FEEDBACK.endpoint` at the top of `js/feedback.js`.
 
 ## Assumptions and disclaimer
 
