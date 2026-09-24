@@ -139,6 +139,11 @@ function attachFieldHelp(label, text){
         }});
 
     if(label.classList.contains('toggle-row')){
+        // Teksten samles i ét element; ellers bliver fx årets sats (<span data-rule>) sin egen kolonne i flex-rækken.
+        if(!label.querySelector(':scope > .toggle-text')){
+            const textNodes = [...label.childNodes].filter(n => !(n.nodeType === 1 && n.matches('input')));
+            label.append(el('span', {className:'toggle-text'}, textNodes));
+        }
         // Afkrydsningsfelter: labelen omslutter feltet, så knap og forklaring lægges i en fælles ramme.
         const wrap = el('div', {className:'toggle-wrap'});
         if(label.id){ wrap.id = label.id; label.removeAttribute('id'); }

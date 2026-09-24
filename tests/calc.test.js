@@ -732,3 +732,37 @@ describe('lavine mod snebold', () => {
         assert.equal(calc.compareDebtStrategies(calc.simulateDebtPayoff(debts, 0, 'avalanche'), calc.simulateDebtPayoff(debts, 0, 'snowball')), null);
     });
 });
+
+describe('formuetal: felterne eller seneste øjebliksbillede', () => {
+    const history = [
+        {date:'2026-08-31', value:520000, liquid:320000, netCatKontanter:110000, netCatAktier:210000, netCatPension:230000, netCatFrivaerdi:0, netCatAndet:0, debt:30000},
+        {date:'2026-07-31', value:500000, liquid:300000, netCatKontanter:100000, netCatAktier:200000, netCatPension:200000, netCatFrivaerdi:0, netCatAndet:0, debt:0}
+    ];
+    const zero = {netCatKontanter:0, netCatAktier:0, netCatPension:0, netCatFrivaerdi:0, netCatAndet:0, debt:0};
+
+    test('tomme felter bruger det seneste øjebliksbillede', () => {
+        const f = calc.pickNetWorthFigures(zero, history);
+        assert.equal(f.fromSnapshot, true);
+        assert.equal(f.date, '2026-08-31');
+        assert.equal(f.netCatAktier, 210000);
+        assert.equal(f.value, 520000);
+        assert.equal(f.liquid, 320000);
+        assert.equal(f.assets, 550000);
+    });
+    test('udfyldte felter vinder, også hvis kun gælden er udfyldt', () => {
+        const f = calc.pickNetWorthFigures({...zero, netCatAktier:50000}, history);
+        assert.equal(f.fromSnapshot, false);
+        assert.equal(f.value, 50000);
+        assert.equal(calc.pickNetWorthFigures({...zero, debt:1000}, history).value, -1000);
+    });
+    test('uden historik er det bare felterne', () => {
+        const f = calc.pickNetWorthFigures(zero, []);
+        assert.equal(f.fromSnapshot, false);
+        assert.equal(f.value, 0);
+    });
+    test('ældre øjebliksbilleder med kun value virker også', () => {
+        const f = calc.pickNetWorthFigures(zero, [{date:'2025-12-31', value:400000}]);
+        assert.equal(f.value, 400000);
+        assert.equal(f.liquid, 0);
+    });
+});

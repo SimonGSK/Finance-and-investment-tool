@@ -86,19 +86,39 @@ function loadNetWorthFromStorage(){
 }
 
 /**
- * @returns {number} aktiver minus gæld ud fra felternes aktuelle værdier
+ * Tallene, Formue-siden regner med: felterne, eller det seneste
+ * øjebliksbillede, hvis felterne er tomme (se pickNetWorthFigures i calc.js).
  */
-function computeLiveNetWorth(){
-    const assetsTotal = NET_WORTH_CATEGORIES.reduce((sum, cat) => sum + (parseFloat(document.getElementById(cat.id).value) || 0), 0);
-    const debt = parseFloat(document.getElementById('netDebt').value) || 0;
-    return assetsTotal - debt;
+function currentNetWorthFigures(){
+    const fields = {debt: parseFloat(document.getElementById('netDebt').value) || 0};
+    NET_WORTH_CATEGORIES.forEach(cat => { fields[cat.id] = parseFloat(document.getElementById(cat.id).value) || 0; });
+    return pickNetWorthFigures(fields, readNetWorthHistory());
 }
 
-/**
- * @returns {number} summen af de likvide aktiver (kontanter og aktier)
- */
+/** @returns {number} aktiver minus gæld */
+function computeLiveNetWorth(){
+    return currentNetWorthFigures().value;
+}
+
+/** @returns {number} summen af de likvide aktiver (kontanter og aktier) */
 function computeLiveLiquidTotal(){
-    return NET_WORTH_CATEGORIES.reduce((sum, cat) => cat.liquid ? sum + (parseFloat(document.getElementById(cat.id).value) || 0) : sum, 0);
+    return currentNetWorthFigures().liquid;
+}
+
+/** Viser, når tallene kommer fra et øjebliksbillede, med en knap til at hente dem ind i felterne. */
+function renderNetWorthSourceNote(figures){
+    const note = document.getElementById('netWorthSourceNote');
+    note.hidden = !figures.fromSnapshot;
+    if(!figures.fromSnapshot) return;
+    note.replaceChildren(
+        `Felterne er tomme, så tallene er fra dit seneste øjebliksbillede (${formatDanishDate(figures.date)}). Udfyld felterne for at se dagens tal. `,
+        el('button', {className:'link-btn', type:'button', textContent:'Hent tallene ind i felterne', onclick: () => {
+            NET_WORTH_CATEGORIES.forEach(cat => { document.getElementById(cat.id).value = figures[cat.id]; });
+            document.getElementById('netDebt').value = figures.debt;
+            updateNetWorth();
+            markSaved('netWorthSaveStatus');
+        }})
+    );
 }
 
 // Sjove, omtrentlige priser - juster frit efter smag. Bruges kun til
@@ -133,8 +153,9 @@ function renderPurchasingPower(netWorth){
  * og købekraft-listen.
  */
 function updateWealthComparison(){
-    const netWorth = computeLiveNetWorth();
-    const pension = parseFloat(document.getElementById('netCatPension').value) || 0;
+    const figures = currentNetWorthFigures();
+    const netWorth = figures.value;
+    const pension = figures.netCatPension;
     const comparable = comparableNetWorth(netWorth, pension);
     const age = readNumber('wealthAge', 30);
     const row = findWealthRow(age);
@@ -184,7 +205,7 @@ function openWealthTable(){
  * sum minus opsparingsposterne.
  */
 function updateEmergencyFund(){
-    const cash = parseFloat(document.getElementById('netCatKontanter').value) || 0;
+    const cash = currentNetWorthFigures().netCatKontanter;
     const {sum, groupSums} = budgetSummary(getBudgetCategories(), loadBudgetItems());
     const expenses = sum - groupSums.opsparing;
     const months = emergencyFundMonths(cash, expenses);
@@ -210,11 +231,10 @@ function updateEmergencyFund(){
  * og gemmer dem. Kaldes ved hver ændring.
  */
 function updateNetWorth(){
-    const values = NET_WORTH_CATEGORIES.map(cat => parseFloat(document.getElementById(cat.id).value) || 0);
-    const assetsTotal = values.reduce((a,b) => a+b, 0);
-    const liquidTotal = computeLiveLiquidTotal();
-    const debt = parseFloat(document.getElementById('netDebt').value) || 0;
-    const netWorth = assetsTotal - debt;
+    const figures = currentNetWorthFigures();
+    const values = NET_WORTH_CATEGORIES.map(cat => figures[cat.id]);
+    const {assets: assetsTotal, liquid: liquidTotal, debt, value: netWorth} = figures;
+    renderNetWorthSourceNote(figures);
 
     document.getElementById('netAssetsTotal').textContent = DK.format(assetsTotal) + ' kr.';
     document.getElementById('netLiquidTotal').textContent = DK.format(liquidTotal) + ' kr.';
@@ -241,7 +261,7 @@ const NET_WORTH_INPUT_IDS = NET_WORTH_CATEGORIES.map(c => c.id).concat(['netDebt
 async function resetNetWorth(){
     const ok = await confirmDialog({
         title:'Nulstil formuefelterne?',
-        message:'Felterne for aktiver og gæld sættes til 0. Din gemte formuehistorik bevares.',
+        message:'Felterne for aktiver og gæld sættes til 0. Din gemte formuehistorik bevares, og har du gemt øjebliksbilleder, viser siden det seneste, indtil du udfylder felterne igen.',
         confirmLabel:'Nulstil', danger:true
     });
     if(!ok) return;
@@ -496,8 +516,8 @@ function renderNetWorthHistory(){
     document.getElementById('netWorthCompositionChartEmpty').style.display = netWorthHasHistory ? 'none' : 'flex';
 
     renderNetWorthComposition(history);
-    renderRecordAndMilestones();
-    if(typeof renderGoals === 'function') renderGoals();
+    // Nøgletal, mål osv. kan bygge på det seneste øjebliksbillede, så de genberegnes også.
+    updateNetWorth();
 }
 
 let netWorthCompositionChart = null;
