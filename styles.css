@@ -1088,3 +1088,26 @@ table.data-table td.is-negative{ color:var(--ask); }
 .import-total strong{ font-family:var(--font-mono); }
 .tool-head .tool-actions{ display:flex; gap:var(--s2); flex-wrap:wrap; justify-content:flex-end; }
 .tool-head .tool-actions .btn + .btn{ margin-left:0; }
+
+/* ---- Udskriv overblik ---- */
+#printReport{ display:none; }
+@media print{
+    @page{ margin:16mm 14mm; }
+    html, body{ background:#fff !important; color:#111 !important; transition:none !important; }
+    body::before, body::after{ display:none !important; }
+    body > *:not(#printReport){ display:none !important; }
+    #printReport{ display:block; color:#111; font-family:var(--font-sans); font-size:10.5pt; line-height:1.45; }
+    .report-head{ display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid #8F661A; padding-bottom:6pt; margin-bottom:12pt; }
+    .report-head h1{ font-family:var(--font-display); font-size:20pt; font-weight:600; margin:0; color:#16213A; }
+    .report-head p{ margin:0; color:#555; }
+    .report-section{ break-inside:avoid; margin-bottom:14pt; }
+    .report-section h2{ font-family:var(--font-display); font-size:13pt; font-weight:600; margin:0 0 6pt; color:#16213A; }
+    .report-table{ width:100%; border-collapse:collapse; }
+    .report-table th{ text-align:left; font-size:8.5pt; text-transform:uppercase; letter-spacing:0.04em; color:#666; border-bottom:1px solid #999; padding:3pt 4pt; }
+    .report-table td{ border-bottom:1px solid #ddd; padding:3pt 4pt; }
+    .report-table td:last-child, .report-table th:last-child{ text-align:right; font-family:var(--font-mono); white-space:nowrap; }
+    .report-table tr.is-total td{ font-weight:600; border-bottom:none; }
+    .report-table tr.is-total:first-of-type td{ border-top:1px solid #999; }
+    .report-note{ margin:5pt 0 0; color:#444; font-size:9.5pt; }
+    .report-foot{ margin-top:16pt; font-size:8.5pt; color:#777; border-top:1px solid #ddd; padding-top:6pt; }
+}
