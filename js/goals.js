@@ -24,11 +24,9 @@ function saveGoals(goals){
     localStorage.setItem('netWorthGoals', JSON.stringify(goals));
 }
 
-/** Nuværende værdi af et mål ud fra Formue-felterne. */
+/** Nuværende værdi af et mål: Formue-felterne, eller det seneste øjebliksbillede, hvis de er tomme. */
 function currentGoalValue(metric){
-    if(metric === 'value') return computeLiveNetWorth();
-    if(metric === 'liquid') return computeLiveLiquidTotal();
-    return parseFloat(document.getElementById(metric).value) || 0;
+    return currentNetWorthFigures()[metric] || 0;
 }
 
 /** Tegner alle mål. Kaldes, når Formue-felterne eller historikken ændres. */

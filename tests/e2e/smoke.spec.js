@@ -358,3 +358,45 @@ test('budget: 50/30/20 viser både andel og beløb pr. måned', async ({ page })
         document.body.append(probe); const c = getComputedStyle(probe).color; probe.remove(); return c;
     }));
 });
+
+test('formue: tomme felter viser det seneste øjebliksbillede overalt, og tallene kan hentes ind', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        localStorage.setItem('netWorthHistory', JSON.stringify([
+            {date:'2026-08-31', value:520000, liquid:320000, netCatKontanter:110000, netCatAktier:210000, netCatPension:230000, netCatFrivaerdi:0, netCatAndet:0, debt:30000}]));
+        localStorage.setItem('netWorthGoals', JSON.stringify([{id:'g1', name:'Aktiemål', metric:'netCatAktier', target:420000, deadline:null}]));
+        localStorage.setItem('budgetItems', JSON.stringify({catBolig:[{label:'Husleje', amount:11000}]}));
+    });
+    await page.reload();
+    await page.getByRole('button', { name: 'Formue', exact: true }).click();
+    const note = page.locator('#netWorthSourceNote');
+    await expect(note).toContainText('seneste øjebliksbillede (31. aug. 2026)');
+    await expect(page.locator('#netWorthTotal')).toHaveText('520.000 kr.');
+    await expect(page.locator('#netLiquidTotal')).toHaveText('320.000 kr.');
+    await expect(page.locator('#bufferMonths')).toHaveText('10,0 måneder');
+    await expect(page.locator('.goal-facts')).toContainText('50 %');
+    await expect(page.locator('#wealthCompareSub')).toContainText('520.000 kr. før');
+
+    await note.getByRole('button', { name: 'Hent tallene ind i felterne' }).click();
+    await expect(page.getByLabel('Aktier & værdipapirer', { exact: true })).toHaveValue('210000');
+    await expect(note).toBeHidden();
+    await expect(page.locator('#netWorthTotal')).toHaveText('520.000 kr.');
+
+    await page.getByLabel('Aktier & værdipapirer', { exact: true }).fill('250000');
+    await expect(page.locator('#netWorthTotal')).toHaveText('560.000 kr.');
+});
+
+test('afkrydsningsfelter: teksten holder sammen, og "?" bliver i panelet', async ({ page }) => {
+    await page.goto('/index.html');
+    for(const n of [1, 2]){
+        await page.evaluate(n => showTool(n), n);
+        const bad = await page.evaluate(() => [...document.querySelectorAll('.toggle-wrap')].filter(w => w.offsetParent).map(w => {
+            const label = w.querySelector('.toggle-row');
+            const btn = w.querySelector('.help-tip').getBoundingClientRect();
+            const panel = w.closest('.panel').getBoundingClientRect();
+            const kids = [...label.children].map(c => c.tagName + '.' + c.className);
+            return {id: w.id || label.textContent.trim().slice(0, 25), outside: btn.right > panel.right - 4, kids};
+        }).filter(r => r.outside || r.kids.length !== 2));
+        expect(bad, `værktøj ${n}`).toEqual([]);
+    }
+});

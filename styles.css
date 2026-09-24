@@ -797,7 +797,13 @@ select.number-input{ font-family:var(--font-sans); cursor:pointer; }
 }
 .help-pop[hidden]{ display:none; }
 .toggle-line{ display:flex; align-items:flex-start; gap:var(--s2); }
-.toggle-line .help-tip{ margin-top:1px; }
+/* Teksten må krympe og ombryde, så "?" altid bliver inde i panelet. */
+.toggle-line > .toggle-row{ flex:1 1 auto; min-width:0; }
+.toggle-line .help-tip{ margin-top:1px; flex-shrink:0; }
+.toggle-text{ min-width:0; }
+.toggle-wrap{ min-width:0; max-width:100%; }
+/* Information, ikke en advarsel: neutral ramme i stedet for notice-rød. */
+.notice.source-note{ max-width:1600px; margin:0 0 var(--s5); border-color:var(--border-strong); background:var(--panel); color:var(--muted); }
 .toggle-wrap .help-pop{ margin:var(--s2) 0 0 0; }
 .toggle-wrap + .toggle-wrap, .toggle-row + .toggle-wrap, .toggle-wrap + .toggle-row{ margin-top:var(--s3); }
 .toggle-wrap + .field{ margin-top:var(--s5); }

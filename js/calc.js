@@ -453,6 +453,38 @@ function budgetExportRows({categories, groups, items, frequencies, total = 0}){
     return rows;
 }
 
+// ==== Formue: felterne eller seneste øjebliksbillede ====
+
+const NET_WORTH_ASSET_KEYS = ['netCatKontanter', 'netCatAktier', 'netCatPension', 'netCatFrivaerdi', 'netCatAndet'];
+const NET_WORTH_LIQUID_KEYS = ['netCatKontanter', 'netCatAktier'];
+
+/**
+ * De formuetal, siden skal vise: felterne, eller - hvis alle felter er tomme
+ * eller 0 og der er gemt øjebliksbilleder - det seneste øjebliksbillede. Så
+ * viser nøgletal, nødopsparing, mål og sammenligning ikke 0, bare fordi
+ * felterne er nulstillet.
+ * @param {Object<string, number>} fields kategorierne (NET_WORTH_ASSET_KEYS) og debt
+ * @param {{date:string}[]} history
+ * @returns {{fromSnapshot:boolean, date:string|null, debt:number, assets:number, liquid:number, value:number}
+ *   & Object<string, number>} ét tal pr. kategori + summerne
+ */
+function pickNetWorthFigures(fields, history){
+    const keys = NET_WORTH_ASSET_KEYS.concat(['debt']);
+    const empty = keys.every(k => !(Number(fields[k]) || 0));
+    const latest = (history || []).slice().sort((a, b) => a.date.localeCompare(b.date)).pop() || null;
+    const fromSnapshot = empty && !!latest;
+    const src = fromSnapshot ? latest : fields;
+
+    const figures = {fromSnapshot, date: fromSnapshot ? latest.date : null};
+    keys.forEach(k => { figures[k] = Number(src[k]) || 0; });
+    const sumOf = list => list.reduce((sum, k) => sum + figures[k], 0);
+    // Ældre øjebliksbilleder kan mangle kategorierne, men har altid value (og ofte liquid).
+    figures.value = fromSnapshot && typeof latest.value === 'number' ? latest.value : sumOf(NET_WORTH_ASSET_KEYS) - figures.debt;
+    figures.liquid = fromSnapshot && typeof latest.liquid === 'number' ? latest.liquid : sumOf(NET_WORTH_LIQUID_KEYS);
+    figures.assets = figures.value + figures.debt;
+    return figures;
+}
+
 // ==== Historik (datapunkter pr. dato) ====
 
 /**
@@ -1311,6 +1343,7 @@ function goalProgress(g){
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
+        pickNetWorthFigures,
         compareDebtStrategies,
         csvNumber, budgetExportRows,
         parseNumberToken, parseAmount, isExpression,
