@@ -14,21 +14,21 @@
 
 const MONTHLY_STATUS_SECTIONS = [
     {title:'Kontanter', fields:[
-        {key:'bank', label:'Bank- og opsparingskonti'},
-        {key:'physical', label:'Fysiske kontanter'},
-        {key:'depotCash', label:'Kontanter i aktiedepot'}
+        {key:'bank', label:'Bank- og opsparingskonti', help:'Saldoen på alle dine bank- og opsparingskonti.'},
+        {key:'physical', label:'Fysiske kontanter', help:'Kontanter i hånden eller derhjemme.'},
+        {key:'depotCash', label:'Kontanter i aktiedepot', help: FIELD_HELP.ptCash}
     ]},
     {title:'Aktiedepot', fields:[
-        {key:'stocks', label:'Værdi af aktier', hint:'Kun aktierne, uden kontanter'},
-        {key:'traded', label:'Købt/solgt i perioden', hint:'Negativ ved nettosalg', flow:true, allowNegative:true},
-        {key:'deposit', label:'Indskud/udbetaling i perioden', hint:'Negativ ved udbetaling', flow:true, allowNegative:true},
-        {key:'dividend', label:'Udbytte efter skat i perioden', flow:true}
+        {key:'stocks', label:'Værdi af aktier', hint:'Kun aktierne, uden kontanter', help: FIELD_HELP.ptStockValue},
+        {key:'traded', label:'Købt/solgt i perioden', hint:'Negativ ved nettosalg', flow:true, allowNegative:true, help: FIELD_HELP.ptTraded},
+        {key:'deposit', label:'Indskud/udbetaling i perioden', hint:'Negativ ved udbetaling', flow:true, allowNegative:true, help: FIELD_HELP.ptDeposit},
+        {key:'dividend', label:'Udbytte efter skat i perioden', flow:true, help: FIELD_HELP.ptDividend}
     ]},
     {title:'Øvrig formue og gæld', fields:[
-        {key:'pension', label:'Pension'},
-        {key:'homeEquity', label:'Friværdi i bolig'},
-        {key:'other', label:'Andet'},
-        {key:'debt', label:'Gæld', hint:'Ikke realkredit – den indgår i friværdien'}
+        {key:'pension', label:'Pension', help: FIELD_HELP.netCatPension},
+        {key:'homeEquity', label:'Friværdi i bolig', help: FIELD_HELP.netCatFrivaerdi},
+        {key:'other', label:'Andet', help: FIELD_HELP.netCatAndet},
+        {key:'debt', label:'Gæld', hint:'Ikke realkredit – den indgår i friværdien', help: FIELD_HELP.netDebt}
     ]}
 ];
 
@@ -171,11 +171,9 @@ function openMonthlyStatus(){
                 oninput: e => { values[f.key] = parseFloat(e.target.value) || 0; refreshSummary(); }});
             if(!f.allowNegative) input.min = 0;
             inputs[f.key] = input;
-            return el('label', {className:'field status-field'}, [
-                el('span', {className:'status-label', textContent:f.label}),
-                input,
-                f.hint ? el('span', {className:'limit-hint', textContent:f.hint}) : ''
-            ]);
+            const field = fieldEl(f.label, input, f.hint ? [el('div', {className:'limit-hint', textContent:f.hint})] : [], 'status-field');
+            if(f.help) attachFieldHelp(field.querySelector('label'), f.help);
+            return field;
         }))
     ]));
 

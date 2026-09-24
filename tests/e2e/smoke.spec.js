@@ -102,8 +102,8 @@ test('månedsstatus gemmer i begge trackere og advarer, før en dato overskrives
     await page.getByRole('button', { name: '+ Månedsstatus' }).click();
     let dialog = page.getByRole('dialog', { name: 'Månedsstatus' });
     await dialog.getByLabel('Dato').fill('2026-08-31');
-    await dialog.getByLabel('Bank- og opsparingskonti').fill('50000');
-    await dialog.getByLabel('Værdi af aktier').fill('100000');
+    await dialog.getByLabel('Bank- og opsparingskonti', { exact: true }).fill('50000');
+    await dialog.getByLabel('Værdi af aktier', { exact: true }).fill('100000');
     await dialog.getByRole('button', { name: 'Gem i begge' }).click();
     await expect(dialog).toBeHidden();
 
@@ -119,7 +119,7 @@ test('månedsstatus gemmer i begge trackere og advarer, før en dato overskrives
     dialog = page.getByRole('dialog', { name: 'Månedsstatus' });
     await dialog.getByLabel('Dato').fill('2026-08-31');
     await expect(dialog.locator('.existing-note')).toContainText('allerede gemt data');
-    await dialog.getByLabel('Værdi af aktier').fill('120000');
+    await dialog.getByLabel('Værdi af aktier', { exact: true }).fill('120000');
     await dialog.getByRole('button', { name: 'Gem i begge' }).click();
 
     const warning = page.getByRole('dialog', { name: 'Overskriv eksisterende data?' });
@@ -135,8 +135,8 @@ test('et delt link genskaber beregningen', async ({ page, context }) => {
     await page.goto('/index.html');
     await page.getByRole('button', { name: 'Bolig & lån' }).click();
     await page.getByRole('button', { name: 'Køb eller leje?' }).click();
-    await page.getByLabel('Boligpris (kr.)').fill('4500000');
-    await page.getByLabel('Husleje pr. måned (kr.)').fill('16000');
+    await page.getByLabel('Boligpris (kr.)', { exact: true }).fill('4500000');
+    await page.getByLabel('Husleje pr. måned (kr.)', { exact: true }).fill('16000');
     const expected = await page.locator('#brWinnerSub').textContent();
     await page.locator('#housing2').getByRole('button', { name: 'Del beregning' }).click();
     const url = await page.evaluate(() => navigator.clipboard.readText());
@@ -163,7 +163,7 @@ test('hjælp åbner med årets satser og kilder, og Esc lukker', async ({ page }
 test('formue: mål oprettes i en dialog, og hele alderstabellen fremhæver din alder', async ({ page }) => {
     await page.goto('/index.html');
     await page.getByRole('button', { name: 'Formue', exact: true }).click();
-    await page.getByLabel('Aktier & værdipapirer').fill('300000');
+    await page.getByLabel('Aktier & værdipapirer', { exact: true }).fill('300000');
 
     await page.getByRole('button', { name: '+ Nyt mål' }).click();
     const dialog = page.getByRole('dialog', { name: 'Nyt mål' });
@@ -177,7 +177,7 @@ test('formue: mål oprettes i en dialog, og hele alderstabellen fremhæver din a
     await expect(page.locator('.goal-row')).toContainText('300.000 / 1.000.000 kr.');
     await expect(page.locator('.goal-facts')).toContainText('30 %');
 
-    await page.getByLabel('Din alder').fill('27');
+    await page.getByLabel('Din alder', { exact: true }).fill('27');
     await page.getByRole('button', { name: 'Se hele tabellen' }).click();
     const table = page.getByRole('dialog', { name: 'Formue efter alder' });
     await expect(table.locator('tbody tr')).toHaveCount(73);
@@ -208,4 +208,32 @@ test('formue: sammensætningen viser alle kategorier for datoen, man peger på',
     expect(tip.lines).toHaveLength(6);
     expect(tip.lines[0]).toBe('Pension: 230.000 kr. (42 %)');
     expect(tip.footer).toEqual(['Nettoformue: 520.000 kr.']);
+});
+
+test('"?" ved et felt viser en forklaring, og værktøjets beskrivelse kan foldes ud', async ({ page }) => {
+    await page.goto('/index.html');
+    const tip = page.getByRole('button', { name: 'Hvad betyder Forventet årligt afkast?' }).first();
+    const pop = page.locator('#' + await tip.getAttribute('aria-controls'));
+    await expect(pop).toBeHidden();
+    await tip.click();
+    await expect(pop).toBeVisible();
+    await expect(tip).toHaveAttribute('aria-expanded', 'true');
+    await page.keyboard.press('Escape');
+    await expect(pop).toBeHidden();
+    await tip.click();
+    await page.mouse.click(5, 5);
+    await expect(pop).toBeHidden();
+
+    // Dobbelt fradrag flytter med mellem værktøj 1 og 2 og skjules i de andre.
+    const dd = page.locator('#doubleDeduction');
+    await page.evaluate(() => showTool(2));
+    await expect(dd).toBeVisible();
+    await expect(page.locator('#tool2 #doubleDeduction')).toHaveCount(1);
+    await page.evaluate(() => showTool(3));
+    await expect(dd).toBeHidden();
+
+    const about = page.locator('#tool3 .tool-about');
+    await expect(about.locator('.tool-intro')).toBeHidden();
+    await about.getByText('Hvad gør dette værktøj?').click();
+    await expect(about.locator('.tool-intro')).toBeVisible();
 });
