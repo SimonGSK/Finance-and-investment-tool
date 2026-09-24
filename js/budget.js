@@ -404,6 +404,22 @@ function updateBudget(){
 }
 
 /**
+ * Downloader budgettet som CSV - fx til at vise en rådgiver. Filen åbner i
+ * Excel og Numbers med én række pr. post og en opsummering nederst.
+ */
+function downloadBudget(){
+    const items = loadBudgetItems();
+    if(!Object.values(items).some(list => list.length)){
+        notify('Budgettet er tomt. Tilføj poster ved at klikke på en kategori.');
+        return;
+    }
+    downloadCSV(budgetExportRows({
+        categories: getBudgetCategories(), groups: BUDGET_GROUPS, items, frequencies: BUDGET_FREQUENCIES,
+        total: parseFloat(document.getElementById('budgetTotalInput').value) || 0
+    }), `budget-${todayIso()}.csv`);
+}
+
+/**
  * Nulstiller alle poster og det samlede beløb efter bekræftelse - med fortryd.
  * Egne kategorier bevares.
  */

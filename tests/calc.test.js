@@ -671,3 +671,42 @@ describe('regnestykker i talfelter', () => {
         assert.equal(isExpression('2.5'), false);
     });
 });
+
+describe('budget til download', () => {
+    const groups = [{id:'behov', label:'Behov'}, {id:'onsker', label:'Ønsker'}, {id:'opsparing', label:'Opsparing'}];
+    const frequencies = [{months:1, label:'pr. måned'}, {months:3, label:'pr. kvartal'}, {months:12, label:'pr. år'}];
+    const categories = [
+        {id:'catBolig', label:'Bolig', group:'behov'},
+        {id:'catFritid', label:'Fritid', group:'onsker'},
+        {id:'catOpsparing', label:'Opsparing', group:'opsparing'}
+    ];
+    const items = {
+        catBolig: [{label:'Husleje', amount:9000, freq:1}, {label:'Ejendomsskat', amount:3000, freq:3}],
+        catFritid: [{label:'', amount:1250.5}],
+        catOpsparing: [{label:'Aktier', amount:3000, freq:1}]
+    };
+
+    test('én række pr. post med beløb pr. måned og pr. år', () => {
+        const rows = calc.budgetExportRows({categories, groups, items, frequencies});
+        assert.deepEqual(rows[0], ['Gruppe', 'Kategori', 'Post', 'Beløb (kr.)', 'Hvor ofte', 'Pr. måned (kr.)', 'Pr. år (kr.)']);
+        assert.deepEqual(rows[2], ['Behov', 'Bolig', 'Ejendomsskat', '3000', 'pr. kvartal', '1000', '12000']);
+        assert.deepEqual(rows[3], ['Ønsker', 'Fritid', '(uden navn)', '1250,5', 'pr. måned', '1250,5', '15006']);
+        assert.equal(rows.length, 1 + 4 + 1 + 1 + 3 + 1);
+    });
+
+    test('opsummering med 50/30/20 og penge tilbage, når beløbet er udfyldt', () => {
+        const rows = calc.budgetExportRows({categories, groups, items, frequencies, total: 20000});
+        const summary = rows.slice(rows.findIndex(r => r[0] === 'Opsummering'));
+        const find = label => summary.find(r => r[0] === label);
+        assert.deepEqual(find('Behov').slice(5), ['10000', '120000', csvShare(10000, 14250.5), 'højst 50 %']);
+        assert.deepEqual(find('Samlet budget').slice(5, 7), ['14250,5', '171006']);
+        assert.deepEqual(find('Penge tilbage').slice(5, 7), ['5749,5', '68994']);
+        function csvShare(v, sum){ return calc.csvNumber(v / sum * 100); }
+    });
+
+    test('et tomt budget giver kun overskrift og opsummering', () => {
+        const rows = calc.budgetExportRows({categories, groups, items:{}, frequencies});
+        assert.equal(rows.length, 1 + 1 + 1 + 3 + 1);
+        assert.equal(rows.find(r => r[0] === 'Penge tilbage'), undefined);
+    });
+});

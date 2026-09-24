@@ -406,6 +406,52 @@ function budgetSummary(categories, items){
     return { values, sum: values.reduce((a, b) => a + b, 0), groupSums };
 }
 
+/**
+ * Et tal til en dansk CSV-fil: komma som decimaltegn og ingen tusindtalspunktummer,
+ * så Excel og Numbers læser det som et tal.
+ * @param {number} n
+ * @returns {string}
+ */
+function csvNumber(n){
+    return String(Math.round(n * 100) / 100).replace('.', ',');
+}
+
+/**
+ * Hele budgettet som rækker til en CSV-fil, fx til en rådgiver: én række pr.
+ * post med beløb pr. måned og pr. år, og bagefter en opsummering med
+ * 50/30/20-grupperne, samlet budget og - hvis det er udfyldt - penge tilbage.
+ * @param {object} p
+ * @param {{id:string, label:string, group:string}[]} p.categories i visningsrækkefølge
+ * @param {{id:string, label:string}[]} p.groups
+ * @param {Object<string, {label:string, amount:number|string, freq?:number}[]>} p.items
+ * @param {{months:number, label:string}[]} p.frequencies
+ * @param {number} [p.total] det samlede beløb til rådighed (0 = ikke udfyldt)
+ * @returns {string[][]}
+ */
+function budgetExportRows({categories, groups, items, frequencies, total = 0}){
+    const groupLabel = id => (groups.find(g => g.id === id) || {label:id}).label;
+    const freqLabel = months => (frequencies.find(f => f.months === months) || {label:`hver ${months}. måned`}).label;
+    const rows = [['Gruppe', 'Kategori', 'Post', 'Beløb (kr.)', 'Hvor ofte', 'Pr. måned (kr.)', 'Pr. år (kr.)']];
+    categories.forEach(cat => (items[cat.id] || []).forEach(item => {
+        const monthly = monthlyAmount(item);
+        rows.push([groupLabel(cat.group), cat.label, (item.label || '').trim() || '(uden navn)',
+            csvNumber(parseFloat(item.amount) || 0), freqLabel(parseFloat(item.freq) || 1), csvNumber(monthly), csvNumber(monthly * 12)]);
+    }));
+
+    const {sum, groupSums} = budgetSummary(categories, items);
+    const share = v => sum > 0 ? csvNumber(v / sum * 100) : '0';
+    rows.push([]);
+    rows.push(['Opsummering', '', '', '', '', 'Pr. måned (kr.)', 'Pr. år (kr.)', 'Andel (%)', 'Tommelfingerregel']);
+    const rule = {behov:'højst 50 %', onsker:'højst 30 %', opsparing:'mindst 20 %'};
+    groups.forEach(g => rows.push([g.label, '', '', '', '', csvNumber(groupSums[g.id] || 0), csvNumber((groupSums[g.id] || 0) * 12), share(groupSums[g.id] || 0), rule[g.id] || '']));
+    rows.push(['Samlet budget', '', '', '', '', csvNumber(sum), csvNumber(sum * 12), sum > 0 ? '100' : '0', '']);
+    if(total > 0){
+        rows.push(['Samlet beløb til rådighed', '', '', '', '', csvNumber(total), csvNumber(total * 12), '', '']);
+        rows.push(['Penge tilbage', '', '', '', '', csvNumber(total - sum), csvNumber((total - sum) * 12), '', '']);
+    }
+    return rows;
+}
+
 // ==== Historik (datapunkter pr. dato) ====
 
 /**
@@ -1242,6 +1288,7 @@ function goalProgress(g){
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
+        csvNumber, budgetExportRows,
         parseNumberToken, parseAmount, isExpression,
         TAX_YEAR, ASK_DEPOSIT_LIMIT, TAX_LIMIT_27, ASK_TAX, AKT_TAX_LOW, AKT_TAX_HIGH,
         setDoubleDeduction, effectiveTaxLimit,
