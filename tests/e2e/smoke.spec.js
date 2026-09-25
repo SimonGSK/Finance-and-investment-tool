@@ -306,6 +306,8 @@ test('feedback: knappen er skjult uden adresse, og en besked sendes med værktø
     await page.getByRole('button', { name: 'Bolig & lån' }).click();
     await page.getByRole('button', { name: 'Giv feedback' }).click();
     const dialog = page.getByRole('dialog', { name: 'Giv feedback' });
+    await dialog.getByText('Sådan behandles din besked').click();
+    await expect(dialog.locator('.privacy-note')).toContainText('slettes senest 12 måneder');
     await dialog.getByRole('button', { name: 'Send' }).click();
     await expect(dialog.locator('.field-error')).toHaveText('Skriv lidt om, hvad du tænker.');
     await dialog.getByLabel('Hvad handler det om?').selectOption('Fejl');

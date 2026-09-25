@@ -28,6 +28,15 @@ function currentToolName(){
     return [sectionBtn?.textContent, toolBtn?.textContent].filter(Boolean).map(t => t.trim()).join(' / ');
 }
 
+/** Kort privatlivsnote under formularen - hvad der sendes, hvortil, og hvor længe det gemmes. */
+function feedbackPrivacyNote(){
+    return el('details', {className:'privacy-note'}, [
+        el('summary', {textContent:'Sådan behandles din besked'}),
+        el('p', {textContent:'Din besked, den type, du vælger, hvilket værktøj du stod i og – hvis du skriver den – din e-mail sendes via tjenesten Formspree (en amerikansk virksomhed) til udvikleren af siden. De bruges kun til at forbedre siden og til at svare dig, hvis du har skrevet din e-mail.'}),
+        el('p', {textContent:'Beskederne deles ikke med andre og slettes senest 12 måneder efter, de er modtaget. Vil du have din besked slettet før, eller se hvad der er gemt, så skriv det i en ny besked – gerne med samme e-mail. Skriv ikke personnumre, kontonumre eller andre følsomme oplysninger.'})
+    ]);
+}
+
 function openFeedbackDialog(){
     const kind = el('select', {className:'number-input'}, FEEDBACK_KINDS.map(k => el('option', {value:k, textContent:k})));
     const message = el('textarea', {className:'number-input feedback-message', rows:6, maxLength:4000,
@@ -46,7 +55,8 @@ function openFeedbackDialog(){
             fieldEl('Hvad handler det om?', kind),
             fieldEl('Din besked', message),
             fieldEl('Din e-mail (valgfri – hvis du vil have svar)', email, [error]),
-            trap
+            trap,
+            feedbackPrivacyNote()
         ]),
         actions:[
             {label:'Annullér', variant:'secondary'},
