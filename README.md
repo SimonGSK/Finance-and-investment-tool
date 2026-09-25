@@ -142,7 +142,7 @@ The site is a Progressive Web App. In Chrome, Edge or on Android, **Installér s
 
 ## Feedback
 
-The speech-bubble button under the settings gear opens a feedback form. Messages are sent to [Formspree](https://formspree.io), which emails them on and keeps them in a dashboard. Only what the visitor writes is sent (plus which tool they were on) — never their budget or other numbers. The button is hidden until an endpoint is set: create a free form on formspree.io and put its address in `FEEDBACK.endpoint` at the top of `js/feedback.js`.
+The speech-bubble button under the settings gear opens a feedback form. Messages are sent to [Formspree](https://formspree.io), which emails them on and keeps them in a dashboard. Only what the visitor writes is sent (plus which tool they were on) — never their budget or other numbers. The button is hidden until an endpoint is set: create a free form on formspree.io and put its address in `FEEDBACK.endpoint` at the top of `js/feedback.js`. The form shows a short privacy note (what is sent, to whom, and that messages are deleted within 12 months) — so **delete messages older than 12 months in the Formspree dashboard**, and delete a message sooner if someone asks.
 
 ## Assumptions and disclaimer
 
