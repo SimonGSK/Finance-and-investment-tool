@@ -512,11 +512,15 @@ function renderNetWorthHistory(){
             },
             {
                 label:'Prognose (tempoet det seneste år)',
-                data: projection ? [{x: t(projection.from.date), y: projection.from.value}, {x: t(projection.to.date), y: projection.to.value}] : [],
+                isForecast: true,
+                // Ét punkt pr. måned, så man kan pege på linjen og se prognosen for en bestemt måned.
+                data: projection ? Array.from({length: 25}, (_, k) => ({x: t(addMonthsIso(projection.from.date, k)), y: projection.from.value + projection.trend * k})) : [],
                 borderColor:CHART_COLOR('--akt'),
                 backgroundColor:CHART_COLOR('--akt'),
                 themeVar:'--akt',
                 pointRadius:0,
+                pointHoverRadius:4,
+                pointHitRadius:10,
                 borderWidth:1.5,
                 borderDash:[2,5]
             }
@@ -541,6 +545,7 @@ function renderNetWorthHistory(){
             options:{
                 responsive:true,
                 maintainAspectRatio:false,
+                interaction:{ mode:'nearest', axis:'x', intersect:false },
                 plugins:{
                     legend:{
                         display:true,
@@ -553,9 +558,15 @@ function renderNetWorthHistory(){
                         borderWidth:1,
                         titleColor:CHART_COLOR('--text'),
                         bodyColor:CHART_COLOR('--text'),
+                        // Prognosens første punkt er det seneste datapunkt - det står allerede i tooltippen.
+                        filter: item => !(item.dataset.isForecast && item.dataIndex === 0),
                         callbacks:{
-                            title: items => formatDanishDate(todayIso(new Date(items[0].parsed.x))),
-                            label: c => `${c.dataset.label}: ${DK.format(c.parsed.y)} kr.`
+                            title: items => items[0].dataset.isForecast
+                                ? `Omkring ${formatMonthYear(items[0].parsed.x)}`
+                                : formatDanishDate(todayIso(new Date(items[0].parsed.x))),
+                            label: c => c.dataset.isForecast
+                                ? `Prognose: ca. ${DK.format(Math.round(c.parsed.y / 1000) * 1000)} kr.`
+                                : `${c.dataset.label}: ${DK.format(c.parsed.y)} kr.`
                         }
                     }
                 },

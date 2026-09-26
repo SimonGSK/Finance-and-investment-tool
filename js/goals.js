@@ -57,7 +57,8 @@ function renderGoals(){
             // Det er værdien, der skal stige - via opsparing, kursstigninger eller afdrag - ikke nødvendigvis et beløb, man selv lægger til.
             if(g.neededPerMonth !== null) parts.push(`${metric.phrase} skal stige med ca. ${DK.format(g.neededPerMonth)} kr. om måneden i snit for at nå målet i tide.`);
             if(trend !== null){
-                parts.push(`Dit tempo det seneste år: ${trend >= 0 ? '+' : '−'}${DK.format(Math.abs(trend))} kr./md.`);
+                // Tempoet er for målets egen kategori (fx kun aktierne), ikke for hele formuen.
+                parts.push(`Dit tempo det seneste år (${metric.label.toLowerCase()}): ${trend >= 0 ? '+' : '−'}${DK.format(Math.abs(trend))} kr./md.`);
                 if(g.onTrack === true){ parts.push('Du er på sporet.'); statusClass = 'is-good'; }
                 else if(g.onTrack === false){ parts.push('Det rækker ikke helt.'); statusClass = 'is-bad'; }
                 else if(g.monthsAtTrend !== null) parts.push(`I det tempo når du det om ca. ${formatDuration(Math.ceil(g.monthsAtTrend))}.`);

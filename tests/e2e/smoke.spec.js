@@ -753,3 +753,34 @@ test('år for år og prognose: tabellerne regner rigtigt, og prognosen står und
     await expect(ptYear.locator('.change-cell').first()).toHaveText('+20.000 kr.');   // afkast = 40.000 − 20.000
     await expect(ptYear.locator('.change-cell').last()).toHaveText('+18,2 %');
 });
+
+test('prognosen: peger man på den stiplede linje, vises den forventede formue for måneden', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        const nw = (date, value) => ({date, value, liquid:value, netCatKontanter:value, netCatAktier:0, netCatPension:0, netCatFrivaerdi:0, netCatAndet:0, debt:0});
+        localStorage.setItem('netWorthHistory', JSON.stringify([nw('2025-09-30', 400000), nw('2026-09-30', 520000)]));
+    });
+    await page.reload();
+    await page.getByRole('button', { name: 'Formue', exact: true }).click();
+    await page.locator('#netWorthHistoryChart').scrollIntoViewIfNeeded();
+    // Vent, til grafen er færdig med at animere, så punkternes placering ligger fast.
+    await page.waitForFunction(() => !netWorthHistoryChart.animating && netWorthHistoryChart.width > 0);
+    await page.waitForTimeout(600);
+    const hover = async iso => {
+        const pos = await page.evaluate(iso => {
+            const c = netWorthHistoryChart, r = c.canvas.getBoundingClientRect();
+            const point = c.data.datasets[2].data.find(p => p.x === Date.parse(iso + 'T00:00:00'));
+            return {x: r.left + c.scales.x.getPixelForValue(point.x), y: r.top + c.scales.y.getPixelForValue(point.y)};
+        }, iso);
+        await page.mouse.move(pos.x - 30, pos.y);
+        await page.mouse.move(pos.x, pos.y, { steps: 4 });
+        await page.waitForTimeout(250);
+        return page.evaluate(() => ({title: netWorthHistoryChart.tooltip.title, body: netWorthHistoryChart.tooltip.body.map(b => b.lines.join(''))}));
+    };
+    const ahead = await hover('2027-09-30');
+    expect(ahead.title).toEqual(['Omkring sep. 2027']);
+    expect(ahead.body).toEqual(['Prognose: ca. 640.000 kr.']);      // 520.000 + 12 × 10.008
+    const now = await hover('2026-09-30');
+    expect(now.body.some(l => l.startsWith('Prognose'))).toBe(false);   // ikke dobbelt ved seneste datapunkt
+    expect(now.body).toContain('Nettoformue: 520.000 kr.');
+});
