@@ -856,3 +856,32 @@ describe('synkronisering mellem enheder', () => {
         assert.deepEqual(calc.applySync(plan, {netWorthGoals:[{id:'x'}]}, {}).changes, {});
     });
 });
+
+describe('ændringer mellem datapunkter', () => {
+    const nw = [
+        {date:'2026-08-31', value:520000}, {date:'2026-06-30', value:480000},
+        {date:'2026-07-31', value:500000}, {date:'2026-10-31', value:510000}
+    ];
+    test('formue: ændringen fra punkt til punkt, i datorækkefølge', () => {
+        const c = calc.periodChanges(nw, h => h.value);
+        assert.deepEqual(c.map(x => [x.from, x.to, x.change]), [
+            ['2026-06-30', '2026-07-31', 20000], ['2026-07-31', '2026-08-31', 20000], ['2026-08-31', '2026-10-31', -10000]]);
+        assert.equal(c[0].gain, 20000);
+        assert.equal(Math.round(c[0].pct * 1000) / 10, 4.2);
+        assert.equal(c[2].days, 61);
+    });
+    test('portefølje: indskud trækkes fra, så afkastet ikke forveksles med opsparing', () => {
+        const pt = [{date:'2026-07-31', portfolioValue:200000, deposit:190000}, {date:'2026-08-31', portfolioValue:230000, deposit:25000},
+            {date:'2026-09-30', portfolioValue:240000, deposit:0}];
+        const c = calc.periodChanges(pt, h => h.portfolioValue, h => h.deposit);
+        assert.deepEqual(c.map(x => [x.change, x.gain]), [[30000, 5000], [10000, 10000]]);
+        assert.deepEqual(calc.bestPeriods(c).map(x => x.to), ['2026-09-30', '2026-08-31']);   // rangeret efter afkast
+    });
+    test('bedste perioder: højst tre, kun stigninger, og tomt med under to punkter', () => {
+        const many = Array.from({length: 6}, (_, i) => ({date:`2026-0${i + 1}-28`, value:[100, 300, 250, 900, 950, 1000][i]}));
+        const best = calc.bestPeriods(calc.periodChanges(many, h => h.value));
+        assert.deepEqual(best.map(b => b.gain), [650, 200, 50]);
+        assert.deepEqual(calc.periodChanges([{date:'2026-01-01', value:1}], h => h.value), []);
+        assert.equal(calc.periodChanges([{date:'2026-01-01', value:0}, {date:'2026-02-01', value:100}], h => h.value)[0].pct, null);
+    });
+});

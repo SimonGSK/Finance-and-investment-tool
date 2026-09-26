@@ -303,10 +303,17 @@ function renderPortfolioHistory(){
         document.getElementById(id).style.display = ptHasData ? 'none' : 'flex';
     });
 
+    // Ændring og afkast siden forrige datapunkt; afkastet er ændringen minus indskud (se periodChanges i calc.js).
+    const changes = periodChanges(history, h => h.portfolioValue, h => h.deposit);
+    const changeByDate = new Map(changes.map(c => [c.to, c]));
+    renderBestPeriods('ptBestPeriods', bestPeriods(changes), 'Gem mindst to datapunkter med afkast for at se dine bedste perioder.');
+
     const ptTableBody = document.getElementById('ptTableBody');
     ptTableBody.innerHTML = enriched.map(h => `<tr>
             <td data-csv="${h.date}">${formatDanishDate(h.date)}</td>
             <td>${DK.format(h.portfolioValue)} kr.</td>
+            ${changeCellHtml(changeByDate.get(h.date), 'change')}
+            ${changeCellHtml(changeByDate.get(h.date), 'gain')}
             <td>${DK.format(h.stockValue)} kr.</td>
             <td>${DK.format(h.cash)} kr.</td>
             <td>${DK.format(h.traded)} kr.</td>

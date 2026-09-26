@@ -1183,10 +1183,6 @@ table.data-table.etf-rules td:first-child{ color:var(--text); font-weight:600; }
     .stat .value{ font-size:20px; overflow-wrap:anywhere; }
     .stat .sub{ font-size:11.5px; }
     .stats > .stat:last-child:nth-child(odd){ grid-column:1 / -1; }
-    /* Tal og datoer i tabeller brydes ikke over flere linjer - tabellen kan scrolles i stedet. */
-    table.data-table th, table.data-table td{ white-space:nowrap; }
-    table.data-table.etf-rules th, table.data-table.etf-rules td,
-    table.data-table.data-table-kv td{ white-space:normal; }
 }
 
 /* Privatlivsnote i feedbackformularen */
@@ -1232,3 +1228,24 @@ details.fold > .fold-summary{ display:none; }
 }
 /* En tabelboks må aldrig blive bredere end sit panel - brede tabeller scroller inde i den. */
 .data-table-wrap{ max-width:100%; min-width:0; }
+
+/* ---- Ændringer og bedste perioder ---- */
+table.data-table td.change-cell.is-up{ color:var(--ask); }
+table.data-table td.change-cell.is-down{ color:var(--cross); }
+.change-pct{ color:var(--subtle); font-size:0.9em; }
+.best-periods{ list-style:none; margin:0; padding:0; counter-reset:best; }
+.best-period{ counter-increment:best; display:flex; justify-content:space-between; align-items:baseline; gap:var(--s3); padding:var(--s3) 0; border-bottom:1px solid var(--border); font-size:14px; }
+.best-period:last-child{ border-bottom:none; }
+.best-period-when{ display:flex; align-items:baseline; gap:var(--s3); color:var(--muted); }
+.best-period-when::before{ content:counter(best) "."; font-family:var(--font-display); font-size:18px; font-weight:600; color:var(--akt); min-width:1.2em; }
+.best-period-value{ font-family:var(--font-mono); color:var(--ask); white-space:nowrap; }
+@media (max-width:640px){ .best-period{ flex-direction:column; gap:2px; } }
+/* Tal og datoer i tabeller brydes ikke over flere linjer (på alle skærme) - en bred tabel scrolles i sin boks i stedet.
+   Tekst-tabeller (skatteregler) og to-kolonne-tabeller må gerne bryde. */
+table.data-table th, table.data-table td{ white-space:nowrap; }
+table.data-table.etf-rules th, table.data-table.etf-rules td,
+table.data-table.data-table-kv td{ white-space:normal; }
+/* Tættere kolonner, så historiktabellerne (med Ændring og Ret/Slet) kan være på en almindelig skærm. */
+table.data-table thead th{ padding-left:var(--s3); padding-right:var(--s3); }
+table.data-table td{ padding-left:var(--s3); padding-right:var(--s3); }
+table.data-table .row-actions .btn{ padding-left:12px; padding-right:12px; }
