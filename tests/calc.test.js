@@ -885,3 +885,39 @@ describe('ændringer mellem datapunkter', () => {
         assert.equal(calc.periodChanges([{date:'2026-01-01', value:0}, {date:'2026-02-01', value:100}], h => h.value)[0].pct, null);
     });
 });
+
+describe('år for år og prognose', () => {
+    test('addMonthsIso: månedsskridt, også over årsskifte og ved månedens slutning', () => {
+        assert.equal(calc.addMonthsIso('2026-09-30', 1), '2026-10-30');
+        assert.equal(calc.addMonthsIso('2026-01-31', 1), '2026-02-28');
+        assert.equal(calc.addMonthsIso('2026-11-15', 3), '2027-02-15');
+        assert.equal(calc.addMonthsIso('2026-09-30', 24), '2028-09-30');
+    });
+    test('formue: året starter ved sidste punkt før 1. januar, nyeste år først', () => {
+        const h = [{date:'2025-06-30', value:300000}, {date:'2025-12-31', value:400000}, {date:'2026-03-31', value:420000}, {date:'2026-09-30', value:500000}];
+        const [y26, y25] = calc.yearSummary(h, x => x.value);
+        assert.deepEqual([y26.year, y26.startDate, y26.start, y26.end, y26.change, y26.fromPreviousYear], [2026, '2025-12-31', 400000, 500000, 100000, true]);
+        assert.equal(Math.round(y26.pct * 1000) / 10, 25);
+        assert.deepEqual([y25.year, y25.startDate, y25.change, y25.fromPreviousYear], [2025, '2025-06-30', 100000, false]);
+    });
+    test('portefølje: indskud trækkes fra afkastet og tæller halvt i procenten', () => {
+        const h = [{date:'2025-12-31', portfolioValue:100000, deposit:100000},
+            {date:'2026-06-30', portfolioValue:130000, deposit:20000}, {date:'2026-12-31', portfolioValue:140000, deposit:0}];
+        const [y] = calc.yearSummary(h, x => x.portfolioValue, x => x.deposit);
+        assert.deepEqual([y.change, y.flows, y.gain], [40000, 20000, 20000]);
+        assert.equal(Math.round(y.pct * 1000) / 10, 18.2);     // 20.000 / (100.000 + 10.000)
+    });
+    test('et år med kun ét punkt og intet før vises ikke', () => {
+        assert.deepEqual(calc.yearSummary([{date:'2026-05-31', value:1}], x => x.value), []);
+    });
+    test('prognose: tempoet det seneste år fortsat, og hvornår et beløb nås', () => {
+        const h = [{date:'2025-09-30', value:400000}, {date:'2026-09-30', value:520000}];
+        const p = calc.projectTrend(h, 'value', 24);
+        assert.equal(Math.round(p.trend), 10008);                 // 120.000 over 365 dage ≈ 11,99 mdr.
+        assert.equal(p.to.date, '2028-09-30');
+        assert.equal(calc.projectionReaches(p, 600000), '2027-05-30');   // 80.000 / 10.008 ≈ 8 mdr.
+        assert.equal(calc.projectionReaches(p, 500000), null);     // allerede nået
+        assert.equal(calc.projectionReaches({...p, trend:-1000}, 600000), null);
+        assert.equal(calc.projectTrend([{date:'2026-09-30', value:1}], 'value'), null);
+    });
+});

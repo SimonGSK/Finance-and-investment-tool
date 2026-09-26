@@ -564,6 +564,79 @@ function bestPeriods(changes, n = 3){
     return changes.filter(c => c.gain > 0).sort((a, b) => b.gain - a.gain).slice(0, n);
 }
 
+// ==== År for år og prognose ====
+
+/**
+ * ISO-dato flyttet et antal hele måneder; bliver dagen for stor (31. → februar),
+ * bruges månedens sidste dag.
+ * @param {string} iso
+ * @param {number} months
+ * @returns {string}
+ */
+function addMonthsIso(iso, months){
+    const [y, m, d] = iso.split('-').map(Number);
+    const total = (y * 12 + (m - 1)) + months;
+    const ny = Math.floor(total / 12), nm = total % 12 + 1;
+    const last = new Date(Date.UTC(ny, nm, 0)).getUTCDate();
+    return `${ny}-${String(nm).padStart(2, '0')}-${String(Math.min(d, last)).padStart(2, '0')}`;
+}
+
+/**
+ * Et år ad gangen: værdien ved årets start (seneste datapunkt før 1. januar,
+ * ellers årets første), ved årets slutning (årets seneste datapunkt), ændringen,
+ * pengene sat ind i løbet af året og afkastet (ændring minus indskud).
+ * pct = afkast i forhold til startværdien plus halvdelen af indskuddene
+ * (indskuddene har i snit kun været der halvdelen af tiden).
+ * @param {{date:string}[]} history
+ * @param {(h:Object) => number} valueOf
+ * @param {(h:Object) => number} [flowOf] indskud (+) / udbetalinger (−) i hvert datapunkt
+ * @returns {{year:number, startDate:string, endDate:string, fromPreviousYear:boolean, start:number, end:number,
+ *   change:number, flows:number, gain:number, pct:number|null}[]} nyeste år først
+ */
+function yearSummary(history, valueOf, flowOf = () => 0){
+    const sorted = history.slice().sort((a, b) => a.date.localeCompare(b.date));
+    const years = [...new Set(sorted.map(h => Number(h.date.slice(0, 4))))];
+    return years.map(year => {
+        const inYear = sorted.filter(h => Number(h.date.slice(0, 4)) === year);
+        const before = sorted.filter(h => Number(h.date.slice(0, 4)) < year).at(-1);
+        const startPoint = before || inYear[0];
+        const endPoint = inYear.at(-1);
+        // Indskud fra datapunkterne efter startpunktet (startpunktets eget indskud er en del af startværdien).
+        const flows = inYear.filter(h => h !== startPoint).reduce((s, h) => s + (flowOf(h) || 0), 0);
+        const start = valueOf(startPoint) || 0, end = valueOf(endPoint) || 0;
+        const change = end - start, gain = change - flows;
+        const base = start + flows / 2;
+        return {year, startDate: startPoint.date, endDate: endPoint.date, fromPreviousYear: !!before,
+            start, end, change, flows, gain, pct: base > 0 && startPoint !== endPoint ? gain / base : null};
+    }).filter(y => y.startDate !== y.endDate).reverse();
+}
+
+/**
+ * Prognose: fortsætter tempoet fra det seneste år (monthlyTrend) et antal
+ * måneder frem fra seneste datapunkt - en ret linje, ikke et løfte.
+ * @param {{date:string}[]} history sorteret efter dato
+ * @param {string} key fx 'value'
+ * @param {number} [months]
+ * @returns {{trend:number, from:{date:string, value:number}, to:{date:string, value:number}}|null}
+ */
+function projectTrend(history, key, months = 24){
+    const trend = monthlyTrend(history, key);
+    if(trend === null) return null;
+    const last = history.at(-1);
+    return {trend, from:{date:last.date, value:last[key] || 0}, to:{date:addMonthsIso(last.date, months), value:(last[key] || 0) + trend * months}};
+}
+
+/**
+ * Hvornår et beløb nås i prognosens tempo.
+ * @param {{trend:number, from:{date:string, value:number}}} projection
+ * @param {number} target
+ * @returns {string|null} ISO-dato (månedsskridt), eller null hvis tempoet ikke fører dertil
+ */
+function projectionReaches(projection, target){
+    if(!projection || target <= projection.from.value || projection.trend <= 0) return null;
+    return addMonthsIso(projection.from.date, Math.ceil((target - projection.from.value) / projection.trend));
+}
+
 // ==== Synkronisering mellem enheder via en fil ====
 
 /**
@@ -1493,6 +1566,7 @@ function goalProgress(g){
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
+        addMonthsIso, yearSummary, projectTrend, projectionReaches,
         periodChanges, bestPeriods,
         planSync, applySync,
         CAPITAL_INCOME_LIMIT,

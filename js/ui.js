@@ -411,3 +411,46 @@ function renderBestPeriods(id, best, emptyText){
         ]);
     }));
 }
+
+/** "sep. 2026" */
+function formatMonthYear(isoOrMs){
+    const d = typeof isoOrMs === 'number' ? new Date(isoOrMs) : new Date(isoOrMs + 'T00:00:00');
+    return d.toLocaleDateString('da-DK', {month:'short', year:'numeric'});
+}
+
+/**
+ * Tegner en år-for-år-tabel (se yearSummary i calc.js).
+ * @param {string} tbodyId
+ * @param {ReturnType<typeof yearSummary>} years
+ * @param {boolean} withFlows portefølje: vis indskud og afkast; formue: kun ændringen
+ * @param {string} emptyText
+ */
+function renderYearSummary(tbodyId, years, withFlows, emptyText){
+    const tbody = document.getElementById(tbodyId);
+    if(!tbody) return;
+    const cols = withFlows ? 6 : 5;
+    if(!years.length){
+        tbody.innerHTML = `<tr><td colspan="${cols}" class="empty-cell">${emptyText}</td></tr>`;
+        return;
+    }
+    const thisYear = new Date().getFullYear();
+    const short = iso => new Date(iso + 'T00:00:00').toLocaleDateString('da-DK', {day:'numeric', month:'short'});
+    const pct = y => y.pct === null ? '–' : `${y.pct >= 0 ? '+' : '−'}${formatPct(Math.abs(y.pct))}`;
+    const cls = v => v > 0 ? 'is-up' : v < 0 ? 'is-down' : '';
+    tbody.innerHTML = years.map(y => {
+        // Delvise år siges højt: "2026 (til nu)", "2025 (fra 31. jul.)".
+        const note = y.year === thisYear ? ' (til nu)' : !y.fromPreviousYear ? ` (fra ${short(y.startDate)})` : '';
+        const cells = [
+            `<td data-csv="${y.year}">${y.year}<span class="year-note">${note}</span></td>`,
+            `<td>${DK.format(y.start)} kr.</td>`,
+            `<td>${DK.format(y.end)} kr.</td>`
+        ];
+        if(withFlows){
+            cells.push(`<td>${formatSignedKr(y.flows)}</td>`, `<td class="change-cell ${cls(y.gain)}">${formatSignedKr(y.gain)}</td>`);
+        } else {
+            cells.push(`<td class="change-cell ${cls(y.change)}">${formatSignedKr(y.change)}</td>`);
+        }
+        cells.push(`<td class="change-cell ${cls(y.gain)}">${pct(y)}</td>`);
+        return `<tr>${cells.join('')}</tr>`;
+    }).join('');
+}

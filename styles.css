@@ -1249,3 +1249,10 @@ table.data-table.data-table-kv td{ white-space:normal; }
 table.data-table thead th{ padding-left:var(--s3); padding-right:var(--s3); }
 table.data-table td{ padding-left:var(--s3); padding-right:var(--s3); }
 table.data-table .row-actions .btn{ padding-left:12px; padding-right:12px; }
+
+/* ---- År for år og prognose ---- */
+.year-note{ color:var(--subtle); font-size:0.9em; margin-left:4px; }
+.year-hint{ margin:var(--s3) 0 0; font-size:12.5px; }
+table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space:normal; }
+.forecast-note{ margin:var(--s3) 0 var(--s4); font-size:13px; line-height:1.6; color:var(--muted); }
+.forecast-note:empty{ display:none; }

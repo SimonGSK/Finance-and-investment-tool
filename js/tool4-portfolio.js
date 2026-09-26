@@ -303,6 +303,8 @@ function renderPortfolioHistory(){
         document.getElementById(id).style.display = ptHasData ? 'none' : 'flex';
     });
 
+    renderYearSummary('ptYearBody', yearSummary(history, h => h.portfolioValue, h => h.deposit), true, 'Gem datapunkter over mindst to måneder for at se afkastet år for år.');
+
     // Ændring og afkast siden forrige datapunkt; afkastet er ændringen minus indskud (se periodChanges i calc.js).
     const changes = periodChanges(history, h => h.portfolioValue, h => h.deposit);
     const changeByDate = new Map(changes.map(c => [c.to, c]));
