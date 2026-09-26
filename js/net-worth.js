@@ -125,8 +125,8 @@ function renderNetWorthSourceNote(figures){
 // "din formue svarer til X ting"-sammenligningen, ikke til noget seriøst.
 const FUN_ITEMS = [
     {emoji:'🍌', label:'bananer', price:3},
-    {emoji:'📱', label:'iPhone 17', price:7499},
-    {emoji:'🏢', label:'kvadratmeters lejlighed i Kbh K', price:85760},
+    {emoji:'📱', label:'iPhone 18 Pro', price:10999},
+    {emoji:'🏢', label:'m² lejlighed i Kbh K', price:85760},
     {emoji:'🚗', label:'Fiat 500 (2026)', price:189990},
     {emoji:'🏎️', label:'Porsche 911 GT3 RS med danske afgifter', price:4910783}
 ];
