@@ -64,17 +64,31 @@ test('hver synlig graf fylder præcis sin boks', async ({ page }) => {
     }
 });
 
-test('ingen vandret scroll på en telefon', async ({ browser }) => {
-    const context = await browser.newContext({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true });
-    const page = await context.newPage();
+test('ingen vandret scroll, ingen zoom-felter og foldede forklaringer på små skærme @mobil', async ({ page }) => {
     await page.goto('/index.html');
-    expect(await page.evaluate(() => window.innerWidth)).toBe(375);
+    const width = await page.evaluate(() => window.innerWidth);
+    const phone = width <= 640;
     for(const view of VIEWS){
         await openView(page, view);
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-        expect(overflow, `${view.join('/')}`).toBeLessThanOrEqual(1);
+        expect(overflow, `${view.join('/')} ved ${width}px`).toBeLessThanOrEqual(1);
+        // Indhold, der stikker ud over sit panel, bliver skåret af - også uden vandret scroll på siden.
+        const clipped = await page.evaluate(() => [...document.querySelectorAll('.panel .data-table-wrap, .panel .field, .panel .chart-wrap, .panel .stat')]
+            .filter(e => e.offsetParent)
+            .filter(e => e.getBoundingClientRect().right > e.closest('.panel').getBoundingClientRect().right + 1)
+            .map(e => (e.closest('[id]')?.id || '') + ' ' + e.className));
+        expect(clipped, `${view.join('/')} ved ${width}px`).toEqual([]);
     }
-    await context.close();
+    // iPhone zoomer ind i felter med tekst under 16 px - og zoomer ikke ud igen.
+    if(phone){
+        const small = await page.evaluate(() => [...document.querySelectorAll('input, select, textarea')]
+            .filter(i => i.offsetParent && parseFloat(getComputedStyle(i).fontSize) < 16).map(i => i.id || i.name || i.type));
+        expect(small).toEqual([]);
+    }
+    // Lange forklaringer er foldet sammen på telefoner og åbne på større skærme.
+    const folds = await page.evaluate(() => [...document.querySelectorAll('details.fold')].map(d => d.open));
+    expect(folds.length).toBeGreaterThan(5);
+    expect(folds.every(open => open === !phone)).toBe(true);
 });
 
 test('budget: en post tilføjes i dialogen, og diagrammets boks er lige så høj som kategorilisten', async ({ page }) => {
@@ -649,4 +663,29 @@ test('synkronisering: en ny, tom enhed foreslår filens tal frem for sine egne s
     await dialog.getByRole('button', { name: 'Hent og flet' }).click();
     await b.getByRole('button', { name: 'Formue', exact: true }).click();
     await expect(b.getByLabel('Aktier & værdipapirer', { exact: true })).toHaveValue('300000');
+});
+
+test('Slet i historikken og på lån spørger først, og Annullér beholder data', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => localStorage.setItem('portfolioHistory', JSON.stringify([
+        {date:'2026-08-31', portfolioValue:215000, stockValue:205000, cash:10000, traded:0, deposit:0, dividend:0}])));
+    await page.reload();
+    await page.evaluate(() => showTool(4));
+    await page.getByRole('button', { name: 'Slet datapunktet for 31. aug. 2026' }).click();
+    let confirm = page.getByRole('dialog', { name: 'Slet datapunktet?' });
+    await expect(confirm).toContainText('215.000 kr.');
+    await confirm.getByRole('button', { name: 'Annullér' }).click();
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('portfolioHistory')).length)).toBe(1);
+    await page.getByRole('button', { name: 'Slet datapunktet for 31. aug. 2026' }).click();
+    await page.getByRole('dialog', { name: 'Slet datapunktet?' }).getByRole('button', { name: 'Slet' }).click();
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('portfolioHistory')).length)).toBe(0);
+    await expect(page.locator('.toast')).toContainText('slettet');
+
+    await page.getByRole('button', { name: 'Bolig & lån' }).click();
+    await page.evaluate(() => showHousingTool(3));
+    await page.getByRole('button', { name: 'Slet Kreditkort' }).click();
+    confirm = page.getByRole('dialog', { name: 'Slet lånet?' });
+    await expect(confirm).toContainText('60.000 kr.');
+    await confirm.getByRole('button', { name: 'Annullér' }).click();
+    await expect(page.locator('.debt-row')).toHaveCount(4);
 });
