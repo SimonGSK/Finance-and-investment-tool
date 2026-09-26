@@ -363,3 +363,51 @@ function editHistoryEntry({date, title, read, write, render, inputs, build, fiel
     });
     numberInputs[0]?.focus();
 }
+
+// ---- Ændringer og bedste perioder (Formue og porteføljen) ----
+
+/** "+20.000 kr." / "−10.000 kr." */
+function formatSignedKr(n){
+    const r = Math.round(n);
+    return (r > 0 ? '+' : r < 0 ? '−' : '') + DK.format(Math.abs(r)) + ' kr.';
+}
+
+/**
+ * En tabelcelle med ændringen siden forrige datapunkt, farvet op/ned.
+ * @param {{change:number, gain:number, pct:number|null}|undefined} c
+ * @param {'change'|'gain'} field
+ * @returns {string} HTML
+ */
+function changeCellHtml(c, field = 'change'){
+    if(!c) return '<td class="change-cell">–</td>';
+    const v = c[field];
+    const pct = field === 'gain' && c.pct !== null ? ` <span class="change-pct">(${c.pct >= 0 ? '+' : '−'}${formatPct(Math.abs(c.pct))})</span>` : '';
+    return `<td class="change-cell ${v > 0 ? 'is-up' : v < 0 ? 'is-down' : ''}" data-csv="${Math.round(v)}">${formatSignedKr(v)}${pct}</td>`;
+}
+
+/**
+ * Tegner top-listen over de bedste perioder.
+ * @param {string} id listens id (<ol>)
+ * @param {ReturnType<typeof bestPeriods>} best
+ * @param {string} emptyText vises, når der endnu ikke er perioder med stigning
+ */
+function renderBestPeriods(id, best, emptyText){
+    const list = document.getElementById(id);
+    if(!list) return;
+    if(!best.length){
+        list.replaceChildren(el('li', {className:'empty-note', textContent: emptyText}));
+        return;
+    }
+    list.replaceChildren(...best.map(b => {
+        // Perioder, der ikke er ca. en måned, får længden med - tre måneder stiger naturligt mere end én.
+        const months = Math.round(b.days / 30.4);
+        const length = b.days > 45 ? ` · ${formatDuration(months)}` : b.days < 20 ? ` · ${b.days} dage` : '';
+        return el('li', {className:'best-period'}, [
+            el('span', {className:'best-period-when', textContent: `${formatDanishDate(b.from)} → ${formatDanishDate(b.to)}${length}`}),
+            el('span', {className:'best-period-value'}, [
+                formatSignedKr(b.gain),
+                b.pct !== null ? el('span', {className:'change-pct', textContent:` (+${formatPct(b.pct)})`}) : ''
+            ])
+        ]);
+    }));
+}

@@ -689,3 +689,38 @@ test('Slet i historikken og på lån spørger først, og Annullér beholder data
     await confirm.getByRole('button', { name: 'Annullér' }).click();
     await expect(page.locator('.debt-row')).toHaveCount(4);
 });
+
+test('ændring pr. datapunkt og bedste perioder - indskud tæller ikke som afkast', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        const nw = (date, value) => ({date, value, liquid:value, netCatKontanter:value, netCatAktier:0, netCatPension:0, netCatFrivaerdi:0, netCatAndet:0, debt:0});
+        localStorage.setItem('netWorthHistory', JSON.stringify([nw('2026-06-30', 480000), nw('2026-07-31', 500000), nw('2026-08-31', 540000), nw('2026-09-30', 530000)]));
+        localStorage.setItem('portfolioHistory', JSON.stringify([
+            {date:'2026-07-31', portfolioValue:200000, stockValue:200000, cash:0, traded:0, deposit:190000, dividend:0},
+            {date:'2026-08-31', portfolioValue:230000, stockValue:230000, cash:0, traded:0, deposit:25000, dividend:0},
+            {date:'2026-09-30', portfolioValue:240000, stockValue:240000, cash:0, traded:0, deposit:0, dividend:0}]));
+    });
+    await page.reload();
+    await page.getByRole('button', { name: 'Formue', exact: true }).click();
+    const nwRows = page.locator('#netWorthHistoryTableBody tr');
+    await expect(nwRows.nth(0).locator('.change-cell')).toHaveText('–');
+    await expect(nwRows.nth(2).locator('.change-cell')).toHaveText('+40.000 kr.');
+    await expect(nwRows.nth(3).locator('.change-cell')).toHaveClass(/is-down/);
+    const nwBest = page.locator('#nwBestPeriods li');
+    await expect(nwBest).toHaveCount(2);
+    await expect(nwBest.first()).toContainText('31. jul. 2026 → 31. aug. 2026');
+    await expect(nwBest.first()).toContainText('+40.000 kr.');
+
+    await page.getByRole('button', { name: 'Investering', exact: true }).click();
+    await page.evaluate(() => showTool(4));
+    const ptRow = page.locator('#ptTableBody tr').nth(1);
+    await expect(ptRow.locator('.change-cell').nth(0)).toHaveText('+30.000 kr.');
+    await expect(ptRow.locator('.change-cell').nth(1)).toContainText('+5.000 kr.');     // 30.000 − 25.000 indsat
+    await expect(page.locator('#ptBestPeriods li').first()).toContainText('+10.000 kr.');  // september: intet indsat
+
+    // CSV: ændringerne kommer med som tal, Ret/Slet-knapperne gør ikke.
+    const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Download som CSV' }).first().click()]);
+    const csv = require('fs').readFileSync(await download.path(), 'utf8');
+    expect(csv.split('\r\n')[0]).toBe('﻿"Dato";"Porteføljeværdi";"Ændring";"Heraf afkast";"Aktieværdi";"Kontant";"Købt/solgt";"Indskud/udb.";"Udbytte"');
+    expect(csv).not.toContain('Slet');
+});

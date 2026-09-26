@@ -524,6 +524,46 @@ function mergeByDate(history, entries){
     return { history: next, replacedDates, addedCount: incomingDates.length - replacedDates.length };
 }
 
+// ==== Ændringer mellem datapunkter og de bedste perioder ====
+
+/**
+ * Ændringen fra hvert datapunkt til det næste. Beregnes altid ud fra
+ * historikken (gemmes ikke), så den passer, også når punkter rettes eller slettes.
+ * gain er ændringen minus pengene sat ind i perioden - for porteføljen er det
+ * afkastet; for formuen er der ingen indskud at trække fra, så gain = change.
+ * @param {{date:string}[]} history sorteret efter dato
+ * @param {(h:Object) => number} valueOf værdien i et datapunkt
+ * @param {(h:Object) => number} [flowOf] penge sat ind (+) eller hævet (−) siden forrige punkt
+ * @returns {{from:string, to:string, days:number, change:number, gain:number, pct:number|null}[]}
+ *   pct = gain i forhold til værdien ved periodens start (null, hvis den var 0 eller negativ)
+ */
+function periodChanges(history, valueOf, flowOf = () => 0){
+    const sorted = history.slice().sort((a, b) => a.date.localeCompare(b.date));
+    const out = [];
+    for(let i = 1; i < sorted.length; i++){
+        const prev = sorted[i - 1], cur = sorted[i];
+        const start = valueOf(prev) || 0;
+        const change = (valueOf(cur) || 0) - start;
+        const gain = change - (flowOf(cur) || 0);
+        out.push({
+            from: prev.date, to: cur.date,
+            days: Math.round((Date.parse(cur.date) - Date.parse(prev.date)) / 86400000),
+            change, gain,
+            pct: start > 0 ? gain / start : null
+        });
+    }
+    return out;
+}
+
+/**
+ * De perioder med størst stigning (gain), højst n og kun dem, der steg.
+ * @param {ReturnType<typeof periodChanges>} changes
+ * @param {number} [n]
+ */
+function bestPeriods(changes, n = 3){
+    return changes.filter(c => c.gain > 0).sort((a, b) => b.gain - a.gain).slice(0, n);
+}
+
 // ==== Synkronisering mellem enheder via en fil ====
 
 /**
@@ -1453,6 +1493,7 @@ function goalProgress(g){
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
+        periodChanges, bestPeriods,
         planSync, applySync,
         CAPITAL_INCOME_LIMIT,
         monthlyStatusReminder,

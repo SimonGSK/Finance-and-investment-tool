@@ -526,6 +526,11 @@ function renderNetWorthHistory(){
         });
     }
 
+    // Ændringen siden forrige datapunkt beregnes her hver gang - den gemmes ikke (se periodChanges i calc.js).
+    const changes = periodChanges(history, h => h.value);
+    const changeByDate = new Map(changes.map(c => [c.to, c]));
+    renderBestPeriods('nwBestPeriods', bestPeriods(changes), 'Gem mindst to datoer, hvor formuen stiger, for at se dine bedste perioder.');
+
     const historyTableBody = document.getElementById('netWorthHistoryTableBody');
     historyTableBody.innerHTML = history.map(h => `<tr>
             <td data-csv="${h.date}">${formatDanishDate(h.date)}</td>
@@ -537,6 +542,7 @@ function renderNetWorthHistory(){
             <td>${DK.format(h.debt || 0)} kr.</td>
             <td>${DK.format(h.liquid ?? 0)} kr.</td>
             <td>${DK.format(h.value)} kr.</td>
+            ${changeCellHtml(changeByDate.get(h.date))}
             <td><div class="row-actions">
                 <button class="btn btn-secondary btn-sm" aria-label="Ret datapunktet for ${formatDanishDate(h.date)}" onclick="editNetWorthEntry('${h.date}')">Ret</button>
                 <button class="btn btn-secondary btn-sm" aria-label="Slet datapunktet for ${formatDanishDate(h.date)}" onclick="deleteNetWorthEntry('${h.date}')">Slet</button>

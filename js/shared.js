@@ -109,12 +109,16 @@ function bindSliderAndNumber(sliderId, numberId, onChange){
 function downloadTableAsCSV(tbodyId, filename){
     const tbody = document.getElementById(tbodyId);
     const table = tbody.closest('table');
-    const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
-    const rows = Array.from(tbody.querySelectorAll('tr')).map(tr =>
+    const allHeaders = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
+    // Kolonner uden overskrift (Ret/Slet-knapperne) kommer ikke med.
+    const keep = allHeaders.map((h, i) => h ? i : -1).filter(i => i >= 0);
+    const headers = keep.map(i => allHeaders[i]);
+    const rows = Array.from(tbody.querySelectorAll('tr')).map(tr => {
         // Celler kan gemme en maskinlæsbar værdi (fx ISO-datoen) i data-csv, så
         // eksporten kan læses ind igen, selvom tabellen viser "30. sep. 2026".
-        Array.from(tr.querySelectorAll('td')).map(td => (td.dataset.csv ?? td.textContent).trim())
-    );
+        const cells = Array.from(tr.querySelectorAll('td'));
+        return keep.map(i => cells[i] ? (cells[i].dataset.csv ?? cells[i].textContent).trim() : '');
+    });
 
     downloadCSV([headers, ...rows], filename);
 }

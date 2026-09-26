@@ -600,6 +600,12 @@
             </div>
 
             <div class="panel">
+                <div class="eyebrow">Bedste perioder</div>
+                <p class="dialog-hint">De tre perioder med det største afkast – ændringen i porteføljens værdi minus det, du har sat ind.</p>
+                <ol class="best-periods" id="ptBestPeriods"></ol>
+            </div>
+
+            <div class="panel">
                 <div class="eyebrow">Data pr. datapunkt</div>
                 <div class="data-table-wrap">
                     <table class="data-table">
@@ -607,6 +613,8 @@
                         <tr>
                             <th>Dato</th>
                             <th>Porteføljeværdi</th>
+                            <th>Ændring</th>
+                            <th>Heraf afkast</th>
                             <th>Aktieværdi</th>
                             <th>Kontant</th>
                             <th>Købt/solgt</th>
@@ -1225,6 +1233,7 @@
                             <th>Gæld</th>
                             <th>Likvid</th>
                             <th>Nettoformue</th>
+                            <th>Ændring</th>
                             <th></th>
                         </tr>
                         </thead>
@@ -1267,6 +1276,12 @@
                         <div class="sub" id="recordLiquidDate"></div>
                     </div>
                 </div>
+            </div>
+
+            <div class="panel">
+                <div class="eyebrow">Bedste perioder</div>
+                <p class="dialog-hint">De tre perioder mellem to gemte datoer, hvor din nettoformue steg mest.</p>
+                <ol class="best-periods" id="nwBestPeriods"></ol>
             </div>
 
         <div class="panel">
