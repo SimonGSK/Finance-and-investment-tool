@@ -98,8 +98,15 @@ function addDebt(){
 }
 
 /** Sletter et lån - med fortryd. */
-function removeDebt(index){
+async function removeDebt(index){
     const data = loadDebtData();
+    const debt = data.debts[index];
+    const ok = await confirmDialog({
+        title:'Slet lånet?',
+        message:`"${debt.name || 'Lånet'}" med en restgæld på ${DK.format(+debt.balance || 0)} kr. slettes.`,
+        confirmLabel:'Slet', danger:true
+    });
+    if(!ok) return;
     const [removed] = data.debts.splice(index, 1);
     saveDebtData(data);
     renderDebtRows();

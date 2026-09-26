@@ -15,7 +15,12 @@ module.exports = defineConfig({
         trace: 'retain-on-failure'
     },
     projects: [
-        { name: 'desktop', use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 900 } } }
+        { name: 'desktop', use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 900 } } },
+        // Telefoner og tablets: kun testene mærket @mobil. iPhone og iPad i WebKit (Safaris motor),
+        // fordi Safari lægger layout anderledes end Chrome - fx fik et panel skærmbred scroll kun dér.
+        { name: 'iphone', grep: /@mobil/, use: { ...devices['iPhone 13'] } },
+        { name: 'android-small', grep: /@mobil/, use: { ...devices['Galaxy S9+'], viewport: { width: 360, height: 740 } } },
+        { name: 'ipad', grep: /@mobil/, use: { ...devices['iPad Mini'] } }
     ],
     webServer: {
         command: 'python3 -m http.server 4174',

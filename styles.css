@@ -214,12 +214,12 @@ h1{
 .summary-toggle{ cursor:pointer; color:var(--muted); font-size:13.5px; }
 .btn-sm{ font-size:12px; padding:6px 12px; }
 @media (max-width:1100px){
-    .layout, .layout-net-worth{grid-template-columns:1fr;}
+    .layout, .layout-net-worth{grid-template-columns:minmax(0, 1fr);}
     .panel.chart-panel-sticky{ position:static; }
     .chart-panel-sticky .chart-wrap{ height:360px; }
 }
 @media (max-width:820px){
-    .layout-wide{grid-template-columns:1fr;}
+    .layout-wide{grid-template-columns:minmax(0, 1fr);}
 }
 
 /* ---- Panel ---- */
@@ -727,7 +727,13 @@ table.data-table tbody tr:hover{ background:var(--panel-hover); }
 .dialog-total strong{ font-family:var(--font-mono); font-size:18px; font-weight:500; color:var(--akt); }
 .dialog-section{ margin-top:var(--s5); padding-top:var(--s4); border-top:1px solid var(--border); }
 .empty-note{ font-size:13.5px; color:var(--subtle); margin:0 0 var(--s3) 0; }
-select.number-input{ font-family:var(--font-sans); cursor:pointer; }
+select.number-input{
+    font-family:var(--font-sans); cursor:pointer;
+    /* Egen pil, så vælgeren ligner de andre felter - også på iPhone, der ellers tegner sin egen tynde version. */
+    -webkit-appearance:none; appearance:none; padding-right:36px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%237A87A1' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 12px center;
+}
 
 /* ---- Progress ---- */
 .milestone-row{
@@ -1037,7 +1043,7 @@ table.data-table td.is-negative{ color:var(--ask); }
     .tab-btn{ font-size:13.5px; }
     .stats{ grid-template-columns:1fr; }
     .data-table-wrap{ overflow-x:auto; }
-    table.data-table{ min-width:520px; }
+    /* Ingen fast mindstebredde: celler brydes ikke (se nedenfor), og brede tabeller scroller i deres boks. */
     .settings-btn{ top:var(--s4); right:var(--s4); }
     .help-btn{ right:calc(var(--s4) + 52px); }
     .settings-panel{ right:var(--s4); left:var(--s4); width:auto; }
@@ -1179,7 +1185,8 @@ table.data-table.etf-rules td:first-child{ color:var(--text); font-weight:600; }
     .stats > .stat:last-child:nth-child(odd){ grid-column:1 / -1; }
     /* Tal og datoer i tabeller brydes ikke over flere linjer - tabellen kan scrolles i stedet. */
     table.data-table th, table.data-table td{ white-space:nowrap; }
-    table.data-table.etf-rules th, table.data-table.etf-rules td{ white-space:normal; }
+    table.data-table.etf-rules th, table.data-table.etf-rules td,
+    table.data-table.data-table-kv td{ white-space:normal; }
 }
 
 /* Privatlivsnote i feedbackformularen */
@@ -1200,3 +1207,28 @@ table.data-table.etf-rules td:first-child{ color:var(--text); font-weight:600; }
     .sync-row{ flex-direction:column; align-items:stretch; }
     .sync-choice-wrap{ max-width:none; }
 }
+
+/* Safari (iPhone) giver ellers en gitterkolonne indholdets mindstebredde, så et panel kan blive
+   bredere end skærmen. Paneler og felter må altid krympe til kolonnen. */
+.layout > *, .layout-wide > *, .layout-net-worth > *{ min-width:0; }
+select.number-input, .number-input{ max-width:100%; }
+@media (max-width:640px){
+    /* iPhone zoomer ind, når man trykker i et felt med tekst under 16 px - og zoomer ikke ud igen. */
+    input, select, textarea, .number-input{ font-size:16px; }
+}
+
+/* ---- Foldede forklaringer (telefon) ---- */
+details.fold > .fold-summary{ display:none; }
+@media (max-width:640px){
+    details.fold{ margin-top:var(--s3); }
+    details.fold > .fold-summary{
+        display:inline-flex; align-items:center; gap:var(--s2); cursor:pointer; list-style:none;
+        font-size:13px; font-weight:600; color:var(--akt); padding:var(--s1) 0;
+    }
+    details.fold > .fold-summary::-webkit-details-marker{ display:none; }
+    details.fold > .fold-summary::before{ content:'▸'; transition:transform 0.18s var(--ease); }
+    details.fold[open] > .fold-summary::before{ transform:rotate(90deg); }
+    details.fold > .explainer{ margin-top:var(--s2); }
+}
+/* En tabelboks må aldrig blive bredere end sit panel - brede tabeller scroller inde i den. */
+.data-table-wrap{ max-width:100%; min-width:0; }

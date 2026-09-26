@@ -186,13 +186,19 @@ async function savePortfolioSnapshot(){
 }
 
 /**
- * Sletter ét datapunkt - med fortryd.
+ * Sletter ét datapunkt efter bekræftelse - med fortryd.
  * @param {string} date ISO-dato, fx '2026-09-21'
  */
-function deletePortfolioEntry(date){
+async function deletePortfolioEntry(date){
     const history = readPortfolioHistory();
     const removed = history.find(h => h.date === date);
     if(!removed) return;
+    const ok = await confirmDialog({
+        title:'Slet datapunktet?',
+        message:`Porteføljen for ${formatDanishDate(date)} (værdi ${DK.format(removed.portfolioValue)} kr.) slettes fra historikken.`,
+        confirmLabel:'Slet', danger:true
+    });
+    if(!ok) return;
     writePortfolioHistory(history.filter(h => h.date !== date));
     renderPortfolioHistory();
     notify(`Datapunktet for ${formatDanishDate(date)} er slettet.`, {actionLabel:'Fortryd', onAction: () => {

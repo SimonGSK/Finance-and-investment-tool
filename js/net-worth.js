@@ -406,13 +406,19 @@ async function saveNetWorthSnapshot(){
 }
 
 /**
- * Sletter ét datapunkt - med fortryd.
+ * Sletter ét datapunkt efter bekræftelse - med fortryd.
  * @param {string} date ISO-dato, fx '2026-09-21'
  */
-function deleteNetWorthEntry(date){
+async function deleteNetWorthEntry(date){
     const history = readNetWorthHistory();
     const removed = history.find(h => h.date === date);
     if(!removed) return;
+    const ok = await confirmDialog({
+        title:'Slet datapunktet?',
+        message:`Formuen for ${formatDanishDate(date)} (nettoformue ${DK.format(removed.value)} kr.) slettes fra historikken.`,
+        confirmLabel:'Slet', danger:true
+    });
+    if(!ok) return;
     writeNetWorthHistory(history.filter(h => h.date !== date));
     renderNetWorthHistory();
     notify(`Datapunktet for ${formatDanishDate(date)} er slettet.`, {actionLabel:'Fortryd', onAction: () => {
