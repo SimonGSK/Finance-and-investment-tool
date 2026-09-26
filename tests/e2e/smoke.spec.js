@@ -744,7 +744,7 @@ test('år for år og prognose: tabellerne regner rigtigt, og prognosen står und
     await expect(nwYear.nth(1)).toContainText('2025 (fra 30. sep.)');
     await expect(page.locator('#nwForecastNote')).toContainText('+10.008 kr. om måneden');
     await expect(page.locator('#nwForecastNote')).toContainText('Næste milepæl, 1.000.000 kr.');
-    expect(await page.evaluate(() => netWorthHistoryChart.data.datasets[2].data.length)).toBe(2);
+    expect(await page.evaluate(() => netWorthHistoryChart.data.datasets[2].data.length)).toBe(25);   // ét punkt pr. måned i 2 år
 
     await page.getByRole('button', { name: 'Investering', exact: true }).click();
     await page.evaluate(() => showTool(4));
