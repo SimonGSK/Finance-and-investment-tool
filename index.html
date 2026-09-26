@@ -606,6 +606,17 @@
             </div>
 
             <div class="panel">
+                <div class="eyebrow">År for år</div>
+                <div class="data-table-wrap">
+                    <table class="data-table year-table">
+                        <thead><tr><th>År</th><th>Start</th><th>Slut</th><th>Indsat</th><th>Afkast</th><th>Afkast i %</th></tr></thead>
+                        <tbody id="ptYearBody"></tbody>
+                    </table>
+                </div>
+                <p class="dialog-hint year-hint">Afkast er ændringen i værdi minus det, du har sat ind. Procenten regner indskuddene med halvt, fordi de i snit kun har været investeret halvdelen af året.</p>
+            </div>
+
+            <div class="panel">
                 <div class="eyebrow">Data pr. datapunkt</div>
                 <div class="data-table-wrap">
                     <table class="data-table">
@@ -1219,6 +1230,7 @@
                 <canvas id="netWorthHistoryChart"></canvas>
                 <div class="chart-empty-state" id="netWorthHistoryChartEmpty">Ingen data endnu – gem en månedsstatus for at se udviklingen her.</div>
             </div>
+            <p class="forecast-note" id="nwForecastNote"></p>
 
                 <div class="data-table-wrap" style="max-height:280px;">
                     <table class="data-table">
@@ -1282,6 +1294,17 @@
                 <div class="eyebrow">Bedste perioder</div>
                 <p class="dialog-hint">De tre perioder mellem to gemte datoer, hvor din nettoformue steg mest.</p>
                 <ol class="best-periods" id="nwBestPeriods"></ol>
+            </div>
+
+            <div class="panel">
+                <div class="eyebrow">År for år</div>
+                <div class="data-table-wrap">
+                    <table class="data-table year-table">
+                        <thead><tr><th>År</th><th>Start</th><th>Slut</th><th>Ændring</th><th>I procent</th></tr></thead>
+                        <tbody id="nwYearBody"></tbody>
+                    </table>
+                </div>
+                <p class="dialog-hint year-hint">Start er din seneste dato året før (eller årets første); slut er årets seneste.</p>
             </div>
 
         <div class="panel">

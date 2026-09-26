@@ -724,3 +724,32 @@ test('ændring pr. datapunkt og bedste perioder - indskud tæller ikke som afkas
     expect(csv.split('\r\n')[0]).toBe('﻿"Dato";"Porteføljeværdi";"Ændring";"Heraf afkast";"Aktieværdi";"Kontant";"Købt/solgt";"Indskud/udb.";"Udbytte"');
     expect(csv).not.toContain('Slet');
 });
+
+test('år for år og prognose: tabellerne regner rigtigt, og prognosen står under grafen', async ({ page }) => {
+    await page.clock.setFixedTime(new Date('2026-10-05T12:00:00'));
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        const nw = (date, value) => ({date, value, liquid:value, netCatKontanter:value, netCatAktier:0, netCatPension:0, netCatFrivaerdi:0, netCatAndet:0, debt:0});
+        localStorage.setItem('netWorthHistory', JSON.stringify([nw('2025-09-30', 400000), nw('2025-12-31', 430000), nw('2026-09-30', 520000)]));
+        localStorage.setItem('portfolioHistory', JSON.stringify([
+            {date:'2025-12-31', portfolioValue:100000, stockValue:100000, cash:0, traded:0, deposit:100000, dividend:0},
+            {date:'2026-06-30', portfolioValue:130000, stockValue:130000, cash:0, traded:0, deposit:20000, dividend:0},
+            {date:'2026-09-30', portfolioValue:140000, stockValue:140000, cash:0, traded:0, deposit:0, dividend:0}]));
+    });
+    await page.reload();
+    await page.getByRole('button', { name: 'Formue', exact: true }).click();
+    const nwYear = page.locator('#nwYearBody tr');
+    await expect(nwYear.nth(0)).toContainText('2026 (til nu)');
+    await expect(nwYear.nth(0)).toContainText('+90.000 kr.');
+    await expect(nwYear.nth(1)).toContainText('2025 (fra 30. sep.)');
+    await expect(page.locator('#nwForecastNote')).toContainText('+10.008 kr. om måneden');
+    await expect(page.locator('#nwForecastNote')).toContainText('Næste milepæl, 1.000.000 kr.');
+    expect(await page.evaluate(() => netWorthHistoryChart.data.datasets[2].data.length)).toBe(2);
+
+    await page.getByRole('button', { name: 'Investering', exact: true }).click();
+    await page.evaluate(() => showTool(4));
+    const ptYear = page.locator('#ptYearBody tr').first();
+    await expect(ptYear).toContainText('+20.000 kr.');     // indsat
+    await expect(ptYear.locator('.change-cell').first()).toHaveText('+20.000 kr.');   // afkast = 40.000 − 20.000
+    await expect(ptYear.locator('.change-cell').last()).toHaveText('+18,2 %');
+});

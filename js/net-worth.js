@@ -440,6 +440,25 @@ function editNetWorthEntry(date){
 }
 
 /**
+ * Teksten under grafen: hvad den stiplede prognose betyder, hvor den ender,
+ * og hvornår næste milepæl nås i samme tempo.
+ * @param {ReturnType<typeof projectTrend>} projection
+ */
+function renderForecastNote(projection){
+    const note = document.getElementById('nwForecastNote');
+    if(!note) return;
+    if(!projection){ note.textContent = ''; return; }
+    const pace = `${projection.trend >= 0 ? '+' : '−'}${DK.format(Math.abs(projection.trend))} kr. om måneden`;
+    const parts = [`Den stiplede linje fortsætter dit tempo fra det seneste år (${pace}): så er din nettoformue ca. ${DK.format(projection.to.value)} kr. i ${formatMonthYear(projection.to.date)}.`];
+    const next = MILESTONES.find(m => m > projection.from.value);
+    const when = next && projectionReaches(projection, next);
+    if(when) parts.push(`Næste milepæl, ${DK.format(next)} kr., nås omkring ${formatMonthYear(when)}.`);
+    if(projection.trend < 0) parts.push('Formuen er faldet det seneste år – prognosen viser, hvor den ender, hvis det fortsætter.');
+    parts.push('Det er en ret linje, ikke et løfte – afkast og opsparing svinger.');
+    note.textContent = parts.join(' ');
+}
+
+/**
  * Sletter hele formuehistorikken efter bekræftelse - med fortryd.
  */
 async function clearNetWorthHistory(){
@@ -465,12 +484,14 @@ async function clearNetWorthHistory(){
  */
 function renderNetWorthHistory(){
     const history = readNetWorthHistory();
+    // Tidsakse (x = tidspunkt), så månederne står i rigtig afstand - også prognosen to år frem.
+    const t = iso => Date.parse(iso + 'T00:00:00');
+    const projection = projectTrend(history, 'value', 24);
     const chartData = {
-        labels: history.map(h => formatDanishDate(h.date)),
         datasets:[
             {
                 label:'Nettoformue',
-                data: history.map(h => h.value),
+                data: history.map(h => ({x: t(h.date), y: h.value})),
                 borderColor:CHART_COLOR('--akt'),
                 backgroundColor:CHART_COLOR('--akt'),
                 themeVar:'--akt',
@@ -480,7 +501,7 @@ function renderNetWorthHistory(){
             },
             {
                 label:'Likvid formue',
-                data: history.map(h => h.liquid ?? null),
+                data: history.map(h => ({x: t(h.date), y: h.liquid ?? null})),
                 borderColor:CHART_COLOR('--ask'),
                 backgroundColor:CHART_COLOR('--ask'),
                 themeVar:'--ask',
@@ -488,12 +509,29 @@ function renderNetWorthHistory(){
                 pointRadius:4,
                 borderWidth:2,
                 borderDash:[4,4]
+            },
+            {
+                label:'Prognose (tempoet det seneste år)',
+                data: projection ? [{x: t(projection.from.date), y: projection.from.value}, {x: t(projection.to.date), y: projection.to.value}] : [],
+                borderColor:CHART_COLOR('--akt'),
+                backgroundColor:CHART_COLOR('--akt'),
+                themeVar:'--akt',
+                pointRadius:0,
+                borderWidth:1.5,
+                borderDash:[2,5]
             }
         ]
     };
+    renderForecastNote(projection);
+
+    // Aksen går fra første datapunkt til prognosens slutning - ingen tom plads før den første dato.
+    const xMin = history.length ? t(history[0].date) : undefined;
+    const xMax = projection ? t(projection.to.date) : history.length ? t(history.at(-1).date) : undefined;
 
     if(netWorthHistoryChart){
         netWorthHistoryChart.data = chartData;
+        netWorthHistoryChart.options.scales.x.min = xMin;
+        netWorthHistoryChart.options.scales.x.max = xMax;
         netWorthHistoryChart.update();
     } else {
         const ctx = document.getElementById('netWorthHistoryChart').getContext('2d');
@@ -515,16 +553,22 @@ function renderNetWorthHistory(){
                         borderWidth:1,
                         titleColor:CHART_COLOR('--text'),
                         bodyColor:CHART_COLOR('--text'),
-                        callbacks:{ label: c => `${c.dataset.label}: ${DK.format(c.raw)} kr.` }
+                        callbacks:{
+                            title: items => formatDanishDate(todayIso(new Date(items[0].parsed.x))),
+                            label: c => `${c.dataset.label}: ${DK.format(c.parsed.y)} kr.`
+                        }
                     }
                 },
                 scales:{
-                    x:{ grid:{color:CHART_COLOR('--chart-grid')}, ticks:{color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-mono'), size:11}} },
+                    x:{ type:'linear', min: xMin, max: xMax, grid:{color:CHART_COLOR('--chart-grid')},
+                        ticks:{color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-mono'), size:11}, maxTicksLimit:7, callback: v => formatMonthYear(v)} },
                     y:{ grid:{color:CHART_COLOR('--chart-grid')}, ticks:{color:CHART_COLOR('--muted'), font:{family:getCSSVar('--font-mono'), size:11}, callback: v => DK.format(v)} }
                 }
             }
         });
     }
+
+    renderYearSummary('nwYearBody', yearSummary(history, h => h.value), false, 'Gem datoer over mindst to måneder for at se udviklingen år for år.');
 
     // Ændringen siden forrige datapunkt beregnes her hver gang - den gemmes ikke (se periodChanges i calc.js).
     const changes = periodChanges(history, h => h.value);
