@@ -577,3 +577,76 @@ test('alderen i "Hvor rig er jeg?" huskes, og info-dialoger har kun ét luk-kryd
     await dialog.getByRole('button', { name: 'Luk' }).click();
     await expect(dialog).toBeHidden();
 });
+
+test('synkronisering: en fil fra en anden enhed flettes i stedet for at overskrive, og kan fortrydes', async ({ browser }) => {
+    // Enhed A: gemmer sine data.
+    const a = await (await browser.newContext()).newPage();
+    await a.goto('/index.html');
+    await a.evaluate(() => {
+        const nw = (date, value) => ({date, value, liquid:value, netCatKontanter:value, netCatAktier:0, netCatPension:0, netCatFrivaerdi:0, netCatAndet:0, debt:0});
+        localStorage.setItem('netWorthHistory', JSON.stringify([nw('2026-07-31', 100), nw('2026-08-31', 200)]));
+        localStorage.setItem('budgetItems', JSON.stringify({catBolig:[{label:'Husleje', amount:9500}]}));
+    });
+    await a.reload();
+    await a.locator('#settingsBtn').click();
+    const [download] = await Promise.all([a.waitForEvent('download'), a.getByRole('button', { name: 'Gem mine data' }).click()]);
+    expect(download.suggestedFilename()).toMatch(/^okonomi-data-\d{4}-\d{2}-\d{2}-\d{4}\.json$/);
+    const filePath = await download.path();
+    const file = JSON.parse(require('fs').readFileSync(filePath, 'utf8'));
+    expect(file.format).toBe('okonomivaerktoejer');
+    expect(file.times.budgetItems).toBeGreaterThan(0);
+
+    // Enhed B: har sin egen historik, et ældre budget og mål, der ikke findes på A.
+    const b = await (await browser.newContext()).newPage();
+    await b.goto('/index.html');
+    await b.evaluate(() => {
+        const nw = (date, value) => ({date, value, liquid:value, netCatKontanter:value, netCatAktier:0, netCatPension:0, netCatFrivaerdi:0, netCatAndet:0, debt:0});
+        localStorage.setItem('netWorthHistory', JSON.stringify([nw('2026-06-30', 50), nw('2026-08-31', 210)]));
+        localStorage.setItem('budgetItems', JSON.stringify({catBolig:[{label:'Husleje', amount:9000}]}));
+        localStorage.setItem('netWorthGoals', JSON.stringify([{id:'g1', name:'Kun på B', metric:'value', target:1000, deadline:null}]));
+        const times = JSON.parse(localStorage.getItem('syncTimes'));
+        times.budgetItems = 1;   // B's budget er ældre end A's
+        localStorage.setItem('syncTimes', JSON.stringify(times));
+    });
+    await b.reload();
+    await b.locator('#settingsBtn').click();
+    await b.locator('#allDataUpload').setInputFiles(filePath);
+    const dialog = b.getByRole('dialog', { name: 'Hent data fra fil' });
+    await expect(dialog).toContainText('1 ny dato fra filen lægges til');
+    await expect(dialog).toContainText('1 dato har forskellige tal (31. aug. 2026)');
+    await expect(dialog.getByLabel('Brug – Budgetposter')).toHaveValue('incoming');     // filens er nyest
+    await dialog.getByLabel('Ved forskellige tal, brug – Formuehistorik').selectOption('local');
+    await dialog.getByRole('button', { name: 'Hent og flet' }).click();
+
+    await expect(b.locator('.toast')).toContainText('hentet og flettet');
+    const after = await b.evaluate(() => ({
+        history: JSON.parse(localStorage.getItem('netWorthHistory')).map(h => [h.date, h.value]),
+        budget: JSON.parse(localStorage.getItem('budgetItems')).catBolig[0].amount,
+        goals: JSON.parse(localStorage.getItem('netWorthGoals')).length
+    }));
+    expect(after).toEqual({history: [['2026-06-30', 50], ['2026-07-31', 100], ['2026-08-31', 210]], budget: 9500, goals: 1});
+
+    await b.locator('.toast').getByRole('button', { name: 'Fortryd' }).click();
+    await b.waitForLoadState('load');
+    const undone = await b.evaluate(() => JSON.parse(localStorage.getItem('netWorthHistory')).map(h => h.date));
+    expect(undone).toEqual(['2026-06-30', '2026-08-31']);
+});
+
+test('synkronisering: en ny, tom enhed foreslår filens tal frem for sine egne standardværdier', async ({ browser }) => {
+    const a = await (await browser.newContext()).newPage();
+    await a.goto('/index.html');
+    await a.getByRole('button', { name: 'Formue', exact: true }).click();
+    await a.getByLabel('Aktier & værdipapirer', { exact: true }).fill('300000');
+    await a.locator('#settingsBtn').click();
+    const [download] = await Promise.all([a.waitForEvent('download'), a.getByRole('button', { name: 'Gem mine data' }).click()]);
+
+    const b = await (await browser.newContext()).newPage();
+    await b.goto('/index.html');
+    await b.locator('#settingsBtn').click();
+    await b.locator('#allDataUpload').setInputFiles(await download.path());
+    const dialog = b.getByRole('dialog', { name: 'Hent data fra fil' });
+    await expect(dialog.getByLabel('Brug – Formue-felterne')).toHaveValue('incoming');
+    await dialog.getByRole('button', { name: 'Hent og flet' }).click();
+    await b.getByRole('button', { name: 'Formue', exact: true }).click();
+    await expect(b.getByLabel('Aktier & værdipapirer', { exact: true })).toHaveValue('300000');
+});

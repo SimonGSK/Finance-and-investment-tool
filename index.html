@@ -73,12 +73,13 @@
                     Påmind mig om månedsstatus ved hvert månedsskifte
                 </label>
 
-                <div class="eyebrow" style="margin-top:18px; margin-bottom:10px;">Data</div>
-                <p class="explainer" style="margin:0 0 10px 0; padding-top:0; border-top:none;">Download for at gemme alle dine data i én fil – budget, formue med historik og mål, porteføljen, dine lån og indstillingerne – eller upload for at genindlæse dem.</p>
+                <div class="eyebrow" style="margin-top:18px; margin-bottom:10px;">Dine data og synkronisering</div>
+                <p class="explainer" style="margin:0 0 10px 0; padding-top:0; border-top:none;">Alt gemmes kun her i browseren. Gem dine data i én fil som backup – eller for at få de samme tal på telefon og computer: læg filen i fx Google Drive eller iCloud, og hent den på den anden enhed. Tallene flettes, så intet går tabt.</p>
                 <p class="backup-status" id="backupStatus"></p>
-                <button class="btn btn-secondary" style="width:100%; margin-bottom:8px;" onclick="exportAllData()">Download alt (JSON)</button>
-                <button class="btn btn-secondary" style="width:100%;" onclick="document.getElementById('allDataUpload').click()">Upload alt (JSON)</button>
-                <input type="file" id="allDataUpload" accept=".json" style="display:none;" onchange="importAllData(event)">
+                <button class="btn btn-secondary" style="width:100%; margin-bottom:8px;" type="button" onclick="exportAllData()">Gem mine data</button>
+                <button class="btn btn-secondary" style="width:100%;" type="button" onclick="document.getElementById('allDataUpload').click()">Hent data fra fil</button>
+                <input type="file" id="allDataUpload" accept=".json,application/json" style="display:none;" onchange="importAllData(event)">
+                <p class="backup-status" id="syncStatus"></p>
                 <button class="btn btn-secondary" style="width:100%; margin-top:8px;" type="button" onclick="printOverview()">Udskriv overblik (PDF)</button>
 
                 <div id="installAppRow" hidden>
@@ -1338,7 +1339,12 @@
             </details>
             <details>
                 <summary>Hvordan tager jeg backup eller flytter mine data?</summary>
-                <p>Åbn indstillinger (tandhjulet) og vælg <strong>Download alt (JSON)</strong>. Filen kan indlæses igen – også i en anden browser – med <strong>Upload alt</strong>. Siden minder dig om det, hvis din seneste backup er mere end 30 dage gammel.</p>
+                <p>Åbn indstillinger (tandhjulet) og vælg <strong>Gem mine data</strong>. Filen kan hentes igen – også i en anden browser – med <strong>Hent data fra fil</strong>. Siden minder dig om det, hvis din seneste backup er mere end 30 dage gammel.</p>
+            </details>
+            <details>
+                <summary>Hvordan får jeg de samme tal på telefon og computer?</summary>
+                <p>Tryk <strong>Gem mine data</strong> i indstillingerne på den enhed, du sidst har brugt. På en telefon åbner del-menuen – vælg fx <strong>Google Drive</strong>, <strong>Arkiver i Filer</strong> (iCloud) eller AirDrop. På en computer downloades filen – læg den i Google Drive, eller brug Google Drive til computer, så sker det af sig selv.</p>
+                <p>På den anden enhed trykker du <strong>Hent data fra fil</strong> og vælger filen. Dine data <strong>flettes</strong> med filens: formue- og porteføljehistorikken samles dato for dato, og hvor fx budgettet er forskelligt, vælger du, hvilken udgave du vil beholde – den senest ændrede er foreslået. Det, der kun findes på enheden, beholdes, og du kan fortryde bagefter.</p>
             </details>
             <details>
                 <summary>Hvad er Månedsstatus?</summary>
@@ -1354,12 +1360,12 @@
             </details>
             <details>
                 <summary>Hvad sker der med mine data?</summary>
-                <p>Alt, hvad du skriver i værktøjerne – budget, formue, portefølje, lån og mål – gemmes kun i din egen browser på denne enhed. Intet sendes til en server, siden bruger ingen cookies til sporing, og der er ingen konti. Rydder du dine browserdata, forsvinder tallene, så tag gerne en backup med <strong>Download alt</strong>.</p>
+                <p>Alt, hvad du skriver i værktøjerne – budget, formue, portefølje, lån og mål – gemmes kun i din egen browser på denne enhed. Intet sendes til en server, siden bruger ingen cookies til sporing, og der er ingen konti. Rydder du dine browserdata, forsvinder tallene, så tag gerne en backup med <strong>Gem mine data</strong>.</p>
                 <p>Den eneste undtagelse er <strong>feedbackformularen</strong>: skriver du en besked, sendes den – og din e-mail, hvis du oplyser den – via tjenesten Formspree til udvikleren. Den bruges kun til at forbedre siden og svare dig, deles ikke med andre og slettes senest 12 måneder efter modtagelsen. Vil du have din besked slettet før, kan du skrive det i en ny besked. Opslag på positivlisten sker på din egen enhed; listen hentes fra siden selv.</p>
             </details>
             <details>
                 <summary>Kan jeg bruge siden som en app?</summary>
-                <p>Ja. Åbn indstillingerne (tandhjulet) og tryk <strong>Installér som app</strong> – eller på iPhone: <strong>Del</strong> → <strong>Føj til hjemmeskærm</strong> i Safari. Appen virker også uden internet. På iPhone og iPad har appen sin egen lagerplads, så flyt dine tal med <strong>Download alt</strong> og <strong>Upload alt</strong>.</p>
+                <p>Ja. Åbn indstillingerne (tandhjulet) og tryk <strong>Installér som app</strong> – eller på iPhone: <strong>Del</strong> → <strong>Føj til hjemmeskærm</strong> i Safari. Appen virker også uden internet. På iPhone og iPad har appen sin egen lagerplads, så flyt dine tal med <strong>Gem mine data</strong> og <strong>Hent data fra fil</strong>.</p>
             </details>
             <details>
                 <summary>Kan jeg regne i felterne?</summary>
@@ -1396,6 +1402,7 @@
         </div>
     </template>
     <script src="js/calc.js"></script>
+    <script src="js/sync.js"></script>
     <script src="js/shared.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/field-help.js"></script>

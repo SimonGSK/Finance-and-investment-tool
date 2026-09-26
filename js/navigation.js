@@ -68,39 +68,7 @@ function showSection(name){
     resizeChartsIn(document.getElementById('section-' + name));
 }
 
-const BACKUP_KEYS = ['budgetItems', 'budgetData', 'budgetCustomCategories', 'netWorthData', 'netWorthHistory', 'portfolioHistory', 'monthlyStatusLast', 'debtPayoffData', 'netWorthGoals'];
-// Indstillinger gemmes som rå tekst (ikke JSON) og lægges derfor i et eget 'settings'-afsnit i filen.
-const BACKUP_SETTING_KEYS = ['theme', 'monthlyReminderOff', 'wealthAge'];
-
-/**
- * Downloader alle gemte data (budget, formue, historik, portefølje) som én
- * JSON-fil, så man kan flytte dem til en anden browser eller enhed.
- */
-function exportAllData(){
-    const backup = {};
-    BACKUP_KEYS.forEach(key => {
-        const raw = localStorage.getItem(key);
-        if(raw !== null) backup[key] = JSON.parse(raw);
-    });
-    const settings = {};
-    BACKUP_SETTING_KEYS.forEach(key => { const v = localStorage.getItem(key); if(v !== null) settings[key] = v; });
-    if(Object.keys(settings).length) backup.settings = settings;
-    const json = JSON.stringify(backup, null, 2);
-    const blob = new Blob([json], {type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'okonomivaerktoejer-backup-' + todayIso() + '.json';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    localStorage.setItem('lastBackupAt', String(Date.now()));
-    localStorage.removeItem('backupSnoozedUntil');
-    document.getElementById('backupBanner').hidden = true;
-    renderBackupStatus();
-    notify('Backup downloadet. Gem filen et sikkert sted, fx i din cloud-mappe.');
-}
+// BACKUP_KEYS, exportAllData og importAllData ligger i sync.js.
 
 /** @returns {boolean} om der er data, der ville gå tabt uden backup */
 function hasUserData(){
@@ -192,46 +160,6 @@ function snoozeBackupReminder(){
     localStorage.setItem('backupSnoozedUntil', String(Date.now() + 7 * DAY_MS));
     document.getElementById('backupBanner').hidden = true;
     notify('Vi minder dig om det igen om en uge.');
-}
-
-/**
- * Indlæser en JSON-backup fra exportAllData og overskriver de gemte data efter
- * bekræftelse. Siden genindlæses bagefter, så alt læses ind på ny.
- * @param {Event} event change-eventet fra <input type="file">
- */
-function importAllData(event){
-    const file = event.target.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = async function(e){
-        event.target.value = '';
-        let backup;
-        try{
-            backup = JSON.parse(e.target.result);
-        } catch(err){
-            await infoDialog({title:'Filen kunne ikke læses', message:'Det ser ikke ud til at være en backup-fil fra dette værktøj. Vælg den .json-fil, du fik fra "Download alt".'});
-            return;
-        }
-        const found = BACKUP_KEYS.filter(key => backup[key] !== undefined);
-        if(!found.length){
-            await infoDialog({title:'Ingen data i filen', message:'Filen indeholder ingen budget-, formue- eller porteføljedata. Intet er ændret.'});
-            return;
-        }
-        const ok = await confirmDialog({
-            title:'Erstat dine data med backuppen?',
-            message:'Dine nuværende data i de dele, filen indeholder, bliver erstattet af filens indhold. Det kan ikke fortrydes, så download evt. en backup af dine nuværende data først.',
-            confirmLabel:'Erstat og genindlæs', danger:true
-        });
-        if(!ok) return;
-        // Ældre backups kan indeholde 'budgetMode' fra en fjernet funktion.
-        if(backup.budgetData && typeof backup.budgetData === 'object') delete backup.budgetData.budgetMode;
-        found.forEach(key => localStorage.setItem(key, JSON.stringify(backup[key])));
-        if(backup.settings && typeof backup.settings === 'object'){
-            BACKUP_SETTING_KEYS.forEach(key => { if(typeof backup.settings[key] === 'string') localStorage.setItem(key, backup.settings[key]); });
-        }
-        location.reload();
-    };
-    reader.readAsText(file, 'UTF-8');
 }
 
 /**
