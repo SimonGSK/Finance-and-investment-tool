@@ -53,7 +53,7 @@ async function installApp(){
                 el('li', {}, ['Vælg ', el('strong', {textContent:'Føj til hjemmeskærm'}), '.']),
                 el('li', {}, ['Tryk ', el('strong', {textContent:'Tilføj'}), '.'])
             ]),
-            el('p', {className:'dialog-hint', textContent:'På iPhone og iPad har appen sin egen lagerplads, adskilt fra Safari. Vil du have dine tal med, så tryk Download alt her i Safari først, og Upload alt i appen bagefter.'})
+            el('p', {className:'dialog-hint', textContent:'På iPhone og iPad har appen sin egen lagerplads, adskilt fra Safari. Vil du have dine tal med, så tryk Gem mine data her i Safari først, og Hent data fra fil i appen bagefter.'})
         ])
     });
 }

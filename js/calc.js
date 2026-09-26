@@ -524,6 +524,80 @@ function mergeByDate(history, entries){
     return { history: next, replacedDates, addedCount: incomingDates.length - replacedDates.length };
 }
 
+// ==== Synkronisering mellem enheder via en fil ====
+
+/**
+ * Sammenligner dataene på denne enhed med en fil fra en anden enhed, del for
+ * del (nøgle for nøgle i localStorage). Intet overskrives her - planen viser
+ * bare, hvad der er forskelligt, så brugeren kan vælge.
+ *  - same: ens på begge
+ *  - onlyLocal: findes kun her (beholdes)
+ *  - added: findes kun i filen (hentes)
+ *  - history: historik (formue/portefølje) - datoerne flettes; dates = nye datoer
+ *    fra filen, conflicts = datoer med forskellige tal
+ *  - differs: forskellig på de to - brugeren vælger; newer siger, hvilken der
+ *    senest er ændret (null, hvis det ikke vides)
+ * @param {object} p
+ * @param {Object<string, *>} p.local
+ * @param {Object<string, number>} p.localTimes hvornår hver del sidst blev ændret her (ms)
+ * @param {Object<string, *>} p.incoming
+ * @param {Object<string, number>} p.incomingTimes
+ * @param {string[]} p.keys de dele, der sammenlignes
+ * @param {string[]} p.historyKeys dele, der er lister af {date, ...}
+ * @returns {{key:string, kind:string, newer:'local'|'incoming'|null, dates?:string[], conflicts?:string[]}[]}
+ */
+function planSync({local, localTimes = {}, incoming, incomingTimes = {}, keys, historyKeys = []}){
+    const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+    return keys.map(key => {
+        const hasLocal = local[key] !== undefined && local[key] !== null;
+        const hasIncoming = incoming[key] !== undefined && incoming[key] !== null;
+        const lt = localTimes[key] || 0, it = incomingTimes[key] || 0;
+        const newer = lt && it ? (it > lt ? 'incoming' : 'local') : null;
+        if(!hasIncoming) return {key, kind: hasLocal ? 'onlyLocal' : 'same', newer:null};
+        if(!hasLocal) return {key, kind:'added', newer:'incoming'};
+        if(same(local[key], incoming[key])) return {key, kind:'same', newer:null};
+        if(historyKeys.includes(key) && Array.isArray(local[key]) && Array.isArray(incoming[key])){
+            const mine = new Map(local[key].map(h => [h.date, h]));
+            const dates = [], conflicts = [];
+            incoming[key].forEach(h => {
+                if(!mine.has(h.date)) dates.push(h.date);
+                else if(!same(mine.get(h.date), h)) conflicts.push(h.date);
+            });
+            return {key, kind:'history', newer, dates: dates.sort(), conflicts: conflicts.sort()};
+        }
+        return {key, kind:'differs', newer};
+    });
+}
+
+/**
+ * Bygger resultatet af en synkronisering ud fra planen og brugerens valg.
+ * Historikker flettes altid (ingen datoer går tabt); ved datoer med forskellige
+ * tal og ved dele, der er forskellige, bruges choices[key] ('local' eller
+ * 'incoming'), ellers den senest ændrede, ellers filens.
+ * @param {ReturnType<typeof planSync>} plan
+ * @param {Object<string, *>} local
+ * @param {Object<string, *>} incoming
+ * @param {Object<string, 'local'|'incoming'>} [choices]
+ * @returns {{changes:Object<string, *>, chosen:Object<string, 'local'|'incoming'|'merged'>}} changes = kun de dele, der skal skrives
+ */
+function applySync(plan, local, incoming, choices = {}){
+    const changes = {}, chosen = {};
+    plan.forEach(item => {
+        const pick = choices[item.key] || item.newer || 'incoming';
+        if(item.kind === 'added'){ changes[item.key] = incoming[item.key]; chosen[item.key] = 'incoming'; }
+        else if(item.kind === 'differs' && pick === 'incoming'){ changes[item.key] = incoming[item.key]; chosen[item.key] = 'incoming'; }
+        else if(item.kind === 'history'){
+            const byDate = new Map(local[item.key].map(h => [h.date, h]));
+            incoming[item.key].forEach(h => {
+                if(!byDate.has(h.date) || pick === 'incoming') byDate.set(h.date, h);
+            });
+            changes[item.key] = [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
+            chosen[item.key] = 'merged';
+        }
+    });
+    return {changes, chosen};
+}
+
 /**
  * De felter, der er forskellige mellem to datapunkter - bruges til at vise
  * præcis hvad en overskrivning ændrer. Manglende felter tæller som 0.
@@ -1379,6 +1453,7 @@ function goalProgress(g){
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
+        planSync, applySync,
         CAPITAL_INCOME_LIMIT,
         monthlyStatusReminder,
         pickNetWorthFigures,

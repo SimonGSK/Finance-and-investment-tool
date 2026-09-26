@@ -107,7 +107,8 @@ js/share.js             Shareable calculator links
 js/budget.js            Budget
 js/net-worth.js         Formue: net worth, history, milestones, comparison
 js/goals.js             Formue goals
-js/navigation.js        Tab switching, settings panel, full backup import/export
+js/navigation.js        Tab switching, settings panel, reminders
+js/sync.js              Backup file and syncing between devices (merge, not overwrite)
 js/feedback.js          Feedback button and form (sent via Formspree)
 js/pwa.js               "Install as app" button; registers the service worker
 js/report.js            Printable one-page overview (Udskriv overblik)
@@ -136,9 +137,13 @@ It uses only Python's standard library and keeps the ISIN, name, tax residence a
 
 Each calculator has a **Del beregning** button that copies a link reopening it with the same inputs. The inputs live after the `#` in the link, which browsers never send to a server. The trackers, budget and debt list can't be shared this way — they're personal data, and a link must never overwrite what someone has saved.
 
+## Syncing between devices
+
+There's no server, so phone and computer share data through a file. **Gem mine data** saves everything in one JSON file — on a phone through the share sheet (Google Drive, iCloud Files, AirDrop), on a computer as a download. **Hent data fra fil** on the other device doesn't overwrite: `planSync`/`applySync` in `calc.js` merge the histories date by date, and where a part differs (budget, loans, goals …) the user picks which version to keep, with the most recently changed one suggested. To know what's newest, `sync.js` records when each part last changed (`syncTimes`, via a wrapper around `localStorage.setItem` that only stamps real changes). Parts that exist only on the device are kept, and the whole import can be undone.
+
 ## Install as an app
 
-The site is a Progressive Web App. In Chrome, Edge or on Android, **Installér som app** in the settings panel installs it; on iPhone/iPad it's Safari's **Share → Add to Home Screen** (the button explains this). The service worker (`sw.js`) fetches from the network first, so a new version is picked up as soon as you're online, and falls back to cached copies offline. On install it caches every file `index.html` refers to, so nothing needs updating when files are added. Note that on iOS the installed app has its own storage, separate from Safari — move data with *Download alt / Upload alt*.
+The site is a Progressive Web App. In Chrome, Edge or on Android, **Installér som app** in the settings panel installs it; on iPhone/iPad it's Safari's **Share → Add to Home Screen** (the button explains this). The service worker (`sw.js`) fetches from the network first, so a new version is picked up as soon as you're online, and falls back to cached copies offline. On install it caches every file `index.html` refers to, so nothing needs updating when files are added. Note that on iOS the installed app has its own storage, separate from Safari — move data with *Gem mine data / Hent data fra fil*.
 
 ## Feedback
 

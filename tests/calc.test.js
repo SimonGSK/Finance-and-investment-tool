@@ -807,3 +807,52 @@ describe('gældsafvikling: rente betalt over tid', () => {
         assert.equal(a.payoff.find(p => p.name === 'Kreditkort').month < s.payoff.find(p => p.name === 'Kreditkort').month, true);
     });
 });
+
+describe('synkronisering mellem enheder', () => {
+    const keys = ['netWorthHistory', 'budgetItems', 'netWorthGoals', 'debtPayoffData'];
+    const historyKeys = ['netWorthHistory'];
+    const local = {
+        netWorthHistory: [{date:'2026-07-31', value:100}, {date:'2026-08-31', value:200}],
+        budgetItems: {catBolig:[{label:'Husleje', amount:9000}]},
+        netWorthGoals: [{id:'g1', name:'Mål'}]
+    };
+    const incoming = {
+        netWorthHistory: [{date:'2026-08-31', value:250}, {date:'2026-09-30', value:300}],
+        budgetItems: {catBolig:[{label:'Husleje', amount:9500}]},
+        netWorthGoals: [{id:'g1', name:'Mål'}],
+        debtPayoffData: {extra:500, debts:[]}
+    };
+
+    test('planen viser nye datoer, konflikter, forskelle og dele, der kun findes ét sted', () => {
+        const plan = calc.planSync({local, incoming, keys, historyKeys, localTimes:{budgetItems:1000}, incomingTimes:{budgetItems:2000}});
+        const byKey = Object.fromEntries(plan.map(p => [p.key, p]));
+        assert.deepEqual(byKey.netWorthHistory, {key:'netWorthHistory', kind:'history', newer:null, dates:['2026-09-30'], conflicts:['2026-08-31']});
+        assert.deepEqual(byKey.budgetItems, {key:'budgetItems', kind:'differs', newer:'incoming'});
+        assert.equal(byKey.netWorthGoals.kind, 'same');
+        assert.equal(byKey.debtPayoffData.kind, 'added');
+    });
+
+    test('historikker flettes - ingen dato går tabt - og valget afgør konflikterne', () => {
+        const plan = calc.planSync({local, incoming, keys, historyKeys});
+        const keepMine = calc.applySync(plan, local, incoming, {netWorthHistory:'local', budgetItems:'local'});
+        assert.deepEqual(keepMine.changes.netWorthHistory.map(h => [h.date, h.value]), [['2026-07-31', 100], ['2026-08-31', 200], ['2026-09-30', 300]]);
+        assert.equal(keepMine.changes.budgetItems, undefined);            // mine beholdes: intet skrives
+        assert.deepEqual(keepMine.changes.debtPayoffData, {extra:500, debts:[]});
+        const takeFile = calc.applySync(plan, local, incoming, {netWorthHistory:'incoming', budgetItems:'incoming'});
+        assert.equal(takeFile.changes.netWorthHistory.find(h => h.date === '2026-08-31').value, 250);
+        assert.equal(takeFile.changes.budgetItems.catBolig[0].amount, 9500);
+    });
+
+    test('uden valg bruges den senest ændrede, og ellers filens', () => {
+        const plan = calc.planSync({local, incoming, keys, historyKeys, localTimes:{budgetItems:5000}, incomingTimes:{budgetItems:2000}});
+        assert.equal(calc.applySync(plan, local, incoming).changes.budgetItems, undefined);   // denne enheds er nyere
+        const unknown = calc.planSync({local, incoming, keys, historyKeys});
+        assert.equal(calc.applySync(unknown, local, incoming).changes.budgetItems.catBolig[0].amount, 9500);
+    });
+
+    test('dele, der kun findes på denne enhed, røres ikke', () => {
+        const plan = calc.planSync({local:{netWorthGoals:[{id:'x'}]}, incoming:{}, keys, historyKeys});
+        assert.equal(plan.find(p => p.key === 'netWorthGoals').kind, 'onlyLocal');
+        assert.deepEqual(calc.applySync(plan, {netWorthGoals:[{id:'x'}]}, {}).changes, {});
+    });
+});
