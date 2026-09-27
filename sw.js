@@ -5,7 +5,7 @@
  * index.html henviser til, så appen virker offline allerede fra første besøg.
  * Brugerens data ligger i localStorage og røres ikke her.
  */
-const CACHE = 'okonomi-v1';
+const CACHE = 'okonomi-v2';
 
 self.addEventListener('install', event => {
     event.waitUntil((async () => {
@@ -37,7 +37,9 @@ self.addEventListener('fetch', event => {
     event.respondWith((async () => {
         const cache = await caches.open(CACHE);
         try{
-            const response = await fetch(request);
+            // no-cache: spørg altid serveren, om filen er ændret (et billigt "uændret"-svar, hvis ikke).
+            // Ellers kan browserens egen cache give en gammel CSS-fil til en ny side.
+            const response = await fetch(request, url.origin === location.origin ? {cache: 'no-cache'} : undefined);
             if(response.ok || response.type === 'opaque') cache.put(request, response.clone());
             return response;
         } catch(e){
