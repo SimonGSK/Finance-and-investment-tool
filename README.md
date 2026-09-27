@@ -88,6 +88,9 @@ Both suites run automatically on every push and pull request via GitHub Actions;
 
 The browser tests run on desktop Chrome, and the tests tagged `@mobil` also on an iPhone and iPad in WebKit (Safari's engine — it lays out grids differently from Chrome) and a small Android phone. They check for horizontal scroll, content cut off at a panel's edge, form fields under 16 px (iPhone zooms into those) and that long explanations are folded on phones. Install the browsers once with `npx playwright install chromium webkit`.
 
+
+**After changing CSS or JS, run `npm run stamp`.** It gives `styles.css` and every `js/` file in `index.html` a version stamp from the file's content (`styles.css?v=42c619c5`), so a new page never gets combined with an old, cached stylesheet or script. `tests/assets.test.js` fails if a stamp is out of date. The service worker also asks the server whether a file changed (`cache: 'no-cache'`) instead of trusting the browser cache.
+
 ## Project layout
 
 ```
