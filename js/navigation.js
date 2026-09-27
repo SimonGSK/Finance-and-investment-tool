@@ -256,26 +256,23 @@ if(!localStorage.getItem('hasSeenIntroBanner')){
  * @param {boolean} [open] tving åben/lukket; udeladt skifter
  */
 function toggleSettings(open){
-    const panel = document.getElementById('settingsPanel');
-    const btn = document.getElementById('settingsBtn');
-    const show = open ?? panel.style.display === 'none';
-    if(show) closeNav();
-    panel.style.display = show ? 'block' : 'none';
-    btn.setAttribute('aria-expanded', String(show));
-    if(show) renderBackupStatus();
+    const dialog = document.getElementById('settingsPanel');
+    const show = open ?? !dialog.open;
+    if(show && !dialog.open){
+        closeNav();
+        renderBackupStatus();
+        dialog.showModal();
+    } else if(!show && dialog.open){
+        dialog.close();
+    }
 }
 
-document.addEventListener('keydown', e => {
-    if(e.key === 'Escape' && document.getElementById('settingsPanel').style.display !== 'none' && !document.querySelector('dialog[open]')){
-        toggleSettings(false);
-        document.getElementById('settingsBtn').focus();
-    }
-});
-document.addEventListener('click', e => {
-    const panel = document.getElementById('settingsPanel');
-    if(panel.style.display === 'none') return;
-    if(!panel.contains(e.target) && !document.getElementById('settingsBtn').contains(e.target) && !e.target.closest('dialog')) toggleSettings(false);
-});
+// Esc lukker af sig selv (dialogens "cancel"); et klik på den slørede baggrund lukker også.
+(function initSettingsDialog(){
+    const dialog = document.getElementById('settingsPanel');
+    dialog.addEventListener('click', e => { if(e.target === dialog) dialog.close(); });
+    dialog.addEventListener('close', () => document.getElementById('settingsBtn').focus());
+})();
 
 document.getElementById('doubleDeduction').addEventListener('change', () => {
     setDoubleDeduction(document.getElementById('doubleDeduction').checked);

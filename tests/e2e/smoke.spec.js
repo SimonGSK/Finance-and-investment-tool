@@ -904,3 +904,25 @@ test('formue uden data: graferne viser ingen akser (ingen "jan. 1970"), kun "Ing
     });
     expect(await page.evaluate(() => netWorthHistoryChart.options.scales.x.display)).toBe(true);
 });
+
+test('indstillinger åbner som en dialog med sløret baggrund og lukker med Esc og klik udenfor', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.locator('#settingsBtn').click();
+    const dialog = page.getByRole('dialog', { name: 'Indstillinger' });
+    await expect(dialog).toBeVisible();
+    expect(await dialog.evaluate(d => d.open && d.matches(':modal'))).toBe(true);
+    await expect(dialog.getByRole('button', { name: 'Gem mine data' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+
+    await page.locator('#settingsBtn').click();
+    await page.mouse.click(5, 5);                        // på den slørede baggrund
+    await expect(dialog).toBeHidden();
+
+    // Indstillingerne virker stadig: temaet skifter (fra det, systemet startede med).
+    await page.locator('#settingsBtn').click();
+    const theme = () => page.evaluate(() => document.documentElement.getAttribute('data-theme'));
+    const before = await theme();
+    await dialog.getByText('Lyst tema').click();
+    expect(await theme()).toBe(before === 'light' ? 'dark' : 'light');
+});

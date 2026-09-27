@@ -1576,3 +1576,9 @@ body[data-section="overview"] #overviewActions{ display:flex; }
     .layout-net-worth > .panel:first-child > :not(.field){ grid-column:1 / -1; }
     .layout-net-worth > .chart-panel .chart-wrap{ flex:none; min-height:0; height:clamp(300px, 36cqw, 400px); }
 }
+
+/* ---- Indstillinger som dialog (som Hjælp og Feedback) ---- */
+.dialog.settings-dialog{ width:min(460px, calc(100vw - 32px)); }
+.settings-dialog .dialog-body .toggle-row + .toggle-row{ margin-top:var(--s3); }
+.settings-dialog .dialog-body .eyebrow{ margin-top:var(--s5); }
+.settings-dialog .btn + .btn{ margin-left:0; }
