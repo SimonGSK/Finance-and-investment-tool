@@ -117,8 +117,11 @@ test('budget: en post tilføjes i dialogen, og diagrammets boks er lige så høj
         // og grupperne Behov/Ønsker/Opsparing som kolonner.
         expect(chart.top).toBeGreaterThan(list.bottom - 1);
         expect(chart.height).toBeLessThan(600);
-        const groupTops = await page.locator('#budgetCategoryList .category-group').evaluateAll(gs => gs.map(g => Math.round(g.getBoundingClientRect().top)));
-        expect(new Set(groupTops).size).toBe(1);
+        // To jævne kolonner: Behov til venstre, Ønsker og Opsparing under hinanden til højre.
+        const [behov, onsker, opsparing] = await page.locator('#budgetCategoryList .category-group').evaluateAll(gs => gs.map(g => g.getBoundingClientRect()).map(r => ({left: Math.round(r.left), top: Math.round(r.top), bottom: Math.round(r.bottom)})));
+        expect(onsker.left).toBeGreaterThan(behov.left);
+        expect(opsparing.left).toBe(onsker.left);
+        expect(opsparing.top).toBeGreaterThanOrEqual(onsker.bottom);
     }
 });
 
@@ -869,6 +872,13 @@ test('oversigt og sidemenu: nøgletal fra de andre dele, sidehovedet følger med
     await expect(group).toHaveAttribute('aria-expanded', 'false');
     await expect(page.getByRole('button', { name: 'FIRE-beregner (4%-reglen)', exact: true })).toBeHidden();
     await group.click();
+    // Kun én gruppe åben ad gangen: åbnes Bolig & lån, foldes Investering sammen.
+    const housing = page.getByRole('button', { name: 'Bolig & lån', exact: true });
+    await housing.click();
+    await expect(housing).toHaveAttribute('aria-expanded', 'true');
+    await expect(group).toHaveAttribute('aria-expanded', 'false');
+    await group.click();
+    await expect(housing).toHaveAttribute('aria-expanded', 'false');
     await page.getByRole('button', { name: 'FIRE-beregner (4%-reglen)', exact: true }).click();
     await expect(page.locator('#pageTitle')).toHaveText('FIRE-beregner (4%-reglen)');
     await expect(page.locator('#tool3')).toBeVisible();

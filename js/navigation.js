@@ -73,8 +73,8 @@ function showSection(name){
         section.style.display = section.id === 'section-' + name ? 'block' : 'none';
     });
     document.querySelectorAll('.top-tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.section === name));
-    // Den gruppe, man står i, er altid foldet ud (fx efter en genvej fra Oversigten).
-    document.querySelector(`.nav-group[data-section="${name}"]`)?.setAttribute('aria-expanded', 'true');
+    // Den gruppe, man står i, er foldet ud, og de andre foldes sammen, så menuen ikke bliver lang.
+    document.querySelectorAll('.nav-group').forEach(g => g.setAttribute('aria-expanded', String(g.dataset.section === name)));
     resizeChartsIn(document.getElementById('section-' + name));
     if(name === 'overview' && typeof renderOverview === 'function') renderOverview();
     updatePageHeader();
@@ -118,7 +118,10 @@ function updatePageHeader(){
  * @param {HTMLButtonElement} btn
  */
 function toggleNavGroup(btn){
-    btn.setAttribute('aria-expanded', String(btn.getAttribute('aria-expanded') !== 'true'));
+    const open = btn.getAttribute('aria-expanded') !== 'true';
+    // Kun én gruppe åben ad gangen, så menuen ikke bliver lang.
+    if(open) document.querySelectorAll('.nav-group').forEach(g => { if(g !== btn) g.setAttribute('aria-expanded', 'false'); });
+    btn.setAttribute('aria-expanded', String(open));
 }
 
 // ---- Menuen på telefoner: glider ind fra venstre ----

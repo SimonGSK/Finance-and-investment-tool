@@ -27,7 +27,7 @@
          TODO: Erstat ca-pub-XXXXXXXXXXXXXXXX med mit eget AdSense-udgiver-ID, og fjern kommentaren.
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
     -->
-    <link rel="stylesheet" href="styles.css?v=b3b50016">
+    <link rel="stylesheet" href="styles.css?v=9055c2d7">
 </head>
 <body>
 
@@ -618,12 +618,9 @@
                 <div class="eyebrow">Nyt datapunkt</div>
 
                 <div class="field">
-                    <label for="ptDate">Dato</label>
-                    <input type="date" id="ptDate" class="number-input">
-                </div>
-                <div class="field">
-                    <label for="ptPortfolioValue">Værdi af portefølje (udregnes automatisk)</label>
+                    <label for="ptPortfolioValue">Værdi af portefølje</label>
                     <input type="number" id="ptPortfolioValue" class="number-input" value="0" readonly style="opacity:0.7; cursor:not-allowed;">
+                    <div class="limit-hint">Udregnes automatisk: aktier + kontanter</div>
                 </div>
                 <div class="field">
                     <label for="ptStockValue">Værdi af aktier</label>
@@ -634,21 +631,29 @@
                     <input type="number" id="ptCash" class="number-input" value="0" min="0" step="500">
                 </div>
                 <div class="field">
-                    <label for="ptTraded">Købt/solgt (denne periode, negativ ved netto-salg)</label>
+                    <label for="ptTraded">Købt/solgt</label>
                     <input type="number" id="ptTraded" class="number-input" value="0" step="500">
+                    <div class="limit-hint">Denne periode · negativ ved netto-salg</div>
                 </div>
                 <div class="field">
-                    <label for="ptDeposit">Indskud/udbetaling (denne periode, negativ ved udbetaling)</label>
+                    <label for="ptDeposit">Indskud/udbetaling</label>
                     <input type="number" id="ptDeposit" class="number-input" value="0" step="500">
+                    <div class="limit-hint">Denne periode · negativ ved udbetaling</div>
                 </div>
                 <div class="field">
-                    <label for="ptDividend">Udbytte efter skat (denne periode)</label>
+                    <label for="ptDividend">Udbytte efter skat</label>
                     <input type="number" id="ptDividend" class="number-input" value="0" min="0" step="100">
+                    <div class="limit-hint">Denne periode</div>
                 </div>
 
-                <button class="btn" onclick="savePortfolioSnapshot()">+ Gem datapunkt</button>
-                <button class="btn btn-accent" onclick="openMonthlyStatus()" title="Gem i både porteføljetrackeren og Formue på én gang">Månedsstatus</button>
-                <button class="btn btn-secondary" onclick="clearPortfolioHistory()">Ryd hele historikken</button>
+                <div class="save-row">
+                    <div class="field">
+                        <label for="ptDate">Dato</label>
+                        <input type="date" id="ptDate" class="number-input">
+                    </div>
+                    <button class="btn btn-primary" type="button" onclick="savePortfolioSnapshot()">+ Gem datapunkt</button>
+                    <button class="btn btn-secondary" type="button" onclick="clearPortfolioHistory()">Ryd hele historikken</button>
+                </div>
             </div>
 
             <div class="panel chart-panel">
@@ -1378,7 +1383,7 @@
     <p class="notice source-note" id="netWorthSourceNote" role="status" hidden></p>
 
     <div class="full-width-above">
-        <div class="stats">
+        <div class="stats compact-stats">
             <div class="stat">
                 <div class="label">Aktiver i alt</div>
                 <div class="value ask" id="netAssetsTotal">0 kr.</div>
@@ -1386,7 +1391,6 @@
             <div class="stat">
                 <div class="label">Likvid formue</div>
                 <div class="value ask" id="netLiquidTotal">0 kr.</div>
-                <div class="sub">kontanter + aktier</div>
             </div>
             <div class="stat">
                 <div class="label">Gæld i alt</div>
@@ -1430,8 +1434,17 @@
 
             <div class="eyebrow eyebrow-section">Gæld</div>
             <div class="field">
-                <label for="netDebt">Anden gæld (billån, forbrugslån mv. – ikke realkredit, den indgår allerede i friværdien)</label>
+                <label for="netDebt">Anden gæld</label>
                 <input type="number" id="netDebt" class="number-input" value="0" min="0" step="500">
+                <div class="limit-hint">Billån, forbrugslån mv. – ikke realkredit (den er trukket fra i friværdien)</div>
+            </div>
+
+            <div class="save-row">
+                <div class="field">
+                    <label for="snapshotDate">Dato</label>
+                    <input type="date" id="snapshotDate" class="number-input">
+                </div>
+                <button class="btn btn-primary" type="button" onclick="saveNetWorthSnapshot()">+ Gem formue for valgt dato</button>
             </div>
         </div>
 
@@ -1465,14 +1478,7 @@
                 Gem din formue for en dato – helst med <strong>Månedsstatus</strong> ved hver måneds udgang – for at følge udviklingen over tid. Vælg en tidligere dato, hvis du vil eftertilføje historiske tal. Data gemmes kun lokalt i din browser – ikke på en server, og er derfor ikke tilgængelig fra andre enheder eller browsere.
             </p>
 
-            <div class="field" style="max-width:220px; margin-bottom:14px;">
-                <label for="snapshotDate">Dato</label>
-                <input type="date" id="snapshotDate" class="number-input">
-            </div>
-
-            <button class="btn" onclick="saveNetWorthSnapshot()">+ Gem formue for valgt dato</button>
-            <button class="btn btn-accent" onclick="openMonthlyStatus()" title="Gem i både Formue og porteføljetrackeren på én gang">Månedsstatus</button>
-            <button class="btn btn-secondary" onclick="clearNetWorthHistory()">Ryd hele historikken</button>
+            <button class="btn btn-secondary" type="button" onclick="clearNetWorthHistory()">Ryd hele historikken</button>
             <div class="chart-toolbar">
                 <button type="button" class="chip-toggle" id="forecastToggle" aria-pressed="true" onclick="toggleForecast()">Prognose</button>
             </div>
@@ -1570,9 +1576,12 @@
 
         <div class="panel">
             <div class="eyebrow">Hvor rig er jeg?</div>
-            <p class="explainer explainer-lead">
+            <details class="inline-about">
+                <summary>Hvordan er det regnet?</summary>
+                <p class="explainer explainer-lead">
                 Sammenlign din nettoformue med andre danskere på præcis din alder. Tallene er CEPOS' beregninger på Danmarks Statistiks registre (2024-data opregnet til 2026-niveau). Som hos CEPOS tæller din pension med efter en beregnet skat på 40 %, så tallet her kan være lavere end din nettoformue ovenfor. Kun til inspiration.
-            </p>
+                </p>
+            </details>
 
             <div class="field" style="max-width:200px;">
                 <label for="wealthAge">Din alder</label>
@@ -1698,7 +1707,7 @@
     <script src="js/sync.js?v=ec4a8601"></script>
     <script src="js/shared.js?v=a4cba64f"></script>
     <script src="js/ui.js?v=7dc184ea"></script>
-    <script src="js/field-help.js?v=a869ea0f"></script>
+    <script src="js/field-help.js?v=583a9441"></script>
     <script src="js/number-fields.js?v=5deecf1d"></script>
     <script src="js/fold.js?v=6a27d1ab"></script>
     <script src="js/tool1-ask-akt.js?v=3608c8e7"></script>
@@ -1710,7 +1719,7 @@
     <script src="js/loan-capacity.js?v=b4f645bb"></script>
     <script src="js/buy-vs-rent.js?v=75764a5e"></script>
     <script src="js/debt-payoff.js?v=85d909d1"></script>
-    <script src="js/navigation.js?v=5cc6209e"></script>
+    <script src="js/navigation.js?v=8904bf52"></script>
     <script src="js/feedback.js?v=164b3795"></script>
     <script src="js/pwa.js?v=762cd88d"></script>
     <script src="js/report.js?v=2613f43c"></script>

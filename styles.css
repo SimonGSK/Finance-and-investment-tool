@@ -1562,7 +1562,9 @@ body[data-section="overview"] #overviewActions{ display:flex; }
 #section-budget{ container-type:inline-size; container-name:budget; }
 @container budget (max-width:1150px){
     .layout-wide{ grid-template-columns:minmax(0, 1fr); }
-    #budgetCategoryList{ display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); column-gap:var(--s6); align-items:start; }
+    /* To jævne kolonner: Behov til venstre, Ønsker og Opsparing under hinanden til højre. */
+    #budgetCategoryList{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); column-gap:var(--s6); align-items:start; }
+    #budgetCategoryList .category-group:first-child{ grid-row:span 4; }
     #budgetCategoryList .category-group-label{ margin-top:var(--s3); }
     .layout-wide > .chart-panel .chart-wrap{ flex:none; min-height:0; height:clamp(300px, 38cqw, 420px); }
     .layout-wide > .panel:first-child .field{ max-width:420px; }
@@ -1584,3 +1586,27 @@ body[data-section="overview"] #overviewActions{ display:flex; }
 .settings-dialog .dialog-body .toggle-row + .toggle-row{ margin-top:var(--s3); }
 .settings-dialog .dialog-body .eyebrow{ margin-top:var(--s5); }
 .settings-dialog .btn + .btn{ margin-left:0; }
+
+@container budget (max-width:600px){
+    #budgetCategoryList{ grid-template-columns:minmax(0, 1fr); }
+    #budgetCategoryList .category-group:first-child{ grid-row:auto; }
+}
+
+/* ---- Gem-række: dato og gem-knap samlet nederst i indtastningen ---- */
+.save-row{ display:flex; align-items:flex-end; gap:var(--s3); flex-wrap:wrap; margin-top:var(--s5); padding-top:var(--s4); border-top:1px solid var(--border); }
+.save-row .field{ margin:0; width:200px; }
+.save-row .btn{ margin:0; }
+.save-row .btn + .btn{ margin-left:0; }
+
+/* ---- Kompakte nøgletal (Formue) med "?" ---- */
+.compact-stats{ gap:var(--s3); }
+.compact-stats .stat{ padding:16px 20px; }
+.compact-stats .stat .label-row{ margin-bottom:2px; }
+.compact-stats .stat .label{ margin-bottom:0; font-size:14px; }
+.compact-stats .stat .value{ font-size:clamp(20px, 1.7vw, 28px); }
+.stat .help-pop{ margin-top:var(--s2); font-size:13px; }
+
+/* ---- Foldet forklaring i et panel ("Hvordan er det regnet?") ---- */
+.inline-about{ margin:0 0 var(--s4); }
+.inline-about > summary{ cursor:pointer; font-size:14px; font-weight:600; color:var(--akt); }
+.inline-about[open] > summary{ margin-bottom:var(--s2); }
