@@ -454,3 +454,24 @@ function renderYearSummary(tbodyId, years, withFlows, emptyText){
         return `<tr>${cells.join('')}</tr>`;
     }).join('');
 }
+
+// ---- Paneler, der kan foldes sammen til kun deres overskrift ----
+
+/**
+ * Folder et panel (.collapsible) sammen eller ud. Valget huskes pr. panel.
+ * @param {HTMLButtonElement} btn panelets .panel-toggle
+ * @param {boolean} [open] tving åben/lukket
+ */
+function togglePanel(btn, open){
+    const panel = btn.closest('.collapsible');
+    const show = open ?? btn.getAttribute('aria-expanded') !== 'true';
+    btn.setAttribute('aria-expanded', String(show));
+    panel.classList.toggle('is-collapsed', !show);
+    try{ localStorage.setItem('collapsed:' + panel.id, show ? '0' : '1'); } catch(e){ /* kun en bekvemmelighed */ }
+}
+
+document.querySelectorAll('.collapsible').forEach(panel => {
+    let collapsed = false;
+    try{ collapsed = localStorage.getItem('collapsed:' + panel.id) === '1'; } catch(e){ /* åben */ }
+    if(collapsed) togglePanel(panel.querySelector('.panel-toggle'), false);
+});

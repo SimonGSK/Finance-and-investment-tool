@@ -27,7 +27,7 @@
          TODO: Erstat ca-pub-XXXXXXXXXXXXXXXX med mit eget AdSense-udgiver-ID, og fjern kommentaren.
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
     -->
-    <link rel="stylesheet" href="styles.css?v=9055c2d7">
+    <link rel="stylesheet" href="styles.css?v=5d8e5f26">
 </head>
 <body>
 
@@ -178,10 +178,10 @@
                         <h2 class="panel-title">Nettoformue over tid</h2>
                         <p class="panel-sub" id="ovChartSub">Dine seneste månedsstatusser</p>
                     </div>
-                    <div class="seg-pills" role="group" aria-label="Periode">
-                        <button type="button" data-range="12" aria-pressed="true" onclick="setOverviewRange(12)">1 år</button>
-                        <button type="button" data-range="0" aria-pressed="false" onclick="setOverviewRange(0)">Alt</button>
-                    </div>
+                    <label class="period-select">
+                        <span class="visually-hidden">Periode</span>
+                        <select id="ovPeriod" onchange="setOverviewRange(Number(this.value))"></select>
+                    </label>
                 </div>
                 <div class="chart-wrap ov-chart-wrap">
                     <canvas id="ovChart"></canvas>
@@ -614,8 +614,8 @@
 
         <div class="layout">
 
-            <div class="panel">
-                <div class="eyebrow">Nyt datapunkt</div>
+            <div class="panel collapsible" id="ptEntryPanel">
+                <button class="panel-toggle" type="button" aria-expanded="true" onclick="togglePanel(this)">Tilføj datapunkt</button>
 
                 <div class="field">
                     <label for="ptPortfolioValue">Værdi af portefølje</label>
@@ -1405,7 +1405,8 @@
 
     <div class="layout-net-worth">
 
-        <div class="panel">
+        <div class="panel collapsible" id="nwEntryPanel">
+            <button class="panel-toggle" type="button" aria-expanded="true" onclick="togglePanel(this)">Tilføj datapunkt</button>
             <div class="eyebrow">Aktiver</div>
             <div class="save-status" id="netWorthSaveStatus" role="status">Gemmes automatisk i denne browser</div>
 
@@ -1466,10 +1467,17 @@
                 <div class="result-sub" id="bufferText"></div>
             </div>
             <div class="buffer-scale" aria-hidden="true">
-                <div class="progress-track"><div class="progress-fill" id="bufferFill" style="width:0%"></div></div>
-                <div class="buffer-marks"><span style="left:50%">3 mdr.</span><span style="left:100%">6 mdr.</span></div>
+                <div class="buffer-zone-label">Anbefalet: 3–6 mdr.</div>
+                <div class="buffer-track">
+                    <div class="progress-track"><div class="progress-fill" id="bufferFill" style="width:0%"></div></div>
+                    <div class="buffer-zone"></div>
+                </div>
+                <div class="buffer-marks"><span style="left:0%">0</span><span style="left:33.333%">3 mdr.</span><span style="left:66.667%">6 mdr.</span><span style="left:100%">9 mdr.</span></div>
             </div>
-            <p class="explainer">En tommelfingerregel er at have 3–6 måneders faste udgifter stående i kontanter til uforudsete udgifter som tandlæge, bilreparation eller jobskifte. Kun kontanter tæller med – aktier kan være faldet i værdi, lige når du får brug for pengene. Udgifterne hentes automatisk fra din <strong>Budget</strong>-fane: kun kategorierne under <strong>Behov</strong> og <strong>Ønsker</strong> tæller med – opsparingsposterne gør ikke, for dem kan du holde pause med, hvis det brænder på.</p>
+            <details class="inline-about">
+                <summary>Hvorfor 3–6 måneder?</summary>
+                <p class="explainer">En tommelfingerregel er at have 3–6 måneders faste udgifter stående i kontanter til uforudsete udgifter som tandlæge, bilreparation eller jobskifte. Kun kontanter tæller med – aktier kan være faldet i værdi, lige når du får brug for pengene. Udgifterne hentes automatisk fra din <strong>Budget</strong>-fane: kun kategorierne under <strong>Behov</strong> og <strong>Ønsker</strong> tæller med – opsparingsposterne gør ikke, for dem kan du holde pause med, hvis det brænder på.</p>
+            </details>
         </div>
 
         <div class="panel">
@@ -1706,7 +1714,7 @@
     <script src="js/calc.js?v=0fbb81af"></script>
     <script src="js/sync.js?v=ec4a8601"></script>
     <script src="js/shared.js?v=a4cba64f"></script>
-    <script src="js/ui.js?v=7dc184ea"></script>
+    <script src="js/ui.js?v=9e2dff05"></script>
     <script src="js/field-help.js?v=583a9441"></script>
     <script src="js/number-fields.js?v=5deecf1d"></script>
     <script src="js/fold.js?v=6a27d1ab"></script>
@@ -1723,9 +1731,9 @@
     <script src="js/feedback.js?v=164b3795"></script>
     <script src="js/pwa.js?v=762cd88d"></script>
     <script src="js/report.js?v=2613f43c"></script>
-    <script src="js/overview.js?v=b99a9d78"></script>
+    <script src="js/overview.js?v=4a3e286a"></script>
     <script src="js/budget.js?v=d878f48d"></script>
-    <script src="js/net-worth.js?v=d10e6eb5"></script>
+    <script src="js/net-worth.js?v=a328ecce"></script>
     <script src="js/monthly-status.js?v=1d9d637f"></script>
     <script src="js/goals.js?v=4e1cfc94"></script>
     <script src="js/theme.js?v=f47f37be"></script>

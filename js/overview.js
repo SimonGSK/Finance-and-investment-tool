@@ -16,13 +16,29 @@ function hexToRgba(hex, alpha){
 
 const shortDate = iso => new Date(iso + 'T00:00:00').toLocaleDateString('da-DK', {day:'numeric', month:'short'});
 
-let overviewRange = 12;      // antal søjler: 12 = seneste år, 0 = alle
+let overviewRange = null;    // antal år bagud fra seneste datapunkt; 0 = alt; null = vælg selv (1 år, hvis der er mere)
+const PERIOD_CHOICES = [1, 3, 5, 10, 15, 20, 25, 30, 40, 50];
 
-/** Skifter mellem det seneste år og hele historikken i grafen. */
-function setOverviewRange(n){
-    overviewRange = n;
-    document.querySelectorAll('.seg-pills [data-range]').forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.range) === n)));
+/** Vælger periode i grafen (antal år, 0 = alt). */
+function setOverviewRange(years){
+    overviewRange = years;
     renderOverviewChart(readNetWorthHistory());
+}
+
+/**
+ * Fylder periodevælgeren: "Alt" og de perioder, som dataene rækker til
+ * (1, 3, 5, 10 år ...). En periode, der er lige så lang som dataene, er det samme som "Alt".
+ * @returns {number} den valgte periode i år (0 = alt)
+ */
+function syncPeriodSelect(history){
+    const select = document.getElementById('ovPeriod');
+    const span = history.length > 1 ? (Date.parse(history.at(-1).date) - Date.parse(history[0].date)) / (365.25 * DAY_MS) : 0;
+    const choices = PERIOD_CHOICES.filter(y => y < span);
+    let chosen = overviewRange === null ? (choices.includes(1) ? 1 : 0) : overviewRange;
+    if(chosen && !choices.includes(chosen)) chosen = 0;
+    select.replaceChildren(...[0, ...choices].map(y => el('option', {value: String(y), textContent: y === 0 ? 'Alt' : y === 1 ? '1 år' : `${y} år`, selected: y === chosen})));
+    select.closest('.period-select').hidden = !choices.length;
+    return chosen;
 }
 
 /**
@@ -84,7 +100,9 @@ function renderOverview(){
 
 /** Søjler for de seneste 12 datapunkter i en stigende nuance af hovedfarven. */
 function renderOverviewChart(history){
-    const points = overviewRange ? history.slice(-overviewRange) : history.slice();
+    const years = syncPeriodSelect(history);
+    const from = years ? addMonthsIso(history.at(-1).date, -12 * years) : '';
+    const points = years ? history.filter(h => h.date >= from) : history.slice();
     document.getElementById('ovChartEmpty').style.display = points.length ? 'none' : 'flex';
     // Korte etiketter ("okt."); året står kun ved første søjle og ved januar.
     const labels = points.map((h, i) => {
@@ -95,7 +113,7 @@ function renderOverviewChart(history){
     const base = getCSSVar('--akt');
     const colors = points.map((_, i) => hexToRgba(base, points.length === 1 ? 1 : 0.3 + 0.7 * i / (points.length - 1)));
     document.getElementById('ovChartSub').textContent = !points.length ? 'Dine seneste månedsstatusser'
-        : overviewRange ? 'Det seneste år' : `Alle dine ${points.length} månedsstatusser`;
+        : years === 1 ? 'Det seneste år' : years ? `De seneste ${years} år` : `Alle dine månedsstatusser siden ${formatMonthYear(points[0].date)}`;
 
     const data = {labels, datasets:[{label:'Nettoformue', data: points.map(h => h.value), backgroundColor: colors, borderRadius:8, borderSkipped:false, maxBarThickness:52}]};
     if(overviewChart){

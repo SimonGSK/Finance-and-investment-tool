@@ -938,3 +938,43 @@ test('indstillinger åbner som en dialog med sløret baggrund og lukker med Esc 
     await dialog.getByText('Lyst tema').click();
     expect(await theme()).toBe(before === 'light' ? 'dark' : 'light');
 });
+
+test('periodevælger, foldbar "Tilføj datapunkt" og nødopsparingens anbefalede zone', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        // Månedlige datapunkter over godt 4 år.
+        const pts = [];
+        for(let i = 0; i < 50; i++){
+            const d = new Date(Date.UTC(2022, 7 + i, 28)).toISOString().slice(0, 10);
+            pts.push({date: d, value: 300000 + i * 5000, liquid: 100000, netCatKontanter: 60000, netCatAktier: 40000, netCatPension: 0, netCatFrivaerdi: 0, netCatAndet: 0, debt: 0});
+        }
+        localStorage.setItem('netWorthHistory', JSON.stringify(pts));
+        localStorage.setItem('budgetItems', JSON.stringify({catBolig:[{label:'Husleje', amount:10000}]}));
+    });
+    await page.reload();
+    const period = page.locator('#ovPeriod');
+    expect(await period.locator('option').allTextContents()).toEqual(['Alt', '1 år', '3 år']);   // ikke 5 år - dataene rækker kun 4
+    await expect(period).toHaveValue('1');
+    expect(await page.evaluate(() => overviewChart.data.datasets[0].data.length)).toBe(13);
+    await period.selectOption('3');
+    expect(await page.evaluate(() => overviewChart.data.datasets[0].data.length)).toBe(37);
+    await period.selectOption('0');
+    expect(await page.evaluate(() => overviewChart.data.datasets[0].data.length)).toBe(50);
+    await expect(page.locator('#ovChartSub')).toContainText('siden');
+
+    // Formue: "Tilføj datapunkt" foldes sammen, og det huskes.
+    await page.getByRole('button', { name: 'Formue', exact: true }).click();
+    const toggle = page.locator('#nwEntryPanel .panel-toggle');
+    await toggle.click();
+    await expect(page.getByLabel('Aktier & værdipapirer', { exact: true })).toBeHidden();
+    await page.reload();
+    await page.getByRole('button', { name: 'Formue', exact: true }).click();
+    await expect(page.locator('#nwEntryPanel .panel-toggle')).toHaveAttribute('aria-expanded', 'false');
+    await page.locator('#nwEntryPanel .panel-toggle').click();
+    await expect(page.getByLabel('Aktier & værdipapirer', { exact: true })).toBeVisible();
+
+    // Nødopsparing: 60.000 kr. / 10.000 kr. = 6 mdr. -> 2/3 af skalaen (0-9 mdr.), og forklaringen er foldet.
+    expect(await page.locator('#bufferFill').evaluate(n => n.style.width)).toBe('66.6667%');
+    await expect(page.locator('.buffer-zone-label')).toHaveText('Anbefalet: 3–6 mdr.');
+    await expect(page.getByText('En tommelfingerregel er at have')).toBeHidden();
+});
