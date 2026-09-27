@@ -675,6 +675,8 @@ test('synkronisering: en ny, tom enhed foreslår filens tal frem for sine egne s
     const dialog = b.getByRole('dialog', { name: 'Hent data fra fil' });
     await expect(dialog.getByLabel('Brug – Formue-felterne')).toHaveValue('incoming');
     await dialog.getByRole('button', { name: 'Hent og flet' }).click();
+    // Siden genindlæses efter fletningen; beskeden vises først på den nye side.
+    await expect(b.locator('.toast')).toContainText('hentet og flettet');
     await b.getByRole('button', { name: 'Formue', exact: true }).click();
     await expect(b.getByLabel('Aktier & værdipapirer', { exact: true })).toHaveValue('300000');
 });
