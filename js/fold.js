@@ -30,5 +30,18 @@ function syncFolds(){
     document.querySelectorAll('details.fold').forEach(d => { d.open = !phoneQuery.matches; });
 }
 
+/**
+ * Tekst-tabeller (skatteregler, kontotyper, brancher) vises som kort på
+ * telefoner. Hver celle får sin kolonneoverskrift som data-label, så CSS kan
+ * skrive den over indholdet, når tabellen er stablet.
+ */
+function labelStackedTables(){
+    document.querySelectorAll('table.etf-rules').forEach(table => {
+        const heads = [...table.querySelectorAll('thead th')].map(th => th.textContent.trim());
+        table.querySelectorAll('tbody tr').forEach(tr => [...tr.children].forEach((td, i) => { if(heads[i]) td.dataset.label = heads[i]; }));
+    });
+}
+
 phoneQuery.addEventListener('change', syncFolds);
 foldLongTexts();
+labelStackedTables();

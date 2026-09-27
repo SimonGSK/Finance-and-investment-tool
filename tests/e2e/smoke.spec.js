@@ -798,6 +798,9 @@ test('Tips & viden: afsnittene kan foldes ud, og nøgletallene står fra let til
     expect(levels.map(l => order[l])).toEqual([...levels.map(l => order[l])].sort((a, b) => a - b));
     await page.locator('#tool6 summary', { hasText: 'Ordbog' }).click();
     await expect(page.locator('.glossary')).toContainText('GAK');
+    await expect(page.locator('.glossary')).toContainText('Vekselgebyr');
+    await page.locator('#tool6 summary', { hasText: 'Risiko' }).click();
+    await expect(page.locator('.sector-table tbody tr')).toHaveCount(11);
     await expect(page.locator('#tool6 [data-rule="BOERNE_TOTAL"]')).toHaveText('72.000');
 });
 
