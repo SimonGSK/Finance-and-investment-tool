@@ -149,7 +149,7 @@ test('et delt link genskaber beregningen', async ({ page, context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.goto('/index.html');
     await page.getByRole('button', { name: 'Bolig & lån' }).click();
-    await page.getByRole('button', { name: 'Køb eller leje?' }).click();
+    await page.getByRole('button', { name: 'Køb eller leje?', exact: true }).click();
     await page.getByLabel('Boligpris (kr.)', { exact: true }).fill('4500000');
     await page.getByLabel('Husleje pr. måned (kr.)', { exact: true }).fill('16000');
     const expected = await page.locator('#brWinnerSub').textContent();
@@ -228,6 +228,7 @@ test('formue: sammensætningen viser alle kategorier for datoen, man peger på',
 test('"?" ved et felt viser en forklaring, og værktøjets beskrivelse kan foldes ud', async ({ page }) => {
     await page.goto('/index.html');
     await page.getByRole('button', { name: 'Investering', exact: true }).click();
+    await page.getByRole('button', { name: 'ASK vs. Aktiedepot', exact: true }).click();
     const tip = page.getByRole('button', { name: 'Hvad betyder Forventet årligt afkast?' }).first();
     const pop = page.locator('#' + await tip.getAttribute('aria-controls'));
     await expect(pop).toBeHidden();
@@ -319,6 +320,7 @@ test('feedback: knappen er skjult uden adresse, og en besked sendes med værktø
     });
     await page.evaluate(() => { FEEDBACK.endpoint = 'https://formspree.io/f/test'; updateFeedbackButton(); });
     await page.getByRole('button', { name: 'Bolig & lån' }).click();
+    await page.getByRole('button', { name: 'Hvor meget kan jeg låne?', exact: true }).click();
     await page.getByRole('button', { name: 'Giv feedback' }).click();
     const dialog = page.getByRole('dialog', { name: 'Giv feedback' });
     await dialog.getByText('Sådan behandles din besked').click();
@@ -843,10 +845,19 @@ test('oversigt og sidemenu: nøgletal fra de andre dele, sidehovedet følger med
     await expect(page.locator('#ovSplit .ov-split-row')).toHaveCount(2);
 
     // Menuen: Investering folder sine værktøjer ud, og sidehovedet viser område og værktøj.
-    await page.getByRole('button', { name: 'Investering', exact: true }).click();
+    // Et klik på "Investering" folder kun gruppen ud - siden skifter først ved et værktøj.
+    const group = page.getByRole('button', { name: 'Investering', exact: true });
+    await group.click();
+    await expect(group).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.locator('#pageTitle')).toHaveText('Din økonomi i overblik');
+    await page.getByRole('button', { name: 'ASK vs. Aktiedepot', exact: true }).click();
     await expect(page.locator('#pageEyebrow')).toHaveText('Investering');
     await expect(page.locator('#pageTitle')).toHaveText('ASK vs. Aktiedepot');
-    await page.getByRole('button', { name: 'FIRE-beregner (4%-reglen)' }).click();
+    await group.click();
+    await expect(group).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.getByRole('button', { name: 'FIRE-beregner (4%-reglen)', exact: true })).toBeHidden();
+    await group.click();
+    await page.getByRole('button', { name: 'FIRE-beregner (4%-reglen)', exact: true }).click();
     await expect(page.locator('#pageTitle')).toHaveText('FIRE-beregner (4%-reglen)');
     await expect(page.locator('#tool3')).toBeVisible();
 

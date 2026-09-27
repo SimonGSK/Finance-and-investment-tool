@@ -27,7 +27,7 @@
          TODO: Erstat ca-pub-XXXXXXXXXXXXXXXX med mit eget AdSense-udgiver-ID, og fjern kommentaren.
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
     -->
-    <link rel="stylesheet" href="styles.css?v=3efcdd8f">
+    <link rel="stylesheet" href="styles.css?v=d7f74fb0">
 </head>
 <body>
 
@@ -66,8 +66,8 @@
             <nav class="side-nav" aria-label="Hovedmenu">
                 <div class="nav-label">Områder</div>
                 <button class="top-tab-btn nav-item active" data-section="overview" type="button" onclick="showSection('overview')"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg>Oversigt</button>
-                <button class="top-tab-btn nav-item" data-section="tools" type="button" onclick="showSection('tools')"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>Investering<span class="nav-count" aria-hidden="true">6</span></button>
-                <div class="nav-sub">
+                <button class="top-tab-btn nav-item nav-group" data-section="tools" type="button" onclick="toggleNavGroup(this)" aria-expanded="false" aria-controls="navSubTools"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>Investering<span class="nav-count" aria-hidden="true">6</span></button>
+                <div class="nav-sub" id="navSubTools">
                 <button class="tab-btn nav-subitem active" id="tabBtn1" type="button" onclick="showTool(1)">ASK vs. Aktiedepot</button>
                 <button class="tab-btn nav-subitem" id="tabBtn2" type="button" onclick="showTool(2)">Aktiedepot: fast + månedligt</button>
                 <button class="tab-btn nav-subitem" id="tabBtn3" type="button" onclick="showTool(3)">FIRE-beregner (4%-reglen)</button>
@@ -75,8 +75,8 @@
                 <button class="tab-btn nav-subitem" id="tabBtn4" type="button" onclick="showTool(4)">Porteføljetracker</button>
                 <button class="tab-btn nav-subitem" id="tabBtn6" type="button" onclick="showTool(6)">Tips &amp; viden</button>
                 </div>
-                <button class="top-tab-btn nav-item" data-section="housing" type="button" onclick="showSection('housing')"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg>Bolig &amp; lån<span class="nav-count" aria-hidden="true">3</span></button>
-                <div class="nav-sub">
+                <button class="top-tab-btn nav-item nav-group" data-section="housing" type="button" onclick="toggleNavGroup(this)" aria-expanded="false" aria-controls="navSubHousing"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg>Bolig &amp; lån<span class="nav-count" aria-hidden="true">3</span></button>
+                <div class="nav-sub" id="navSubHousing">
                 <button class="tab-btn nav-subitem active" id="housingTabBtn1" type="button" onclick="showHousingTool(1)">Hvor meget kan jeg låne?</button>
                 <button class="tab-btn nav-subitem" id="housingTabBtn2" type="button" onclick="showHousingTool(2)">Køb eller leje?</button>
                 <button class="tab-btn nav-subitem" id="housingTabBtn3" type="button" onclick="showHousingTool(3)">Gældsafvikling</button>
@@ -1702,7 +1702,7 @@
     <script src="js/loan-capacity.js?v=b4f645bb"></script>
     <script src="js/buy-vs-rent.js?v=75764a5e"></script>
     <script src="js/debt-payoff.js?v=85d909d1"></script>
-    <script src="js/navigation.js?v=a328d64d"></script>
+    <script src="js/navigation.js?v=2660194a"></script>
     <script src="js/feedback.js?v=164b3795"></script>
     <script src="js/pwa.js?v=762cd88d"></script>
     <script src="js/report.js?v=2613f43c"></script>

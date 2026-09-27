@@ -73,6 +73,8 @@ function showSection(name){
         section.style.display = section.id === 'section-' + name ? 'block' : 'none';
     });
     document.querySelectorAll('.top-tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.section === name));
+    // Den gruppe, man står i, er altid foldet ud (fx efter en genvej fra Oversigten).
+    document.querySelector(`.nav-group[data-section="${name}"]`)?.setAttribute('aria-expanded', 'true');
     resizeChartsIn(document.getElementById('section-' + name));
     if(name === 'overview' && typeof renderOverview === 'function') renderOverview();
     updatePageHeader();
@@ -108,6 +110,15 @@ function updatePageHeader(){
     document.getElementById('pageTitle').textContent = title;
     // Undertitlen bruges kun af Oversigten (seneste månedsstatus), som selv skriver den.
     if(section !== 'overview') document.getElementById('pageSub').textContent = '';
+}
+
+/**
+ * Folder en menugruppe (Investering, Bolig & lån) ud eller sammen. Siden skifter
+ * ikke - det sker først, når man vælger et værktøj i gruppen.
+ * @param {HTMLButtonElement} btn
+ */
+function toggleNavGroup(btn){
+    btn.setAttribute('aria-expanded', String(btn.getAttribute('aria-expanded') !== 'true'));
 }
 
 // ---- Menuen på telefoner: glider ind fra venstre ----

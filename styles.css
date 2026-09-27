@@ -1395,7 +1395,15 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
 .nav-count{ margin-left:auto; font-size:14px; font-weight:500; color:var(--subtle); }
 .nav-item.active .nav-count{ color:var(--akt); font-weight:600; }
 .nav-sub{ display:none; flex-direction:column; gap:2px; margin:4px 0 var(--s2) calc(var(--s4) + 20px + var(--s3) - 12px); }
-.nav-item.active + .nav-sub{ display:flex; }
+/* En gruppe (Investering, Bolig & lån) foldes ud og sammen med et klik - uden at skifte side. */
+.nav-group[aria-expanded="true"] + .nav-sub{ display:flex; }
+.nav-group::after{
+    content:''; width:7px; height:7px; margin-left:var(--s2); flex-shrink:0;
+    border-right:1.6px solid currentColor; border-bottom:1.6px solid currentColor;
+    transform:rotate(-45deg); opacity:0.55; transition:transform 0.18s var(--ease);
+}
+.nav-group[aria-expanded="true"]::after{ transform:rotate(45deg); }
+.nav-group .nav-count{ margin-left:auto; }
 .nav-subitem{
     display:block; width:100%; padding:9px 12px; border:0; border-radius:12px; background:transparent;
     font:500 15px var(--font-sans); color:var(--muted); text-align:left; cursor:pointer;
@@ -1536,3 +1544,5 @@ body[data-section="overview"] #overviewActions{ display:flex; }
     }
     .layout > .panel:first-child:not(.chart-panel) > :not(.field){ grid-column:1 / -1; }
 }
+/* Et værktøj markeres kun, når man faktisk står i dets område (ikke bare fordi gruppen er foldet ud). */
+.nav-group:not(.active) + .nav-sub .nav-subitem.active{ background:transparent; color:var(--muted); font-weight:500; }
