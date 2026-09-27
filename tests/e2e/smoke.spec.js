@@ -822,3 +822,15 @@ test('prognosen kan slås fra og til, og valget huskes', async ({ page }) => {
     await page.getByRole('button', { name: 'Formue', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Prognose' })).toHaveAttribute('aria-pressed', 'false');
 });
+
+test('formue uden data: graferne viser ingen akser (ingen "jan. 1970"), kun "Ingen data endnu"', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => showSection('formue'));
+    expect(await page.evaluate(() => [netWorthHistoryChart, netWorthCompositionChart].map(c => c.options.scales.x.display || c.options.scales.y.display))).toEqual([false, false]);
+    await expect(page.locator('#netWorthHistoryChartEmpty')).toBeVisible();
+    await page.evaluate(() => {
+        localStorage.setItem('netWorthHistory', JSON.stringify([{date:'2026-08-31', value:1000, liquid:1000, netCatKontanter:1000, netCatAktier:0, netCatPension:0, netCatFrivaerdi:0, netCatAndet:0, debt:0}]));
+        renderNetWorthHistory();
+    });
+    expect(await page.evaluate(() => netWorthHistoryChart.options.scales.x.display)).toBe(true);
+});

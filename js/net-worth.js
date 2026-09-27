@@ -620,6 +620,13 @@ function renderNetWorthHistory(){
     document.getElementById('netWorthCompositionChartEmpty').style.display = netWorthHasHistory ? 'none' : 'flex';
 
     renderNetWorthComposition(history);
+    // Uden data skjules akserne - ellers viser tidsaksen "jan. 1970" og søjlerne en række 1-taller.
+    // Teksten "Ingen data endnu" står i stedet.
+    [netWorthHistoryChart, netWorthCompositionChart].forEach(c => {
+        if(!c) return;
+        c.options.scales.x.display = c.options.scales.y.display = history.length > 0;
+        c.update('none');
+    });
     // Nøgletal, mål osv. kan bygge på det seneste datapunkt, så de genberegnes også.
     updateNetWorth();
     if(typeof checkMonthlyReminder === 'function') checkMonthlyReminder();
