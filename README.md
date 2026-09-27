@@ -8,6 +8,10 @@ All data stays in your browser's `localStorage`. There are no accounts, no serve
 
 ## The tools
 
+### Oversigt
+
+The start page: net worth (with the change since the last status), the portfolio (this year's return), the monthly budget and how many months the emergency fund covers; net worth over time, goals, how assets are split, a short list of next steps (save this month's status, build a budget, take a backup …) and shortcuts to every tool. Navigation is a sidebar with the areas and their tools (a slide-in menu on phones and tablets). The light theme is forest green on warm off-white; the dark theme keeps navy and gold.
+
 ### Investering
 
 **Tips & viden** is a beginner's guide in foldable sections: before you start, account types (aktiedepot, ASK, pension, børneopsparing), tax and the positive-list lookup (search Skattestyrelsens list by ISIN or name, loaded only when you search), shares vs funds vs ETFs vs bonds, risk, a glossary (afkast, udbytte, GAK …) and company key figures from easy (market value, revenue) to technical (EBITDA, free cash flow, net debt/EBITDA). General knowledge, not advice.
@@ -114,6 +118,7 @@ js/sync.js              Backup file and syncing between devices (merge, not over
 js/feedback.js          Feedback button and form (sent via Formspree)
 js/pwa.js               "Install as app" button; registers the service worker
 js/report.js            Printable one-page overview (Udskriv overblik)
+js/overview.js          Oversigt (start page)
 sw.js                   Service worker: network first, cached copy offline
 manifest.webmanifest    App name, colours and icons
 icons/                  App icons (icon.svg is the source; PNGs rendered from it)

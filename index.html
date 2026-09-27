@@ -49,19 +49,55 @@
             -->
         </aside>
 
-        <div class="site-content">
+        <aside class="sidebar" id="sidebar" aria-label="Menu">
+            <div class="sidebar-brand">
+                <img src="icons/icon.svg" alt="" class="brand-mark" width="38" height="38">
+                <div>
+                    <div class="brand-name">Økonomiværktøjer</div>
+                    <div class="brand-sub">Privat økonomi</div>
+                </div>
+            </div>
+            <button class="btn btn-accent monthly-status-btn" type="button" onclick="openMonthlyStatus()" title="Gem dine tal i både Formue og Porteføljetracker på én gang">+ Månedsstatus</button>
+            <nav class="side-nav" aria-label="Hovedmenu">
+                <div class="nav-label">Områder</div>
+                <button class="top-tab-btn nav-item active" data-section="overview" type="button" onclick="showSection('overview')"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg>Oversigt</button>
+                <button class="top-tab-btn nav-item" data-section="tools" type="button" onclick="showSection('tools')"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>Investering<span class="nav-count" aria-hidden="true">6</span></button>
+                <div class="nav-sub">
+                <button class="tab-btn nav-subitem active" id="tabBtn1" type="button" onclick="showTool(1)">ASK vs. Aktiedepot</button>
+                <button class="tab-btn nav-subitem" id="tabBtn2" type="button" onclick="showTool(2)">Aktiedepot: fast + månedligt</button>
+                <button class="tab-btn nav-subitem" id="tabBtn3" type="button" onclick="showTool(3)">FIRE-beregner (4%-reglen)</button>
+                <button class="tab-btn nav-subitem" id="tabBtn5" type="button" onclick="showTool(5)">Pension</button>
+                <button class="tab-btn nav-subitem" id="tabBtn4" type="button" onclick="showTool(4)">Porteføljetracker</button>
+                <button class="tab-btn nav-subitem" id="tabBtn6" type="button" onclick="showTool(6)">Tips &amp; viden</button>
+                </div>
+                <button class="top-tab-btn nav-item" data-section="housing" type="button" onclick="showSection('housing')"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg>Bolig &amp; lån<span class="nav-count" aria-hidden="true">3</span></button>
+                <div class="nav-sub">
+                <button class="tab-btn nav-subitem active" id="housingTabBtn1" type="button" onclick="showHousingTool(1)">Hvor meget kan jeg låne?</button>
+                <button class="tab-btn nav-subitem" id="housingTabBtn2" type="button" onclick="showHousingTool(2)">Køb eller leje?</button>
+                <button class="tab-btn nav-subitem" id="housingTabBtn3" type="button" onclick="showHousingTool(3)">Gældsafvikling</button>
+                </div>
+                <button class="top-tab-btn nav-item" data-section="budget" type="button" onclick="showSection('budget')"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M16 15h2"/></svg>Budget</button>
+                <button class="top-tab-btn nav-item" data-section="formue" type="button" onclick="showSection('formue')"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18"/><path d="M5 17V10M9.5 17V10M14.5 17V10M19 17V10"/><path d="M3 8l9-5 9 5"/></svg>Formue</button>
 
-            <div class="topbar">
-        <div>
-            <h1>Økonomiværktøjer</h1>
-            <p class="subtitle">Brug værktøjerne og udforsk dit økonomiske potentiale.</p>
-        </div>
-        <button class="settings-btn help-btn" id="helpBtn" onclick="openHelp()" aria-label="Hjælp og spørgsmål" aria-haspopup="dialog">?</button>
-        <button class="settings-btn" id="settingsBtn" onclick="toggleSettings()" aria-label="Indstillinger" aria-expanded="false" aria-controls="settingsPanel">⚙️</button>
-        <button class="settings-btn feedback-btn" id="feedbackBtn" type="button" onclick="openFeedbackDialog()" aria-label="Giv feedback" title="Giv feedback" aria-haspopup="dialog" hidden>
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12.5a7.5 7.5 0 0 1-11.1 6.6L4 20l1-4.3A7.5 7.5 0 1 1 20 12.5z"/><path d="M9 11h6M9 14.5h4"/></svg>
-        </button>
-    </div>
+                <div class="nav-label">Hjælp</div>
+                <button class="nav-item" id="settingsBtn" type="button" onclick="toggleSettings()" aria-expanded="false" aria-controls="settingsPanel"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Indstillinger</button>
+                <button class="nav-item" id="helpBtn" type="button" onclick="openHelp()" aria-haspopup="dialog"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 2.2-2.4 3.7"/><path d="M12 17h.01"/></svg>Hjælp og spørgsmål</button>
+                <button class="nav-item" id="feedbackBtn" type="button" onclick="openFeedbackDialog()" aria-haspopup="dialog" hidden><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12.5a7.5 7.5 0 0 1-11.1 6.6L4 20l1-4.3A7.5 7.5 0 1 1 20 12.5z"/><path d="M9 11h6M9 14.5h4"/></svg>Giv feedback</button>
+            </nav>
+        </aside>
+        <div class="nav-backdrop" onclick="closeNav()"></div>
+
+        <div class="site-content">
+            <div class="mobile-bar">
+                <button class="menu-btn" id="menuBtn" type="button" onclick="openNav()" aria-label="Åbn menu" aria-expanded="false" aria-controls="sidebar"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+                <img src="icons/icon.svg" alt="" width="28" height="28">
+                <span class="mobile-brand">Økonomiværktøjer</span>
+            </div>
+
+            <header class="page-header">
+                <div class="page-eyebrow" id="pageEyebrow">Oversigt</div>
+                <h1 id="pageTitle">Din økonomi i overblik</h1>
+            </header>
             <div class="settings-panel" id="settingsPanel" role="region" aria-label="Indstillinger" style="display:none;">
                 <div class="eyebrow" style="margin-bottom:12px;">Indstillinger</div>
                 <label class="toggle-row">
@@ -110,24 +146,72 @@
             </div>
         </div>
 
-        <div class="top-tabs">
-        <button class="top-tab-btn active" data-section="tools" onclick="showSection('tools')">Investering</button>
-        <button class="top-tab-btn" data-section="housing" onclick="showSection('housing')">Bolig & lån</button>
-        <button class="top-tab-btn" data-section="budget" onclick="showSection('budget')">Budget</button>
-        <button class="top-tab-btn" data-section="formue" onclick="showSection('formue')">Formue</button>
-        <button class="btn btn-accent monthly-status-btn" onclick="openMonthlyStatus()" title="Gem dine tal i både Formue og Porteføljetracker på én gang">+ Månedsstatus</button>
+
+<div id="section-overview">
+    <div class="overview-top">
+        <p class="overview-updated" id="ovUpdated">Alle beløb i DKK</p>
+        <div class="overview-actions">
+            <button class="btn btn-secondary btn-sm" type="button" onclick="printOverview()">Udskriv overblik</button>
+            <button class="btn btn-secondary btn-sm" type="button" onclick="exportAllData()">Tag backup</button>
+        </div>
     </div>
 
-    <div id="section-tools">
-
-    <div class="tabs">
-        <button class="tab-btn active" id="tabBtn1" onclick="showTool(1)">ASK vs. Aktiedepot</button>
-        <button class="tab-btn" id="tabBtn2" onclick="showTool(2)">Aktiedepot: fast + månedligt</button>
-        <button class="tab-btn" id="tabBtn3" onclick="showTool(3)">FIRE-beregner (4%-reglen)</button>
-        <button class="tab-btn" id="tabBtn5" onclick="showTool(5)">Pension</button>
-        <button class="tab-btn" id="tabBtn6" onclick="showTool(6)">Tips &amp; viden</button>
-        <button class="tab-btn" id="tabBtn4" onclick="showTool(4)">Porteføljetracker</button>
+    <div class="stats overview-kpis">
+        <div class="stat"><div class="label">Nettoformue</div><div class="value akt" id="ovNetWorth">–</div><div class="sub" id="ovNetWorthSub"></div></div>
+        <div class="stat"><div class="label">Porteføljen</div><div class="value" id="ovPortfolio">–</div><div class="sub" id="ovPortfolioSub"></div></div>
+        <div class="stat"><div class="label">Budget pr. måned</div><div class="value" id="ovBudget">–</div><div class="sub" id="ovBudgetSub"></div></div>
+        <div class="stat"><div class="label">Nødopsparing</div><div class="value" id="ovBuffer">–</div><div class="sub" id="ovBufferSub"></div></div>
     </div>
+
+    <div class="overview-grid">
+        <div class="panel ov-chart-panel">
+            <div class="panel-title-row">
+                <div>
+                    <h2 class="panel-title">Nettoformue over tid</h2>
+                    <p class="panel-sub" id="ovChartSub">Dine seneste månedsstatusser</p>
+                </div>
+                <button type="button" class="link-btn" onclick="showSection('formue')">Se hele historikken</button>
+            </div>
+            <div class="chart-wrap ov-chart-wrap">
+                <canvas id="ovChart"></canvas>
+                <div class="chart-empty-state" id="ovChartEmpty">Gem din første månedsstatus med knappen i menuen – så vokser grafen måned for måned.</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title-row"><h2 class="panel-title">Mine mål</h2><button type="button" class="link-btn" onclick="showSection('formue')">Alle mål</button></div>
+            <div id="ovGoals" class="ov-goals"></div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title-row"><h2 class="panel-title">Fordeling</h2><span class="panel-sub" id="ovSplitSub"></span></div>
+            <div id="ovSplit" class="ov-split"></div>
+        </div>
+
+        <div class="panel">
+            <h2 class="panel-title">Næste skridt</h2>
+            <ul id="ovNext" class="ov-next"></ul>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h2 class="panel-title">Værktøjer</h2>
+        <div class="ov-tools">
+            <button type="button" class="ov-tool" onclick="showTool(1)"><strong>ASK vs. Aktiedepot</strong><span>Hvor skal pengene stå? Sammenlign skatten.</span></button>
+            <button type="button" class="ov-tool" onclick="showTool(2)"><strong>Aktiedepot: fast + månedligt</strong><span>Hvad bliver en månedlig opsparing til?</span></button>
+            <button type="button" class="ov-tool" onclick="showTool(3)"><strong>FIRE-beregner</strong><span>Hvornår kan du leve af din formue?</span></button>
+            <button type="button" class="ov-tool" onclick="showTool(5)"><strong>Pension</strong><span>Hvad giver din pension om måneden?</span></button>
+            <button type="button" class="ov-tool" onclick="showTool(4)"><strong>Porteføljetracker</strong><span>Følg din portefølje og dit afkast.</span></button>
+            <button type="button" class="ov-tool" onclick="showHousingTool(1)"><strong>Hvor meget kan jeg låne?</strong><span>Din købsramme ud fra indkomst og opsparing.</span></button>
+            <button type="button" class="ov-tool" onclick="showHousingTool(2)"><strong>Køb eller leje?</strong><span>Hvad er billigst på lang sigt?</span></button>
+            <button type="button" class="ov-tool" onclick="showHousingTool(3)"><strong>Gældsafvikling</strong><span>Hvornår er du gældfri – lavine eller snebold?</span></button>
+            <button type="button" class="ov-tool" onclick="showTool(6)"><strong>Tips &amp; viden</strong><span>Grundbegreber, skat, risiko og nøgletal.</span></button>
+        </div>
+    </div>
+</div>
+
+    <div id="section-tools" style="display:none;">
+
 
     <label class="toggle-row" id="doubleDeductionRow" style="margin-top:14px; margin-bottom:20px;">
         <input type="checkbox" id="doubleDeduction">
@@ -948,11 +1032,6 @@
 
 <div id="section-housing" style="display:none;">
 
-    <div class="tabs">
-        <button class="tab-btn active" id="housingTabBtn1" onclick="showHousingTool(1)">Hvor meget kan jeg låne?</button>
-        <button class="tab-btn" id="housingTabBtn2" onclick="showHousingTool(2)">Køb eller leje?</button>
-        <button class="tab-btn" id="housingTabBtn3" onclick="showHousingTool(3)">Gældsafvikling</button>
-    </div>
 
     <!-- ===== Låneevne ===== -->
     <div id="housing1">
@@ -1620,6 +1699,7 @@
     <script src="js/feedback.js"></script>
     <script src="js/pwa.js"></script>
     <script src="js/report.js"></script>
+    <script src="js/overview.js"></script>
     <script src="js/budget.js"></script>
     <script src="js/net-worth.js"></script>
     <script src="js/monthly-status.js"></script>
