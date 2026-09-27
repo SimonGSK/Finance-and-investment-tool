@@ -37,6 +37,8 @@ const RENTEFRADRAG = { lowRate: 0.33, highRate: 0.25, thresholdPerAdult: 50000 }
 const PAL_SKAT = 0.153;
 // Beløbsgrænser for pensionsindbetalinger (skat.dk).
 const PENSION_LIMITS = { aldersopsparing: 9900, aldersopsparingNearPension: 64200, ratepension: 68700 };
+// Børneopsparing: højst så meget om året og i alt pr. barn (info.skat.dk). Afkastet er skattefrit.
+const BOERNEOPSPARING = { perYear: 6000, total: 72000 };
 
 // ==== Dobbelt fradrag (ægtefælle) og den effektive 27%-grænse ====
 
@@ -1588,7 +1590,7 @@ if(typeof module !== 'undefined' && module.exports){
         TINGLYSNING, MIN_UDBETALING, MAX_REALKREDIT, HIGH_DEBT_FACTOR, HIGH_LTV, RENTEFRADRAG,
         annuityPayment, purchaseCosts, loanSplit, interestDeductionValue, loanCapacity,
         simulateBuyVsRent, simulateDebtPayoff,
-        PAL_SKAT, PENSION_LIMITS, folkepensionAge, simulatePension,
+        PAL_SKAT, PENSION_LIMITS, BOERNEOPSPARING, folkepensionAge, simulatePension,
         backupReminderDue, emergencyFundMonths, xirr, portfolioCashFlows,
         monthlyTrend, goalProgress
     };

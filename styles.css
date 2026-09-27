@@ -1256,3 +1256,67 @@ table.data-table .row-actions .btn{ padding-left:12px; padding-right:12px; }
 table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space:normal; }
 .forecast-note{ margin:var(--s3) 0 var(--s4); font-size:13px; line-height:1.6; color:var(--muted); }
 .forecast-note:empty{ display:none; }
+
+/* Lille til/fra-knap over en graf (fx prognosen) */
+.chart-toolbar{ display:flex; justify-content:flex-end; margin:var(--s4) 0 calc(-1 * var(--s2)); }
+.chip-toggle{
+    display:inline-flex; align-items:center; gap:var(--s2);
+    font:600 12.5px var(--font-sans); color:var(--muted);
+    background:var(--panel-sunken); border:1px solid var(--border); border-radius:var(--r-pill);
+    padding:5px 12px; cursor:pointer; transition:all 0.18s var(--ease);
+}
+.chip-toggle::before{ content:''; width:8px; height:8px; border-radius:50%; border:1.5px solid currentColor; }
+.chip-toggle[aria-pressed="true"]{ color:var(--akt); border-color:var(--akt); background:var(--akt-soft); }
+.chip-toggle[aria-pressed="true"]::before{ background:currentColor; }
+.chip-toggle:hover{ color:var(--text); }
+
+/* ---- Tips & viden (investeringsguide) ---- */
+.guide{ display:flex; flex-direction:column; gap:var(--s3); max-width:1600px; }
+.guide-section{ background:var(--panel); border:1px solid var(--border); border-radius:var(--r-lg); box-shadow:var(--shadow-sm); }
+.guide-section > summary{
+    display:flex; align-items:center; gap:var(--s3); cursor:pointer; list-style:none;
+    padding:var(--s4) var(--s5); font-family:var(--font-display); font-size:20px; font-weight:500; color:var(--text);
+}
+.guide-section > summary::-webkit-details-marker{ display:none; }
+.guide-section > summary::after{ content:'+'; margin-left:auto; font-family:var(--font-sans); color:var(--subtle); font-size:20px; }
+.guide-section[open] > summary::after{ content:'−'; }
+.guide-num{
+    display:inline-grid; place-items:center; width:28px; height:28px; flex-shrink:0; border-radius:50%;
+    font:600 13px var(--font-sans); color:var(--akt); border:1.5px solid var(--akt);
+}
+.guide-body{ padding:0 var(--s5) var(--s5); font-size:14.5px; line-height:1.65; color:var(--muted); }
+.guide-body strong, .guide-body dt{ color:var(--text); }
+.guide-text{ margin:0 0 var(--s4); }
+.guide-note{ margin:var(--s3) 0 0; font-size:13.5px; }
+.guide-list{ margin:0; padding-left:1.2em; }
+.guide-list li + li{ margin-top:var(--s3); }
+.guide-body .panel{ box-shadow:none; background:var(--panel-sunken); margin-bottom:var(--s4); }
+.guide-cards{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:var(--s3); margin:0; }
+.guide-cards > div{ padding:var(--s4); border:1px solid var(--border); border-radius:var(--r-md); background:var(--panel-sunken); }
+.guide-cards dt{ font-weight:600; margin-bottom:var(--s1); }
+.guide-cards dd{ margin:0; font-size:14px; }
+.risk-scale{ display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:4px; margin:0 0 var(--s4); }
+.risk-step{ padding:var(--s3); border-radius:var(--r-sm); font-size:12.5px; line-height:1.4;
+    background:color-mix(in srgb, var(--cross) calc(var(--r) * 12%), var(--panel-sunken)); color:var(--text); }
+.risk-step strong{ display:block; font-family:var(--font-mono); font-size:15px; }
+.glossary{ display:grid; grid-template-columns:max-content 1fr; gap:var(--s2) var(--s4); margin:0; }
+.glossary dt{ font-weight:600; }
+.glossary dd{ margin:0; }
+.metric-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:var(--s3); counter-reset:metric; }
+.metric-list li{ counter-increment:metric; padding:var(--s4); border:1px solid var(--border); border-radius:var(--r-md); background:var(--panel-sunken); }
+.metric-list p{ margin:var(--s2) 0 0; font-size:14px; }
+.metric-list em{ font-style:normal; font-family:var(--font-mono); font-size:13px; color:var(--text); }
+.metric-head{ display:flex; align-items:center; gap:var(--s3); }
+.metric-head::before{ content:counter(metric) "."; font-family:var(--font-display); font-size:18px; font-weight:600; color:var(--akt); }
+.level{ margin-left:auto; font:600 11px var(--font-sans); letter-spacing:0.04em; padding:2px 10px; border-radius:var(--r-pill); border:1px solid; white-space:nowrap; }
+.level-1{ color:var(--ask); }
+.level-2{ color:var(--akt); }
+.level-3{ color:var(--cross); }
+.guide-disclaimer{ margin:var(--s2) 0 0; font-size:12.5px; color:var(--subtle); }
+@media (max-width:640px){
+    .guide-section > summary{ padding:var(--s4); font-size:17px; }
+    .guide-body{ padding:0 var(--s4) var(--s4); }
+    .glossary{ grid-template-columns:1fr; gap:2px; }
+    .glossary dd{ margin-bottom:var(--s3); }
+    .risk-scale{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
+}

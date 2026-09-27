@@ -439,6 +439,13 @@ function editNetWorthEntry(date){
     });
 }
 
+/** Slår prognosen i grafen til eller fra. */
+function toggleForecast(){
+    const on = localStorage.getItem('showForecast') !== '0';
+    localStorage.setItem('showForecast', on ? '0' : '1');
+    renderNetWorthHistory();
+}
+
 /**
  * Teksten under grafen: hvad den stiplede prognose betyder, hvor den ender,
  * og hvornår næste milepæl nås i samme tempo.
@@ -486,7 +493,11 @@ function renderNetWorthHistory(){
     const history = readNetWorthHistory();
     // Tidsakse (x = tidspunkt), så månederne står i rigtig afstand - også prognosen to år frem.
     const t = iso => Date.parse(iso + 'T00:00:00');
-    const projection = projectTrend(history, 'value', 24);
+    // Prognosen kan slås fra med knappen over grafen; valget huskes.
+    const forecastOn = localStorage.getItem('showForecast') !== '0';
+    document.getElementById('forecastToggle').setAttribute('aria-pressed', String(forecastOn));
+    document.getElementById('forecastToggle').hidden = !projectTrend(history, 'value', 24);
+    const projection = forecastOn ? projectTrend(history, 'value', 24) : null;
     const chartData = {
         datasets:[
             {

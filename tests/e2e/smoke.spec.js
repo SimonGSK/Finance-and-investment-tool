@@ -522,7 +522,8 @@ test('udskriv overblik: rapporten har formue, budget, lån og mål og er det ene
 
 test('ETF: opslag på positivlisten, en ISIN der ikke er på listen, og danske udbyttebetalende fonde', async ({ page }) => {
     await page.goto('/index.html');
-    await page.getByRole('button', { name: "ETF'er og fonde" }).click();
+    await page.getByRole('button', { name: 'Tips & viden' }).click();
+    await page.locator('#tool6 summary', { hasText: 'Skat og positivlisten' }).click();
     const search = page.getByLabel('Søg på ISIN eller navn', { exact: true });
     await search.fill('ie00b4l5y983');
     const results = page.locator('#etfResults');
@@ -783,4 +784,38 @@ test('prognosen: peger man på den stiplede linje, vises den forventede formue f
     const now = await hover('2026-09-30');
     expect(now.body.some(l => l.startsWith('Prognose'))).toBe(false);   // ikke dobbelt ved seneste datapunkt
     expect(now.body).toContain('Nettoformue: 520.000 kr.');
+});
+
+test('Tips & viden: afsnittene kan foldes ud, og nøgletallene står fra let til avanceret', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.getByRole('button', { name: 'Tips & viden' }).click();
+    const sections = page.locator('#tool6 .guide-section');
+    await expect(sections).toHaveCount(7);
+    await expect(sections.first()).toHaveAttribute('open', '');
+    await page.locator('#tool6 summary', { hasText: 'Nøgletal' }).click();
+    const levels = await page.locator('.metric-list .level').allTextContents();
+    const order = {'Let': 1, 'Mellem': 2, 'Avanceret': 3};
+    expect(levels.map(l => order[l])).toEqual([...levels.map(l => order[l])].sort((a, b) => a - b));
+    await page.locator('#tool6 summary', { hasText: 'Ordbog' }).click();
+    await expect(page.locator('.glossary')).toContainText('GAK');
+    await expect(page.locator('#tool6 [data-rule="BOERNE_TOTAL"]')).toHaveText('72.000');
+});
+
+test('prognosen kan slås fra og til, og valget huskes', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        const nw = (date, value) => ({date, value, liquid:value, netCatKontanter:value, netCatAktier:0, netCatPension:0, netCatFrivaerdi:0, netCatAndet:0, debt:0});
+        localStorage.setItem('netWorthHistory', JSON.stringify([nw('2025-09-30', 400000), nw('2026-09-30', 520000)]));
+    });
+    await page.reload();
+    await page.getByRole('button', { name: 'Formue', exact: true }).click();
+    const toggle = page.getByRole('button', { name: 'Prognose' });
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    expect(await page.evaluate(() => netWorthHistoryChart.data.datasets[2].data.length)).toBe(0);
+    await expect(page.locator('#nwForecastNote')).toBeHidden();
+    await page.reload();
+    await page.getByRole('button', { name: 'Formue', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Prognose' })).toHaveAttribute('aria-pressed', 'false');
 });
