@@ -68,6 +68,7 @@ function showHousingTool(n, stay){
  * @param {'overview'|'tools'|'housing'|'budget'|'formue'} name
  */
 function showSection(name){
+    document.body.dataset.section = name;      // fx viser Oversigtens knapper i sidehovedet
     document.querySelectorAll('[id^="section-"]').forEach(section => {
         section.style.display = section.id === 'section-' + name ? 'block' : 'none';
     });
@@ -105,6 +106,8 @@ function updatePageHeader(){
     if(tool){ eyebrow = area; title = tool; }
     document.getElementById('pageEyebrow').textContent = eyebrow;
     document.getElementById('pageTitle').textContent = title;
+    // Undertitlen bruges kun af Oversigten (seneste månedsstatus), som selv skriver den.
+    if(section !== 'overview') document.getElementById('pageSub').textContent = '';
 }
 
 // ---- Menuen på telefoner: glider ind fra venstre ----
@@ -124,6 +127,7 @@ function closeNav(){
 document.addEventListener('keydown', e => { if(e.key === 'Escape' && document.body.classList.contains('nav-open')) closeNav(); });
 
 // Startsiden er Oversigt; værktøjerne står klar i baggrunden.
+document.body.dataset.section = 'overview';
 showTool(1, true);
 showHousingTool(1, true);
 

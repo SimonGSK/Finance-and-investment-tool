@@ -16,11 +16,30 @@ function hexToRgba(hex, alpha){
 
 const shortDate = iso => new Date(iso + 'T00:00:00').toLocaleDateString('da-DK', {day:'numeric', month:'short'});
 
-function setKpi(id, value, sub, cls){
+let overviewRange = 12;      // antal søjler: 12 = seneste år, 0 = alle
+
+/** Skifter mellem det seneste år og hele historikken i grafen. */
+function setOverviewRange(n){
+    overviewRange = n;
+    document.querySelectorAll('.seg-pills [data-range]').forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.range) === n)));
+    renderOverviewChart(readNetWorthHistory());
+}
+
+/**
+ * @param {string} id
+ * @param {string} value
+ * @param {string} sub
+ * @param {'negative'|''} [cls] farver selve tallet rødt
+ * @param {'up'|'down'|''} [subTone] farver undertekst grøn/rød (fx en ændring)
+ */
+function setKpi(id, value, sub, cls, subTone){
     const node = document.getElementById(id);
     node.textContent = value;
     node.classList.toggle('negative', cls === 'negative');
-    document.getElementById(id + 'Sub').textContent = sub || '';
+    const subNode = document.getElementById(id + 'Sub');
+    subNode.textContent = sub || '';
+    subNode.classList.toggle('is-up', subTone === 'up');
+    subNode.classList.toggle('is-down', subTone === 'down');
 }
 
 /** Tegner hele oversigten. Kaldes, hver gang siden vises. */
@@ -37,12 +56,13 @@ function renderOverview(){
     const lastChange = periodChanges(nwHistory, h => h.value).at(-1);
     setKpi('ovNetWorth', hasNetWorth ? DK.format(figures.value) + ' kr.' : '–',
         !hasNetWorth ? 'Udfyld din formue' : lastChange ? `${formatSignedKr(lastChange.change)} siden ${shortDate(lastChange.from)}` : 'Gem en månedsstatus for at følge udviklingen',
-        figures.value < 0 ? 'negative' : '');
+        figures.value < 0 ? 'negative' : '', lastChange ? (lastChange.change >= 0 ? 'up' : 'down') : '');
 
     const lastPt = ptHistory.at(-1);
     const thisYear = yearSummary(ptHistory, h => h.portfolioValue, h => h.deposit).find(y => y.year === new Date().getFullYear());
     setKpi('ovPortfolio', lastPt ? DK.format(lastPt.portfolioValue) + ' kr.' : '–',
-        !lastPt ? 'Ingen datapunkter endnu' : thisYear ? `Afkast i år: ${formatSignedKr(thisYear.gain)}${thisYear.pct !== null ? ` (${thisYear.pct >= 0 ? '+' : '−'}${formatPct(Math.abs(thisYear.pct))})` : ''}` : `pr. ${shortDate(lastPt.date)}`);
+        !lastPt ? 'Ingen datapunkter endnu' : thisYear ? `${formatSignedKr(thisYear.gain)} i afkast i år${thisYear.pct !== null ? ` (${thisYear.pct >= 0 ? '+' : '−'}${formatPct(Math.abs(thisYear.pct))})` : ''}` : `pr. ${shortDate(lastPt.date)}`,
+        '', thisYear ? (thisYear.gain >= 0 ? 'up' : 'down') : '');
 
     setKpi('ovBudget', budgetSum > 0 ? DK.format(budgetSum) + ' kr.' : '–',
         budgetSum <= 0 ? 'Byg dit budget' : budgetTotal > 0 ? `${DK.format(budgetTotal - budgetSum)} kr. tilbage om måneden` : `${Math.round(groupSums.opsparing / budgetSum * 100)} % går til opsparing`,
@@ -54,7 +74,7 @@ function renderOverview(){
         months !== null && months < 3 ? 'negative' : '');
 
     const latest = [nwHistory.at(-1)?.date, lastPt?.date].filter(Boolean).sort().at(-1);
-    document.getElementById('ovUpdated').textContent = latest ? `Seneste månedsstatus: ${formatDanishDate(latest)} · alle beløb i DKK` : 'Alle beløb i DKK';
+    document.getElementById('pageSub').textContent = latest ? `Seneste månedsstatus ${formatDanishDate(latest)} · alle beløb i DKK` : 'Alle beløb i DKK';
 
     renderOverviewChart(nwHistory);
     renderOverviewGoals();
@@ -64,7 +84,7 @@ function renderOverview(){
 
 /** Søjler for de seneste 12 datapunkter i en stigende nuance af hovedfarven. */
 function renderOverviewChart(history){
-    const points = history.slice(-12);
+    const points = overviewRange ? history.slice(-overviewRange) : history.slice();
     document.getElementById('ovChartEmpty').style.display = points.length ? 'none' : 'flex';
     // Korte etiketter ("okt."); året står kun ved første søjle og ved januar.
     const labels = points.map((h, i) => {
@@ -74,24 +94,27 @@ function renderOverviewChart(history){
     });
     const base = getCSSVar('--akt');
     const colors = points.map((_, i) => hexToRgba(base, points.length === 1 ? 1 : 0.3 + 0.7 * i / (points.length - 1)));
-    document.getElementById('ovChartSub').textContent = points.length
-        ? `${points.length === 12 ? 'De seneste 12' : 'Dine'} månedsstatusser`
-        : 'Dine seneste månedsstatusser';
+    document.getElementById('ovChartSub').textContent = !points.length ? 'Dine seneste månedsstatusser'
+        : overviewRange ? 'Det seneste år' : `Alle dine ${points.length} månedsstatusser`;
 
     const data = {labels, datasets:[{label:'Nettoformue', data: points.map(h => h.value), backgroundColor: colors, borderRadius:8, borderSkipped:false, maxBarThickness:52}]};
     if(overviewChart){
         overviewChart.data = data;
-        overviewChart.options.scales.y.grid.color = CHART_COLOR('--chart-grid');
+        overviewChart.$points = points;
+        overviewChart.options.scales.x.ticks.color = CHART_COLOR('--muted');
         overviewChart.update();
         return;
     }
     const options = lineChartOptions(c => `Nettoformue: ${DK.format(c.raw)} kr.`);
-    options.plugins.tooltip.callbacks.title = items => formatDanishDate(points[items[0].dataIndex]?.date || '');
+    options.plugins.tooltip.callbacks.title = items => formatDanishDate(overviewChart.$points?.[items[0].dataIndex]?.date || '');
+    // Rolig graf som i skitsen: ingen akser eller gitterlinjer - tallet ses, når man peger.
     options.scales.x.grid = {display:false};
-    options.scales.x.ticks.maxRotation = 0;
+    options.scales.x.border = {display:false};
+    options.scales.x.ticks = {color: CHART_COLOR('--muted'), font:{family:getCSSVar('--font-sans'), size:13}, maxRotation:0, autoSkip:true};
     // Søjler skal starte ved 0 - ellers ser stigningerne større ud, end de er.
-    options.scales.y.beginAtZero = true;
+    options.scales.y = {display:false, beginAtZero:true};
     overviewChart = new Chart(document.getElementById('ovChart').getContext('2d'), {type:'bar', data, options});
+    overviewChart.$points = points;
 }
 
 function renderOverviewGoals(){
@@ -122,11 +145,14 @@ function renderOverviewSplit(figures){
         box.replaceChildren(el('p', {className:'empty-note'}, ['Udfyld dine aktiver for at se fordelingen. ', el('button', {className:'link-btn', type:'button', textContent:'Gå til Formue', onclick: () => showSection('formue')})]));
         return;
     }
-    box.replaceChildren(...rows.map(r => {
+    // Nuancer af hovedfarven (som i skitsen); kontanter i sekundærfarven.
+    const base = getCSSVar('--akt');
+    box.replaceChildren(...rows.map((r, i) => {
         const pct = r.value / figures.assets;
+        const color = r.label.startsWith('Kontanter') ? getCSSVar('--ask') : hexToRgba(base, Math.max(0.45, 1 - i * 0.18));
         return el('div', {className:'ov-split-row'}, [
             el('div', {className:'ov-row'}, [el('span', {textContent: r.label}), el('strong', {textContent: `${Math.round(pct * 100)} %`})]),
-            el('div', {className:'progress-track'}, [el('div', {className:'progress-fill', attrs:{style:`width:${pct * 100}%; background:${r.color}`}})])
+            el('div', {className:'progress-track'}, [el('div', {className:'progress-fill', attrs:{style:`width:${pct * 100}%; background:${color}`}})])
         ]);
     }));
 }

@@ -27,7 +27,7 @@
          TODO: Erstat ca-pub-XXXXXXXXXXXXXXXX med mit eget AdSense-udgiver-ID, og fjern kommentaren.
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
     -->
-    <link rel="stylesheet" href="styles.css?v=fa44381a">
+    <link rel="stylesheet" href="styles.css?v=f00126a4">
 </head>
 <body>
 
@@ -49,15 +49,20 @@
             -->
         </aside>
 
-        <aside class="sidebar" id="sidebar" aria-label="Menu">
-            <div class="sidebar-brand">
-                <img src="icons/icon.svg" alt="" class="brand-mark" width="38" height="38">
-                <div>
-                    <div class="brand-name">Økonomiværktøjer</div>
-                    <div class="brand-sub">Privat økonomi</div>
+        <div class="app">
+            <header class="app-header">
+                <button class="menu-btn" id="menuBtn" type="button" onclick="openNav()" aria-label="Åbn menu" aria-expanded="false" aria-controls="sidebar"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+                <div class="brand">
+                    <span class="brand-logo" aria-hidden="true">Ø</span>
+                    <span class="brand-name">Økonomiværktøjer</span>
+                    <span class="brand-sub">Privat økonomi</span>
                 </div>
-            </div>
-            <button class="btn btn-accent monthly-status-btn" type="button" onclick="openMonthlyStatus()" title="Gem dine tal i både Formue og Porteføljetracker på én gang">+ Månedsstatus</button>
+                <div class="app-header-actions">
+                    <button class="btn btn-dark monthly-status-btn" type="button" onclick="openMonthlyStatus()" aria-label="+ Månedsstatus" title="Gem dine tal i både Formue og Porteføljetracker på én gang"><span class="label-long">+ Månedsstatus</span><span class="label-short" aria-hidden="true">+ Status</span></button>
+                </div>
+            </header>
+            <div class="app-body">
+        <aside class="sidebar" id="sidebar" aria-label="Menu">
             <nav class="side-nav" aria-label="Hovedmenu">
                 <div class="nav-label">Områder</div>
                 <button class="top-tab-btn nav-item active" data-section="overview" type="button" onclick="showSection('overview')"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg>Oversigt</button>
@@ -88,15 +93,17 @@
         <div class="nav-backdrop" onclick="closeNav()"></div>
 
         <div class="site-content">
-            <div class="mobile-bar">
-                <button class="menu-btn" id="menuBtn" type="button" onclick="openNav()" aria-label="Åbn menu" aria-expanded="false" aria-controls="sidebar"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-                <img src="icons/icon.svg" alt="" width="28" height="28">
-                <span class="mobile-brand">Økonomiværktøjer</span>
-            </div>
 
             <header class="page-header">
-                <div class="page-eyebrow" id="pageEyebrow">Oversigt</div>
-                <h1 id="pageTitle">Din økonomi i overblik</h1>
+                <div class="page-heading">
+                    <div class="page-eyebrow" id="pageEyebrow">Oversigt</div>
+                    <h1 id="pageTitle">Din økonomi i overblik</h1>
+                    <p class="page-sub" id="pageSub"></p>
+                </div>
+                <div class="page-actions" id="overviewActions">
+                    <button class="btn btn-secondary" type="button" onclick="printOverview()"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 9V4h10v5"/><rect x="4" y="9" width="16" height="8" rx="2"/><path d="M7 14h10v6H7z"/></svg>Udskriv overblik</button>
+                    <button class="btn btn-primary" type="button" onclick="exportAllData()"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>Tag backup</button>
+                </div>
             </header>
             <div class="settings-panel" id="settingsPanel" role="region" aria-label="Indstillinger" style="display:none;">
                 <div class="eyebrow" style="margin-bottom:12px;">Indstillinger</div>
@@ -148,14 +155,6 @@
 
 
 <div id="section-overview">
-    <div class="overview-top">
-        <p class="overview-updated" id="ovUpdated">Alle beløb i DKK</p>
-        <div class="overview-actions">
-            <button class="btn btn-secondary btn-sm" type="button" onclick="printOverview()">Udskriv overblik</button>
-            <button class="btn btn-secondary btn-sm" type="button" onclick="exportAllData()">Tag backup</button>
-        </div>
-    </div>
-
     <div class="stats overview-kpis">
         <div class="stat"><div class="label">Nettoformue</div><div class="value akt" id="ovNetWorth">–</div><div class="sub" id="ovNetWorthSub"></div></div>
         <div class="stat"><div class="label">Porteføljen</div><div class="value" id="ovPortfolio">–</div><div class="sub" id="ovPortfolioSub"></div></div>
@@ -164,33 +163,39 @@
     </div>
 
     <div class="overview-grid">
-        <div class="panel ov-chart-panel">
-            <div class="panel-title-row">
-                <div>
-                    <h2 class="panel-title">Nettoformue over tid</h2>
-                    <p class="panel-sub" id="ovChartSub">Dine seneste månedsstatusser</p>
+        <div class="ov-side ov-main">
+            <div class="panel ov-chart-panel">
+                <div class="panel-title-row">
+                    <div>
+                        <h2 class="panel-title">Nettoformue over tid</h2>
+                        <p class="panel-sub" id="ovChartSub">Dine seneste månedsstatusser</p>
+                    </div>
+                    <div class="seg-pills" role="group" aria-label="Periode">
+                        <button type="button" data-range="12" aria-pressed="true" onclick="setOverviewRange(12)">1 år</button>
+                        <button type="button" data-range="0" aria-pressed="false" onclick="setOverviewRange(0)">Alt</button>
+                    </div>
                 </div>
-                <button type="button" class="link-btn" onclick="showSection('formue')">Se hele historikken</button>
+                <div class="chart-wrap ov-chart-wrap">
+                    <canvas id="ovChart"></canvas>
+                    <div class="chart-empty-state" id="ovChartEmpty">Gem din første månedsstatus – så vokser grafen måned for måned.</div>
+                </div>
             </div>
-            <div class="chart-wrap ov-chart-wrap">
-                <canvas id="ovChart"></canvas>
-                <div class="chart-empty-state" id="ovChartEmpty">Gem din første månedsstatus med knappen i menuen – så vokser grafen måned for måned.</div>
+
+            <div class="panel">
+                <div class="panel-title-row"><h2 class="panel-title">Fordeling</h2><span class="panel-sub" id="ovSplitSub"></span></div>
+                <div id="ovSplit" class="ov-split"></div>
             </div>
         </div>
 
-        <div class="panel">
-            <div class="panel-title-row"><h2 class="panel-title">Mine mål</h2><button type="button" class="link-btn" onclick="showSection('formue')">Alle mål</button></div>
-            <div id="ovGoals" class="ov-goals"></div>
-        </div>
-
-        <div class="panel">
-            <div class="panel-title-row"><h2 class="panel-title">Fordeling</h2><span class="panel-sub" id="ovSplitSub"></span></div>
-            <div id="ovSplit" class="ov-split"></div>
-        </div>
-
-        <div class="panel">
-            <h2 class="panel-title">Næste skridt</h2>
-            <ul id="ovNext" class="ov-next"></ul>
+        <div class="ov-side">
+            <div class="panel">
+                <div class="panel-title-row"><h2 class="panel-title">Mine mål</h2><button type="button" class="link-btn" onclick="showSection('formue')">Alle mål</button></div>
+                <div id="ovGoals" class="ov-goals"></div>
+            </div>
+            <div class="panel">
+                <div class="panel-title-row"><h2 class="panel-title">Næste skridt</h2></div>
+                <ul id="ovNext" class="ov-next"></ul>
+            </div>
         </div>
     </div>
 
@@ -1591,6 +1596,8 @@
     </div>
 </div>
     </div>
+            </div>
+        </div>
 
         <aside class="ad-slot" hidden>
             <!-- Google AdSense-annonce (højre) indsættes her, når I har jeres AdSense-kode -->
@@ -1695,11 +1702,11 @@
     <script src="js/loan-capacity.js?v=b4f645bb"></script>
     <script src="js/buy-vs-rent.js?v=75764a5e"></script>
     <script src="js/debt-payoff.js?v=85d909d1"></script>
-    <script src="js/navigation.js?v=e9b455d0"></script>
+    <script src="js/navigation.js?v=a328d64d"></script>
     <script src="js/feedback.js?v=164b3795"></script>
     <script src="js/pwa.js?v=762cd88d"></script>
     <script src="js/report.js?v=2613f43c"></script>
-    <script src="js/overview.js?v=75264e30"></script>
+    <script src="js/overview.js?v=b99a9d78"></script>
     <script src="js/budget.js?v=b2e0d6f2"></script>
     <script src="js/net-worth.js?v=ae1faf18"></script>
     <script src="js/monthly-status.js?v=1d9d637f"></script>
