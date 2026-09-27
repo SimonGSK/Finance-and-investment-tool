@@ -30,10 +30,12 @@ function showToolIn(toolPrefix, buttonPrefix, n){
 
 /**
  * Viser et af investeringsværktøjerne. "Dobbelt fradrag" gælder kun de to
- * første og flyttes derfor ind i det værktøj, der vises.
- * @param {number} n 1 ASK vs. depot, 2 månedligt depot, 3 FIRE, 4 portefølje, 5 pension
+ * første og flyttes derfor ind i det værktøj, der vises. Er Investering ikke
+ * den viste sektion, skiftes der dertil.
+ * @param {number} n 1 ASK vs. depot, 2 månedligt depot, 3 FIRE, 4 portefølje, 5 pension, 6 tips & viden
+ * @param {boolean} [stay] true = skift ikke sektion (bruges ved indlæsning)
  */
-function showTool(n){
+function showTool(n, stay){
     showToolIn('tool', 'tabBtn', n);
     const ddRow = document.getElementById('doubleDeductionRow');
     if(n === 1){
@@ -44,21 +46,26 @@ function showTool(n){
     }
     ddRow.style.display = (n === 1 || n === 2) ? '' : 'none';
     if(n === 3 && typeof updateFireImportButton === 'function') updateFireImportButton();
+    if(!stay && document.getElementById('section-tools').style.display === 'none') showSection('tools');
+    updatePageHeader();
+    closeNav();
 }
 
 /**
  * Viser et af værktøjerne under "Bolig & lån".
  * @param {number} n 1 låneevne, 2 køb eller leje, 3 gældsafvikling
+ * @param {boolean} [stay] true = skift ikke sektion
  */
-function showHousingTool(n){
+function showHousingTool(n, stay){
     showToolIn('housing', 'housingTabBtn', n);
+    if(!stay && document.getElementById('section-housing').style.display === 'none') showSection('housing');
+    updatePageHeader();
+    closeNav();
 }
-
-showTool(1);
 
 /**
  * Skifter hovedsektion og gentegner dens synlige grafer.
- * @param {'tools'|'housing'|'budget'|'formue'} name
+ * @param {'overview'|'tools'|'housing'|'budget'|'formue'} name
  */
 function showSection(name){
     document.querySelectorAll('[id^="section-"]').forEach(section => {
@@ -66,7 +73,59 @@ function showSection(name){
     });
     document.querySelectorAll('.top-tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.section === name));
     resizeChartsIn(document.getElementById('section-' + name));
+    if(name === 'overview' && typeof renderOverview === 'function') renderOverview();
+    updatePageHeader();
+    closeNav();
+    window.scrollTo({top: 0});
 }
+
+// Overskriften øverst på siden: område som lille tekst, værktøj eller side som titel.
+const PAGE_TITLES = {
+    overview: ['Oversigt', 'Din økonomi i overblik'],
+    budget: ['Budget', 'Dit budget'],
+    formue: ['Formue', 'Din formue']
+};
+
+/**
+ * Området og værktøjet, man står i, som de hedder i menuen.
+ * @returns {{section:string, area:string, tool:string|null}}
+ */
+function activePageNames(){
+    const btn = document.querySelector('.top-tab-btn.active');
+    const section = btn?.dataset.section || 'overview';
+    // Kun knappens egen tekst - ikke tallet (antal værktøjer) ved siden af.
+    const area = btn ? [...btn.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim() : '';
+    const tool = document.querySelector(`.nav-item[data-section="${section}"] + .nav-sub .tab-btn.active`)?.textContent.trim() || null;
+    return {section, area, tool};
+}
+
+function updatePageHeader(){
+    const {section, area, tool} = activePageNames();
+    let [eyebrow, title] = PAGE_TITLES[section] || [area, area];
+    if(tool){ eyebrow = area; title = tool; }
+    document.getElementById('pageEyebrow').textContent = eyebrow;
+    document.getElementById('pageTitle').textContent = title;
+}
+
+// ---- Menuen på telefoner: glider ind fra venstre ----
+
+function openNav(){
+    document.body.classList.add('nav-open');
+    document.getElementById('menuBtn').setAttribute('aria-expanded', 'true');
+    document.querySelector('#sidebar .nav-item.active')?.focus();
+}
+
+function closeNav(){
+    if(!document.body.classList.contains('nav-open')) return;
+    document.body.classList.remove('nav-open');
+    document.getElementById('menuBtn').setAttribute('aria-expanded', 'false');
+}
+
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && document.body.classList.contains('nav-open')) closeNav(); });
+
+// Startsiden er Oversigt; værktøjerne står klar i baggrunden.
+showTool(1, true);
+showHousingTool(1, true);
 
 // BACKUP_KEYS, exportAllData og importAllData ligger i sync.js.
 
@@ -185,6 +244,7 @@ function toggleSettings(open){
     const panel = document.getElementById('settingsPanel');
     const btn = document.getElementById('settingsBtn');
     const show = open ?? panel.style.display === 'none';
+    if(show) closeNav();
     panel.style.display = show ? 'block' : 'none';
     btn.setAttribute('aria-expanded', String(show));
     if(show) renderBackupStatus();
