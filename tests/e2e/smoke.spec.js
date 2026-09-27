@@ -106,10 +106,20 @@ test('budget: en post tilføjes i dialogen, og diagrammets boks er lige så høj
     await expect(page.locator('#budgetSumDisplay')).toHaveText('3.000 kr.');
 
     const [list, chart] = await Promise.all([
-        page.locator('#budgetCategoryList').evaluate(n => n.closest('.panel').getBoundingClientRect().height),
-        page.locator('#budgetChart').evaluate(n => n.closest('.panel').getBoundingClientRect().height)
+        page.locator('#budgetCategoryList').evaluate(n => n.closest('.panel').getBoundingClientRect()),
+        page.locator('#budgetChart').evaluate(n => n.closest('.panel').getBoundingClientRect())
     ]);
-    expect(Math.abs(list - chart)).toBeLessThanOrEqual(1);
+    if(Math.abs(list.top - chart.top) < 1){
+        // Side om side: diagrammets boks er lige så høj som kategorilisten.
+        expect(Math.abs(list.height - chart.height)).toBeLessThanOrEqual(1);
+    } else {
+        // Stablet (ikke plads ved siden af): diagrammet under listen i en almindelig højde,
+        // og grupperne Behov/Ønsker/Opsparing som kolonner.
+        expect(chart.top).toBeGreaterThan(list.bottom - 1);
+        expect(chart.height).toBeLessThan(600);
+        const groupTops = await page.locator('#budgetCategoryList .category-group').evaluateAll(gs => gs.map(g => Math.round(g.getBoundingClientRect().top)));
+        expect(new Set(groupTops).size).toBe(1);
+    }
 });
 
 test('månedsstatus gemmer i begge trackere og advarer, før en dato overskrives', async ({ page }) => {
@@ -881,6 +891,8 @@ test('telefonmenuen åbner fra knappen, lukker ved valg og med Esc @mobil', asyn
     await menu.click();
     await page.keyboard.press('Escape');
     await expect(menu).toHaveAttribute('aria-expanded', 'false');
+});
+
 test('formue uden data: graferne viser ingen akser (ingen "jan. 1970"), kun "Ingen data endnu"', async ({ page }) => {
     await page.goto('/index.html');
     await page.evaluate(() => showSection('formue'));
