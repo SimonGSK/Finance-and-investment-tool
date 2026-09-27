@@ -1522,3 +1522,17 @@ body[data-section="overview"] #overviewActions{ display:flex; }
 }
 /* Rød for "uden for målet" skal vinde over de neutrale nøgletalsfarver ovenfor. */
 .stat .value.negative{ color:var(--cross); }
+
+/* ---- Værktøjerne tilpasser sig pladsen ved siden af menuen (ikke skærmens bredde) ----
+   Er der under ca. 1150 px til indholdet, kommer grafen ind under indtastningen i fuld
+   bredde og et fornuftigt bredt format, og felterne står i kolonner i stedet for én lang stribe. */
+#section-tools, #section-housing{ container-type:inline-size; container-name:tools; }
+@container tools (max-width:1150px){
+    .layout{ grid-template-columns:minmax(0, 1fr); }
+    .layout > .panel.chart-panel, .panel.chart-panel-sticky{ position:static; }
+    .layout > .chart-panel .chart-wrap, .chart-panel-sticky .chart-wrap{ flex:none; min-height:0; height:clamp(280px, 42cqw, 460px); }
+    .layout > .panel:first-child:not(.chart-panel){
+        display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); column-gap:var(--s6); align-items:start;
+    }
+    .layout > .panel:first-child:not(.chart-panel) > :not(.field){ grid-column:1 / -1; }
+}
