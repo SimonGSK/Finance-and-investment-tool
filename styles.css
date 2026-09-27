@@ -691,7 +691,7 @@ table.data-table tbody tr:hover{ background:var(--panel-hover); }
     border-bottom:1.5px solid var(--subtle);
     transform:rotate(-45deg);
 }
-.add-category-btn{ margin-top:var(--s4); width:100%; }
+.add-category-btn{ margin-top:var(--s4); }
 
 .budget-item-head,
 .budget-item-row{
@@ -1346,7 +1346,7 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
    Nyt udseende (redesign/ui) - inspireret af Lovable-skitsen:
    topbjælke, svævende menukort, luftige kort, rolig tekst.
    ================================================================== */
-:root{ --sidebar-w:300px; --r-card:22px; }
+:root{ --sidebar-w:260px; --r-card:22px; }
 
 /* ---- Ramme: topbjælke over menukort + indhold ---- */
 .page-shell{ display:block; }
@@ -1546,3 +1546,33 @@ body[data-section="overview"] #overviewActions{ display:flex; }
 }
 /* Et værktøj markeres kun, når man faktisk står i dets område (ikke bare fordi gruppen er foldet ud). */
 .nav-group:not(.active) + .nav-sub .nav-subitem.active{ background:transparent; color:var(--muted); font-weight:500; }
+
+/* ---- Smallere menu: lidt mindre luft, så indholdet får mere plads ---- */
+.sidebar{ padding:var(--s4) var(--s3); }
+.nav-item{ padding:11px var(--s3); font-size:15.5px; }
+.nav-label{ margin-left:var(--s3); margin-right:var(--s3); }
+.nav-sub{ margin-left:22px; }
+.nav-subitem{ font-size:14px; padding:8px 10px; }
+
+/* ---- Budget: kategorierne over diagrammet, når der ikke er plads ved siden af ----
+   Grupperne (Behov, Ønsker, Opsparing) står så som kolonner, og diagrammet får en
+   almindelig højde under dem. På store skærme står de side om side som før. */
+#section-budget{ container-type:inline-size; container-name:budget; }
+@container budget (max-width:1150px){
+    .layout-wide{ grid-template-columns:minmax(0, 1fr); }
+    #budgetCategoryList{ display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); column-gap:var(--s6); align-items:start; }
+    #budgetCategoryList .category-group-label{ margin-top:var(--s3); }
+    .layout-wide > .chart-panel .chart-wrap{ flex:none; min-height:0; height:clamp(300px, 38cqw, 420px); }
+    .layout-wide > .panel:first-child .field{ max-width:420px; }
+}
+
+/* ---- Formue: indtastningen i fuld bredde og diagrammet under, når der ikke er plads ved siden af ---- */
+#section-formue{ container-type:inline-size; container-name:formue; }
+@container formue (max-width:1150px){
+    .layout-net-worth{ grid-template-columns:minmax(0, 1fr); }
+    .layout-net-worth > .panel:first-child{
+        display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); column-gap:var(--s6); align-items:start;
+    }
+    .layout-net-worth > .panel:first-child > :not(.field){ grid-column:1 / -1; }
+    .layout-net-worth > .chart-panel .chart-wrap{ flex:none; min-height:0; height:clamp(300px, 36cqw, 400px); }
+}

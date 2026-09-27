@@ -158,7 +158,8 @@ function renderCategoryList(){
     container.replaceChildren(...BUDGET_GROUPS.flatMap(group => {
         const groupCats = cats.filter(c => c.group === group.id);
         if(!groupCats.length) return [];
-        return [
+        // Hver gruppe i sin egen boks, så grupperne kan stå som kolonner, når listen har hele bredden.
+        return [el('div', {className:'category-group'}, [
             el('div', {className:'category-group-label', textContent:group.label}),
             el('div', {className:'category-list'}, groupCats.map(cat => {
                 const total = categoryTotal(items, cat.id);
@@ -174,7 +175,7 @@ function renderCategoryList(){
                     el('span', {className:'cat-total' + (total ? '' : ' is-empty'), textContent: DK.format(total) + ' kr.'})
                 ]);
             }))
-        ];
+        ])];
     }));
 }
 
