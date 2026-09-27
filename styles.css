@@ -1320,3 +1320,21 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
     .glossary dd{ margin-bottom:var(--s3); }
     .risk-scale{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
 }
+.guide-subhead{ margin:var(--s5) 0 var(--s2); font-family:var(--font-display); font-size:17px; font-weight:500; color:var(--text); }
+.sector-table td:nth-child(2){ white-space:nowrap; }
+.sector-table .level{ margin-left:0; }
+/* Tabellerne i guiden viser alle rækker - ingen indre scroll. */
+.guide-body .data-table-wrap{ max-height:none; }
+@media (max-width:640px){
+    /* Tekst-tabeller som kort: navnet øverst, derefter hver kolonne med sin overskrift. */
+    table.data-table.etf-rules, table.data-table.etf-rules tbody, table.data-table.etf-rules tr, table.data-table.etf-rules td{ display:block; }
+    table.data-table.etf-rules thead{ display:none; }
+    table.data-table.etf-rules tr{ padding:var(--s3) var(--s4); border-bottom:1px solid var(--border); }
+    table.data-table.etf-rules tbody tr:last-child{ border-bottom:none; }
+    table.data-table.etf-rules td{ border:none; padding:2px 0; white-space:normal; text-align:left; }
+    table.data-table.etf-rules td:first-child{ font-size:15px; margin-bottom:var(--s1); color:var(--text); font-weight:600; }
+    table.data-table.etf-rules td:not(:first-child)::before{
+        content:attr(data-label); display:block; margin-top:var(--s2);
+        font-family:var(--font-mono); font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--subtle);
+    }
+}
