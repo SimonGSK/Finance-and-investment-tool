@@ -881,4 +881,14 @@ test('telefonmenuen åbner fra knappen, lukker ved valg og med Esc @mobil', asyn
     await menu.click();
     await page.keyboard.press('Escape');
     await expect(menu).toHaveAttribute('aria-expanded', 'false');
+test('formue uden data: graferne viser ingen akser (ingen "jan. 1970"), kun "Ingen data endnu"', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => showSection('formue'));
+    expect(await page.evaluate(() => [netWorthHistoryChart, netWorthCompositionChart].map(c => c.options.scales.x.display || c.options.scales.y.display))).toEqual([false, false]);
+    await expect(page.locator('#netWorthHistoryChartEmpty')).toBeVisible();
+    await page.evaluate(() => {
+        localStorage.setItem('netWorthHistory', JSON.stringify([{date:'2026-08-31', value:1000, liquid:1000, netCatKontanter:1000, netCatAktier:0, netCatPension:0, netCatFrivaerdi:0, netCatAndet:0, debt:0}]));
+        renderNetWorthHistory();
+    });
+    expect(await page.evaluate(() => netWorthHistoryChart.options.scales.x.display)).toBe(true);
 });
