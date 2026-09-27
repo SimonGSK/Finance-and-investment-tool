@@ -9,7 +9,7 @@ const VIEWS = [
     ['tools', 'showTool', 1], ['tools', 'showTool', 2], ['tools', 'showTool', 3],
     ['tools', 'showTool', 4], ['tools', 'showTool', 5], ['tools', 'showTool', 6],
     ['housing', 'showHousingTool', 1], ['housing', 'showHousingTool', 2], ['housing', 'showHousingTool', 3],
-    ['budget', null, null], ['formue', null, null], ['overview', null, null]
+    ['budget', null, null], ['formue', null, null]
 ];
 
 async function openView(page, [section, fn, n]){
@@ -227,7 +227,6 @@ test('formue: sammensætningen viser alle kategorier for datoen, man peger på',
 
 test('"?" ved et felt viser en forklaring, og værktøjets beskrivelse kan foldes ud', async ({ page }) => {
     await page.goto('/index.html');
-    await page.getByRole('button', { name: 'Investering', exact: true }).click();
     const tip = page.getByRole('button', { name: 'Hvad betyder Forventet årligt afkast?' }).first();
     const pop = page.locator('#' + await tip.getAttribute('aria-controls'));
     await expect(pop).toBeHidden();
@@ -822,52 +821,4 @@ test('prognosen kan slås fra og til, og valget huskes', async ({ page }) => {
     await page.reload();
     await page.getByRole('button', { name: 'Formue', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Prognose' })).toHaveAttribute('aria-pressed', 'false');
-});
-
-test('oversigt og sidemenu: nøgletal fra de andre dele, sidehovedet følger med, og telefonmenuen åbner og lukker', async ({ page }) => {
-    await page.goto('/index.html');
-    await expect(page.locator('#pageTitle')).toHaveText('Din økonomi i overblik');
-    await expect(page.locator('#ovNext')).toContainText('Skriv dine aktiver og din gæld ind.');
-
-    await page.evaluate(() => {
-        const nw = (date, value) => ({date, value, liquid:value, netCatKontanter:value / 2, netCatAktier:value / 2, netCatPension:0, netCatFrivaerdi:0, netCatAndet:0, debt:0});
-        localStorage.setItem('netWorthHistory', JSON.stringify([nw('2026-07-31', 500000), nw('2026-08-31', 520000)]));
-        localStorage.setItem('budgetItems', JSON.stringify({catBolig:[{label:'Husleje', amount:10000}], catOpsparing:[{label:'Aktier', amount:2000}]}));
-    });
-    await page.reload();
-    await expect(page.locator('#ovNetWorth')).toHaveText('520.000 kr.');
-    await expect(page.locator('#ovNetWorthSub')).toContainText('+20.000 kr. siden 31. jul.');
-    await expect(page.locator('#ovBudget')).toHaveText('12.000 kr.');
-    await expect(page.locator('#ovBuffer')).toHaveText('26,0 mdr.');     // 260.000 kr. kontanter / 10.000 kr. udgifter
-    expect(await page.evaluate(() => overviewChart.data.datasets[0].data)).toEqual([500000, 520000]);
-    await expect(page.locator('#ovSplit .ov-split-row')).toHaveCount(2);
-
-    // Menuen: Investering folder sine værktøjer ud, og sidehovedet viser område og værktøj.
-    await page.getByRole('button', { name: 'Investering', exact: true }).click();
-    await expect(page.locator('#pageEyebrow')).toHaveText('Investering');
-    await expect(page.locator('#pageTitle')).toHaveText('ASK vs. Aktiedepot');
-    await page.getByRole('button', { name: 'FIRE-beregner (4%-reglen)' }).click();
-    await expect(page.locator('#pageTitle')).toHaveText('FIRE-beregner (4%-reglen)');
-    await expect(page.locator('#tool3')).toBeVisible();
-
-    // Genvej fra oversigten til et værktøj.
-    await page.getByRole('button', { name: 'Oversigt', exact: true }).click();
-    await page.locator('.ov-tool', { hasText: 'Gældsafvikling' }).click();
-    await expect(page.locator('#pageEyebrow')).toHaveText('Bolig & lån');
-    await expect(page.locator('#housing3')).toBeVisible();
-});
-
-test('telefonmenuen åbner fra knappen, lukker ved valg og med Esc @mobil', async ({ page }) => {
-    await page.goto('/index.html');
-    const phone = await page.evaluate(() => window.innerWidth <= 900);
-    test.skip(!phone, 'kun når menuen er skjult bag en knap');
-    const menu = page.getByRole('button', { name: 'Åbn menu' });
-    await menu.click();
-    await expect(menu).toHaveAttribute('aria-expanded', 'true');
-    await page.getByRole('button', { name: 'Budget', exact: true }).click();
-    await expect(menu).toHaveAttribute('aria-expanded', 'false');
-    await expect(page.locator('#pageTitle')).toHaveText('Dit budget');
-    await menu.click();
-    await page.keyboard.press('Escape');
-    await expect(menu).toHaveAttribute('aria-expanded', 'false');
 });

@@ -22,8 +22,10 @@ function updateFeedbackButton(){
 
 /** Fanen og værktøjet, man står i, fx "Bolig & lån / Køb eller leje?" - så en fejlmelding siger, hvor den skete. */
 function currentToolName(){
-    const {area, tool} = activePageNames();
-    return [area, tool].filter(Boolean).join(' / ');
+    const sectionBtn = document.querySelector('.top-tab-btn.active');
+    const section = sectionBtn && document.getElementById('section-' + sectionBtn.dataset.section);
+    const toolBtn = section?.querySelector('.tab-btn.active');
+    return [sectionBtn?.textContent, toolBtn?.textContent].filter(Boolean).map(t => t.trim()).join(' / ');
 }
 
 /** Kort privatlivsnote under formularen - hvad der sendes, hvortil, og hvor længe det gemmes. */

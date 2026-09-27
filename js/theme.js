@@ -81,8 +81,6 @@ function setTheme(theme){
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
     applyAllChartThemes();
-    // Oversigtens søjler har hver sin nuance af temaets farve og tegnes derfor forfra.
-    if(typeof renderOverview === 'function' && document.getElementById('section-overview').style.display !== 'none') renderOverview();
 }
 
 document.getElementById('lightTheme').addEventListener('change', () => {
