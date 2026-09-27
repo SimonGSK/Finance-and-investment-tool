@@ -34,3 +34,6 @@ node_modules/
 ### Playwright ###
 test-results/
 playwright-report/
+
+### Claude-app (lokal preview-opsætning) ###
+.claude/
