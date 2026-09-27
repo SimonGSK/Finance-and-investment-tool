@@ -125,7 +125,7 @@
         <button class="tab-btn" id="tabBtn2" onclick="showTool(2)">Aktiedepot: fast + månedligt</button>
         <button class="tab-btn" id="tabBtn3" onclick="showTool(3)">FIRE-beregner (4%-reglen)</button>
         <button class="tab-btn" id="tabBtn5" onclick="showTool(5)">Pension</button>
-        <button class="tab-btn" id="tabBtn6" onclick="showTool(6)">ETF'er og fonde</button>
+        <button class="tab-btn" id="tabBtn6" onclick="showTool(6)">Tips &amp; viden</button>
         <button class="tab-btn" id="tabBtn4" onclick="showTool(4)">Porteføljetracker</button>
     </div>
 
@@ -649,42 +649,174 @@
         <div class="tool-head">
             <details class="tool-about">
                 <summary>Hvad gør dette værktøj?</summary>
-                <p class="tool-intro">Slå op, om en ETF eller fond står på Skattestyrelsens <strong>positivliste</strong>, og se hvordan de forskellige typer investeringer beskattes. Om en fond står på listen, afgør, om gevinsten beskattes som aktieindkomst eller som den dyrere kapitalindkomst – og om den må ligge på en aktiesparekonto.</p>
+                <p class="tool-intro">Grundlæggende viden om investering: hvilke konti du kan investere fra, hvordan de beskattes, hvad forskellen på aktier, fonde, ETF'er og obligationer er, hvad risiko betyder, de ord du møder som investor, og hvordan du læser en virksomheds nøgletal. Vi fortæller ikke, hvad du skal købe – det her er viden, ikke rådgivning.</p>
             </details>
         </div>
 
-        <div class="panel etf-lookup">
-            <div class="eyebrow">Er den på positivlisten?</div>
-            <div class="field">
-                <label for="etfSearch">Søg på ISIN eller navn</label>
-                <input type="search" id="etfSearch" class="number-input etf-search" placeholder="Fx IE00B4L5Y983 eller MSCI World" autocomplete="off" spellcheck="false">
-                <div class="limit-hint">ISIN-koden (12 tegn) står på fondens faktaark og hos din bank eller netbank.</div>
-            </div>
-            <div id="etfResults" class="etf-results" role="status" aria-live="polite"></div>
-            <div class="etf-verdict etf-dk-note">
-                <p><strong>Danske udbyttebetalende fonde står ikke på listen – og skal heller ikke.</strong> Positivlisten gælder kun <em>akkumulerende</em> fonde og udenlandske ETF'er. En dansk udbyttebetalende (udloddende) investeringsforening, der er <strong>aktiebaseret</strong>, beskattes altid som <strong>aktieindkomst efter realisationsprincippet</strong>: gevinsten beskattes først, når du sælger, og udbyttet hvert år. Er den obligationsbaseret, beskattes den som kapitalindkomst.</p>
-            </div>
-            <p class="explainer" id="etfSource"></p>
-        </div>
+        <div class="guide">
+            <details class="guide-section" open>
+                <summary><span class="guide-num">1</span>Før du starter</summary>
+                <div class="guide-body">
+                    <ul class="guide-list">
+                        <li><strong>Buffer først.</strong> Hav 3–6 måneders faste udgifter stående på en almindelig konto, før du investerer. Så skal du ikke sælge, hvis tandlægen, bilen eller jobbet driller – og slet ikke, når markedet lige er faldet. Se din buffer under <button type="button" class="link-btn" onclick="showSection('formue')">Formue</button>.</li>
+                        <li><strong>Dyr gæld før investering.</strong> At betale et forbrugslån eller kreditkort med 15–25 % i rente af svarer til et sikkert afkast på 15–25 %. Det slår aktiemarkedet. Se <button type="button" class="link-btn" onclick="showSection('housing'); showHousingTool(3)">Gældsafvikling</button>.</li>
+                        <li><strong>Tænk i år, ikke måneder.</strong> Aktier kan falde 30–50 % og være flere år om at komme tilbage. Penge, du skal bruge inden for 3–5 år, hører typisk ikke hjemme i aktier.</li>
+                        <li><strong>Spred risikoen.</strong> Ejer du mange selskaber i mange lande og brancher – fx gennem en bred indeksfond – betyder det mindre, hvis ét af dem går dårligt.</li>
+                        <li><strong>Omkostninger tæller mere, end man tror.</strong> 100.000 kr. i 30 år med 7 % om året bliver til ca. 761.000 kr.; med 6 % – fordi 1 procentpoint går til omkostninger – kun ca. 574.000 kr. Tjek fondens ÅOP.</li>
+                        <li><strong>Tid i markedet slår timing.</strong> Ingen ved, hvornår markedet topper eller bunder. Faste månedlige køb spreder dine købskurser, så du ikke skal ramme det rigtige tidspunkt.</li>
+                        <li><strong>Invester kun penge, du kan undvære</strong> – og vælg noget, du kan holde fast i, når det falder.</li>
+                    </ul>
+                </div>
+            </details>
 
-        <div class="panel">
-            <div class="eyebrow">Sådan beskattes det (<span data-rule="TAX_YEAR">2026</span>)</div>
-            <div class="data-table-wrap">
-                <table class="data-table etf-rules">
-                    <thead><tr><th>Type</th><th>Hvordan</th><th>Sats</th><th>På aktiesparekonto?</th></tr></thead>
-                    <tbody>
-                        <tr><td>ETF/fond på positivlisten</td><td>Lager: årets gevinst beskattes hvert år, også uden salg</td><td>Aktieindkomst: <span data-rule="AKT_TAX_LOW">27</span> % / <span data-rule="AKT_TAX_HIGH">42</span> %</td><td>Ja</td></tr>
-                        <tr><td>Udenlandsk ETF/fond, ikke på listen</td><td>Lager: årets gevinst hvert år</td><td>Kapitalindkomst: ca. 37–42 %</td><td>Nej</td></tr>
-                        <tr><td>Dansk akkumulerende aktiefond (står på positivlisten)</td><td>Lager: årets gevinst beskattes hvert år, også uden salg – der udbetales intet udbytte</td><td>Aktieindkomst: <span data-rule="AKT_TAX_LOW">27</span> % / <span data-rule="AKT_TAX_HIGH">42</span> %</td><td>Ja</td></tr>
-                        <tr><td>Dansk udbyttebetalende aktiefond</td><td>Realisation: gevinsten ved salg, udbyttet hvert år</td><td>Aktieindkomst: <span data-rule="AKT_TAX_LOW">27</span> % / <span data-rule="AKT_TAX_HIGH">42</span> %</td><td>Ja</td></tr>
-                        <tr><td>Dansk udbyttebetalende obligationsfond</td><td>Realisation: gevinsten ved salg, udbyttet hvert år</td><td>Kapitalindkomst: ca. 37–42 %</td><td>Nej</td></tr>
-                        <tr><td>Børsnoterede aktier</td><td>Realisation: gevinsten ved salg, udbyttet hvert år</td><td>Aktieindkomst: <span data-rule="AKT_TAX_LOW">27</span> % / <span data-rule="AKT_TAX_HIGH">42</span> %</td><td>Ja</td></tr>
-                        <tr><td>Aktiesparekonto</td><td>Lager</td><td><span data-rule="ASK_TAX">17</span> %</td><td>Loft: <span data-rule="ASK_DEPOSIT_LIMIT">174.200</span> kr. i indskud</td></tr>
-                        <tr><td>Pension</td><td>Lager (PAL-skat)</td><td><span data-rule="PAL_SKAT">15,3</span> %</td><td>–</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <p class="explainer"><strong>Lager</strong> betyder, at du betaler skat af årets stigning, selvom du ikke har solgt; falder værdien, kan tabet trækkes fra senere gevinster. <strong>Realisation</strong> betyder, at gevinsten først beskattes, når du sælger – så skatten udskydes, og pengene kan imens give afkast. <strong>Aktieindkomst</strong> beskattes med <span data-rule="AKT_TAX_LOW">27</span> % op til <span data-rule="TAX_LIMIT_27">79.400</span> kr. om året (det dobbelte for ægtepar) og <span data-rule="AKT_TAX_HIGH">42</span> % derover. <strong>Kapitalindkomst</strong> beskattes med ca. 37 % for de fleste og op til ca. 42 %, hvis du har over <span data-rule="CAPITAL_INCOME_LIMIT">55.000</span> kr. i positiv kapitalindkomst og din samlede indkomst giver mellemskat. Ikke rådgivning. Kilde: <a href="https://skat.dk/erhverv/ekapital/vaerdipapirer/beviser-og-aktier-i-investeringsforeninger-og-selskaber-ifpa" target="_blank" rel="noopener">Skattestyrelsens liste over aktiebaserede investeringsselskaber</a>.</p>
+            <details class="guide-section">
+                <summary><span class="guide-num">2</span>Kontotyper</summary>
+                <div class="guide-body">
+                    <div class="data-table-wrap">
+                        <table class="data-table etf-rules">
+                            <thead><tr><th>Konto</th><th>Hvad kan den</th><th>Skat</th><th>Godt at vide</th></tr></thead>
+                            <tbody>
+                                <tr><td>Aktiedepot (frie midler)</td><td>Intet loft. Aktier, fonde, ETF'er og obligationer. Pengene kan tages ud når som helst.</td><td>Aktieindkomst: <span data-rule="AKT_TAX_LOW">27</span> % op til <span data-rule="TAX_LIMIT_27">79.400</span> kr. om året, <span data-rule="AKT_TAX_HIGH">42</span> % derover. Nogle ETF'er som kapitalindkomst.</td><td>Aktier beskattes først ved salg; ETF'er og akkumulerende fonde hvert år.</td></tr>
+                                <tr><td>Aktiesparekonto (ASK)</td><td>Højst <span data-rule="ASK_DEPOSIT_LIMIT">174.200</span> kr. i indskud. Kun børsnoterede aktier og fonde på positivlisten.</td><td><span data-rule="ASK_TAX">17</span> % af årets afkast hvert år (lager).</td><td>Én pr. person. Tab kan kun trækkes fra senere gevinster på samme konto.</td></tr>
+                                <tr><td>Ratepension</td><td>Loft på <span data-rule="RATEPENSION_LIMIT">68.700</span> kr. om året med fradrag.</td><td><span data-rule="PAL_SKAT">15,3</span> % PAL-skat af afkastet. Udbetalingerne beskattes som indkomst.</td><td>Fradrag nu, skat senere. Bundet til pensionsalderen.</td></tr>
+                                <tr><td>Aldersopsparing</td><td>Højst <span data-rule="ALDERSOPSPARING_LIMIT">9.900</span> kr. om året (<span data-rule="ALDERSOPSPARING_NEAR_LIMIT">64.200</span> kr. tæt på pensionsalderen).</td><td><span data-rule="PAL_SKAT">15,3</span> % PAL-skat af afkastet. Skattefri udbetaling.</td><td>Intet fradrag, men pengene er dine uden skat, når de udbetales.</td></tr>
+                                <tr><td>Børneopsparing</td><td>Højst <span data-rule="BOERNE_YEAR">6.000</span> kr. om året og <span data-rule="BOERNE_TOTAL">72.000</span> kr. i alt pr. barn.</td><td>Afkastet er skattefrit.</td><td>Pengene er bundet i en årrække og tilhører barnet.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="guide-note">Se hvad forskellen betyder i kroner under <button type="button" class="link-btn" onclick="showTool(1)">ASK vs. Aktiedepot</button> og <button type="button" class="link-btn" onclick="showTool(5)">Pension</button>.</p>
+                </div>
+            </details>
+
+            <details class="guide-section">
+                <summary><span class="guide-num">3</span>Skat og positivlisten</summary>
+                <div class="guide-body">
+                <div class="panel etf-lookup">
+                    <div class="eyebrow">Er den på positivlisten?</div>
+                    <div class="field">
+                        <label for="etfSearch">Søg på ISIN eller navn</label>
+                        <input type="search" id="etfSearch" class="number-input etf-search" placeholder="Fx IE00B4L5Y983 eller MSCI World" autocomplete="off" spellcheck="false">
+                        <div class="limit-hint">ISIN-koden (12 tegn) står på fondens faktaark og hos din bank eller netbank.</div>
+                    </div>
+                    <div id="etfResults" class="etf-results" role="status" aria-live="polite"></div>
+                    <div class="etf-verdict etf-dk-note">
+                        <p><strong>Danske udbyttebetalende fonde står ikke på listen – og skal heller ikke.</strong> Positivlisten gælder kun <em>akkumulerende</em> fonde og udenlandske ETF'er. En dansk udbyttebetalende (udloddende) investeringsforening, der er <strong>aktiebaseret</strong>, beskattes altid som <strong>aktieindkomst efter realisationsprincippet</strong>: gevinsten beskattes først, når du sælger, og udbyttet hvert år. Er den obligationsbaseret, beskattes den som kapitalindkomst.</p>
+                    </div>
+                    <p class="explainer" id="etfSource"></p>
+                </div>
+                <div class="panel">
+                    <div class="eyebrow">Sådan beskattes det (<span data-rule="TAX_YEAR">2026</span>)</div>
+                    <div class="data-table-wrap">
+                        <table class="data-table etf-rules">
+                            <thead><tr><th>Type</th><th>Hvordan</th><th>Sats</th><th>På aktiesparekonto?</th></tr></thead>
+                            <tbody>
+                                <tr><td>ETF/fond på positivlisten</td><td>Lager: årets gevinst beskattes hvert år, også uden salg</td><td>Aktieindkomst: <span data-rule="AKT_TAX_LOW">27</span> % / <span data-rule="AKT_TAX_HIGH">42</span> %</td><td>Ja</td></tr>
+                                <tr><td>Udenlandsk ETF/fond, ikke på listen</td><td>Lager: årets gevinst hvert år</td><td>Kapitalindkomst: ca. 37–42 %</td><td>Nej</td></tr>
+                                <tr><td>Dansk akkumulerende aktiefond (står på positivlisten)</td><td>Lager: årets gevinst beskattes hvert år, også uden salg – der udbetales intet udbytte</td><td>Aktieindkomst: <span data-rule="AKT_TAX_LOW">27</span> % / <span data-rule="AKT_TAX_HIGH">42</span> %</td><td>Ja</td></tr>
+                                <tr><td>Dansk udbyttebetalende aktiefond</td><td>Realisation: gevinsten ved salg, udbyttet hvert år</td><td>Aktieindkomst: <span data-rule="AKT_TAX_LOW">27</span> % / <span data-rule="AKT_TAX_HIGH">42</span> %</td><td>Ja</td></tr>
+                                <tr><td>Dansk udbyttebetalende obligationsfond</td><td>Realisation: gevinsten ved salg, udbyttet hvert år</td><td>Kapitalindkomst: ca. 37–42 %</td><td>Nej</td></tr>
+                                <tr><td>Børsnoterede aktier</td><td>Realisation: gevinsten ved salg, udbyttet hvert år</td><td>Aktieindkomst: <span data-rule="AKT_TAX_LOW">27</span> % / <span data-rule="AKT_TAX_HIGH">42</span> %</td><td>Ja</td></tr>
+                                <tr><td>Aktiesparekonto</td><td>Lager</td><td><span data-rule="ASK_TAX">17</span> %</td><td>Loft: <span data-rule="ASK_DEPOSIT_LIMIT">174.200</span> kr. i indskud</td></tr>
+                                <tr><td>Pension</td><td>Lager (PAL-skat)</td><td><span data-rule="PAL_SKAT">15,3</span> %</td><td>–</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="explainer"><strong>Lager</strong> betyder, at du betaler skat af årets stigning, selvom du ikke har solgt; falder værdien, kan tabet trækkes fra senere gevinster. <strong>Realisation</strong> betyder, at gevinsten først beskattes, når du sælger – så skatten udskydes, og pengene kan imens give afkast. <strong>Aktieindkomst</strong> beskattes med <span data-rule="AKT_TAX_LOW">27</span> % op til <span data-rule="TAX_LIMIT_27">79.400</span> kr. om året (det dobbelte for ægtepar) og <span data-rule="AKT_TAX_HIGH">42</span> % derover. <strong>Kapitalindkomst</strong> beskattes med ca. 37 % for de fleste og op til ca. 42 %, hvis du har over <span data-rule="CAPITAL_INCOME_LIMIT">55.000</span> kr. i positiv kapitalindkomst og din samlede indkomst giver mellemskat. Ikke rådgivning. Kilde: <a href="https://skat.dk/erhverv/ekapital/vaerdipapirer/beviser-og-aktier-i-investeringsforeninger-og-selskaber-ifpa" target="_blank" rel="noopener">Skattestyrelsens liste over aktiebaserede investeringsselskaber</a>.</p>
+                </div>
+                </div>
+            </details>
+
+            <details class="guide-section">
+                <summary><span class="guide-num">4</span>Aktier, fonde, ETF'er og obligationer</summary>
+                <div class="guide-body">
+                    <dl class="guide-cards">
+                        <div><dt>Aktier</dt><dd>En lille ejerandel af ét selskab. Du tjener på, at kursen stiger, og på udbytte. En enkelt aktie kan stige meget – eller falde til nul – så risikoen er høj, hvis du kun ejer få.</dd></div>
+                        <div><dt>Investeringsforeninger og fonde</dt><dd>Mange investorers penge samlet i én pulje, der køber mange aktier eller obligationer. Du får spredning med ét køb. <em>Aktive</em> fonde har en forvalter, der vælger; <em>passive</em> følger et indeks. Danske fonde er enten udbyttebetalende eller akkumulerende (se skat ovenfor).</dd></div>
+                        <div><dt>Indeksfonde</dt><dd>Passive fonde, der ejer alle – eller næsten alle – selskaber i et indeks, fx de største selskaber i verden. Lave omkostninger og bred spredning; du får markedets afkast, hverken mere eller mindre.</dd></div>
+                        <div><dt>ETF'er</dt><dd>Fonde, der handles på børsen som en aktie (Exchange Traded Fund). De fleste er indeksfonde med lave omkostninger. Mange er udenlandske, så tjek positivlisten – ellers beskattes de som kapitalindkomst.</dd></div>
+                        <div><dt>Obligationer</dt><dd>Et lån til en stat, et realkreditinstitut eller en virksomhed, som betaler rente. Lavere risiko og lavere forventet afkast end aktier. Når renterne i samfundet stiger, falder kursen på eksisterende obligationer – og omvendt.</dd></div>
+                        <div><dt>Blandede fonde</dt><dd>Aktier og obligationer i én fond, fx 60 % aktier og 40 % obligationer. Svinger mindre end rene aktiefonde og rebalanceres automatisk.</dd></div>
+                        <div><dt>Kontanter</dt><dd>Sikre – indestående er dækket op til 100.000 euro pr. person pr. bank – men inflationen æder langsomt købekraften, hvis renten er lavere end prisstigningerne.</dd></div>
+                    </dl>
+                </div>
+            </details>
+
+            <details class="guide-section">
+                <summary><span class="guide-num">5</span>Risiko</summary>
+                <div class="guide-body">
+                    <p class="guide-text">Risiko er, hvor meget værdien kan svinge – og hvor meget den kan falde, før den (måske) kommer igen. Højere forventet afkast kommer næsten altid med højere risiko.</p>
+                    <div class="risk-scale" role="img" aria-label="Risikoskala fra 1 til 7">
+                        <div class="risk-step" style="--r:1"><strong>1–2</strong><span>Kontanter, korte obligationer</span></div>
+                        <div class="risk-step" style="--r:3"><strong>3</strong><span>Blandede fonde med mange obligationer</span></div>
+                        <div class="risk-step" style="--r:4"><strong>4–5</strong><span>Brede globale aktiefonde</span></div>
+                        <div class="risk-step" style="--r:6"><strong>6–7</strong><span>Enkeltaktier, smalle brancher og lande</span></div>
+                    </div>
+                    <ul class="guide-list">
+                        <li><strong>Risikoskalaen 1–7</strong> står i hver fonds dokument "Central information" (også kaldet KID). Tallene ovenfor er typiske eksempler, ikke regler.</li>
+                        <li><strong>Store fald sker.</strong> Globale aktier faldt omkring halvdelen under finanskrisen 2007–09 og var flere år om at komme tilbage.</li>
+                        <li><strong>Tid mindsker risikoen for at tabe.</strong> Over en enkelt dag er aktier et lotteri; over 15–20 år har brede aktiefonde historisk næsten altid givet et positivt afkast – men det er ingen garanti.</li>
+                        <li><strong>Andre risici:</strong> valutarisiko (udenlandske aktier i dollar og euro), koncentrationsrisiko (for få selskaber eller én branche), renterisiko (obligationer) og likviditetsrisiko (svært at sælge til en fair pris).</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="guide-section">
+                <summary><span class="guide-num">6</span>Ordbog</summary>
+                <div class="guide-body">
+                    <dl class="glossary">
+                        <dt>Afkast</dt><dd>Hvad investeringen har tjent – kursstigning plus udbytte – ofte i procent pr. år.</dd>
+                        <dt>Aktieindkomst</dt><dd>Gevinster og udbytter fra aktier og aktiefonde. Beskattes med <span data-rule="AKT_TAX_LOW">27</span> % op til <span data-rule="TAX_LIMIT_27">79.400</span> kr. om året og <span data-rule="AKT_TAX_HIGH">42</span> % derover.</dd>
+                        <dt>Akkumulerende</dt><dd>En fond, der geninvesterer udbyttet i stedet for at udbetale det. Beskattes af årets stigning (lager).</dd>
+                        <dt>Børsnoteret</dt><dd>En aktie eller fond, der handles på en børs, fx Nasdaq København.</dd>
+                        <dt>Diversificering</dt><dd>At sprede pengene over mange investeringer, så ét dårligt valg ikke betyder så meget.</dd>
+                        <dt>GAK</dt><dd>Gennemsnitlig anskaffelseskurs: den gennemsnitlige pris, du har betalt pr. aktie eller andel, inklusiv kurtage. Din skattepligtige gevinst regnes ud fra den.</dd>
+                        <dt>Indeks</dt><dd>En samling værdipapirer, der måler et marked, fx C25 (de 25 største danske selskaber) eller MSCI World.</dd>
+                        <dt>Indre værdi</dt><dd>For en fond: værdien af alt, den ejer, delt med antallet af andele. For et selskab: egenkapitalen pr. aktie.</dd>
+                        <dt>ISIN</dt><dd>En international kode på 12 tegn, der entydigt identificerer et værdipapir, fx IE00B4L5Y983.</dd>
+                        <dt>Kapitalindkomst</dt><dd>Fx renter og gevinst på ETF'er, der ikke står på positivlisten. Beskattes med ca. 37–42 %.</dd>
+                        <dt>Kurs</dt><dd>Prisen på én aktie eller andel lige nu.</dd>
+                        <dt>Kurtage</dt><dd>Gebyret til banken, når du køber eller sælger. Ofte et minimumsbeløb – så mange små handler kan blive dyre.</dd>
+                        <dt>Lagerbeskatning</dt><dd>Du betaler skat af årets stigning, selvom du ikke har solgt.</dd>
+                        <dt>Likviditet</dt><dd>Hvor let et værdipapir kan købes og sælges til en fair pris.</dd>
+                        <dt>Markedsværdi</dt><dd>Hvad hele selskabet er værd på børsen: kursen gange antallet af aktier.</dd>
+                        <dt>Positivlisten</dt><dd>Skattestyrelsens liste over aktiebaserede fonde og ETF'er, der beskattes som aktieindkomst. Kan slås op under "Skat og positivlisten".</dd>
+                        <dt>Realisationsbeskatning</dt><dd>Gevinsten beskattes først, når du sælger. Gælder almindelige aktier og danske udbyttebetalende aktiefonde.</dd>
+                        <dt>Rebalancering</dt><dd>At købe og sælge, så fordelingen (fx 80 % aktier, 20 % obligationer) kommer tilbage til det, du har besluttet.</dd>
+                        <dt>Renters rente</dt><dd>At afkastet selv giver afkast. Jo længere tid, jo større betydning – det er grunden til at starte tidligt.</dd>
+                        <dt>Spread</dt><dd>Forskellen på købs- og salgskursen. Et skjult ekstra gebyr, især på små og sjældent handlede papirer.</dd>
+                        <dt>Ticker</dt><dd>Et kort handelssymbol for en aktie eller ETF, fx NOVO B.</dd>
+                        <dt>Udbytte</dt><dd>Den del af overskuddet, et selskab eller en fond udbetaler til ejerne. For danske aktier trækker banken automatisk skatten.</dd>
+                        <dt>Udbyttebetalende (udloddende)</dt><dd>En fond, der udbetaler udbytte hvert år. Danske aktiebaserede af slagsen beskattes ved salg og af udbyttet.</dd>
+                        <dt>Valutakurtage</dt><dd>Et gebyr, når banken veksler kroner til fx dollar for at købe udenlandske aktier.</dd>
+                        <dt>Volatilitet</dt><dd>Hvor meget kursen svinger op og ned. Høj volatilitet betyder store udsving – begge veje.</dd>
+                        <dt>ÅOP</dt><dd>Årlige omkostninger i procent: hvad fonden koster dig om året, alt inklusive. Jo lavere, jo mere af afkastet beholder du.</dd>
+                    </dl>
+                </div>
+            </details>
+
+            <details class="guide-section">
+                <summary><span class="guide-num">7</span>Nøgletal: sådan læser du en virksomhed</summary>
+                <div class="guide-body">
+                    <p class="guide-text">Nøgletal står i selskabets årsrapport, på selskabets investorside og hos de fleste netbanker. De er sorteret fra de letteste og mest brugbare til de mere tekniske. Sammenlign altid med selskaber i samme branche og med selskabets egne tidligere år – ét tal alene siger sjældent meget.</p>
+                    <ol class="metric-list">
+                        <li><div class="metric-head"><strong>Markedsværdi</strong><span class="level level-1">Let</span></div><p>Hvad hele selskabet koster på børsen. <em>Kurs × antal aktier.</em> Brug den – ikke kursen – når du sammenligner selskabers størrelse: en aktie til 50 kr. kan godt være dyrere end en til 2.000 kr.</p></li>
+                        <li><div class="metric-head"><strong>Omsætning</strong><span class="level level-1">Let</span></div><p>Hvad selskabet har solgt for i året. Kig på væksten fra år til år: vokser salget? Høj omsætning er ikke det samme som overskud.</p></li>
+                        <li><div class="metric-head"><strong>Overskud (nettoresultat)</strong><span class="level level-1">Let</span></div><p>Hvad der er tilbage efter alle omkostninger, renter og skat. Et selskab kan vokse i omsætning og stadig tabe penge.</p></li>
+                        <li><div class="metric-head"><strong>Udbytte pr. aktie (DPS) og direkte afkast</strong><span class="level level-1">Let</span></div><p>DPS er udbyttet pr. aktie. <em>Direkte afkast = DPS ÷ kurs.</em> 3 % betyder 3 kr. om året for hver 100 kr., du har investeret. Et meget højt direkte afkast kan være et faresignal: måske er kursen faldet, fordi udbyttet ventes skåret ned.</p></li>
+                        <li><div class="metric-head"><strong>Indtjening pr. aktie (EPS)</strong><span class="level level-2">Mellem</span></div><p><em>Overskud ÷ antal aktier.</em> Hvor meget af overskuddet der hører til hver aktie. Stigende EPS over flere år er et godt tegn.</p></li>
+                        <li><div class="metric-head"><strong>P/E (kurs/indtjening)</strong><span class="level level-2">Mellem</span></div><p><em>Kurs ÷ EPS.</em> Hvor mange års overskud du betaler for aktien. P/E 15 betyder, at du betaler 15 kr. for hver 1 kr., selskabet tjener om året. Lav P/E kan betyde billig – eller at markedet forventer problemer; høj P/E betyder høje forventninger til vækst. Giver ingen mening, hvis overskuddet er negativt.</p></li>
+                        <li><div class="metric-head"><strong>Egenkapital og soliditetsgrad</strong><span class="level level-2">Mellem</span></div><p>Egenkapitalen er selskabets aktiver minus gæld – det ejerne ejer. <em>Soliditetsgrad = egenkapital ÷ samlede aktiver.</em> Jo højere, jo bedre kan selskabet tåle dårlige tider.</p></li>
+                        <li><div class="metric-head"><strong>P/B (kurs/indre værdi)</strong><span class="level level-2">Mellem</span></div><p><em>Markedsværdi ÷ egenkapital.</em> Under 1 betyder, at du betaler mindre end regnskabsværdien. Mest brugbar for banker og selskaber med mange fysiske aktiver; mindre for software og medicin.</p></li>
+                        <li><div class="metric-head"><strong>EBIT og overskudsgrad</strong><span class="level level-2">Mellem</span></div><p>EBIT er driftsresultatet: overskuddet fra selve forretningen før renter og skat. <em>Overskudsgrad = EBIT ÷ omsætning.</em> Hvor mange øre der bliver tilbage af hver krone, selskabet sælger for. Sammenlign inden for samme branche.</p></li>
+                        <li><div class="metric-head"><strong>EBITDA</strong><span class="level level-3">Avanceret</span></div><p>EBIT plus afskrivninger. Viser driften, før slid på maskiner, bygninger og opkøb trækkes fra. Nyttig til at sammenligne selskaber med forskellig gæld, men kan få selskaber med store investeringer til at se bedre ud, end de er.</p></li>
+                        <li><div class="metric-head"><strong>Pengestrømme og frie pengestrømme (cash flow)</strong><span class="level level-3">Avanceret</span></div><p>Hvor mange penge der faktisk kommer ind på kontoen. <em>Frie pengestrømme = pengestrøm fra driften − investeringer.</em> Det er dem, der kan betale udbytte, gæld og opkøb. Overskud, der ikke bliver til pengestrømme over tid, er et advarselstegn.</p></li>
+                        <li><div class="metric-head"><strong>Egenkapitalforrentning (ROE)</strong><span class="level level-3">Avanceret</span></div><p><em>Overskud ÷ egenkapital.</em> Hvor godt selskabet forrenter ejernes penge. Højt er godt – men kan være pustet op af meget gæld, så se den sammen med soliditetsgraden.</p></li>
+                        <li><div class="metric-head"><strong>Gæld i forhold til EBITDA</strong><span class="level level-3">Avanceret</span></div><p><em>Nettorentebærende gæld ÷ EBITDA.</em> Hvor mange års drift det ville tage at betale gælden. Over 3–4 er meget for de fleste brancher; stabile forsyningsselskaber kan bære mere.</p></li>
+                    </ol>
+                </div>
+            </details>
+
+            <p class="guide-disclaimer">Alt her er generel viden, ikke personlig rådgivning. Tal og regler er for <span data-rule="TAX_YEAR">2026</span> og kan ændre sig – tjek altid skat.dk og dit pengeinstitut, før du beslutter noget stort.</p>
         </div>
     </div>
 
@@ -1226,6 +1358,9 @@
             <button class="btn" onclick="saveNetWorthSnapshot()">+ Gem formue for valgt dato</button>
             <button class="btn btn-accent" onclick="openMonthlyStatus()" title="Gem i både Formue og porteføljetrackeren på én gang">Månedsstatus</button>
             <button class="btn btn-secondary" onclick="clearNetWorthHistory()">Ryd hele historikken</button>
+            <div class="chart-toolbar">
+                <button type="button" class="chip-toggle" id="forecastToggle" aria-pressed="true" onclick="toggleForecast()">Prognose</button>
+            </div>
             <div class="chart-wrap chart-wrap-standalone">
                 <canvas id="netWorthHistoryChart"></canvas>
                 <div class="chart-empty-state" id="netWorthHistoryChartEmpty">Ingen data endnu – gem en månedsstatus for at se udviklingen her.</div>
