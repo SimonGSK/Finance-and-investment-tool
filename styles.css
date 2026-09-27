@@ -1,28 +1,30 @@
 /* ---- Tokens ---- */
 :root{
-    --bg:#0B1220;
-    --panel:#111A2C;
-    --panel-sunken:#0A1220;
-    --panel-hover:#16213A;
-    --border:#1E2A42;
-    --border-strong:#2A3854;
-    --text:#ECE7DC;
-    --muted:#94A1BA;
-    --subtle:#7A87A1;
-    --ask:#63BFA8;
-    --pos:#63BFA8;
-    --akt:#D9A951;
-    --akt-soft:#D9A9511F;
-    --on-akt:#0B1220;
-    --cross:#DF7C68;
-    --neutral-series:#66759A;
-    --chart-grid:#18233A;
-    --tooltip-bg:#131D31;
-    --glow:rgba(217,169,81,0.07);
+    /* Mørkt tema: næsten sort baggrund, mørkegrå kort og grå tekst, med samme grønne
+       og røde toner som det lyse tema (lidt lysere, så de kan læses på sort). */
+    --bg:#0B0B0C;
+    --panel:#151517;
+    --panel-sunken:#0F0F11;
+    --panel-hover:#1C1C1F;
+    --border:#27272B;
+    --border-strong:#36363C;
+    --text:#EDEDEE;
+    --muted:#A3A3AB;
+    --subtle:#80808A;
+    --ask:#C8924A;
+    --pos:#3CC08E;
+    --akt:#1F9D6F;
+    --akt-soft:#1F9D6F24;
+    --on-akt:#0B0B0C;      /* mørk tekst på grønne knapper: bedre kontrast end hvid */
+    --cross:#E0655A;
+    --neutral-series:#6F7179;
+    --chart-grid:#1F1F23;
+    --tooltip-bg:#1A1A1D;
+    --glow:rgba(31,157,111,0.05);
 
-    --shadow-sm:0 1px 2px rgba(3,8,18,0.30);
-    --shadow-md:0 8px 24px -8px rgba(3,8,18,0.55);
-    --shadow-lg:0 28px 60px -20px rgba(3,8,18,0.75);
+    --shadow-sm:0 1px 2px rgba(0,0,0,0.40);
+    --shadow-md:0 8px 24px -8px rgba(0,0,0,0.60);
+    --shadow-lg:0 28px 60px -20px rgba(0,0,0,0.80);
 
     --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
     --r-sm:10px; --r-md:14px; --r-lg:18px; --r-pill:999px;
@@ -971,7 +973,7 @@ table.data-table td.is-negative{ color:var(--ask); }
     box-shadow:var(--shadow-lg);
 }
 .dialog-wide{ width:min(760px, calc(100vw - 32px)); }
-.dialog::backdrop{ background:rgba(5,9,18,0.55); backdrop-filter:blur(3px); }
+.dialog::backdrop{ background:rgba(0,0,0,0.55); backdrop-filter:blur(3px); }
 [data-theme="light"] .dialog::backdrop{ background:rgba(22,33,58,0.28); }
 .dialog-inner{ display:flex; flex-direction:column; max-height:inherit; }
 .dialog-header{ display:flex; align-items:center; gap:var(--s3); padding:var(--s5) var(--s5) var(--s3) var(--s5); }
@@ -1498,7 +1500,7 @@ body[data-section="overview"] #overviewActions{ display:flex; }
         transform:translateX(calc(-100% - 24px)); transition:transform 0.25s var(--ease); box-shadow:var(--shadow-lg);
     }
     body.nav-open .sidebar{ transform:none; }
-    body.nav-open .nav-backdrop{ display:block; position:fixed; inset:0; z-index:190; background:rgba(5,9,18,0.45); }
+    body.nav-open .nav-backdrop{ display:block; position:fixed; inset:0; z-index:190; background:rgba(0,0,0,0.5); }
     .page-header h1{ font-size:32px; }
     .settings-panel{ left:var(--s4); right:var(--s4); top:72px; width:auto; }
 }
