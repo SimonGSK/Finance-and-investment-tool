@@ -1,4 +1,4 @@
-# Økonomiværktøjer
+# Økonomis
 
 A set of Danish personal-finance calculators in a single static web page: compare investment account types, plan monthly investing and FIRE, track a portfolio, build a budget, and follow your net worth over time.
 
@@ -133,7 +133,8 @@ js/report.js            Printable one-page overview (Udskriv overblik)
 js/overview.js          Oversigt (start page)
 sw.js                   Service worker: network first, cached copy offline
 manifest.webmanifest    App name, colours and icons
-icons/                  App icons (icon.svg is the source; PNGs rendered from it)
+icons/                  App icons: icon.svg is the source (the Newsreader O traced as outlines, so it needs no font);
+                        the PNGs are rendered from it with scripts/render-icons.js
 js/theme.js             Theme switching and re-theming charts
 tests/calc.test.js      Unit tests for calc.js
 tests/assets.test.js    Checks that the version stamps in index.html are up to date
