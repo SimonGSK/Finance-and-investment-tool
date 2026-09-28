@@ -1692,3 +1692,17 @@ body[data-section="overview"] #overviewActions{ display:flex; }
     .site-content .panel .chart-wrap:has(#netWorthChart){ height:290px; }
     .site-content .panel .ov-chart-wrap{ height:clamp(150px, 45vw, 210px); }
 }
+
+/* ---- Oversigt i én kolonne (telefon og tablet): grafen øverst, nøgletallene under ----
+   Kortene i gitteret løftes ud (display:contents), så rækkefølgen kan styres med order.
+   På store skærme står nøgletallene fortsat øverst med grafen og siderne i to kolonner. */
+@media (max-width:1250px){
+    #section-overview{ display:flex; flex-direction:column; gap:var(--s4); }
+    #section-overview .overview-grid, #section-overview .ov-side{ display:contents; }
+    #section-overview > *, #section-overview .panel, #section-overview .overview-kpis{ order:2; margin:0; }
+    #section-overview .ov-chart-panel{ order:0; }
+    #section-overview .overview-kpis{ order:1; }
+}
+@media (max-width:640px){
+    #section-overview{ gap:var(--s3); }
+}
