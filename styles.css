@@ -1719,3 +1719,13 @@ body[data-section="overview"] #overviewActions{ display:flex; }
 @media (max-width:640px){
     #section-overview{ gap:var(--s3); }
 }
+
+/* ---- App-ikon: tre farver at vælge imellem, før appen lægges på hjemmeskærmen ---- */
+.icon-choice{ border:0; margin:0 0 var(--s2); padding:0; min-width:0; display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:var(--s2); }
+.icon-choice legend{ padding:0; margin-bottom:var(--s2); font-size:13.5px; font-weight:600; color:var(--text); }
+.icon-option{ position:relative; display:flex; flex-direction:column; align-items:center; gap:6px; padding:var(--s2); border:1px solid var(--border); border-radius:var(--r-md); cursor:pointer; font-size:13px; color:var(--muted); }
+.icon-option img{ width:48px; height:48px; border-radius:11px; outline:1px solid var(--border); outline-offset:-1px; }
+.icon-option input{ position:absolute; opacity:0; width:1px; height:1px; margin:0; }
+.icon-option:has(input:checked){ border-color:var(--akt); background:var(--akt-soft); color:var(--text); font-weight:600; }
+.icon-option:has(input:focus-visible){ outline:2px solid var(--akt); outline-offset:2px; }
+.icon-choice-hint{ margin:0 0 var(--s3); font-size:12.5px; line-height:1.5; color:var(--muted); }

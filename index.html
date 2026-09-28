@@ -27,7 +27,7 @@
          TODO: Erstat ca-pub-XXXXXXXXXXXXXXXX med mit eget AdSense-udgiver-ID, og fjern kommentaren.
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
     -->
-    <link rel="stylesheet" href="styles.css?v=db37d7fa">
+    <link rel="stylesheet" href="styles.css?v=aeb781f8">
 </head>
 <body>
 
@@ -147,6 +147,13 @@
                 <div id="installAppRow" hidden>
                     <div class="eyebrow" style="margin-top:18px; margin-bottom:10px;">App</div>
                     <p class="explainer" style="margin:0 0 10px 0; padding-top:0; border-top:none;">Læg siden på din hjemmeskærm eller computer som en app. Den åbner i sit eget vindue og virker også uden internet.</p>
+                    <fieldset class="icon-choice">
+                        <legend>App-ikon</legend>
+                        <label class="icon-option"><input type="radio" name="appIcon" value="green" onchange="setAppIcon(this.value)"><img src="icons/icon-192.png" alt="" width="48" height="48">Grøn</label>
+                        <label class="icon-option"><input type="radio" name="appIcon" value="black" onchange="setAppIcon(this.value)"><img src="icons/black/icon-192.png" alt="" width="48" height="48">Sort</label>
+                        <label class="icon-option"><input type="radio" name="appIcon" value="white" onchange="setAppIcon(this.value)"><img src="icons/white/icon-192.png" alt="" width="48" height="48">Hvid</label>
+                    </fieldset>
+                    <p class="icon-choice-hint">Ikonet følger med, når du lægger appen på hjemmeskærmen. Vil du skifte senere, så fjern appen og læg den på igen.</p>
                     <button class="btn btn-secondary" style="width:100%;" type="button" onclick="installApp()">Installér som app</button>
                 </div>
                     </div>
@@ -1742,7 +1749,7 @@
     <script src="js/debt-payoff.js?v=d92e8193"></script>
     <script src="js/navigation.js?v=bcca5516"></script>
     <script src="js/feedback.js?v=a2a4c48b"></script>
-    <script src="js/pwa.js?v=05805c1f"></script>
+    <script src="js/pwa.js?v=951b5704"></script>
     <script src="js/report.js?v=d2fb079b"></script>
     <script src="js/overview.js?v=3cb52351"></script>
     <script src="js/budget.js?v=e88109ad"></script>
