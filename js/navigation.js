@@ -72,7 +72,7 @@ function showSection(name){
     document.querySelectorAll('[id^="section-"]').forEach(section => {
         section.style.display = section.id === 'section-' + name ? 'block' : 'none';
     });
-    document.querySelectorAll('.top-tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.section === name));
+    document.querySelectorAll('.nav-item[data-section]').forEach(btn => btn.classList.toggle('active', btn.dataset.section === name));
     // Den gruppe, man står i, er foldet ud, og de andre foldes sammen, så menuen ikke bliver lang.
     document.querySelectorAll('.nav-group').forEach(g => g.setAttribute('aria-expanded', String(g.dataset.section === name)));
     resizeChartsIn(document.getElementById('section-' + name));
@@ -94,14 +94,15 @@ const PAGE_TITLES = {
  * @returns {{section:string, area:string, tool:string|null}}
  */
 function activePageNames(){
-    const btn = document.querySelector('.top-tab-btn.active');
+    const btn = document.querySelector('.nav-item[data-section].active');
     const section = btn?.dataset.section || 'overview';
     // Kun knappens egen tekst - ikke tallet (antal værktøjer) ved siden af.
     const area = btn ? [...btn.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim() : '';
-    const tool = document.querySelector(`.nav-item[data-section="${section}"] + .nav-sub .tab-btn.active`)?.textContent.trim() || null;
+    const tool = document.querySelector(`.nav-item[data-section="${section}"] + .nav-sub .nav-subitem.active`)?.textContent.trim() || null;
     return {section, area, tool};
 }
 
+/** Skriver område og titel i sidehovedet ud fra den sektion og det værktøj, der vises. */
 function updatePageHeader(){
     const {section, area, tool} = activePageNames();
     let [eyebrow, title] = PAGE_TITLES[section] || [area, area];
@@ -126,12 +127,14 @@ function toggleNavGroup(btn){
 
 // ---- Menuen på telefoner: glider ind fra venstre ----
 
+/** Åbner menuen på telefon og tablet og flytter fokus til det aktive punkt. */
 function openNav(){
     document.body.classList.add('nav-open');
     document.getElementById('menuBtn').setAttribute('aria-expanded', 'true');
     document.querySelector('#sidebar .nav-item.active')?.focus();
 }
 
+/** Lukker menuen på telefon og tablet (gør intet, hvis den allerede er lukket). */
 function closeNav(){
     if(!document.body.classList.contains('nav-open')) return;
     document.body.classList.remove('nav-open');
@@ -160,6 +163,11 @@ function hasUserData(){
         || (read('netWorthGoals') || []).length > 0;
 }
 
+/**
+ * Læser et tidsstempel (millisekunder) fra localStorage.
+ * @param {string} key
+ * @returns {number|null} null, hvis det mangler eller ikke er et tal
+ */
 function readTimestamp(key){
     const v = parseInt(localStorage.getItem(key), 10);
     return isNaN(v) ? null : v;
@@ -221,6 +229,7 @@ function checkMonthlyReminder(){
     }
 }
 
+/** "Udfyld nu" i påmindelsen: åbner månedsstatus med den foreslåede dato (månedens sidste dag). */
 function openMonthlyStatusFromReminder(){
     openMonthlyStatus(monthlyReminderState?.suggestedDate);
 }

@@ -17,7 +17,6 @@ function hexToRgba(hex, alpha){
 const shortDate = iso => new Date(iso + 'T00:00:00').toLocaleDateString('da-DK', {day:'numeric', month:'short'});
 
 let overviewRange = 0;       // antal år bagud fra seneste datapunkt; 0 = alt
-const PERIOD_CHOICES = [1, 3, 5, 10, 15, 20, 25, 30, 40, 50];
 
 /** Vælger periode i grafen (antal år, 0 = alt). */
 function setOverviewRange(years){
@@ -32,8 +31,7 @@ function setOverviewRange(years){
  */
 function syncPeriodSelect(history){
     const select = document.getElementById('ovPeriod');
-    const span = history.length > 1 ? (Date.parse(history.at(-1).date) - Date.parse(history[0].date)) / (365.25 * DAY_MS) : 0;
-    const choices = PERIOD_CHOICES.filter(y => y < span);
+    const choices = history.length > 1 ? periodChoices(history[0].date, history.at(-1).date) : [];
     const chosen = choices.includes(overviewRange) ? overviewRange : 0;
     select.replaceChildren(...[0, ...choices].map(y => el('option', {value: String(y), textContent: y === 0 ? 'Alt' : y === 1 ? '1 år' : `${y} år`, selected: y === chosen})));
     select.closest('.period-select').hidden = !choices.length;
@@ -134,6 +132,7 @@ function renderOverviewChart(history){
     overviewChart.$points = points;
 }
 
+/** "Mine mål" på oversigten: de første tre mål med fremskridt, eller en opfordring til at sætte ét. */
 function renderOverviewGoals(){
     const box = document.getElementById('ovGoals');
     const goals = loadGoals().slice(0, 3);

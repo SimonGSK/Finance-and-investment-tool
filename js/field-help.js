@@ -109,6 +109,7 @@ const FIELD_HELP = {
 
 let openHelpButton = null;
 
+/** Lukker den forklaring, der er åben (der er højst én ad gangen). */
 function closeFieldHelp(){
     if(!openHelpButton) return;
     openHelpButton.setAttribute('aria-expanded', 'false');
