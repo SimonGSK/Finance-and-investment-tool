@@ -158,7 +158,8 @@ function renderCategoryList(){
     container.replaceChildren(...BUDGET_GROUPS.flatMap(group => {
         const groupCats = cats.filter(c => c.group === group.id);
         if(!groupCats.length) return [];
-        return [
+        // Hver gruppe i sin egen boks, så grupperne kan stå som kolonner, når listen har hele bredden.
+        return [el('div', {className:'category-group'}, [
             el('div', {className:'category-group-label', textContent:group.label}),
             el('div', {className:'category-list'}, groupCats.map(cat => {
                 const total = categoryTotal(items, cat.id);
@@ -174,7 +175,7 @@ function renderCategoryList(){
                     el('span', {className:'cat-total' + (total ? '' : ' is-empty'), textContent: DK.format(total) + ' kr.'})
                 ]);
             }))
-        ];
+        ])];
     }));
 }
 
@@ -281,11 +282,22 @@ function openCategoryDialog(catId){
     });
 }
 
+/**
+ * Vælger af budgetgruppe (Behov, Ønsker, Opsparing) til en egen kategori.
+ * @param {string} selected gruppens id
+ * @param {(e: Event) => void} onchange
+ * @returns {HTMLSelectElement}
+ */
 function groupSelectEl(selected, onchange){
     return el('select', {className:'number-input', onchange},
         BUDGET_GROUPS.map(g => el('option', {value:g.id, textContent:g.label, selected:g.id === selected})));
 }
 
+/**
+ * Ændrer en egen kategori (fx navn eller gruppe) og opdaterer budgettet.
+ * @param {string} catId
+ * @param {object} patch de felter, der ændres
+ */
 function updateCustomCategory(catId, patch){
     const cats = loadCustomCategories().map(c => c.id === catId ? {...c, ...patch} : c);
     saveCustomCategories(cats);

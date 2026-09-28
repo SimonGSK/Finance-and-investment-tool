@@ -30,10 +30,12 @@ function showToolIn(toolPrefix, buttonPrefix, n){
 
 /**
  * Viser et af investeringsværktøjerne. "Dobbelt fradrag" gælder kun de to
- * første og flyttes derfor ind i det værktøj, der vises.
- * @param {number} n 1 ASK vs. depot, 2 månedligt depot, 3 FIRE, 4 portefølje, 5 pension
+ * første og flyttes derfor ind i det værktøj, der vises. Er Investering ikke
+ * den viste sektion, skiftes der dertil.
+ * @param {number} n 1 ASK vs. depot, 2 månedligt depot, 3 FIRE, 4 portefølje, 5 pension, 6 tips & viden
+ * @param {boolean} [stay] true = skift ikke sektion (bruges ved indlæsning)
  */
-function showTool(n){
+function showTool(n, stay){
     showToolIn('tool', 'tabBtn', n);
     const ddRow = document.getElementById('doubleDeductionRow');
     if(n === 1){
@@ -44,29 +46,109 @@ function showTool(n){
     }
     ddRow.style.display = (n === 1 || n === 2) ? '' : 'none';
     if(n === 3 && typeof updateFireImportButton === 'function') updateFireImportButton();
+    if(!stay && document.getElementById('section-tools').style.display === 'none') showSection('tools');
+    updatePageHeader();
+    closeNav();
 }
 
 /**
  * Viser et af værktøjerne under "Bolig & lån".
  * @param {number} n 1 låneevne, 2 køb eller leje, 3 gældsafvikling
+ * @param {boolean} [stay] true = skift ikke sektion
  */
-function showHousingTool(n){
+function showHousingTool(n, stay){
     showToolIn('housing', 'housingTabBtn', n);
+    if(!stay && document.getElementById('section-housing').style.display === 'none') showSection('housing');
+    updatePageHeader();
+    closeNav();
 }
-
-showTool(1);
 
 /**
  * Skifter hovedsektion og gentegner dens synlige grafer.
- * @param {'tools'|'housing'|'budget'|'formue'} name
+ * @param {'overview'|'tools'|'housing'|'budget'|'formue'} name
  */
 function showSection(name){
+    document.body.dataset.section = name;      // fx viser Oversigtens knapper i sidehovedet
+    // Den viste sektion får ingen fast display-værdi, så stilarket bestemmer layoutet
+    // (fx lægger Oversigten sig i én kolonne med grafen øverst på telefon og tablet).
     document.querySelectorAll('[id^="section-"]').forEach(section => {
-        section.style.display = section.id === 'section-' + name ? 'block' : 'none';
+        section.style.display = section.id === 'section-' + name ? '' : 'none';
     });
     document.querySelectorAll('.top-tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.section === name));
+    // Den gruppe, man står i, er foldet ud, og de andre foldes sammen, så menuen ikke bliver lang.
+    document.querySelectorAll('.nav-group').forEach(g => g.setAttribute('aria-expanded', String(g.dataset.section === name)));
     resizeChartsIn(document.getElementById('section-' + name));
+    if(name === 'overview' && typeof renderOverview === 'function') renderOverview();
+    updatePageHeader();
+    closeNav();
+    window.scrollTo({top: 0});
 }
+
+// Overskriften øverst på siden: område som lille tekst, værktøj eller side som titel.
+const PAGE_TITLES = {
+    overview: ['Oversigt', 'Din økonomi i overblik'],
+    budget: ['Budget', 'Dit budget'],
+    formue: ['Formue', 'Din formue']
+};
+
+/**
+ * Området og værktøjet, man står i, som de hedder i menuen.
+ * @returns {{section:string, area:string, tool:string|null}}
+ */
+function activePageNames(){
+    const btn = document.querySelector('.top-tab-btn.active');
+    const section = btn?.dataset.section || 'overview';
+    // Kun knappens egen tekst - ikke tallet (antal værktøjer) ved siden af.
+    const area = btn ? [...btn.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim() : '';
+    const tool = document.querySelector(`.nav-item[data-section="${section}"] + .nav-sub .tab-btn.active`)?.textContent.trim() || null;
+    return {section, area, tool};
+}
+
+/** Skriver område og titel i sidehovedet ud fra den sektion og det værktøj, der vises. */
+function updatePageHeader(){
+    const {section, area, tool} = activePageNames();
+    let [eyebrow, title] = PAGE_TITLES[section] || [area, area];
+    if(tool){ eyebrow = area; title = tool; }
+    document.getElementById('pageEyebrow').textContent = eyebrow;
+    document.getElementById('pageTitle').textContent = title;
+    // Undertitlen bruges kun af Oversigten (seneste månedsstatus), som selv skriver den.
+    if(section !== 'overview') document.getElementById('pageSub').textContent = '';
+}
+
+/**
+ * Folder en menugruppe (Investering, Bolig & lån) ud eller sammen. Siden skifter
+ * ikke - det sker først, når man vælger et værktøj i gruppen.
+ * @param {HTMLButtonElement} btn
+ */
+function toggleNavGroup(btn){
+    const open = btn.getAttribute('aria-expanded') !== 'true';
+    // Kun én gruppe åben ad gangen, så menuen ikke bliver lang.
+    if(open) document.querySelectorAll('.nav-group').forEach(g => { if(g !== btn) g.setAttribute('aria-expanded', 'false'); });
+    btn.setAttribute('aria-expanded', String(open));
+}
+
+// ---- Menuen på telefoner: glider ind fra venstre ----
+
+/** Åbner menuen på telefon og tablet og flytter fokus til det aktive punkt. */
+function openNav(){
+    document.body.classList.add('nav-open');
+    document.getElementById('menuBtn').setAttribute('aria-expanded', 'true');
+    document.querySelector('#sidebar .nav-item.active')?.focus();
+}
+
+/** Lukker menuen på telefon og tablet (gør intet, hvis den allerede er lukket). */
+function closeNav(){
+    if(!document.body.classList.contains('nav-open')) return;
+    document.body.classList.remove('nav-open');
+    document.getElementById('menuBtn').setAttribute('aria-expanded', 'false');
+}
+
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && document.body.classList.contains('nav-open')) closeNav(); });
+
+// Startsiden er Oversigt; værktøjerne står klar i baggrunden.
+document.body.dataset.section = 'overview';
+showTool(1, true);
+showHousingTool(1, true);
 
 // BACKUP_KEYS, exportAllData og importAllData ligger i sync.js.
 
@@ -83,6 +165,11 @@ function hasUserData(){
         || (read('netWorthGoals') || []).length > 0;
 }
 
+/**
+ * Læser et tidsstempel (millisekunder) fra localStorage.
+ * @param {string} key
+ * @returns {number|null} null, hvis det mangler eller ikke er et tal
+ */
 function readTimestamp(key){
     const v = parseInt(localStorage.getItem(key), 10);
     return isNaN(v) ? null : v;
@@ -144,6 +231,7 @@ function checkMonthlyReminder(){
     }
 }
 
+/** "Udfyld nu" i påmindelsen: åbner månedsstatus med den foreslåede dato (månedens sidste dag, eller i dag, hvis den ikke er nået). */
 function openMonthlyStatusFromReminder(){
     openMonthlyStatus(monthlyReminderState?.suggestedDate);
 }
@@ -182,25 +270,23 @@ if(!localStorage.getItem('hasSeenIntroBanner')){
  * @param {boolean} [open] tving åben/lukket; udeladt skifter
  */
 function toggleSettings(open){
-    const panel = document.getElementById('settingsPanel');
-    const btn = document.getElementById('settingsBtn');
-    const show = open ?? panel.style.display === 'none';
-    panel.style.display = show ? 'block' : 'none';
-    btn.setAttribute('aria-expanded', String(show));
-    if(show) renderBackupStatus();
+    const dialog = document.getElementById('settingsPanel');
+    const show = open ?? !dialog.open;
+    if(show && !dialog.open){
+        closeNav();
+        renderBackupStatus();
+        dialog.showModal();
+    } else if(!show && dialog.open){
+        dialog.close();
+    }
 }
 
-document.addEventListener('keydown', e => {
-    if(e.key === 'Escape' && document.getElementById('settingsPanel').style.display !== 'none' && !document.querySelector('dialog[open]')){
-        toggleSettings(false);
-        document.getElementById('settingsBtn').focus();
-    }
-});
-document.addEventListener('click', e => {
-    const panel = document.getElementById('settingsPanel');
-    if(panel.style.display === 'none') return;
-    if(!panel.contains(e.target) && !document.getElementById('settingsBtn').contains(e.target) && !e.target.closest('dialog')) toggleSettings(false);
-});
+// Esc lukker af sig selv (dialogens "cancel"); et klik på den slørede baggrund lukker også.
+(function initSettingsDialog(){
+    const dialog = document.getElementById('settingsPanel');
+    dialog.addEventListener('click', e => { if(e.target === dialog) dialog.close(); });
+    dialog.addEventListener('close', () => document.getElementById('settingsBtn').focus());
+})();
 
 document.getElementById('doubleDeduction').addEventListener('change', () => {
     setDoubleDeduction(document.getElementById('doubleDeduction').checked);

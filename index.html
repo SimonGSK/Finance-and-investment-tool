@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#0B1220">
+    <meta name="theme-color" content="#0B0B0C">
     <meta name="description" content="Budget, formue, investering og lån – danske økonomiværktøjer, hvor dine tal bliver på din egen enhed.">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
@@ -27,7 +27,7 @@
          TODO: Erstat ca-pub-XXXXXXXXXXXXXXXX med mit eget AdSense-udgiver-ID, og fjern kommentaren.
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
     -->
-    <link rel="stylesheet" href="styles.css?v=42c619c5">
+    <link rel="stylesheet" href="styles.css?v=38cb77e0">
 </head>
 <body>
 
@@ -49,21 +49,70 @@
             -->
         </aside>
 
+        <div class="app">
+            <header class="app-header">
+                <button class="menu-btn" id="menuBtn" type="button" onclick="openNav()" aria-label="Åbn menu" aria-expanded="false" aria-controls="sidebar"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+                <div class="brand">
+                    <span class="brand-logo" aria-hidden="true">Ø</span>
+                    <span class="brand-name">Økonomiværktøjer</span>
+                    <span class="brand-sub">Privat økonomi</span>
+                </div>
+                <div class="app-header-actions">
+                    <button class="btn btn-dark monthly-status-btn" type="button" onclick="openMonthlyStatus()" aria-label="+ Månedsstatus" title="Gem dine tal i både Formue og Porteføljetracker på én gang"><span class="label-long">+ Månedsstatus</span><span class="label-short" aria-hidden="true">+ Status</span></button>
+                </div>
+            </header>
+            <div class="app-body">
+        <aside class="sidebar" id="sidebar" aria-label="Menu">
+            <nav class="side-nav" aria-label="Hovedmenu">
+                <div class="nav-label">Områder</div>
+                <button class="top-tab-btn nav-item active" data-section="overview" type="button" onclick="showSection('overview')"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg>Oversigt</button>
+                <button class="top-tab-btn nav-item nav-group" data-section="tools" type="button" onclick="toggleNavGroup(this)" aria-expanded="false" aria-controls="navSubTools"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>Investering<span class="nav-count" aria-hidden="true">6</span></button>
+                <div class="nav-sub" id="navSubTools">
+                <button class="tab-btn nav-subitem active" id="tabBtn1" type="button" onclick="showTool(1)">ASK vs. Aktiedepot</button>
+                <button class="tab-btn nav-subitem" id="tabBtn2" type="button" onclick="showTool(2)">Aktiedepot: fast + månedligt</button>
+                <button class="tab-btn nav-subitem" id="tabBtn3" type="button" onclick="showTool(3)">FIRE-beregner (4%-reglen)</button>
+                <button class="tab-btn nav-subitem" id="tabBtn5" type="button" onclick="showTool(5)">Pension</button>
+                <button class="tab-btn nav-subitem" id="tabBtn4" type="button" onclick="showTool(4)">Porteføljetracker</button>
+                <button class="tab-btn nav-subitem" id="tabBtn6" type="button" onclick="showTool(6)">Tips &amp; viden</button>
+                </div>
+                <button class="top-tab-btn nav-item nav-group" data-section="housing" type="button" onclick="toggleNavGroup(this)" aria-expanded="false" aria-controls="navSubHousing"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg>Bolig &amp; lån<span class="nav-count" aria-hidden="true">3</span></button>
+                <div class="nav-sub" id="navSubHousing">
+                <button class="tab-btn nav-subitem active" id="housingTabBtn1" type="button" onclick="showHousingTool(1)">Hvor meget kan jeg låne?</button>
+                <button class="tab-btn nav-subitem" id="housingTabBtn2" type="button" onclick="showHousingTool(2)">Køb eller leje?</button>
+                <button class="tab-btn nav-subitem" id="housingTabBtn3" type="button" onclick="showHousingTool(3)">Gældsafvikling</button>
+                </div>
+                <button class="top-tab-btn nav-item" data-section="budget" type="button" onclick="showSection('budget')"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M16 15h2"/></svg>Budget</button>
+                <button class="top-tab-btn nav-item" data-section="formue" type="button" onclick="showSection('formue')"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18"/><path d="M5 17V10M9.5 17V10M14.5 17V10M19 17V10"/><path d="M3 8l9-5 9 5"/></svg>Formue</button>
+
+                <div class="nav-label">Hjælp</div>
+                <button class="nav-item" id="settingsBtn" type="button" onclick="toggleSettings()" aria-haspopup="dialog"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Indstillinger</button>
+                <button class="nav-item" id="helpBtn" type="button" onclick="openHelp()" aria-haspopup="dialog"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 2.2-2.4 3.7"/><path d="M12 17h.01"/></svg>Hjælp og spørgsmål</button>
+                <button class="nav-item" id="feedbackBtn" type="button" onclick="openFeedbackDialog()" aria-haspopup="dialog" hidden><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12.5a7.5 7.5 0 0 1-11.1 6.6L4 20l1-4.3A7.5 7.5 0 1 1 20 12.5z"/><path d="M9 11h6M9 14.5h4"/></svg>Giv feedback</button>
+            </nav>
+        </aside>
+        <div class="nav-backdrop" onclick="closeNav()"></div>
+
         <div class="site-content">
 
-            <div class="topbar">
-        <div>
-            <h1>Økonomiværktøjer</h1>
-            <p class="subtitle">Brug værktøjerne og udforsk dit økonomiske potentiale.</p>
-        </div>
-        <button class="settings-btn help-btn" id="helpBtn" onclick="openHelp()" aria-label="Hjælp og spørgsmål" aria-haspopup="dialog">?</button>
-        <button class="settings-btn" id="settingsBtn" onclick="toggleSettings()" aria-label="Indstillinger" aria-expanded="false" aria-controls="settingsPanel">⚙️</button>
-        <button class="settings-btn feedback-btn" id="feedbackBtn" type="button" onclick="openFeedbackDialog()" aria-label="Giv feedback" title="Giv feedback" aria-haspopup="dialog" hidden>
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12.5a7.5 7.5 0 0 1-11.1 6.6L4 20l1-4.3A7.5 7.5 0 1 1 20 12.5z"/><path d="M9 11h6M9 14.5h4"/></svg>
-        </button>
-    </div>
-            <div class="settings-panel" id="settingsPanel" role="region" aria-label="Indstillinger" style="display:none;">
-                <div class="eyebrow" style="margin-bottom:12px;">Indstillinger</div>
+            <header class="page-header">
+                <div class="page-heading">
+                    <div class="page-eyebrow" id="pageEyebrow">Oversigt</div>
+                    <h1 id="pageTitle">Din økonomi i overblik</h1>
+                    <p class="page-sub" id="pageSub"></p>
+                </div>
+                <div class="page-actions" id="overviewActions">
+                    <button class="btn btn-secondary" type="button" onclick="printOverview()"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 9V4h10v5"/><rect x="4" y="9" width="16" height="8" rx="2"/><path d="M7 14h10v6H7z"/></svg>Udskriv overblik</button>
+                    <button class="btn btn-primary" type="button" onclick="exportAllData()"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>Tag backup</button>
+                </div>
+            </header>
+            <!-- Indstillinger åbner som en dialog (som Hjælp og Feedback), med sløret baggrund. -->
+            <dialog class="dialog settings-dialog" id="settingsPanel" aria-labelledby="settingsTitle">
+                <div class="dialog-inner">
+                    <div class="dialog-header">
+                        <h2 class="dialog-title" id="settingsTitle">Indstillinger</h2>
+                        <button class="dialog-close" type="button" aria-label="Luk" onclick="toggleSettings(false)">×</button>
+                    </div>
+                    <div class="dialog-body">
                 <label class="toggle-row">
                     <input type="checkbox" id="lightTheme">
                     Lyst tema
@@ -87,7 +136,9 @@
                     <p class="explainer" style="margin:0 0 10px 0; padding-top:0; border-top:none;">Læg siden på din hjemmeskærm eller computer som en app. Den åbner i sit eget vindue og virker også uden internet.</p>
                     <button class="btn btn-secondary" style="width:100%;" type="button" onclick="installApp()">Installér som app</button>
                 </div>
-            </div>
+                    </div>
+                </div>
+            </dialog>
 
         <div class="intro-banner" id="introBanner" style="display:none;">
             <span>👋 Data gemmes kun lokalt i denne browser – ingen konti, intet login, og intet sendes til en server. Rydder du browserdata, forsvinder dine tal.</span>
@@ -110,24 +161,70 @@
             </div>
         </div>
 
-        <div class="top-tabs">
-        <button class="top-tab-btn active" data-section="tools" onclick="showSection('tools')">Investering</button>
-        <button class="top-tab-btn" data-section="housing" onclick="showSection('housing')">Bolig & lån</button>
-        <button class="top-tab-btn" data-section="budget" onclick="showSection('budget')">Budget</button>
-        <button class="top-tab-btn" data-section="formue" onclick="showSection('formue')">Formue</button>
-        <button class="btn btn-accent monthly-status-btn" onclick="openMonthlyStatus()" title="Gem dine tal i både Formue og Porteføljetracker på én gang">+ Månedsstatus</button>
+
+<div id="section-overview">
+    <div class="stats overview-kpis">
+        <div class="stat"><div class="label">Nettoformue</div><div class="value akt" id="ovNetWorth">–</div><div class="sub" id="ovNetWorthSub"></div></div>
+        <div class="stat"><div class="label">Porteføljen</div><div class="value" id="ovPortfolio">–</div><div class="sub" id="ovPortfolioSub"></div></div>
+        <div class="stat"><div class="label">Budget pr. måned</div><div class="value" id="ovBudget">–</div><div class="sub" id="ovBudgetSub"></div></div>
+        <div class="stat"><div class="label">Nødopsparing</div><div class="value" id="ovBuffer">–</div><div class="sub" id="ovBufferSub"></div></div>
     </div>
 
-    <div id="section-tools">
+    <div class="overview-grid">
+        <div class="ov-side ov-main">
+            <div class="panel ov-chart-panel">
+                <div class="panel-title-row">
+                    <div>
+                        <h2 class="panel-title">Nettoformue over tid</h2>
+                        <p class="panel-sub" id="ovChartSub">Dine seneste månedsstatusser</p>
+                    </div>
+                    <label class="period-select">
+                        <span class="visually-hidden">Periode</span>
+                        <select id="ovPeriod" onchange="setOverviewRange(Number(this.value))"></select>
+                    </label>
+                </div>
+                <div class="chart-wrap ov-chart-wrap">
+                    <canvas id="ovChart"></canvas>
+                    <div class="chart-empty-state" id="ovChartEmpty">Gem din første månedsstatus – så vokser grafen måned for måned.</div>
+                </div>
+            </div>
 
-    <div class="tabs">
-        <button class="tab-btn active" id="tabBtn1" onclick="showTool(1)">ASK vs. Aktiedepot</button>
-        <button class="tab-btn" id="tabBtn2" onclick="showTool(2)">Aktiedepot: fast + månedligt</button>
-        <button class="tab-btn" id="tabBtn3" onclick="showTool(3)">FIRE-beregner (4%-reglen)</button>
-        <button class="tab-btn" id="tabBtn5" onclick="showTool(5)">Pension</button>
-        <button class="tab-btn" id="tabBtn6" onclick="showTool(6)">Tips &amp; viden</button>
-        <button class="tab-btn" id="tabBtn4" onclick="showTool(4)">Porteføljetracker</button>
+            <div class="panel">
+                <div class="panel-title-row"><h2 class="panel-title">Fordeling</h2><span class="panel-sub" id="ovSplitSub"></span></div>
+                <div id="ovSplit" class="ov-split"></div>
+            </div>
+        </div>
+
+        <div class="ov-side">
+            <div class="panel">
+                <div class="panel-title-row"><h2 class="panel-title">Mine mål</h2><button type="button" class="link-btn" onclick="showSection('formue')">Alle mål</button></div>
+                <div id="ovGoals" class="ov-goals"></div>
+            </div>
+            <div class="panel">
+                <div class="panel-title-row"><h2 class="panel-title">Næste skridt</h2></div>
+                <ul id="ovNext" class="ov-next"></ul>
+            </div>
+        </div>
     </div>
+
+    <div class="panel">
+        <h2 class="panel-title">Værktøjer</h2>
+        <div class="ov-tools">
+            <button type="button" class="ov-tool" onclick="showTool(1)"><strong>ASK vs. Aktiedepot</strong><span>Hvor skal pengene stå? Sammenlign skatten.</span></button>
+            <button type="button" class="ov-tool" onclick="showTool(2)"><strong>Aktiedepot: fast + månedligt</strong><span>Hvad bliver en månedlig opsparing til?</span></button>
+            <button type="button" class="ov-tool" onclick="showTool(3)"><strong>FIRE-beregner</strong><span>Hvornår kan du leve af din formue?</span></button>
+            <button type="button" class="ov-tool" onclick="showTool(5)"><strong>Pension</strong><span>Hvad giver din pension om måneden?</span></button>
+            <button type="button" class="ov-tool" onclick="showTool(4)"><strong>Porteføljetracker</strong><span>Følg din portefølje og dit afkast.</span></button>
+            <button type="button" class="ov-tool" onclick="showHousingTool(1)"><strong>Hvor meget kan jeg låne?</strong><span>Din købsramme ud fra indkomst og opsparing.</span></button>
+            <button type="button" class="ov-tool" onclick="showHousingTool(2)"><strong>Køb eller leje?</strong><span>Hvad er billigst på lang sigt?</span></button>
+            <button type="button" class="ov-tool" onclick="showHousingTool(3)"><strong>Gældsafvikling</strong><span>Hvornår er du gældfri – lavine eller snebold?</span></button>
+            <button type="button" class="ov-tool" onclick="showTool(6)"><strong>Tips &amp; viden</strong><span>Grundbegreber, skat, risiko og nøgletal.</span></button>
+        </div>
+    </div>
+</div>
+
+    <div id="section-tools" style="display:none;">
+
 
     <label class="toggle-row" id="doubleDeductionRow" style="margin-top:14px; margin-bottom:20px;">
         <input type="checkbox" id="doubleDeduction">
@@ -517,16 +614,13 @@
 
         <div class="layout">
 
-            <div class="panel">
-                <div class="eyebrow">Nyt datapunkt</div>
+            <div class="panel collapsible" id="ptEntryPanel">
+                <button class="panel-toggle" type="button" aria-expanded="true" onclick="togglePanel(this)">Tilføj datapunkt</button>
 
                 <div class="field">
-                    <label for="ptDate">Dato</label>
-                    <input type="date" id="ptDate" class="number-input">
-                </div>
-                <div class="field">
-                    <label for="ptPortfolioValue">Værdi af portefølje (udregnes automatisk)</label>
+                    <label for="ptPortfolioValue">Værdi af portefølje</label>
                     <input type="number" id="ptPortfolioValue" class="number-input" value="0" readonly style="opacity:0.7; cursor:not-allowed;">
+                    <div class="limit-hint">Udregnes automatisk: aktier + kontanter</div>
                 </div>
                 <div class="field">
                     <label for="ptStockValue">Værdi af aktier</label>
@@ -537,21 +631,29 @@
                     <input type="number" id="ptCash" class="number-input" value="0" min="0" step="500">
                 </div>
                 <div class="field">
-                    <label for="ptTraded">Købt/solgt (denne periode, negativ ved netto-salg)</label>
+                    <label for="ptTraded">Købt/solgt</label>
                     <input type="number" id="ptTraded" class="number-input" value="0" step="500">
+                    <div class="limit-hint">Denne periode · negativ ved netto-salg</div>
                 </div>
                 <div class="field">
-                    <label for="ptDeposit">Indskud/udbetaling (denne periode, negativ ved udbetaling)</label>
+                    <label for="ptDeposit">Indskud/udbetaling</label>
                     <input type="number" id="ptDeposit" class="number-input" value="0" step="500">
+                    <div class="limit-hint">Denne periode · negativ ved udbetaling</div>
                 </div>
                 <div class="field">
-                    <label for="ptDividend">Udbytte efter skat (denne periode)</label>
+                    <label for="ptDividend">Udbytte efter skat</label>
                     <input type="number" id="ptDividend" class="number-input" value="0" min="0" step="100">
+                    <div class="limit-hint">Denne periode</div>
                 </div>
 
-                <button class="btn" onclick="savePortfolioSnapshot()">+ Gem datapunkt</button>
-                <button class="btn btn-accent" onclick="openMonthlyStatus()" title="Gem i både porteføljetrackeren og Formue på én gang">Månedsstatus</button>
-                <button class="btn btn-secondary" onclick="clearPortfolioHistory()">Ryd hele historikken</button>
+                <div class="save-row">
+                    <div class="field">
+                        <label for="ptDate">Dato</label>
+                        <input type="date" id="ptDate" class="number-input">
+                    </div>
+                    <button class="btn btn-primary" type="button" onclick="savePortfolioSnapshot()">+ Gem datapunkt</button>
+                    <button class="btn btn-secondary" type="button" onclick="clearPortfolioHistory()">Ryd hele historikken</button>
+                </div>
             </div>
 
             <div class="panel chart-panel">
@@ -948,11 +1050,6 @@
 
 <div id="section-housing" style="display:none;">
 
-    <div class="tabs">
-        <button class="tab-btn active" id="housingTabBtn1" onclick="showHousingTool(1)">Hvor meget kan jeg låne?</button>
-        <button class="tab-btn" id="housingTabBtn2" onclick="showHousingTool(2)">Køb eller leje?</button>
-        <button class="tab-btn" id="housingTabBtn3" onclick="showHousingTool(3)">Gældsafvikling</button>
-    </div>
 
     <!-- ===== Låneevne ===== -->
     <div id="housing1">
@@ -1286,7 +1383,7 @@
     <p class="notice source-note" id="netWorthSourceNote" role="status" hidden></p>
 
     <div class="full-width-above">
-        <div class="stats">
+        <div class="stats compact-stats">
             <div class="stat">
                 <div class="label">Aktiver i alt</div>
                 <div class="value ask" id="netAssetsTotal">0 kr.</div>
@@ -1294,7 +1391,6 @@
             <div class="stat">
                 <div class="label">Likvid formue</div>
                 <div class="value ask" id="netLiquidTotal">0 kr.</div>
-                <div class="sub">kontanter + aktier</div>
             </div>
             <div class="stat">
                 <div class="label">Gæld i alt</div>
@@ -1309,7 +1405,8 @@
 
     <div class="layout-net-worth">
 
-        <div class="panel">
+        <div class="panel collapsible" id="nwEntryPanel">
+            <button class="panel-toggle" type="button" aria-expanded="true" onclick="togglePanel(this)">Tilføj datapunkt</button>
             <div class="eyebrow">Aktiver</div>
             <div class="save-status" id="netWorthSaveStatus" role="status">Gemmes automatisk i denne browser</div>
 
@@ -1338,8 +1435,17 @@
 
             <div class="eyebrow eyebrow-section">Gæld</div>
             <div class="field">
-                <label for="netDebt">Anden gæld (billån, forbrugslån mv. – ikke realkredit, den indgår allerede i friværdien)</label>
+                <label for="netDebt">Anden gæld</label>
                 <input type="number" id="netDebt" class="number-input" value="0" min="0" step="500">
+                <div class="limit-hint">Billån, forbrugslån mv. – ikke realkredit (den er trukket fra i friværdien)</div>
+            </div>
+
+            <div class="save-row">
+                <div class="field">
+                    <label for="snapshotDate">Dato</label>
+                    <input type="date" id="snapshotDate" class="number-input">
+                </div>
+                <button class="btn btn-primary" type="button" onclick="saveNetWorthSnapshot()">+ Gem formue for valgt dato</button>
             </div>
         </div>
 
@@ -1361,10 +1467,17 @@
                 <div class="result-sub" id="bufferText"></div>
             </div>
             <div class="buffer-scale" aria-hidden="true">
-                <div class="progress-track"><div class="progress-fill" id="bufferFill" style="width:0%"></div></div>
-                <div class="buffer-marks"><span style="left:50%">3 mdr.</span><span style="left:100%">6 mdr.</span></div>
+                <div class="buffer-zone-label">Anbefalet: 3–6 mdr.</div>
+                <div class="buffer-track">
+                    <div class="progress-track"><div class="progress-fill" id="bufferFill" style="width:0%"></div></div>
+                    <div class="buffer-zone"></div>
+                </div>
+                <div class="buffer-marks"><span style="left:0%">0</span><span style="left:33.333%">3 mdr.</span><span style="left:66.667%">6 mdr.</span><span style="left:100%">9 mdr.</span></div>
             </div>
-            <p class="explainer">En tommelfingerregel er at have 3–6 måneders faste udgifter stående i kontanter til uforudsete udgifter som tandlæge, bilreparation eller jobskifte. Kun kontanter tæller med – aktier kan være faldet i værdi, lige når du får brug for pengene. Udgifterne hentes automatisk fra din <strong>Budget</strong>-fane: kun kategorierne under <strong>Behov</strong> og <strong>Ønsker</strong> tæller med – opsparingsposterne gør ikke, for dem kan du holde pause med, hvis det brænder på.</p>
+            <details class="inline-about">
+                <summary>Hvorfor 3–6 måneder?</summary>
+                <p class="explainer">En tommelfingerregel er at have 3–6 måneders faste udgifter stående i kontanter til uforudsete udgifter som tandlæge, bilreparation eller jobskifte. Kun kontanter tæller med – aktier kan være faldet i værdi, lige når du får brug for pengene. Udgifterne hentes automatisk fra din <strong>Budget</strong>-fane: kun kategorierne under <strong>Behov</strong> og <strong>Ønsker</strong> tæller med – opsparingsposterne gør ikke, for dem kan du holde pause med, hvis det brænder på.</p>
+            </details>
         </div>
 
         <div class="panel">
@@ -1373,14 +1486,7 @@
                 Gem din formue for en dato – helst med <strong>Månedsstatus</strong> ved hver måneds udgang – for at følge udviklingen over tid. Vælg en tidligere dato, hvis du vil eftertilføje historiske tal. Data gemmes kun lokalt i din browser – ikke på en server, og er derfor ikke tilgængelig fra andre enheder eller browsere.
             </p>
 
-            <div class="field" style="max-width:220px; margin-bottom:14px;">
-                <label for="snapshotDate">Dato</label>
-                <input type="date" id="snapshotDate" class="number-input">
-            </div>
-
-            <button class="btn" onclick="saveNetWorthSnapshot()">+ Gem formue for valgt dato</button>
-            <button class="btn btn-accent" onclick="openMonthlyStatus()" title="Gem i både Formue og porteføljetrackeren på én gang">Månedsstatus</button>
-            <button class="btn btn-secondary" onclick="clearNetWorthHistory()">Ryd hele historikken</button>
+            <button class="btn btn-secondary" type="button" onclick="clearNetWorthHistory()">Ryd hele historikken</button>
             <div class="chart-toolbar">
                 <button type="button" class="chip-toggle" id="forecastToggle" aria-pressed="true" onclick="toggleForecast()">Prognose</button>
             </div>
@@ -1478,9 +1584,12 @@
 
         <div class="panel">
             <div class="eyebrow">Hvor rig er jeg?</div>
-            <p class="explainer explainer-lead">
+            <details class="inline-about">
+                <summary>Hvordan er det regnet?</summary>
+                <p class="explainer explainer-lead">
                 Sammenlign din nettoformue med andre danskere på præcis din alder. Tallene er CEPOS' beregninger på Danmarks Statistiks registre (2024-data opregnet til 2026-niveau). Som hos CEPOS tæller din pension med efter en beregnet skat på 40 %, så tallet her kan være lavere end din nettoformue ovenfor. Kun til inspiration.
-            </p>
+                </p>
+            </details>
 
             <div class="field" style="max-width:200px;">
                 <label for="wealthAge">Din alder</label>
@@ -1512,6 +1621,8 @@
     </div>
 </div>
     </div>
+            </div>
+        </div>
 
         <aside class="ad-slot" hidden>
             <!-- Google AdSense-annonce (højre) indsættes her, når I har jeres AdSense-kode -->
@@ -1600,31 +1711,32 @@
             </details>
         </div>
     </template>
-    <script src="js/calc.js?v=0fbb81af"></script>
-    <script src="js/sync.js?v=ec4a8601"></script>
-    <script src="js/shared.js?v=a4cba64f"></script>
-    <script src="js/ui.js?v=7dc184ea"></script>
-    <script src="js/field-help.js?v=a869ea0f"></script>
+    <script src="js/calc.js?v=0bb427ad"></script>
+    <script src="js/sync.js?v=90e83759"></script>
+    <script src="js/shared.js?v=4c50757b"></script>
+    <script src="js/ui.js?v=9e2dff05"></script>
+    <script src="js/field-help.js?v=6a83e008"></script>
     <script src="js/number-fields.js?v=5deecf1d"></script>
-    <script src="js/fold.js?v=6a27d1ab"></script>
+    <script src="js/fold.js?v=cad5b3ff"></script>
     <script src="js/tool1-ask-akt.js?v=3608c8e7"></script>
     <script src="js/tool2-monthly.js?v=c215de07"></script>
     <script src="js/tool3-fire.js?v=b050eef0"></script>
     <script src="js/tool4-portfolio.js?v=87a403bd"></script>
     <script src="js/pension.js?v=1b60de3a"></script>
-    <script src="js/etf-tax.js?v=f82a6537"></script>
+    <script src="js/etf-tax.js?v=3b183bd8"></script>
     <script src="js/loan-capacity.js?v=b4f645bb"></script>
     <script src="js/buy-vs-rent.js?v=75764a5e"></script>
-    <script src="js/debt-payoff.js?v=85d909d1"></script>
-    <script src="js/navigation.js?v=d062c1ca"></script>
-    <script src="js/feedback.js?v=c9e21953"></script>
-    <script src="js/pwa.js?v=762cd88d"></script>
-    <script src="js/report.js?v=2613f43c"></script>
-    <script src="js/budget.js?v=b2e0d6f2"></script>
-    <script src="js/net-worth.js?v=d10e6eb5"></script>
+    <script src="js/debt-payoff.js?v=d92e8193"></script>
+    <script src="js/navigation.js?v=bcca5516"></script>
+    <script src="js/feedback.js?v=a2a4c48b"></script>
+    <script src="js/pwa.js?v=05805c1f"></script>
+    <script src="js/report.js?v=67962f4b"></script>
+    <script src="js/overview.js?v=3cb52351"></script>
+    <script src="js/budget.js?v=e88109ad"></script>
+    <script src="js/net-worth.js?v=a328ecce"></script>
     <script src="js/monthly-status.js?v=1d9d637f"></script>
-    <script src="js/goals.js?v=4e1cfc94"></script>
-    <script src="js/theme.js?v=411a4fa5"></script>
+    <script src="js/goals.js?v=aae96981"></script>
+    <script src="js/theme.js?v=f47f37be"></script>
     <script src="js/share.js?v=e0899adf"></script>
     <!-- Udfyldes af printOverview() og vises kun ved udskrift -->
     <div id="printReport" aria-hidden="true"></div>

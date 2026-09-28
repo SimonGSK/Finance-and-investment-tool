@@ -893,6 +893,12 @@ describe('år for år og prognose', () => {
         assert.equal(calc.addMonthsIso('2026-11-15', 3), '2027-02-15');
         assert.equal(calc.addMonthsIso('2026-09-30', 24), '2028-09-30');
     });
+    test('periodevælger: kun perioder, der er kortere end dataene', () => {
+        assert.deepEqual(calc.periodChoices('2022-08-28', '2026-09-28'), [1, 3]);          // godt 4 år
+        assert.deepEqual(calc.periodChoices('2016-01-31', '2026-09-30'), [1, 3, 5, 10]);   // 10 år og 8 mdr.
+        assert.deepEqual(calc.periodChoices('2025-09-30', '2026-09-30'), []);              // præcis 1 år = "Alt"
+        assert.deepEqual(calc.periodChoices('2026-09-30', '2026-09-30'), []);
+    });
     test('formue: året starter ved sidste punkt før 1. januar, nyeste år først', () => {
         const h = [{date:'2025-06-30', value:300000}, {date:'2025-12-31', value:400000}, {date:'2026-03-31', value:420000}, {date:'2026-09-30', value:500000}];
         const [y26, y25] = calc.yearSummary(h, x => x.value);

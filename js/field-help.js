@@ -109,6 +109,7 @@ const FIELD_HELP = {
 
 let openHelpButton = null;
 
+/** Lukker den forklaring, der er åben (der er højst én ad gangen). */
 function closeFieldHelp(){
     if(!openHelpButton) return;
     openHelpButton.setAttribute('aria-expanded', 'false');
@@ -168,6 +169,18 @@ document.addEventListener('keydown', e => {
         closeFieldHelp();
         btn.focus();
     }
+});
+
+// Forklaringer til nøgletallene øverst i Formue (et "?" ved hvert tal i stedet for en fast undertekst).
+const STAT_HELP = {
+    netAssetsTotal: 'Summen af alt, du ejer: kontanter, aktier, pension, friværdi i bolig og andre værdier – før gælden er trukket fra.',
+    netLiquidTotal: 'Det, du hurtigt kan gøre til penge: kontanter og opsparingskonti plus aktier og værdipapirer. Pension og friværdi tæller ikke med.',
+    netDebtTotal: 'Gæld uden for boligen, fx billån, SU-lån og forbrugslån. Boliglånet er allerede trukket fra i friværdien.',
+    netWorthTotal: 'Aktiver i alt minus gæld – det, du ejer, når al gælden er betalt.'
+};
+Object.entries(STAT_HELP).forEach(([id, text]) => {
+    const label = document.getElementById(id)?.parentElement.querySelector('.label');
+    if(label) attachFieldHelp(label, text);
 });
 
 Object.entries(FIELD_HELP).forEach(([id, text]) => {

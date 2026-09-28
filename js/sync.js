@@ -51,6 +51,10 @@ const SYNC_LABELS = {
     };
 })();
 
+/**
+ * Hvornår hver nøgle sidst blev ændret på denne enhed - bruges til at flette en fil fra en anden enhed.
+ * @returns {Object<string, number>} nøgle -> millisekunder
+ */
 function readSyncTimes(){
     try{ return JSON.parse(localStorage.getItem('syncTimes') || '{}'); } catch(e){ return {}; }
 }
@@ -77,6 +81,11 @@ function readLocalData(){
     return data;
 }
 
+/**
+ * Gemmer én værdi fra en backupfil. Indstillinger gemmes som tekst, data som JSON; tom værdi sletter nøglen.
+ * @param {string} key
+ * @param {*} value
+ */
 function writeLocalValue(key, value){
     if(value === undefined || value === null) localStorage.removeItem(key);
     else localStorage.setItem(key, BACKUP_SETTING_KEYS.includes(key) ? String(value) : JSON.stringify(value));
@@ -126,6 +135,11 @@ async function exportAllData(){
         : 'Filen er downloadet. Læg den fx i Google Drive, og hent den på din anden enhed med "Hent data fra fil".');
 }
 
+/**
+ * Får browseren til at hente en fil, der er lavet på siden (fx backupfilen).
+ * @param {Blob} blob
+ * @param {string} filename
+ */
 function downloadBlob(blob, filename){
     const url = URL.createObjectURL(blob);
     const link = el('a', {href:url, download:filename});
@@ -215,6 +229,13 @@ function openSyncDialog({incoming, incomingTimes, fileTime, device}){
     });
 }
 
+/**
+ * Én række i synkroniseringsdialogen: hvad det gælder, hvad der er sket, og evt. et valg.
+ * @param {string} label fx "Formue"
+ * @param {string} text forklaringen under
+ * @param {HTMLElement} [control] fx en vælger mellem denne enhed og filen
+ * @returns {HTMLElement}
+ */
 function syncRow(label, text, control){
     return el('div', {className:'sync-row'}, [
         el('div', {className:'sync-row-text'}, [el('strong', {textContent: label}), el('span', {textContent: text})]),

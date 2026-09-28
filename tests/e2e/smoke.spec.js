@@ -9,7 +9,7 @@ const VIEWS = [
     ['tools', 'showTool', 1], ['tools', 'showTool', 2], ['tools', 'showTool', 3],
     ['tools', 'showTool', 4], ['tools', 'showTool', 5], ['tools', 'showTool', 6],
     ['housing', 'showHousingTool', 1], ['housing', 'showHousingTool', 2], ['housing', 'showHousingTool', 3],
-    ['budget', null, null], ['formue', null, null]
+    ['budget', null, null], ['formue', null, null], ['overview', null, null]
 ];
 
 async function openView(page, [section, fn, n]){
@@ -106,10 +106,23 @@ test('budget: en post tilføjes i dialogen, og diagrammets boks er lige så høj
     await expect(page.locator('#budgetSumDisplay')).toHaveText('3.000 kr.');
 
     const [list, chart] = await Promise.all([
-        page.locator('#budgetCategoryList').evaluate(n => n.closest('.panel').getBoundingClientRect().height),
-        page.locator('#budgetChart').evaluate(n => n.closest('.panel').getBoundingClientRect().height)
+        page.locator('#budgetCategoryList').evaluate(n => n.closest('.panel').getBoundingClientRect()),
+        page.locator('#budgetChart').evaluate(n => n.closest('.panel').getBoundingClientRect())
     ]);
-    expect(Math.abs(list - chart)).toBeLessThanOrEqual(1);
+    if(Math.abs(list.top - chart.top) < 1){
+        // Side om side: diagrammets boks er lige så høj som kategorilisten.
+        expect(Math.abs(list.height - chart.height)).toBeLessThanOrEqual(1);
+    } else {
+        // Stablet (ikke plads ved siden af): diagrammet under listen i en almindelig højde,
+        // og grupperne Behov/Ønsker/Opsparing som kolonner.
+        expect(chart.top).toBeGreaterThan(list.bottom - 1);
+        expect(chart.height).toBeLessThan(600);
+        // To jævne kolonner: Behov til venstre, Ønsker og Opsparing under hinanden til højre.
+        const [behov, onsker, opsparing] = await page.locator('#budgetCategoryList .category-group').evaluateAll(gs => gs.map(g => g.getBoundingClientRect()).map(r => ({left: Math.round(r.left), top: Math.round(r.top), bottom: Math.round(r.bottom)})));
+        expect(onsker.left).toBeGreaterThan(behov.left);
+        expect(opsparing.left).toBe(onsker.left);
+        expect(opsparing.top).toBeGreaterThanOrEqual(onsker.bottom);
+    }
 });
 
 test('månedsstatus gemmer i begge trackere og advarer, før en dato overskrives', async ({ page }) => {
@@ -149,7 +162,7 @@ test('et delt link genskaber beregningen', async ({ page, context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.goto('/index.html');
     await page.getByRole('button', { name: 'Bolig & lån' }).click();
-    await page.getByRole('button', { name: 'Køb eller leje?' }).click();
+    await page.getByRole('button', { name: 'Køb eller leje?', exact: true }).click();
     await page.getByLabel('Boligpris (kr.)', { exact: true }).fill('4500000');
     await page.getByLabel('Husleje pr. måned (kr.)', { exact: true }).fill('16000');
     const expected = await page.locator('#brWinnerSub').textContent();
@@ -227,6 +240,8 @@ test('formue: sammensætningen viser alle kategorier for datoen, man peger på',
 
 test('"?" ved et felt viser en forklaring, og værktøjets beskrivelse kan foldes ud', async ({ page }) => {
     await page.goto('/index.html');
+    await page.getByRole('button', { name: 'Investering', exact: true }).click();
+    await page.getByRole('button', { name: 'ASK vs. Aktiedepot', exact: true }).click();
     const tip = page.getByRole('button', { name: 'Hvad betyder Forventet årligt afkast?' }).first();
     const pop = page.locator('#' + await tip.getAttribute('aria-controls'));
     await expect(pop).toBeHidden();
@@ -318,6 +333,7 @@ test('feedback: knappen er skjult uden adresse, og en besked sendes med værktø
     });
     await page.evaluate(() => { FEEDBACK.endpoint = 'https://formspree.io/f/test'; updateFeedbackButton(); });
     await page.getByRole('button', { name: 'Bolig & lån' }).click();
+    await page.getByRole('button', { name: 'Hvor meget kan jeg låne?', exact: true }).click();
     await page.getByRole('button', { name: 'Giv feedback' }).click();
     const dialog = page.getByRole('dialog', { name: 'Giv feedback' });
     await dialog.getByText('Sådan behandles din besked').click();
@@ -517,7 +533,7 @@ test('udskriv overblik: rapporten har formue, budget, lån og mål og er det ene
 
     await page.emulateMedia({ media: 'print' });
     await expect(report).toBeVisible();
-    await expect(page.locator('.top-tabs')).toBeHidden();
+    await expect(page.locator('.sidebar')).toBeHidden();
 });
 
 test('ETF: opslag på positivlisten, en ISIN der ikke er på listen, og danske udbyttebetalende fonde', async ({ page }) => {
@@ -662,6 +678,8 @@ test('synkronisering: en ny, tom enhed foreslår filens tal frem for sine egne s
     const dialog = b.getByRole('dialog', { name: 'Hent data fra fil' });
     await expect(dialog.getByLabel('Brug – Formue-felterne')).toHaveValue('incoming');
     await dialog.getByRole('button', { name: 'Hent og flet' }).click();
+    // Siden genindlæses efter fletningen; beskeden vises først på den nye side.
+    await expect(b.locator('.toast')).toContainText('hentet og flettet');
     await b.getByRole('button', { name: 'Formue', exact: true }).click();
     await expect(b.getByLabel('Aktier & værdipapirer', { exact: true })).toHaveValue('300000');
 });
@@ -823,6 +841,70 @@ test('prognosen kan slås fra og til, og valget huskes', async ({ page }) => {
     await expect(page.getByRole('button', { name: 'Prognose' })).toHaveAttribute('aria-pressed', 'false');
 });
 
+test('oversigt og sidemenu: nøgletal fra de andre dele, sidehovedet følger med, og telefonmenuen åbner og lukker', async ({ page }) => {
+    await page.goto('/index.html');
+    await expect(page.locator('#pageTitle')).toHaveText('Din økonomi i overblik');
+    await expect(page.locator('#ovNext')).toContainText('Skriv dine aktiver og din gæld ind.');
+
+    await page.evaluate(() => {
+        const nw = (date, value) => ({date, value, liquid:value, netCatKontanter:value / 2, netCatAktier:value / 2, netCatPension:0, netCatFrivaerdi:0, netCatAndet:0, debt:0});
+        localStorage.setItem('netWorthHistory', JSON.stringify([nw('2026-07-31', 500000), nw('2026-08-31', 520000)]));
+        localStorage.setItem('budgetItems', JSON.stringify({catBolig:[{label:'Husleje', amount:10000}], catOpsparing:[{label:'Aktier', amount:2000}]}));
+    });
+    await page.reload();
+    await expect(page.locator('#ovNetWorth')).toHaveText('520.000 kr.');
+    await expect(page.locator('#ovNetWorthSub')).toContainText('+20.000 kr. siden 31. jul.');
+    await expect(page.locator('#ovBudget')).toHaveText('12.000 kr.');
+    await expect(page.locator('#ovBuffer')).toHaveText('26,0 mdr.');     // 260.000 kr. kontanter / 10.000 kr. udgifter
+    expect(await page.evaluate(() => overviewChart.data.datasets[0].data)).toEqual([500000, 520000]);
+    await expect(page.locator('#ovSplit .ov-split-row')).toHaveCount(2);
+
+    // Menuen: Investering folder sine værktøjer ud, og sidehovedet viser område og værktøj.
+    // Et klik på "Investering" folder kun gruppen ud - siden skifter først ved et værktøj.
+    const group = page.getByRole('button', { name: 'Investering', exact: true });
+    await group.click();
+    await expect(group).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.locator('#pageTitle')).toHaveText('Din økonomi i overblik');
+    await page.getByRole('button', { name: 'ASK vs. Aktiedepot', exact: true }).click();
+    await expect(page.locator('#pageEyebrow')).toHaveText('Investering');
+    await expect(page.locator('#pageTitle')).toHaveText('ASK vs. Aktiedepot');
+    await group.click();
+    await expect(group).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.getByRole('button', { name: 'FIRE-beregner (4%-reglen)', exact: true })).toBeHidden();
+    await group.click();
+    // Kun én gruppe åben ad gangen: åbnes Bolig & lån, foldes Investering sammen.
+    const housing = page.getByRole('button', { name: 'Bolig & lån', exact: true });
+    await housing.click();
+    await expect(housing).toHaveAttribute('aria-expanded', 'true');
+    await expect(group).toHaveAttribute('aria-expanded', 'false');
+    await group.click();
+    await expect(housing).toHaveAttribute('aria-expanded', 'false');
+    await page.getByRole('button', { name: 'FIRE-beregner (4%-reglen)', exact: true }).click();
+    await expect(page.locator('#pageTitle')).toHaveText('FIRE-beregner (4%-reglen)');
+    await expect(page.locator('#tool3')).toBeVisible();
+
+    // Genvej fra oversigten til et værktøj.
+    await page.getByRole('button', { name: 'Oversigt', exact: true }).click();
+    await page.locator('.ov-tool', { hasText: 'Gældsafvikling' }).click();
+    await expect(page.locator('#pageEyebrow')).toHaveText('Bolig & lån');
+    await expect(page.locator('#housing3')).toBeVisible();
+});
+
+test('telefonmenuen åbner fra knappen, lukker ved valg og med Esc @mobil', async ({ page }) => {
+    await page.goto('/index.html');
+    const phone = await page.evaluate(() => window.innerWidth <= 900);
+    test.skip(!phone, 'kun når menuen er skjult bag en knap');
+    const menu = page.getByRole('button', { name: 'Åbn menu' });
+    await menu.click();
+    await expect(menu).toHaveAttribute('aria-expanded', 'true');
+    await page.getByRole('button', { name: 'Budget', exact: true }).click();
+    await expect(menu).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.locator('#pageTitle')).toHaveText('Dit budget');
+    await menu.click();
+    await page.keyboard.press('Escape');
+    await expect(menu).toHaveAttribute('aria-expanded', 'false');
+});
+
 test('formue uden data: graferne viser ingen akser (ingen "jan. 1970"), kun "Ingen data endnu"', async ({ page }) => {
     await page.goto('/index.html');
     await page.evaluate(() => showSection('formue'));
@@ -833,4 +915,137 @@ test('formue uden data: graferne viser ingen akser (ingen "jan. 1970"), kun "Ing
         renderNetWorthHistory();
     });
     expect(await page.evaluate(() => netWorthHistoryChart.options.scales.x.display)).toBe(true);
+});
+
+test('indstillinger åbner som en dialog med sløret baggrund og lukker med Esc og klik udenfor', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.locator('#settingsBtn').click();
+    const dialog = page.getByRole('dialog', { name: 'Indstillinger' });
+    await expect(dialog).toBeVisible();
+    expect(await dialog.evaluate(d => d.open && d.matches(':modal'))).toBe(true);
+    await expect(dialog.getByRole('button', { name: 'Gem mine data' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+
+    await page.locator('#settingsBtn').click();
+    await page.mouse.click(5, 5);                        // på den slørede baggrund
+    await expect(dialog).toBeHidden();
+
+    // Indstillingerne virker stadig: temaet skifter (fra det, systemet startede med).
+    await page.locator('#settingsBtn').click();
+    const theme = () => page.evaluate(() => document.documentElement.getAttribute('data-theme'));
+    const before = await theme();
+    await dialog.getByText('Lyst tema').click();
+    expect(await theme()).toBe(before === 'light' ? 'dark' : 'light');
+});
+
+test('periodevælger, foldbar "Tilføj datapunkt" og nødopsparingens anbefalede zone', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        // Månedlige datapunkter over godt 4 år.
+        const pts = [];
+        for(let i = 0; i < 50; i++){
+            const d = new Date(Date.UTC(2022, 7 + i, 28)).toISOString().slice(0, 10);
+            pts.push({date: d, value: 300000 + i * 5000, liquid: 100000, netCatKontanter: 60000, netCatAktier: 40000, netCatPension: 0, netCatFrivaerdi: 0, netCatAndet: 0, debt: 0});
+        }
+        localStorage.setItem('netWorthHistory', JSON.stringify(pts));
+        localStorage.setItem('budgetItems', JSON.stringify({catBolig:[{label:'Husleje', amount:10000}]}));
+    });
+    await page.reload();
+    const period = page.locator('#ovPeriod');
+    expect(await period.locator('option').allTextContents()).toEqual(['Alt', '1 år', '3 år']);   // ikke 5 år - dataene rækker kun 4
+    await expect(period).toHaveValue('0');   // "Alt" som udgangspunkt
+    expect(await page.evaluate(() => overviewChart.data.datasets[0].data.length)).toBe(50);
+    await expect(page.locator('#ovChartSub')).toContainText('siden');
+    await period.selectOption('1');
+    expect(await page.evaluate(() => overviewChart.data.datasets[0].data.length)).toBe(13);
+    await period.selectOption('3');
+    expect(await page.evaluate(() => overviewChart.data.datasets[0].data.length)).toBe(37);
+
+    // Formue: "Tilføj datapunkt" foldes sammen, og det huskes.
+    await page.getByRole('button', { name: 'Formue', exact: true }).click();
+    const toggle = page.locator('#nwEntryPanel .panel-toggle');
+    await toggle.click();
+    await expect(page.getByLabel('Aktier & værdipapirer', { exact: true })).toBeHidden();
+    await page.reload();
+    await page.getByRole('button', { name: 'Formue', exact: true }).click();
+    await expect(page.locator('#nwEntryPanel .panel-toggle')).toHaveAttribute('aria-expanded', 'false');
+    await page.locator('#nwEntryPanel .panel-toggle').click();
+    await expect(page.getByLabel('Aktier & værdipapirer', { exact: true })).toBeVisible();
+
+    // Nødopsparing: 60.000 kr. / 10.000 kr. = 6 mdr. -> 2/3 af skalaen (0-9 mdr.), og forklaringen er foldet.
+    expect(await page.locator('#bufferFill').evaluate(n => n.style.width)).toBe('66.6667%');
+    await expect(page.locator('.buffer-zone-label')).toHaveText('Anbefalet: 3–6 mdr.');
+    await expect(page.getByText('En tommelfingerregel er at have')).toBeHidden();
+});
+
+test('oversigten beholder sit layout, når man går til en anden side og tilbage @mobil', async ({ page }) => {
+    await page.goto('/index.html');
+    const layout = () => page.evaluate(() => {
+        const box = sel => document.querySelector(sel).getBoundingClientRect();
+        const kpis = box('.overview-kpis'), chart = box('.ov-chart-panel');
+        const panels = [...document.querySelectorAll('#section-overview .panel')].map(p => p.getBoundingClientRect()).sort((a, b) => a.top - b.top);
+        // Mindste lodrette afstand mellem to kort, der står under hinanden.
+        const gaps = panels.slice(1).map((p, i) => p.top - panels[i].bottom).filter(g => g > -1);
+        return {chartFirst: chart.top < kpis.top, minGap: Math.min(...gaps)};
+    });
+    const before = await layout();
+    await page.evaluate(() => { showSection('budget'); showSection('overview'); });
+    const after = await layout();
+    expect(after).toEqual(before);
+    expect(after.minGap).toBeGreaterThanOrEqual(8);
+    const width = await page.evaluate(() => window.innerWidth);
+    expect(after.chartFirst).toBe(width <= 1250);
+});
+
+test('porteføljetrackeren: "Tilføj datapunkt" foldes sammen og huskes, og oversigtens genveje står kun på Oversigt', async ({ page }) => {
+    await page.goto('/index.html');
+    await expect(page.getByRole('button', { name: 'Udskriv overblik' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Tag backup' })).toBeVisible();
+
+    await page.evaluate(() => showTool(4));
+    await expect(page.getByRole('button', { name: 'Tag backup' })).toBeHidden();
+    const toggle = page.locator('#ptEntryPanel .panel-toggle');
+    await expect(toggle).toHaveText('Tilføj datapunkt');
+    await expect(page.locator('#ptStockValue')).toBeVisible();
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.locator('#ptStockValue')).toBeHidden();
+    await page.reload();
+    await page.evaluate(() => showTool(4));
+    await expect(page.locator('#ptStockValue')).toBeHidden();
+    await page.locator('#ptEntryPanel .panel-toggle').click();
+    await expect(page.locator('#ptStockValue')).toBeVisible();
+    // Formue-panelet er uafhængigt af porteføljens.
+    await page.evaluate(() => showSection('formue'));
+    await expect(page.locator('#nwEntryPanel .panel-toggle')).toHaveAttribute('aria-expanded', 'true');
+});
+
+test('oversigten i én kolonne har grafen øverst, og på telefon er graferne bredere end høje @mobil', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        const pts = [];
+        for(let i = 0; i < 50; i++){
+            const d = new Date(Date.UTC(2022, 7 + i, 28)).toISOString().slice(0, 10);
+            pts.push({date: d, value: 300000 + i * 5000, liquid: 100000, netCatKontanter: 60000, netCatAktier: 40000, netCatPension: 0, netCatFrivaerdi: 0, netCatAndet: 0, debt: 0});
+        }
+        localStorage.setItem('netWorthHistory', JSON.stringify(pts));
+        localStorage.setItem('budgetItems', JSON.stringify({catBolig:[{label:'Husleje', amount:10000}]}));
+    });
+    await page.reload();
+    const width = await page.evaluate(() => window.innerWidth);
+    const top = sel => page.locator(sel).evaluate(e => e.getBoundingClientRect().top);
+    const chartTop = await top('.ov-chart-panel'), kpiTop = await top('.overview-kpis');
+    if(width <= 1250) expect(chartTop, `grafen over nøgletallene ved ${width}px`).toBeLessThan(kpiTop);
+    else expect(kpiTop, `nøgletallene øverst ved ${width}px`).toBeLessThan(chartTop);
+
+    if(width > 640) return;
+    for(const view of VIEWS){
+        await openView(page, view);
+        const tall = await page.evaluate(() => [...document.querySelectorAll('canvas')]
+            .filter(c => c.offsetParent !== null)
+            .map(c => ({id: c.id, w: c.getBoundingClientRect().width, h: c.getBoundingClientRect().height}))
+            .filter(c => c.h > c.w));
+        expect(tall, `${view.join('/')} ved ${width}px`).toEqual([]);
+    }
 });

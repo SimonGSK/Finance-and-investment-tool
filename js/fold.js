@@ -10,6 +10,10 @@
 const FOLD_MIN_CHARS = 140;
 const phoneQuery = window.matchMedia('(max-width: 640px)');
 
+/**
+ * Lægger lange forklaringer i en <details>, så de kan foldes sammen på telefon.
+ * Kører én gang ved indlæsning; syncFolds åbner og lukker dem efter skærmbredden.
+ */
 function foldLongTexts(){
     const candidates = [...document.querySelectorAll('.explainer, [data-fold]')].filter(node =>
         !node.closest('details, dialog, template, .settings-panel') &&

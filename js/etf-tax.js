@@ -56,6 +56,7 @@ function notOnListExplanation(isin){
     return el('div', {className:'etf-verdict is-off'}, parts);
 }
 
+/** Viser søgeresultaterne på positivlisten (og henter listen første gang). */
 function renderEtfResults(){
     const box = document.getElementById('etfResults');
     const raw = document.getElementById('etfSearch').value.trim();

@@ -224,7 +224,8 @@ function updateEmergencyFund(){
     monthsEl.classList.toggle('negative', months < 3);
     const verdict = months >= 6 ? 'Du har en solid buffer.' : months >= 3 ? 'Du er inden for anbefalingen.' : 'Under anbefalingen på 3 måneder.';
     text.textContent = `Dine kontanter på ${DK.format(cash)} kr. dækker dine udgifter på ${DK.format(expenses)} kr. om måneden (behov og ønsker fra dit budget). ${verdict}`;
-    fill.style.width = Math.min(100, months / 6 * 100) + '%';
+    // Skalaen går til 9 mdr., så den anbefalede zone (3-6) står i midten, og man kan se, når man er over.
+    fill.style.width = Math.min(100, months / 9 * 100) + '%';
 }
 
 /**
