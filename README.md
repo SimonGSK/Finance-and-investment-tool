@@ -10,21 +10,24 @@ All data stays in your browser's `localStorage`. There are no accounts, no serve
 
 ### Oversigt
 
-The start page: net worth (with the change since the last status), the portfolio (this year's return), the monthly budget and how many months the emergency fund covers; net worth over time (all data by default, or the last 1, 3, 5, 10 … years — only periods your data covers are offered), goals, how assets are split, a short list of next steps (save this month's status, build a budget, take a backup …) and shortcuts to every tool. **Udskriv overblik** and **Tag backup** sit in the page header. On phones and tablets the chart comes first and the key figures under it.
+The start page: net worth (with the change since the last status), the portfolio (this year's return), the monthly budget and how many months the emergency fund covers; net worth over time, goals, how assets are split, a short list of next steps (save this month's status, build a budget, take a backup …) and shortcuts to every tool. Navigation is a sidebar with the areas and their tools (a slide-in menu on phones and tablets). The light theme is forest green on warm off-white; the dark theme keeps navy and gold.
 
 ### Investering
+
+**Tips & viden** is a beginner's guide in foldable sections: before you start, account types (aktiedepot, ASK, pension, børneopsparing), tax and the positive-list lookup (search Skattestyrelsens list by ISIN or name, loaded only when you search), shares vs funds vs ETFs vs bonds, risk, a glossary (afkast, udbytte, GAK …) and company key figures from easy (market value, revenue) to technical (EBITDA, free cash flow, net debt/EBITDA). General knowledge, not advice.
+
+The FIRE calculator can **fetch your numbers** from Formue (cash and shares by default; pension and home equity can be ticked) and your yearly spending and monthly saving from the budget.
+
 
 **ASK vs. Aktiedepot** — Compares a lump sum in a Danish stock savings account (*Aktiesparekonto*, flat 17% yearly tax on gains, 174.200 kr. deposit limit) against the same sum in a regular depot (*Aktiedepot*, 27%/42% progressive tax on realised gains, no limit). The depot side uses the tax-optimal realisation strategy described below. Supports paying the ASK tax from outside the account, the doubled 27% threshold for married couples, and inflation-adjusted ("today's purchasing power") display.
 
 **Aktiedepot: fast + månedligt** — A regular depot with an optional starting amount plus a fixed monthly contribution, again with the optimal realisation strategy. Shows total invested, net profit and percentage gain.
 
-**FIRE-beregner** — How many years until a portfolio can sustain your yearly expenses under the 4% rule, given a starting amount, monthly contributions, expected return and inflation. The FIRE target grows with inflation, so the answer is in real terms. **Hent mine tal** fetches your numbers from Formue (cash and shares by default; pension and home equity can be ticked) and your yearly spending and monthly saving from the budget.
+**FIRE-beregner** — How many years until a portfolio can sustain your yearly expenses under the 4% rule, given a starting amount, monthly contributions, expected return and inflation. The FIRE target grows with inflation, so the answer is in real terms.
 
 **Pension** — Projects a private pension pot to retirement after costs and the 15.3% PAL tax, then shows the monthly payout before and after tax, in today's money. Shows your folkepension age from your birth year (67–70 is legislated; higher ages are projections and labelled as such).
 
-**Porteføljetracker** — Log your portfolio's value, cash, trades, deposits and dividends over time. Charts value vs. cumulative deposits, monthly buys/sells, and total return. Import and export as CSV. The *Tilføj datapunkt* panel can be folded away to its heading, and the choice is remembered.
-
-**Tips & viden** — A beginner's guide in foldable sections: before you start, account types (aktiedepot, ASK, pension, børneopsparing), tax and the positive-list lookup (search Skattestyrelsens list by ISIN or name, loaded only when you search), shares vs funds vs ETFs vs bonds, sectors and their volatility, risk, a glossary (afkast, udbytte, GAK …) and company key figures from easy (market value, revenue) to technical (EBITDA, free cash flow, net debt/EBITDA). General knowledge, not advice.
+**Porteføljetracker** — Log your portfolio's value, cash, trades, deposits and dividends over time. Charts value vs. cumulative deposits, monthly buys/sells, and total return. Import and export as CSV.
 
 ### Bolig & lån
 
@@ -40,7 +43,7 @@ Build a monthly budget from itemised posts in 15 categories plus your own, each 
 
 ### Formue
 
-Enter your assets (cash, stocks, pension, home equity, other) and debt to get your net worth and liquid wealth. Save a dated *månedsstatus* to build a history (rows can be edited or deleted; each row shows the change since the previous one, and *Bedste perioder* lists the three biggest increases; *År for år* sums up each calendar year, and a dashed forecast on the history chart (can be switched off) continues the last 12 months' pace two years ahead, with when the next milestone is reached — all calculated on the fly, not stored) — or use **Månedsstatus** to save the same date into both the Formue history and the portfolio tracker in one go — see how the composition has changed over time, set your own goals (with the monthly saving needed to reach them by a deadline and whether your pace over the last year is enough), track milestones, and compare your net worth to other Danes of exactly your age using CEPOS's per-age table (2024 data at 2026 levels, pension counted after 40% tax, as CEPOS does). The full table opens with your age highlighted. Plus a light-hearted "your wealth equals *n* bananas / iPhones / Porsches" comparison. The emergency-fund bar runs from 0 to 9 months with the recommended 3–6 months marked, and *Tilføj datapunkt* folds away like in the portfolio tracker.
+Enter your assets (cash, stocks, pension, home equity, other) and debt to get your net worth and liquid wealth. Save a dated *månedsstatus* to build a history (rows can be edited or deleted; each row shows the change since the previous one, and *Bedste perioder* lists the three biggest increases; *År for år* sums up each calendar year, and a dashed forecast on the history chart (can be switched off) continues the last 12 months' pace two years ahead, with when the next milestone is reached — all calculated on the fly, not stored) — or use **Månedsstatus** to save the same date into both the Formue history and the portfolio tracker in one go — see how the composition has changed over time, set your own goals (with the monthly saving needed to reach them by a deadline and whether your pace over the last year is enough), track milestones, and compare your net worth to other Danes of exactly your age using CEPOS's per-age table (2024 data at 2026 levels, pension counted after 40% tax, as CEPOS does). The full table opens with your age highlighted. Plus a light-hearted "your wealth equals *n* bananas / iPhones / Porsches" comparison.
 
 ### Everywhere
 
@@ -48,18 +51,7 @@ Every field has a small **?** that explains it, and each tool has a foldable *Hv
 
 ### Settings
 
-**Indstillinger** in the menu opens a dialog: light or dark theme (follows the system by default), and a one-file JSON backup/restore of all Budget, Formue and Portefølje data. An optional reminder (on by default) appears around each month-end for people who track their numbers — from the last three days of a month to the 10th of the next — and opens *Månedsstatus* on the month's last day.
-
-## Design
-
-The page is **responsive**: one layout that adapts to the space available rather than separate designs per device.
-
-- **Menu.** A floating menu card on the left; below 900 px it becomes a menu button that slides the menu in from the left.
-- **Stacking by available space.** The tools, Budget and Formue use CSS container queries: when the content area (not the screen) is narrower than about 1150 px, the chart moves under the inputs, so it never gets squeezed next to the menu.
-- **Phones (below 640 px).** Body text is about 14.5 px and small text never under 12 px, in line with Apple's and Material Design's type scales. Form fields stay at 16 px so iPhone doesn't zoom in. Cards are tighter, charts have a landscape shape (roughly 4:3), and long explanations are folded.
-- **Themes.** The light theme is forest green on warm off-white; the dark theme is black and greys with the same green and red.
-
-All colours, spacing and radii are variables at the top of [`styles.css`](styles.css), and the file is organised in numbered sections (tokens → frame → text → panels → buttons → key figures → tables → dialogs → the sections → phone and print).
+Light or dark theme (follows the system by default), and a one-file JSON backup/restore of all Budget, Formue and Portefølje data. An optional reminder (on by default) appears around each month-end for people who track their numbers — from the last three days of a month to the 10th of the next — and opens *Månedsstatus* on the month's last day.
 
 ## The optimal realisation strategy
 
@@ -85,7 +77,7 @@ The financial calculations, the tax and lending rules, the percentile lookup and
 npm test
 ```
 
-Several tests pin exact known outputs (for example, 25 years at 8% from 100.000 kr. gives 496.847 kr. in a depot with harvesting from year 19), so any change to the maths is caught immediately. Browser tests in [`tests/e2e/`](tests/e2e/) run the whole page in Chromium with [Playwright](https://playwright.dev/). They check what unit tests can't see: that every section loads without JavaScript errors, that every chart exactly fills its box, that nothing scrolls sideways on a phone, and flows such as the budget dialog, the monthly-status overwrite warning, share links, syncing from a file, the menu, the settings dialog, the period picker and the foldable panels.
+Several tests pin exact known outputs (for example, 25 years at 8% from 100.000 kr. gives 496.847 kr. in a depot with harvesting from year 19), so any change to the maths is caught immediately. Browser tests in [`tests/e2e/`](tests/e2e/) run the whole page in Chromium with [Playwright](https://playwright.dev/). They check what unit tests can't see: that every section loads without JavaScript errors, that every chart exactly fills its box, that nothing scrolls sideways on a phone, and the budget dialog, monthly-status overwrite warning and share-link flows.
 
 ```bash
 npx playwright install chromium   # once
@@ -94,7 +86,7 @@ npm run test:e2e
 
 Both suites run automatically on every push and pull request via GitHub Actions; failing browser runs upload a trace you can open with `npx playwright show-trace`.
 
-The browser tests run on desktop Chrome, and the tests tagged `@mobil` also on an iPhone and iPad in WebKit (Safari's engine — it lays out grids differently from Chrome) and a small Android phone. They check for horizontal scroll, content cut off at a panel's edge, form fields under 16 px (iPhone zooms into those), that long explanations are folded on phones, that charts on phones are wider than they are tall, and that the overview puts its chart first on one-column screens. Install the browsers once with `npx playwright install chromium webkit`.
+The browser tests run on desktop Chrome, and the tests tagged `@mobil` also on an iPhone and iPad in WebKit (Safari's engine — it lays out grids differently from Chrome) and a small Android phone. They check for horizontal scroll, content cut off at a panel's edge, form fields under 16 px (iPhone zooms into those) and that long explanations are folded on phones. Install the browsers once with `npx playwright install chromium webkit`.
 
 
 **After changing CSS or JS, run `npm run stamp`.** It gives `styles.css` and every `js/` file in `index.html` a version stamp from the file's content (`styles.css?v=42c619c5`), so a new page never gets combined with an old, cached stylesheet or script. `tests/assets.test.js` fails if a stamp is out of date. The service worker also asks the server whether a file changed (`cache: 'no-cache'`) instead of trusting the browser cache.
@@ -103,13 +95,12 @@ The browser tests run on desktop Chrome, and the tests tagged `@mobil` also on a
 
 ```
 index.html              The whole UI (all tools are sections of one page)
-styles.css              All styling: tokens (dark + light themes), layout, components, phone and print
+styles.css              Design tokens (dark + light themes), layout, components
 js/calc.js              Pure calculation logic - the only file the tests import
 js/shared.js            DOM helpers: slider/number binding, CSV download, chart colours and options
-js/ui.js                Dialogs, confirmations, undo toasts, foldable panels, history tables, Danish dates
+js/ui.js                Dialogs, confirmations, undo toasts, Danish date formatting
 js/field-help.js        The "?" explanations next to each field
 js/number-fields.js     Number fields you can calculate in (12.500 + 3.200, 450 * 12)
-js/fold.js              Folds long explanations on phones
 js/tool1-ask-akt.js     ASK vs. Aktiedepot
 js/tool2-monthly.js     Aktiedepot with monthly contributions
 js/tool3-fire.js        FIRE calculator
@@ -125,7 +116,7 @@ js/share.js             Shareable calculator links
 js/budget.js            Budget
 js/net-worth.js         Formue: net worth, history, milestones, comparison
 js/goals.js             Formue goals
-js/navigation.js        Menu, sections and tools, page header, settings dialog, reminders
+js/navigation.js        Tab switching, settings panel, reminders
 js/sync.js              Backup file and syncing between devices (merge, not overwrite)
 js/feedback.js          Feedback button and form (sent via Formspree)
 js/pwa.js               "Install as app" button; registers the service worker
@@ -136,8 +127,6 @@ manifest.webmanifest    App name, colours and icons
 icons/                  App icons (icon.svg is the source; PNGs rendered from it)
 js/theme.js             Theme switching and re-theming charts
 tests/calc.test.js      Unit tests for calc.js
-tests/assets.test.js    Checks that the version stamps in index.html are up to date
-scripts/stamp-assets.js Version-stamps styles.css and js/ in index.html (npm run stamp)
 tests/e2e/              Browser tests (Playwright)
 src/Main.java           The original console prototype of tools 1 and 2 (Java 21)
 ```
@@ -168,7 +157,7 @@ The site is a Progressive Web App. In Chrome, Edge or on Android, **Installér s
 
 ## Feedback
 
-**Giv feedback** in the menu opens a feedback form. Messages are sent to [Formspree](https://formspree.io), which emails them on and keeps them in a dashboard. Only what the visitor writes is sent (plus which tool they were on) — never their budget or other numbers. The button is hidden until an endpoint is set: create a free form on formspree.io and put its address in `FEEDBACK.endpoint` at the top of `js/feedback.js`. The form shows a short privacy note (what is sent, to whom, and that messages are deleted within 12 months) — so **delete messages older than 12 months in the Formspree dashboard**, and delete a message sooner if someone asks.
+The speech-bubble button under the settings gear opens a feedback form. Messages are sent to [Formspree](https://formspree.io), which emails them on and keeps them in a dashboard. Only what the visitor writes is sent (plus which tool they were on) — never their budget or other numbers. The button is hidden until an endpoint is set: create a free form on formspree.io and put its address in `FEEDBACK.endpoint` at the top of `js/feedback.js`. The form shows a short privacy note (what is sent, to whom, and that messages are deleted within 12 months) — so **delete messages older than 12 months in the Formspree dashboard**, and delete a message sooner if someone asks.
 
 ## Assumptions and disclaimer
 
