@@ -21,11 +21,6 @@ function reportTable(head, rows, {totalRows = []} = {}){
     ]);
 }
 
-/**
- * Formue-afsnittet: aktiverne med andel og beløb, gæld og nettoformue, og udviklingen
- * det seneste år (eller siden første datapunkt).
- * @returns {HTMLElement|null} null, hvis der ingen formuetal er
- */
 function reportNetWorth(){
     const f = currentNetWorthFigures();
     const history = readNetWorthHistory().slice().sort((a, b) => a.date.localeCompare(b.date));
@@ -52,10 +47,6 @@ function shiftIsoYears(iso, years){
     return (parseInt(iso.slice(0, 4), 10) + years) + iso.slice(4);
 }
 
-/**
- * Budget-afsnittet: hver kategori pr. måned og pr. år, i alt, penge tilbage og 50/30/20-fordelingen.
- * @returns {HTMLElement|null} null, hvis budgettet er tomt
- */
 function reportBudget(){
     const cats = getBudgetCategories();
     const items = loadBudgetItems();
@@ -79,10 +70,6 @@ function reportBudget(){
     ]);
 }
 
-/**
- * Lån-afsnittet: hvert lån med restgæld, rente og ydelse, og hvornår det er betalt ud med lavinemetoden.
- * @returns {HTMLElement|null} null, hvis brugeren ikke har skrevet sine egne lån ind
- */
 function reportDebts(){
     const data = loadDebtData();
     if(localStorage.getItem('debtPayoffData') === null) return null;   // kun eksemplet - ikke brugerens egne lån
@@ -104,10 +91,6 @@ function reportDebts(){
     ]);
 }
 
-/**
- * Mål-afsnittet: hvor langt hvert mål er, fristen, og hvor meget der skal til om måneden.
- * @returns {HTMLElement|null} null, hvis der ingen mål er
- */
 function reportGoals(){
     const goals = loadGoals();
     if(!goals.length) return null;
@@ -123,10 +106,6 @@ function reportGoals(){
     return reportSection('Mål', [reportTable(['Mål', 'Måler', 'Status', 'Frist', 'Skal stige'], rows)]);
 }
 
-/**
- * Portefølje-afsnittet: seneste værdi, indskud og årligt afkast (når der er mindst et års data).
- * @returns {HTMLElement|null} null, hvis porteføljetrackeren er tom
- */
 function reportPortfolio(){
     const history = readPortfolioHistory().slice().sort((a, b) => a.date.localeCompare(b.date));
     if(!history.length) return null;

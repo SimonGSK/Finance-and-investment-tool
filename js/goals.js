@@ -20,9 +20,6 @@ function loadGoals(){
     catch(e){ return []; }
 }
 
-/**
- * @param {Array<{id:string, name:string, metric:string, target:number, deadline:string}>} goals
- */
 function saveGoals(goals){
     localStorage.setItem('netWorthGoals', JSON.stringify(goals));
 }

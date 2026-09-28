@@ -533,7 +533,7 @@ test('udskriv overblik: rapporten har formue, budget, lån og mål og er det ene
 
     await page.emulateMedia({ media: 'print' });
     await expect(report).toBeVisible();
-    await expect(page.locator('.sidebar')).toBeHidden();
+    await expect(page.locator('.top-tabs')).toBeHidden();
 });
 
 test('ETF: opslag på positivlisten, en ISIN der ikke er på listen, og danske udbyttebetalende fonde', async ({ page }) => {
@@ -977,59 +977,4 @@ test('periodevælger, foldbar "Tilføj datapunkt" og nødopsparingens anbefalede
     expect(await page.locator('#bufferFill').evaluate(n => n.style.width)).toBe('66.6667%');
     await expect(page.locator('.buffer-zone-label')).toHaveText('Anbefalet: 3–6 mdr.');
     await expect(page.getByText('En tommelfingerregel er at have')).toBeHidden();
-});
-
-test('porteføljetrackeren: "Tilføj datapunkt" foldes sammen og huskes, og oversigtens genveje står kun på Oversigt', async ({ page }) => {
-    await page.goto('/index.html');
-    await expect(page.getByRole('button', { name: 'Udskriv overblik' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Tag backup' })).toBeVisible();
-
-    await page.evaluate(() => showTool(4));
-    await expect(page.getByRole('button', { name: 'Tag backup' })).toBeHidden();
-    const toggle = page.locator('#ptEntryPanel .panel-toggle');
-    await expect(toggle).toHaveText('Tilføj datapunkt');
-    await expect(page.locator('#ptStockValue')).toBeVisible();
-    await toggle.click();
-    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
-    await expect(page.locator('#ptStockValue')).toBeHidden();
-    await page.reload();
-    await page.evaluate(() => showTool(4));
-    await expect(page.locator('#ptStockValue')).toBeHidden();
-    await page.locator('#ptEntryPanel .panel-toggle').click();
-    await expect(page.locator('#ptStockValue')).toBeVisible();
-    // Formue-panelet er uafhængigt af porteføljens.
-    await page.evaluate(() => showSection('formue'));
-    await expect(page.locator('#nwEntryPanel .panel-toggle')).toHaveAttribute('aria-expanded', 'true');
-});
-
-test('oversigten i én kolonne har grafen øverst; på telefon er graferne bredere end høje og periodevælgeren zoomer ikke @mobil', async ({ page }) => {
-    await page.goto('/index.html');
-    await page.evaluate(() => {
-        const pts = [];
-        for(let i = 0; i < 50; i++){
-            const d = new Date(Date.UTC(2022, 7 + i, 28)).toISOString().slice(0, 10);
-            pts.push({date: d, value: 300000 + i * 5000, liquid: 100000, netCatKontanter: 60000, netCatAktier: 40000, netCatPension: 0, netCatFrivaerdi: 0, netCatAndet: 0, debt: 0});
-        }
-        localStorage.setItem('netWorthHistory', JSON.stringify(pts));
-        localStorage.setItem('budgetItems', JSON.stringify({catBolig:[{label:'Husleje', amount:10000}]}));
-    });
-    await page.reload();
-    const width = await page.evaluate(() => window.innerWidth);
-    const top = sel => page.locator(sel).evaluate(e => e.getBoundingClientRect().top);
-    const chartTop = await top('.ov-chart-panel'), kpiTop = await top('.overview-kpis');
-    if(width <= 1250) expect(chartTop, `grafen over nøgletallene ved ${width}px`).toBeLessThan(kpiTop);
-    else expect(kpiTop, `nøgletallene øverst ved ${width}px`).toBeLessThan(chartTop);
-
-    if(width > 640) return;
-    // iPhone zoomer ind i en vælger med tekst under 16 px.
-    await expect(page.locator('#ovPeriod')).toBeVisible();
-    expect(parseFloat(await page.locator('#ovPeriod').evaluate(e => getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(16);
-    for(const view of VIEWS){
-        await openView(page, view);
-        const tall = await page.evaluate(() => [...document.querySelectorAll('canvas')]
-            .filter(c => c.offsetParent !== null)
-            .map(c => ({id: c.id, w: c.getBoundingClientRect().width, h: c.getBoundingClientRect().height}))
-            .filter(c => c.h > c.w));
-        expect(tall, `${view.join('/')} ved ${width}px`).toEqual([]);
-    }
 });

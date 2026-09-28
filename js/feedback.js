@@ -35,7 +35,6 @@ function feedbackPrivacyNote(){
     ]);
 }
 
-/** Åbner feedbackformularen og sender beskeden, når den er udfyldt. Fejl vises i dialogen, og teksten bevares. */
 function openFeedbackDialog(){
     const kind = el('select', {className:'number-input'}, FEEDBACK_KINDS.map(k => el('option', {value:k, textContent:k})));
     const message = el('textarea', {className:'number-input feedback-message', rows:6, maxLength:4000,
