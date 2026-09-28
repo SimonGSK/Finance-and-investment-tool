@@ -153,7 +153,7 @@ function printOverview(){
             el('p', {textContent:`Udskrevet ${formatDanishDate(todayIso())}`})
         ]),
         ...sections,
-        el('p', {className:'report-foot', textContent:'Lavet med Økonomiværktøjer. Tallene er mine egne indtastninger; beregningerne er vejledende og ikke rådgivning.'})
+        el('p', {className:'report-foot', textContent:'Lavet med Økonomis. Tallene er mine egne indtastninger; beregningerne er vejledende og ikke rådgivning.'})
     );
     if(typeof toggleSettings === 'function') toggleSettings(false);
     window.print();

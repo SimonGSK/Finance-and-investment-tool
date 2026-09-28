@@ -1355,10 +1355,23 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
 .app{ max-width:1640px; margin:0 auto; padding:var(--s5) var(--s6) var(--s7); }
 .app-header{ display:flex; align-items:center; gap:var(--s4); padding:var(--s2) var(--s2) var(--s6); }
 .brand{ display:flex; align-items:center; gap:var(--s3); min-width:0; }
-.brand-logo{
-    display:grid; place-items:center; flex-shrink:0; width:44px; height:44px; border-radius:12px;
-    background:var(--akt); color:var(--on-akt); font-family:var(--font-display); font-size:24px; font-weight:600;
-}
+/* Logoet: et O med en kurslinje igennem (samme tegning som icons/icon.svg), i temaets farver. */
+.brand-logo{ display:block; flex-shrink:0; width:44px; height:44px; }
+.brand-logo .logo-tile, .brand-logo .logo-gap{ fill:var(--akt); stroke:var(--akt); }
+.brand-logo .logo-tile{ stroke:none; }
+.brand-logo .logo-glyph{ fill:var(--on-akt); }
+.brand-logo .logo-line{ fill:var(--on-akt); stroke:var(--on-akt); }
+/* Navnet: skriftens eget O med kurslinjen lagt ovenpå, centreret om O'ets midte.
+   Målt på siden i alle størrelser (17-176 px): O'ets midte ligger midt i boksen (0,5 em). */
+.brand-o{ position:relative; display:inline-block; line-height:1; }
+.brand-o svg{ position:absolute; left:50%; top:-0.05em; width:1.1em; height:1.1em; margin-left:-0.55em; overflow:visible; }
+.brand-o polyline{ fill:none; stroke-linejoin:round; stroke-linecap:round; }
+.brand-o .logo-gap{ fill:var(--bg); stroke:var(--bg); }
+.brand-o .logo-gap polyline{ stroke-width:16; }
+.brand-o .logo-gap polygon{ stroke-width:9; stroke-linejoin:round; }
+.brand-o .logo-line{ fill:var(--pos); stroke:var(--pos); }
+.brand-o .logo-line polyline{ fill:none; stroke-width:7.5; }
+.brand-o .logo-line polygon{ stroke-width:1.5; }
 .brand-name{ font-family:var(--font-display); font-size:26px; font-weight:600; letter-spacing:-0.01em; color:var(--text); white-space:nowrap; }
 .brand-sub{ font-size:15px; color:var(--subtle); margin-left:var(--s2); white-space:nowrap; }
 .app-header-actions{ margin-left:auto; display:flex; align-items:center; gap:var(--s3); }
@@ -1493,7 +1506,7 @@ body[data-section="overview"] #overviewActions{ display:flex; }
     .app-header{ padding:var(--s2) 0 var(--s4); gap:var(--s3); }
     .menu-btn{ display:grid; place-items:center; width:44px; height:44px; flex-shrink:0; border-radius:14px; border:1px solid var(--border); background:var(--panel); color:var(--text); cursor:pointer; }
     .menu-btn .nav-icon{ width:22px; height:22px; }
-    .brand-logo{ width:36px; height:36px; font-size:20px; border-radius:10px; }
+    .brand-logo{ width:36px; height:36px; }
     .brand-name{ font-size:20px; }
     .brand-sub{ display:none; }
     .app-header-actions .btn-dark{ padding:9px 14px; font-size:13.5px; }
