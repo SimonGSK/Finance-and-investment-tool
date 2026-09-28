@@ -1361,10 +1361,10 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
 .brand-logo .logo-tile{ stroke:none; }
 .brand-logo .logo-glyph{ fill:var(--on-akt); }
 .brand-logo .logo-line{ fill:var(--on-akt); stroke:var(--on-akt); }
-/* Navnet: skriftens eget O med kurslinjen lagt ovenpå, centreret om O'ets midte
-   (målt i Newsreader 600: 0,377 em under boksens top). */
+/* Navnet: skriftens eget O med kurslinjen lagt ovenpå, centreret om O'ets midte.
+   Målt på siden i alle størrelser (17-176 px): O'ets midte ligger midt i boksen (0,5 em). */
 .brand-o{ position:relative; display:inline-block; line-height:1; }
-.brand-o svg{ position:absolute; left:50%; top:-0.173em; width:1.1em; height:1.1em; margin-left:-0.55em; overflow:visible; }
+.brand-o svg{ position:absolute; left:50%; top:-0.05em; width:1.1em; height:1.1em; margin-left:-0.55em; overflow:visible; }
 .brand-o polyline{ fill:none; stroke-linejoin:round; stroke-linecap:round; }
 .brand-o .logo-gap{ fill:var(--bg); stroke:var(--bg); }
 .brand-o .logo-gap polyline{ stroke-width:16; }
