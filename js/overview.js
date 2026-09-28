@@ -16,7 +16,7 @@ function hexToRgba(hex, alpha){
 
 const shortDate = iso => new Date(iso + 'T00:00:00').toLocaleDateString('da-DK', {day:'numeric', month:'short'});
 
-let overviewRange = null;    // antal år bagud fra seneste datapunkt; 0 = alt; null = vælg selv (1 år, hvis der er mere)
+let overviewRange = 0;       // antal år bagud fra seneste datapunkt; 0 = alt
 const PERIOD_CHOICES = [1, 3, 5, 10, 15, 20, 25, 30, 40, 50];
 
 /** Vælger periode i grafen (antal år, 0 = alt). */
@@ -34,8 +34,7 @@ function syncPeriodSelect(history){
     const select = document.getElementById('ovPeriod');
     const span = history.length > 1 ? (Date.parse(history.at(-1).date) - Date.parse(history[0].date)) / (365.25 * DAY_MS) : 0;
     const choices = PERIOD_CHOICES.filter(y => y < span);
-    let chosen = overviewRange === null ? (choices.includes(1) ? 1 : 0) : overviewRange;
-    if(chosen && !choices.includes(chosen)) chosen = 0;
+    const chosen = choices.includes(overviewRange) ? overviewRange : 0;
     select.replaceChildren(...[0, ...choices].map(y => el('option', {value: String(y), textContent: y === 0 ? 'Alt' : y === 1 ? '1 år' : `${y} år`, selected: y === chosen})));
     select.closest('.period-select').hidden = !choices.length;
     return chosen;

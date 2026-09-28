@@ -954,13 +954,13 @@ test('periodevælger, foldbar "Tilføj datapunkt" og nødopsparingens anbefalede
     await page.reload();
     const period = page.locator('#ovPeriod');
     expect(await period.locator('option').allTextContents()).toEqual(['Alt', '1 år', '3 år']);   // ikke 5 år - dataene rækker kun 4
-    await expect(period).toHaveValue('1');
+    await expect(period).toHaveValue('0');   // "Alt" som udgangspunkt
+    expect(await page.evaluate(() => overviewChart.data.datasets[0].data.length)).toBe(50);
+    await expect(page.locator('#ovChartSub')).toContainText('siden');
+    await period.selectOption('1');
     expect(await page.evaluate(() => overviewChart.data.datasets[0].data.length)).toBe(13);
     await period.selectOption('3');
     expect(await page.evaluate(() => overviewChart.data.datasets[0].data.length)).toBe(37);
-    await period.selectOption('0');
-    expect(await page.evaluate(() => overviewChart.data.datasets[0].data.length)).toBe(50);
-    await expect(page.locator('#ovChartSub')).toContainText('siden');
 
     // Formue: "Tilføj datapunkt" foldes sammen, og det huskes.
     await page.getByRole('button', { name: 'Formue', exact: true }).click();
