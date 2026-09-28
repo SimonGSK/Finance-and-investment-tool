@@ -69,8 +69,10 @@ function showHousingTool(n, stay){
  */
 function showSection(name){
     document.body.dataset.section = name;      // fx viser Oversigtens knapper i sidehovedet
+    // Den viste sektion får ingen fast display-værdi, så stilarket bestemmer layoutet
+    // (fx lægger Oversigten sig i én kolonne med grafen øverst på telefon og tablet).
     document.querySelectorAll('[id^="section-"]').forEach(section => {
-        section.style.display = section.id === 'section-' + name ? 'block' : 'none';
+        section.style.display = section.id === 'section-' + name ? '' : 'none';
     });
     document.querySelectorAll('.top-tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.section === name));
     // Den gruppe, man står i, er foldet ud, og de andre foldes sammen, så menuen ikke bliver lang.

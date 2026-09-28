@@ -978,3 +978,22 @@ test('periodevælger, foldbar "Tilføj datapunkt" og nødopsparingens anbefalede
     await expect(page.locator('.buffer-zone-label')).toHaveText('Anbefalet: 3–6 mdr.');
     await expect(page.getByText('En tommelfingerregel er at have')).toBeHidden();
 });
+
+test('oversigten beholder sit layout, når man går til en anden side og tilbage @mobil', async ({ page }) => {
+    await page.goto('/index.html');
+    const layout = () => page.evaluate(() => {
+        const box = sel => document.querySelector(sel).getBoundingClientRect();
+        const kpis = box('.overview-kpis'), chart = box('.ov-chart-panel');
+        const panels = [...document.querySelectorAll('#section-overview .panel')].map(p => p.getBoundingClientRect()).sort((a, b) => a.top - b.top);
+        // Mindste lodrette afstand mellem to kort, der står under hinanden.
+        const gaps = panels.slice(1).map((p, i) => p.top - panels[i].bottom).filter(g => g > -1);
+        return {chartFirst: chart.top < kpis.top, minGap: Math.min(...gaps)};
+    });
+    const before = await layout();
+    await page.evaluate(() => { showSection('budget'); showSection('overview'); });
+    const after = await layout();
+    expect(after).toEqual(before);
+    expect(after.minGap).toBeGreaterThanOrEqual(8);
+    const width = await page.evaluate(() => window.innerWidth);
+    expect(after.chartFirst).toBe(width <= 1250);
+});
