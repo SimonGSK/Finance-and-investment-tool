@@ -1632,7 +1632,7 @@ body[data-section="overview"] #overviewActions{ display:flex; }
     position:absolute; left:33.333%; width:33.333%; top:-4px; bottom:-4px; pointer-events:none;
     border:1.5px dashed var(--pos); border-radius:8px; background:color-mix(in srgb, var(--pos) 12%, transparent);
 }
-.buffer-zone-label{ margin:0 0 6px 33.333%; width:33.333%; text-align:center; font-size:12.5px; font-weight:600; color:var(--pos); }
+.buffer-zone-label{ margin:0 0 6px 50%; width:max-content; transform:translateX(-50%); white-space:nowrap; font-size:12.5px; font-weight:600; color:var(--pos); }
 .buffer-marks span:first-child{ transform:none; }
 .buffer-marks span:last-child{ transform:translateX(-100%); }
 
@@ -1651,3 +1651,41 @@ body[data-section="overview"] #overviewActions{ display:flex; }
 .collapsible.is-collapsed > .panel-toggle{ margin-bottom:0; }
 /* Store resultattal (fx "4,0 måneder", "3.901.000 kr.") med samme elegante skrift som nøgletallene. */
 .result-value{ font-family:var(--font-display); font-weight:600; letter-spacing:-0.01em; font-variant-numeric:lining-nums tabular-nums; }
+
+/* ---- Telefon: tættere og roligere ----
+   Tekststørrelserne følger de gængse mobilskalaer (Apple og Material Design): brødtekst
+   omkring 14-15 px, småtekst ikke under 12 px, og indtastningsfelter bliver på 16 px, så
+   iPhone ikke zoomer ind, når man trykker i dem. Kortene får mindre luft, og graferne et
+   liggende format (ca. 4:3) i stedet for at være højere end de er brede. */
+@media (max-width:640px){
+    body{ font-size:14.5px; }
+    .app{ padding:var(--s2) var(--s3) var(--s5); }
+    .app-header{ padding:var(--s1) 0 var(--s3); }
+    .page-header{ margin-bottom:var(--s4); }
+    .page-eyebrow{ font-size:11.5px; margin-bottom:var(--s1); }
+    .page-header h1{ font-size:24px; }
+    .page-sub{ font-size:13.5px; }
+    .panel{ padding:16px; border-radius:16px; margin-bottom:var(--s3); }
+    .stat{ border-radius:16px; }
+    .stats, .overview-kpis{ gap:var(--s2); margin-bottom:var(--s3); }
+    .overview-kpis .stat, .compact-stats .stat{ padding:12px 14px; }
+    .stat .label, .compact-stats .stat .label{ font-size:13px; margin-bottom:2px; }
+    .stat .sub{ font-size:12.5px; margin-top:2px; }
+    .overview-grid, .ov-side{ gap:var(--s3); margin-bottom:var(--s3); }
+    .panel-title-row{ margin-bottom:var(--s3); }
+    .panel-title{ font-size:18px; }
+    .panel-sub{ font-size:13px; }
+    .panel-toggle{ font-size:17px; }
+    .ov-row{ font-size:14px; margin-bottom:6px; }
+    .ov-goals, .ov-split{ gap:var(--s4); }
+    .ov-next li{ font-size:14px; }
+    .ov-tool{ padding:12px 14px; font-size:13px; }
+    .ov-tool strong{ font-size:14.5px; }
+    .result-value{ font-size:24px; }
+    .layout, .layout-wide, .layout-net-worth{ gap:var(--s3); }
+    .legend{ gap:4px var(--s4); margin-bottom:var(--s3); }
+    .site-content .panel .chart-wrap{ flex:none; min-height:0; height:clamp(200px, 62vw, 280px); }
+    /* Cirkeldiagrammet med forklaring under skal være højere for ikke at blive lille. */
+    .site-content .panel .chart-wrap:has(#netWorthChart){ height:290px; }
+    .site-content .panel .ov-chart-wrap{ height:clamp(150px, 45vw, 210px); }
+}

@@ -6,6 +6,10 @@
 
 const DK = new Intl.NumberFormat('da-DK', {maximumFractionDigits:0});
 
+// Aksetekster står altid vandret; er der ikke plads, springes nogle over. Skrå tekst
+// tager meget af højden fra små grafer på telefonen.
+Chart.defaults.scale.ticks.maxRotation = 0;
+
 /**
  * Læser en CSS custom property fra :root, fx '--akt' eller '--font-mono'.
  * @param {string} name variabelnavnet inkl. de to bindestreger
