@@ -12,3 +12,18 @@ test('index.html har opdaterede versionsstempler på CSS og JS (kør "npm run st
     assert.match(html, /href="styles\.css\?v=[0-9a-f]{8}"/);
     assert.equal((html.match(/src="js\/[\w.-]+\.js\?v=[0-9a-f]{8}"/g) || []).length, (html.match(/src="js\//g) || []).length);
 });
+
+test('app-ikonet i tre farver: hvert manifest peger på sine egne ikoner, og de findes', () => {
+    const root = path.join(__dirname, '..');
+    const read = f => JSON.parse(fs.readFileSync(path.join(root, f), 'utf8'));
+    const base = read('manifest.webmanifest');
+    for(const [file, dir] of [['manifest.webmanifest', 'icons/'], ['manifest-black.webmanifest', 'icons/black/'], ['manifest-white.webmanifest', 'icons/white/']]){
+        const m = read(file);
+        assert.deepEqual({...m, icons: null}, {...base, icons: null}, `${file} må kun afvige i ikonerne`);
+        for(const icon of m.icons){
+            assert.ok(icon.src.startsWith(dir) && !icon.src.slice(dir.length).includes('/'), `${file}: ${icon.src}`);
+            assert.ok(fs.existsSync(path.join(root, icon.src)), `${file}: ${icon.src} findes ikke`);
+        }
+        assert.ok(fs.existsSync(path.join(root, dir, 'apple-touch-icon.png')), `${dir}apple-touch-icon.png findes ikke`);
+    }
+});

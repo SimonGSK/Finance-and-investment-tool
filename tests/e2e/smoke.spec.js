@@ -1049,3 +1049,27 @@ test('oversigten i én kolonne har grafen øverst, og på telefon er graferne br
         expect(tall, `${view.join('/')} ved ${width}px`).toEqual([]);
     }
 });
+
+test('app-ikonet kan vælges i grøn, sort eller hvid, før appen lægges på hjemmeskærmen', async ({ page }) => {
+    await page.goto('/index.html');
+    const links = () => page.evaluate(() => [document.querySelector('link[rel="apple-touch-icon"]').getAttribute('href'), document.querySelector('link[rel="manifest"]').getAttribute('href')]);
+    expect(await links()).toEqual(['icons/apple-touch-icon.png', 'manifest.webmanifest']);
+
+    // Valget står under "App" i indstillingerne (vises, hvor appen kan installeres).
+    await page.evaluate(() => { document.getElementById('installAppRow').hidden = false; });
+    await page.locator('#settingsBtn').click();
+    const dialog = page.getByRole('dialog', { name: 'Indstillinger' });
+    await expect(dialog.getByRole('radio', { name: 'Grøn' })).toBeChecked();
+    await dialog.getByText('Sort', { exact: true }).click();
+    await expect(dialog.getByRole('radio', { name: 'Sort' })).toBeChecked();
+    expect(await links()).toEqual(['icons/black/apple-touch-icon.png', 'manifest-black.webmanifest']);
+
+    // Valget huskes.
+    await page.reload();
+    expect(await links()).toEqual(['icons/black/apple-touch-icon.png', 'manifest-black.webmanifest']);
+    await page.evaluate(() => { document.getElementById('installAppRow').hidden = false; });
+    await page.locator('#settingsBtn').click();
+    await expect(dialog.getByRole('radio', { name: 'Sort' })).toBeChecked();
+    await dialog.getByText('Hvid', { exact: true }).click();
+    expect(await links()).toEqual(['icons/white/apple-touch-icon.png', 'manifest-white.webmanifest']);
+});
