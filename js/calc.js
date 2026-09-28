@@ -1,6 +1,8 @@
-// Ren beregningslogik uden nogen afhængighed af DOM'et. Filen indlæses som et
-// almindeligt script i browseren (og definerer derfor sine funktioner globalt),
-// og kan samtidig require()'es fra Node, så tests/ kan afprøve tallene direkte.
+/**
+ * @file Ren beregningslogik uden nogen afhængighed af DOM'et. Filen indlæses som et
+ * almindeligt script i browseren (og definerer derfor sine funktioner globalt),
+ * og kan samtidig require()'es fra Node, så tests/ kan afprøve tallene direkte.
+ */
 
 // ==== Satser og grænser – opdateres hvert år ====
 // Alle årlige tal samlet ét sted. Teksterne på siden (fx "ASK-grænsen er
@@ -581,6 +583,21 @@ function addMonthsIso(iso, months){
     const ny = Math.floor(total / 12), nm = total % 12 + 1;
     const last = new Date(Date.UTC(ny, nm, 0)).getUTCDate();
     return `${ny}-${String(nm).padStart(2, '0')}-${String(Math.min(d, last)).padStart(2, '0')}`;
+}
+
+/** Perioderne, en tidsvælger på en graf kan tilbyde (i år). */
+const PERIOD_CHOICES = [1, 3, 5, 10, 15, 20, 25, 30, 40, 50];
+
+/**
+ * De perioder (1, 3, 5, 10 år ...), som dataene rækker til. En periode, der er mindst
+ * lige så lang som dataene, udelades - den ville vise det samme som "Alt".
+ * @param {string} firstIso første datapunkt
+ * @param {string} lastIso seneste datapunkt
+ * @returns {number[]} antal år, kortest først
+ */
+function periodChoices(firstIso, lastIso){
+    const span = (Date.parse(lastIso) - Date.parse(firstIso)) / (365.25 * DAY_MS);
+    return PERIOD_CHOICES.filter(y => y < span);
 }
 
 /**
@@ -1568,7 +1585,7 @@ function goalProgress(g){
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
-        addMonthsIso, yearSummary, projectTrend, projectionReaches,
+        addMonthsIso, periodChoices, yearSummary, projectTrend, projectionReaches,
         periodChanges, bestPeriods,
         planSync, applySync,
         CAPITAL_INCOME_LIMIT,

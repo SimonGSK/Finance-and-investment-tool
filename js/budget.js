@@ -282,11 +282,22 @@ function openCategoryDialog(catId){
     });
 }
 
+/**
+ * Vælger af budgetgruppe (Behov, Ønsker, Opsparing) til en egen kategori.
+ * @param {string} selected gruppens id
+ * @param {(e: Event) => void} onchange
+ * @returns {HTMLSelectElement}
+ */
 function groupSelectEl(selected, onchange){
     return el('select', {className:'number-input', onchange},
         BUDGET_GROUPS.map(g => el('option', {value:g.id, textContent:g.label, selected:g.id === selected})));
 }
 
+/**
+ * Ændrer en egen kategori (fx navn eller gruppe) og opdaterer budgettet.
+ * @param {string} catId
+ * @param {object} patch de felter, der ændres
+ */
 function updateCustomCategory(catId, patch){
     const cats = loadCustomCategories().map(c => c.id === catId ? {...c, ...patch} : c);
     saveCustomCategories(cats);

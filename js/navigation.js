@@ -104,6 +104,7 @@ function activePageNames(){
     return {section, area, tool};
 }
 
+/** Skriver område og titel i sidehovedet ud fra den sektion og det værktøj, der vises. */
 function updatePageHeader(){
     const {section, area, tool} = activePageNames();
     let [eyebrow, title] = PAGE_TITLES[section] || [area, area];
@@ -128,12 +129,14 @@ function toggleNavGroup(btn){
 
 // ---- Menuen på telefoner: glider ind fra venstre ----
 
+/** Åbner menuen på telefon og tablet og flytter fokus til det aktive punkt. */
 function openNav(){
     document.body.classList.add('nav-open');
     document.getElementById('menuBtn').setAttribute('aria-expanded', 'true');
     document.querySelector('#sidebar .nav-item.active')?.focus();
 }
 
+/** Lukker menuen på telefon og tablet (gør intet, hvis den allerede er lukket). */
 function closeNav(){
     if(!document.body.classList.contains('nav-open')) return;
     document.body.classList.remove('nav-open');
@@ -162,6 +165,11 @@ function hasUserData(){
         || (read('netWorthGoals') || []).length > 0;
 }
 
+/**
+ * Læser et tidsstempel (millisekunder) fra localStorage.
+ * @param {string} key
+ * @returns {number|null} null, hvis det mangler eller ikke er et tal
+ */
 function readTimestamp(key){
     const v = parseInt(localStorage.getItem(key), 10);
     return isNaN(v) ? null : v;
@@ -223,6 +231,7 @@ function checkMonthlyReminder(){
     }
 }
 
+/** "Udfyld nu" i påmindelsen: åbner månedsstatus med den foreslåede dato (månedens sidste dag, eller i dag, hvis den ikke er nået). */
 function openMonthlyStatusFromReminder(){
     openMonthlyStatus(monthlyReminderState?.suggestedDate);
 }

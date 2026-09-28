@@ -23,6 +23,10 @@ function loadDebtData(){
     return {debts: DEFAULT_DEBTS.map(d => ({...d})), extra: 1000};
 }
 
+/**
+ * Gemmer lånene og det ekstra beløb og viser "Gemt".
+ * @param {{debts:Array, extra:number}} data
+ */
 function saveDebtData(data){
     localStorage.setItem('debtPayoffData', JSON.stringify(data));
     markSaved('debtSaveStatus');
@@ -43,6 +47,10 @@ const debtChart = new Chart(document.getElementById('debtChart').getContext('2d'
 // og snebold er kun renten, så den ses tydeligst i "Rente betalt".
 let debtChartView = 'balance';
 
+/**
+ * Skifter grafen mellem restgæld og betalt rente.
+ * @param {'balance'|'interest'} view
+ */
 function setDebtChartView(view){
     debtChartView = view;
     document.querySelectorAll('#debtViewToggle button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === view)));
@@ -80,6 +88,12 @@ function renderDebtRows(){
     ])) : [el('p', {className:'empty-note', textContent:'Ingen lån endnu – tilføj dit første herunder.'})]));
 }
 
+/**
+ * Retter ét felt på et lån og regner forfra.
+ * @param {number} index lånets plads i listen
+ * @param {string} key fx 'balance', 'rate' eller 'minPayment'
+ * @param {*} value
+ */
 function editDebt(index, key, value){
     const data = loadDebtData();
     data.debts[index][key] = value;

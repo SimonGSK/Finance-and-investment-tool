@@ -11,10 +11,12 @@ if('serviceWorker' in navigator && (location.protocol === 'https:' || location.h
 
 let deferredInstallPrompt = null;
 
+/** @returns {boolean} true, når siden kører som installeret app (fra hjemmeskærmen). */
 function isInstalledApp(){
     return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 }
 
+/** @returns {boolean} true på iPhone og iPad, hvor appen installeres via Del > Føj til hjemmeskærm. */
 function isIOS(){
     return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 }
@@ -37,6 +39,7 @@ window.addEventListener('appinstalled', () => {
     notify('Appen er installeret. Du finder den på din hjemmeskærm eller i dine programmer.');
 });
 
+/** Installerer appen: browserens egen dialog, eller en vejledning på iPhone og iPad. */
 async function installApp(){
     if(deferredInstallPrompt){
         deferredInstallPrompt.prompt();
