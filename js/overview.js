@@ -81,10 +81,16 @@ function renderOverview(){
         budgetSum <= 0 ? 'Byg dit budget' : budgetTotal > 0 ? `${DK.format(budgetTotal - budgetSum)} kr. tilbage om måneden` : `${Math.round(groupSums.opsparing / budgetSum * 100)} % går til opsparing`,
         budgetTotal > 0 && budgetTotal - budgetSum < 0 ? 'negative' : '');
 
+    // Gennemsnitlig ændring i nettoformuen pr. måned det seneste år (eller siden første
+    // månedsstatus, hvis der er under et års data). Nødopsparingen står i Formue.
+    const sorted = nwHistory.slice().sort((a, b) => a.date.localeCompare(b.date));
+    const growth = monthlyTrend(sorted, 'value');
+    const since = growth === null ? null : sorted.find(h => Date.parse(sorted.at(-1).date) - Date.parse(h.date) <= 366 * DAY_MS);
+    const fullYear = since && Date.parse(sorted.at(-1).date) - Date.parse(since.date) >= 330 * DAY_MS;
+    setKpi('ovGrowth', growth === null ? '–' : formatSignedKr(Math.round(growth)),
+        growth === null ? 'Kræver to månedsstatusser' : fullYear ? 'i snit det seneste år' : `i snit siden ${shortDate(since.date)}`,
+        growth !== null && growth < 0 ? 'negative' : '');
     const months = emergencyFundMonths(figures.netCatKontanter, expenses);
-    setKpi('ovBuffer', months === null ? '–' : `${months.toFixed(1).replace('.', ',')} mdr.`,
-        months === null ? 'Kræver et budget og dine kontanter' : months >= 6 ? 'En solid buffer' : months >= 3 ? 'Inden for anbefalingen' : 'Under anbefalingen på 3 mdr.',
-        months !== null && months < 3 ? 'negative' : '');
 
     const latest = [nwHistory.at(-1)?.date, lastPt?.date].filter(Boolean).sort().at(-1);
     document.getElementById('pageSub').textContent = latest ? `Seneste månedsstatus ${formatDanishDate(latest)} · alle beløb i DKK` : 'Alle beløb i DKK';
@@ -186,7 +192,7 @@ function renderOverviewNext({hasNetWorth, budgetSum, months}){
     if(months !== null && months < 3) add('Din nødopsparing dækker under 3 måneders udgifter.', 'Se nødopsparing', () => showSection('formue'));
     if(!loadGoals().length && hasNetWorth) add('Sæt et mål for din formue eller dine aktier.', 'Sæt mål', () => { showSection('formue'); openGoalDialog(); });
     const lastBackup = parseInt(localStorage.getItem('lastBackupAt'), 10);
-    if(hasUserData() && (isNaN(lastBackup) || Date.now() - lastBackup > 30 * DAY_MS)) add('Tag en backup, så dine tal ikke går tabt.', 'Tag backup', () => exportAllData());
+    if(hasUserData() && (isNaN(lastBackup) || Date.now() - lastBackup > 30 * DAY_MS)) add('Tag en backup i indstillingerne, så dine tal ikke går tabt.', 'Åbn indstillinger', () => toggleSettings(true));
     document.getElementById('ovNext').replaceChildren(...(items.length
         ? items.slice(0, 4)
         : [el('li', {className:'ov-done'}, [el('span', {textContent:'Du er helt opdateret. Næste gang: gem din månedsstatus ved månedens udgang.'})])]));

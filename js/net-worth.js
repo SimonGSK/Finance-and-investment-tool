@@ -108,15 +108,24 @@ function computeLiveLiquidTotal(){
 /** Viser, når tallene kommer fra et datapunkt, med en knap til at hente dem ind i felterne. */
 function renderNetWorthSourceNote(figures){
     const note = document.getElementById('netWorthSourceNote');
-    note.hidden = !figures.fromSnapshot;
-    if(!figures.fromSnapshot) return;
+    let dismissed = false;
+    try{ dismissed = localStorage.getItem('sourceNoteDismissed') === '1'; } catch(e){}
+    note.hidden = !figures.fromSnapshot || dismissed;
+    if(note.hidden) return;
     note.replaceChildren(
-        `Felterne er tomme, så tallene er fra din seneste månedsstatus (${formatDanishDate(figures.date)}). Udfyld felterne for at se dagens tal. `,
-        el('button', {className:'link-btn', type:'button', textContent:'Hent tallene ind i felterne', onclick: () => {
-            NET_WORTH_CATEGORIES.forEach(cat => { document.getElementById(cat.id).value = figures[cat.id]; });
-            document.getElementById('netDebt').value = figures.debt;
-            updateNetWorth();
-            markSaved('netWorthSaveStatus');
+        el('span', {}, [
+            `Felterne er tomme, så tallene er fra din seneste månedsstatus (${formatDanishDate(figures.date)}). Udfyld felterne for at se dagens tal. `,
+            el('button', {className:'link-btn', type:'button', textContent:'Hent tallene ind i felterne', onclick: () => {
+                NET_WORTH_CATEGORIES.forEach(cat => { document.getElementById(cat.id).value = figures[cat.id]; });
+                document.getElementById('netDebt').value = figures.debt;
+                updateNetWorth();
+                markSaved('netWorthSaveStatus');
+            }})
+        ]),
+        // Lukkes for altid på denne enhed - forklaringen er kun nyttig første gang.
+        el('button', {className:'note-close', type:'button', textContent:'✕', attrs:{'aria-label':'Luk'}, onclick: () => {
+            try{ localStorage.setItem('sourceNoteDismissed', '1'); } catch(e){}
+            note.hidden = true;
         }})
     );
 }
