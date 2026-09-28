@@ -1423,6 +1423,9 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
 .page-actions{ display:none; gap:var(--s3); }
 body[data-section="overview"] #overviewActions{ display:flex; }
 .page-actions .btn + .btn{ margin-left:0; }
+/* Små, rolige knapper i sidehovedet - de er genveje, ikke sidens hovedhandling. */
+.page-actions .btn{ padding:7px 14px; font-size:13px; gap:6px; }
+.page-actions .btn-icon{ width:15px; height:15px; }
 
 /* ---- Kort, nøgletal og tekst ---- */
 .panel, .stat{ border-radius:var(--r-card); box-shadow:none; }
@@ -1515,7 +1518,7 @@ body[data-section="overview"] #overviewActions{ display:flex; }
     .panel-title{ font-size:21px; }
     .ov-next li{ flex-direction:column; align-items:flex-start; gap:var(--s2); }
     .ov-chart-wrap{ height:220px; }
-    .page-actions{ width:100%; }
+    .page-actions{ width:100%; gap:var(--s2); }
 }
 
 /* Nøgletal skaleres med skærmen, så de normalt står på én linje. Et beløb skjules
