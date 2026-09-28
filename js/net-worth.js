@@ -499,6 +499,13 @@ function renderNetWorthHistory(){
     document.getElementById('forecastToggle').setAttribute('aria-pressed', String(forecastOn));
     document.getElementById('forecastToggle').hidden = !projectTrend(history, 'value', 24);
     const projection = forecastOn ? projectTrend(history, 'value', 24) : null;
+    // Prikker kun, hvor der er plads til dem: på en telefon, eller når punkterne står tæt,
+    // klumper de sammen til en tyk streg. Et enkelt punkt vises altid, og peger/trykker man
+    // på linjen, vises punktet stadig.
+    const pointRadius = ctx => {
+        const n = ctx.dataset.data.length;
+        return n > 1 && (ctx.chart.width < 500 || ctx.chart.width / n < 12) ? 0 : 4;
+    };
     const chartData = {
         datasets:[
             {
@@ -508,7 +515,9 @@ function renderNetWorthHistory(){
                 backgroundColor:CHART_COLOR('--akt'),
                 themeVar:'--akt',
                 tension:0.15,
-                pointRadius:4,
+                pointRadius,
+                pointHoverRadius:4,
+                pointHitRadius:8,
                 borderWidth:2.5
             },
             {
@@ -518,7 +527,9 @@ function renderNetWorthHistory(){
                 backgroundColor:CHART_COLOR('--ask'),
                 themeVar:'--ask',
                 tension:0.15,
-                pointRadius:4,
+                pointRadius,
+                pointHoverRadius:4,
+                pointHitRadius:8,
                 borderWidth:2,
                 borderDash:[4,4]
             },
