@@ -503,13 +503,19 @@ test('påmindelse om månedsstatus: vises ved månedsskiftet og åbner skemaet p
     await expect(dialog).toBeHidden();
     await expect(banner).toBeHidden();
 
-    // "Ikke denne måned" huskes.
+    // "Ikke nu" skjuler den resten af dagen, men den står stadig under Næste skridt ...
     await page.evaluate(() => localStorage.setItem('netWorthHistory', JSON.stringify([{date:'2026-08-31', value:1000, liquid:1000, netCatKontanter:1000, netCatAktier:0, netCatPension:0, netCatFrivaerdi:0, netCatAndet:0, debt:0}])));
     await page.evaluate(() => localStorage.removeItem('portfolioHistory'));
     await page.reload();
-    await banner.getByRole('button', { name: 'Ikke denne måned' }).click();
+    await banner.getByRole('button', { name: 'Ikke nu' }).click();
+    await expect(banner).toBeHidden();
     await page.reload();
     await expect(banner).toBeHidden();
+    await expect(page.locator('#ovNext')).toContainText('Gem dine tal for september.');
+    // ... og kommer igen næste dag.
+    await page.clock.setFixedTime(new Date('2026-10-04T12:00:00'));
+    await page.reload();
+    await expect(banner).toBeVisible();
 });
 
 test('udskriv overblik: rapporten har formue, budget, lån og mål og er det eneste, der udskrives', async ({ page }) => {

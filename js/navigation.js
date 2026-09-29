@@ -222,7 +222,7 @@ function checkMonthlyReminder(){
     monthlyReminderState = monthlyStatusReminder({
         today: todayIso(),
         latestSaved: latest,
-        dismissedMonth: localStorage.getItem('monthlyReminderDismissed'),
+        snoozedOn: localStorage.getItem('monthlyReminderSnoozedOn'),
         enabled: localStorage.getItem('monthlyReminderOff') !== '1'
     });
     banner.hidden = !monthlyReminderState.due;
@@ -238,11 +238,12 @@ function openMonthlyStatusFromReminder(){
     openMonthlyStatus(monthlyReminderState?.suggestedDate);
 }
 
-/** "Ikke denne måned": skjuler påmindelsen, til næste måned slutter. */
-function dismissMonthlyReminder(){
-    if(monthlyReminderState?.month) localStorage.setItem('monthlyReminderDismissed', monthlyReminderState.month);
+/** "Ikke nu": skjuler påmindelsen resten af dagen; den kommer igen i morgen, til tallene er gemt. */
+function snoozeMonthlyReminder(){
+    localStorage.setItem('monthlyReminderSnoozedOn', todayIso());
     document.getElementById('monthlyReminderBanner').hidden = true;
-    notify('Du bliver mindet om det igen ved næste månedsskifte. Du kan slå påmindelsen fra i indstillingerne.');
+    if(monthlyReminderState) monthlyReminderState = {...monthlyReminderState, due: false, snoozed: true};
+    notify('Du bliver mindet om det igen i morgen. Du kan slå påmindelsen fra i indstillingerne.');
 }
 
 /** Udsætter påmindelsen en uge. */

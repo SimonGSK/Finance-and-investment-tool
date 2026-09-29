@@ -183,7 +183,7 @@ function renderOverviewSplit(figures){
 function renderOverviewNext({hasNetWorth, budgetSum, months}){
     const items = [];
     const add = (text, label, action) => items.push(el('li', {}, [el('span', {textContent: text}), el('button', {className:'btn btn-secondary btn-sm', type:'button', textContent: label, onclick: action})]));
-    if(typeof monthlyReminderState !== 'undefined' && monthlyReminderState?.due){
+    if(typeof monthlyReminderState !== 'undefined' && (monthlyReminderState?.due || monthlyReminderState?.snoozed)){
         const month = new Date(monthlyReminderState.month + '-15').toLocaleDateString('da-DK', {month:'long'});
         add(`Gem dine tal for ${month}.`, 'Gem status', () => openMonthlyStatusFromReminder());
     }

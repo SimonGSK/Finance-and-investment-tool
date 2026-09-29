@@ -770,23 +770,25 @@ describe('formuetal: felterne eller seneste datapunkt', () => {
 describe('påmindelse om månedsstatus', () => {
     const r = (today, latestSaved, extra = {}) => calc.monthlyStatusReminder({today, latestSaved, ...extra});
     test('de sidste tre dage af måneden, hvis der ikke er gemt noget i månedens sidste uge', () => {
-        assert.deepEqual(r('2026-09-28', '2026-08-31'), {due:true, month:'2026-09', suggestedDate:'2026-09-28'});
+        assert.deepEqual(r('2026-09-28', '2026-08-31'), {due:true, snoozed:false, month:'2026-09', suggestedDate:'2026-09-28'});
         assert.equal(r('2026-09-27', '2026-08-31').due, false);            // 30-dages måned: fra den 28.
         assert.equal(r('2026-09-29', '2026-09-24').due, false);            // gemt i sidste uge
         assert.equal(r('2026-09-29', '2026-09-23').due, true);
     });
     test('til og med den 10. i næste måned, med månedens sidste dag som forslag', () => {
-        assert.deepEqual(r('2026-10-04', '2026-08-31'), {due:true, month:'2026-09', suggestedDate:'2026-09-30'});
+        assert.deepEqual(r('2026-10-04', '2026-08-31'), {due:true, snoozed:false, month:'2026-09', suggestedDate:'2026-09-30'});
         assert.equal(r('2026-10-10', '2026-08-31').due, true);
         assert.equal(r('2026-10-11', '2026-08-31').due, false);
         assert.equal(r('2026-10-02', '2026-10-01').due, false);            // allerede gemt i starten af måneden
-        assert.deepEqual(r('2027-01-05', '2026-11-30'), {due:true, month:'2026-12', suggestedDate:'2026-12-31'});
+        assert.deepEqual(r('2027-01-05', '2026-11-30'), {due:true, snoozed:false, month:'2026-12', suggestedDate:'2026-12-31'});
         assert.equal(r('2028-02-27', '2028-01-31').due, true);             // skudår: 29 dage
     });
-    test('ikke for nye brugere, afviste måneder eller når den er slået fra', () => {
+    test('ikke for nye brugere eller når den er slået fra; "Ikke nu" udsætter den til i morgen', () => {
         assert.equal(r('2026-09-30', null).due, false);
-        assert.equal(r('2026-09-30', '2026-08-31', {dismissedMonth:'2026-09'}).due, false);
-        assert.equal(r('2026-10-03', '2026-08-31', {dismissedMonth:'2026-09'}).due, false);
+        const snoozed = r('2026-09-30', '2026-08-31', {snoozedOn:'2026-09-30'});
+        assert.deepEqual([snoozed.due, snoozed.snoozed], [false, true]);
+        assert.deepEqual([r('2026-10-01', '2026-08-31', {snoozedOn:'2026-09-30'}).due, r('2026-10-01', '2026-08-31', {snoozedOn:'2026-09-30'}).snoozed], [true, false]);
+        assert.equal(r('2026-10-01', '2026-10-01', {snoozedOn:'2026-09-30'}).snoozed, false);   // gemt: intet at udsætte
         assert.equal(r('2026-09-30', '2026-08-31', {enabled:false}).due, false);
     });
 });
