@@ -1467,13 +1467,15 @@ function backupReminderDue(s){
  * Skal siden minde om at gemme månedens tal? Påmindelsen gælder en måned fra
  * dens sidste tre dage til og med den 10. i næste måned, og kun hvis der ikke
  * er gemt noget i månedens sidste uge eller senere. Nye brugere (uden gemte
- * tal) og en måned, man har sagt "ikke denne måned" til, springes over.
- * @param {{today:string, latestSaved:string|null, dismissedMonth?:string|null, enabled?:boolean}} s ISO-datoer, dismissedMonth fx "2026-09"
- * @returns {{due:boolean, month:string|null, suggestedDate:string|null}} month = den måned, der mangler tal for;
+ * tal) springes over. Har man trykket "Ikke nu" i dag, venter påmindelsen til i morgen.
+ * @param {{today:string, latestSaved:string|null, snoozedOn?:string|null, enabled?:boolean}} s ISO-datoer;
+ *   snoozedOn = dagen, man sidst trykkede "Ikke nu"
+ * @returns {{due:boolean, snoozed:boolean, month:string|null, suggestedDate:string|null}} due = vis påmindelsen nu;
+ *   snoozed = den mangler, men er udsat til i morgen; month = den måned, der mangler tal for;
  *   suggestedDate = månedens sidste dag (eller i dag, hvis den ikke er nået endnu)
  */
-function monthlyStatusReminder({today, latestSaved, dismissedMonth = null, enabled = true}){
-    const none = {due:false, month:null, suggestedDate:null};
+function monthlyStatusReminder({today, latestSaved, snoozedOn = null, enabled = true}){
+    const none = {due:false, snoozed:false, month:null, suggestedDate:null};
     const [y, m, d] = today.split('-').map(Number);
     const daysIn = (yy, mm) => new Date(Date.UTC(yy, mm, 0)).getUTCDate();
     const pad = n => String(n).padStart(2, '0');
@@ -1488,8 +1490,10 @@ function monthlyStatusReminder({today, latestSaved, dismissedMonth = null, enabl
     const lastDay = `${month}-${pad(last)}`;
     const lastWeekStart = `${month}-${pad(last - 6)}`;
     const suggestedDate = lastDay < today ? lastDay : today;
-    if(!enabled || !latestSaved || dismissedMonth === month) return {due:false, month, suggestedDate};
-    return {due: latestSaved < lastWeekStart, month, suggestedDate};
+    if(!enabled || !latestSaved) return {due:false, snoozed:false, month, suggestedDate};
+    const pending = latestSaved < lastWeekStart;
+    const snoozed = pending && snoozedOn === today;
+    return {due: pending && !snoozed, snoozed, month, suggestedDate};
 }
 
 /**
