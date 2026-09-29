@@ -1141,9 +1141,14 @@ test('Månedsoverblik: vælg år og måned eller hele året, og se ændringen i 
     await page.locator('#monthPeriod').selectOption('0');
     await expect(page.locator('#monthNetWorth')).toHaveText('+112.000 kr.');
     await expect(page.locator('#monthRange')).toContainText('Hele 2026');
-    // Et år med kun én status: intet at sammenligne med.
+    // Et år med kun én status: intet at sammenligne med. Nyt år viser hele året.
     await page.locator('#monthYear').selectOption('2025');
+    await expect(page.locator('#monthPeriod')).toHaveValue('0');
     await expect(page.locator('#monthNetWorthSub')).toHaveText('Første månedsstatus – intet at sammenligne med');
+    await page.locator('#monthPeriod').selectOption('12');
+    await page.locator('#monthYear').selectOption('2026');
+    await expect(page.locator('#monthPeriod')).toHaveValue('0');
+    await expect(page.locator('#monthRange')).toContainText('Hele 2026');
 });
 
 test('Månedsoverblik uden data forklarer, hvordan man kommer i gang', async ({ page }) => {
