@@ -27,7 +27,7 @@
          TODO: Erstat ca-pub-XXXXXXXXXXXXXXXX med mit eget AdSense-udgiver-ID, og fjern kommentaren.
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
     -->
-    <link rel="stylesheet" href="styles.css?v=df3fab98">
+    <link rel="stylesheet" href="styles.css?v=828452ed">
 </head>
 <body>
 
@@ -114,6 +114,7 @@
                     <h1 id="pageTitle">Din økonomi</h1>
                     <p class="page-sub" id="pageSub"></p>
                 </div>
+                <button class="btn btn-secondary btn-sm customize-btn" id="customizeCardsBtn" type="button" onclick="openOverviewCardsDialog()" aria-haspopup="dialog"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Tilpas nøgletal</button>
             </header>
             <!-- Indstillinger åbner som en dialog (som Hjælp og Feedback), med sløret baggrund. -->
             <dialog class="dialog settings-dialog" id="settingsPanel" aria-labelledby="settingsTitle">
@@ -180,12 +181,9 @@
 
 
 <div id="section-overview">
-    <div class="stats overview-kpis">
-        <div class="stat"><div class="label">Nettoformue</div><div class="value akt" id="ovNetWorth">–</div><div class="sub" id="ovNetWorthSub"></div></div>
-        <div class="stat"><div class="label">Porteføljen</div><div class="value" id="ovPortfolio">–</div><div class="sub" id="ovPortfolioSub"></div></div>
-        <div class="stat"><div class="label">Budget pr. måned</div><div class="value" id="ovBudget">–</div><div class="sub" id="ovBudgetSub"></div></div>
-        <div class="stat"><div class="label">Stigning pr. måned</div><div class="value" id="ovGrowth">–</div><div class="sub" id="ovGrowthSub"></div></div>
-    </div>
+    <!-- På telefon og tablet står "Tilpas nøgletal" lige over kortene; på computer i sidehovedet. -->
+    <div class="ov-kpi-tools"><button class="btn btn-secondary btn-sm" type="button" onclick="openOverviewCardsDialog()" aria-haspopup="dialog"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Tilpas nøgletal</button></div>
+    <div class="stats overview-kpis" id="ovKpis"></div>
 
     <div class="overview-grid">
         <div class="ov-side ov-main">
@@ -1764,7 +1762,7 @@
             </details>
         </div>
     </template>
-    <script src="js/calc.js?v=1c96a74d"></script>
+    <script src="js/calc.js?v=d48d3790"></script>
     <script src="js/sync.js?v=90e83759"></script>
     <script src="js/shared.js?v=4c50757b"></script>
     <script src="js/ui.js?v=9e2dff05"></script>
@@ -1784,10 +1782,11 @@
     <script src="js/feedback.js?v=a2a4c48b"></script>
     <script src="js/pwa.js?v=70965acb"></script>
     <script src="js/report.js?v=d2fb079b"></script>
-    <script src="js/overview.js?v=35f7ead6"></script>
+    <script src="js/overview-cards.js?v=7dfd39dc"></script>
+    <script src="js/overview.js?v=9877a688"></script>
     <script src="js/budget.js?v=e88109ad"></script>
     <script src="js/net-worth.js?v=98080aa3"></script>
-    <script src="js/month-overview.js?v=8c66f458"></script>
+    <script src="js/month-overview.js?v=b6733293"></script>
     <script src="js/monthly-status.js?v=d28ccb96"></script>
     <script src="js/goals.js?v=aae96981"></script>
     <script src="js/theme.js?v=f47f37be"></script>

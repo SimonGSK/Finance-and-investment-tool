@@ -1619,6 +1619,46 @@ function periodOptions(history){
     return {years, months: Object.fromEntries(years.map(y => [y, [...months[y]].sort((a, b) => a - b)]))};
 }
 
+// ==== Nøgletal på Oversigt ====
+
+/**
+ * Porteføljetrackerens samlede tal, som på dens egne kort: værdien, hvad der er
+ * investeret (nettokøb), afkastet (værdi minus egne indskud) og udbytte i alt.
+ * @param {{date:string, portfolioValue:number, deposit?:number, traded?:number, dividend?:number}[]} history
+ * @param {number} [year] giver også årets udbytte
+ * @returns {{date:string, value:number, invested:number, deposits:number, gain:number,
+ *   gainPct:number|null, dividends:number, dividendsThisYear:number}|null} null uden datapunkter;
+ *   gainPct = afkast i forhold til indskuddene
+ */
+function portfolioTotals(history, year){
+    if(!history.length) return null;
+    const sorted = history.slice().sort((a, b) => a.date.localeCompare(b.date));
+    const sum = (key, rows = sorted) => rows.reduce((s, h) => s + (h[key] || 0), 0);
+    const last = sorted.at(-1), deposits = sum('deposit');
+    const gain = (last.portfolioValue || 0) - deposits;
+    return {date: last.date, value: last.portfolioValue || 0, invested: sum('traded'), deposits, gain,
+        gainPct: deposits > 0 ? gain / deposits : null, dividends: sum('dividend'),
+        dividendsThisYear: year ? sum('dividend', sorted.filter(h => h.date.startsWith(`${year}-`))) : 0};
+}
+
+/**
+ * Ændringen i et felt over det seneste år (højst 12 måneder tilbage fra seneste
+ * datapunkt; er der mindre data, fra det første).
+ * @param {{date:string}[]} history
+ * @param {string} key fx 'value'
+ * @returns {{from:string, to:string, change:number, pct:number|null, fullYear:boolean}|null} null ved under to punkter
+ */
+function recentChange(history, key){
+    const sorted = history.slice().sort((a, b) => a.date.localeCompare(b.date));
+    if(sorted.length < 2) return null;
+    const last = sorted.at(-1), lastTime = Date.parse(last.date);
+    const first = sorted.find(h => lastTime - Date.parse(h.date) <= 366 * DAY_MS);
+    if(first === last) return null;
+    const start = first[key] || 0, change = (last[key] || 0) - start;
+    return {from: first.date, to: last.date, change, pct: start !== 0 ? change / Math.abs(start) : null,
+        fullYear: lastTime - Date.parse(first.date) >= 330 * DAY_MS};
+}
+
 // ==== Mål i Formue ====
 
 /**
@@ -1665,7 +1705,7 @@ function goalProgress(g){
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
-        addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, projectTrend, projectionReaches,
+        addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, portfolioTotals, recentChange, projectTrend, projectionReaches,
         periodChanges, bestPeriods,
         planSync, applySync,
         CAPITAL_INCOME_LIMIT,

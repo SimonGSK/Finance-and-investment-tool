@@ -971,3 +971,26 @@ describe('Månedsoverblik', () => {
         assert.deepEqual(calc.periodOptions(h), {years:[2026, 2025], months:{2026:[1, 3], 2025:[11, 12]}});
     });
 });
+
+describe('nøgletal på Oversigt', () => {
+    test('porteføljens samlede tal svarer til trackerens kort', () => {
+        const pt = [
+            {date:'2025-12-31', portfolioValue:100000, deposit:100000, traded:95000, dividend:0},
+            {date:'2026-06-30', portfolioValue:130000, deposit:20000, traded:20000, dividend:800},
+            {date:'2026-09-30', portfolioValue:140000, deposit:0, traded:-5000, dividend:1200}
+        ];
+        const t = calc.portfolioTotals(pt, 2026);
+        assert.deepEqual([t.value, t.invested, t.deposits, t.gain, t.dividends, t.dividendsThisYear], [140000, 110000, 120000, 20000, 2000, 2000]);
+        assert.equal(Math.round(t.gainPct * 1000) / 10, 16.7);
+        assert.equal(calc.portfolioTotals([]), null);
+    });
+    test('ændringen det seneste år, eller siden første punkt med mindre data', () => {
+        const h = [{date:'2025-06-30', value:300000}, {date:'2025-09-30', value:400000}, {date:'2026-09-30', value:500000}];
+        const r = calc.recentChange(h, 'value');
+        assert.deepEqual([r.from, r.change, r.fullYear], ['2025-09-30', 100000, true]);
+        assert.equal(r.pct, 0.25);
+        const short = calc.recentChange(h.slice(0, 2), 'value');
+        assert.deepEqual([short.from, short.change, short.fullYear], ['2025-06-30', 100000, false]);
+        assert.equal(calc.recentChange(h.slice(0, 1), 'value'), null);
+    });
+});
