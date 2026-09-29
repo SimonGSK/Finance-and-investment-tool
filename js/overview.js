@@ -38,61 +38,23 @@ function syncPeriodSelect(history){
     return chosen;
 }
 
-/**
- * @param {string} id
- * @param {string} value
- * @param {string} sub
- * @param {'negative'|''} [cls] farver selve tallet rødt
- * @param {'up'|'down'|''} [subTone] farver undertekst grøn/rød (fx en ændring)
- */
-function setKpi(id, value, sub, cls, subTone){
-    const node = document.getElementById(id);
-    node.textContent = value;
-    node.classList.toggle('negative', cls === 'negative');
-    const subNode = document.getElementById(id + 'Sub');
-    subNode.textContent = sub || '';
-    subNode.classList.toggle('is-up', subTone === 'up');
-    subNode.classList.toggle('is-down', subTone === 'down');
-}
-
 /** Tegner hele oversigten. Kaldes, hver gang siden vises. */
 function renderOverview(){
     const figures = currentNetWorthFigures();
-    const nwHistory = readNetWorthHistory();
-    const ptHistory = readPortfolioHistory();
+    const nwHistory = readNetWorthHistory().slice().sort((a, b) => a.date.localeCompare(b.date));
+    const ptHistory = readPortfolioHistory().slice().sort((a, b) => a.date.localeCompare(b.date));
     const {sum: budgetSum, groupSums} = budgetSummary(getBudgetCategories(), loadBudgetItems());
     const budgetTotal = parseFloat(document.getElementById('budgetTotalInput').value) || 0;
     const expenses = budgetSum - groupSums.opsparing;
-
-    // ---- Nøgletal ----
     const hasNetWorth = figures.assets > 0 || figures.debt > 0 || nwHistory.length > 0;
-    const lastChange = periodChanges(nwHistory, h => h.value).at(-1);
-    setKpi('ovNetWorth', hasNetWorth ? DK.format(figures.value) + ' kr.' : '–',
-        !hasNetWorth ? 'Udfyld din formue' : lastChange ? `${formatSignedKr(lastChange.change)} siden ${shortDate(lastChange.from)}` : 'Gem en månedsstatus for at følge udviklingen',
-        figures.value < 0 ? 'negative' : '', lastChange ? (lastChange.change >= 0 ? 'up' : 'down') : '');
-
-    const lastPt = ptHistory.at(-1);
-    const thisYear = yearSummary(ptHistory, h => h.portfolioValue, h => h.deposit).find(y => y.year === new Date().getFullYear());
-    setKpi('ovPortfolio', lastPt ? DK.format(lastPt.portfolioValue) + ' kr.' : '–',
-        !lastPt ? 'Ingen datapunkter endnu' : thisYear ? `${formatSignedKr(thisYear.gain)} i afkast i år${thisYear.pct !== null ? ` (${thisYear.pct >= 0 ? '+' : '−'}${formatPct(Math.abs(thisYear.pct))})` : ''}` : `pr. ${shortDate(lastPt.date)}`,
-        '', thisYear ? (thisYear.gain >= 0 ? 'up' : 'down') : '');
-
-    setKpi('ovBudget', budgetSum > 0 ? DK.format(budgetSum) + ' kr.' : '–',
-        budgetSum <= 0 ? 'Byg dit budget' : budgetTotal > 0 ? `${DK.format(budgetTotal - budgetSum)} kr. tilbage` : `${Math.round(groupSums.opsparing / budgetSum * 100)} % går til opsparing`,
-        budgetTotal > 0 && budgetTotal - budgetSum < 0 ? 'negative' : '');
-
-    // Gennemsnitlig ændring i nettoformuen pr. måned det seneste år (eller siden første
-    // månedsstatus, hvis der er under et års data). Nødopsparingen står i Formue.
-    const sorted = nwHistory.slice().sort((a, b) => a.date.localeCompare(b.date));
-    const growth = monthlyTrend(sorted, 'value');
-    const since = growth === null ? null : sorted.find(h => Date.parse(sorted.at(-1).date) - Date.parse(h.date) <= 366 * DAY_MS);
-    const fullYear = since && Date.parse(sorted.at(-1).date) - Date.parse(since.date) >= 330 * DAY_MS;
-    setKpi('ovGrowth', growth === null ? '–' : formatSignedKr(Math.round(growth)),
-        growth === null ? 'Kræver to månedsstatusser' : fullYear ? 'i snit det seneste år' : `i snit siden ${shortDate(since.date)}`,
-        growth !== null && growth < 0 ? 'negative' : '');
     const months = emergencyFundMonths(figures.netCatKontanter, expenses);
+    const year = new Date().getFullYear();
 
-    const latest = [nwHistory.at(-1)?.date, lastPt?.date].filter(Boolean).sort().at(-1);
+    // ---- Nøgletal: de fire kort, man har valgt (overview-cards.js) ----
+    renderOverviewCards({figures, nwHistory, ptHistory, hasNetWorth, year, budgetSum, budgetTotal,
+        savings: groupSums.opsparing, bufferMonths: months, ptTotals: portfolioTotals(ptHistory, year)});
+
+    const latest = [nwHistory.at(-1)?.date, ptHistory.at(-1)?.date].filter(Boolean).sort().at(-1);
     document.getElementById('pageSub').textContent = latest ? `Seneste månedsstatus ${formatDanishDate(latest)} · alle beløb i DKK` : 'Alle beløb i DKK';
 
     renderOverviewChart(nwHistory);

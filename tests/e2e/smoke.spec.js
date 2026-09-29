@@ -1205,3 +1205,59 @@ test('i den installerede app står ikonvalget der stadig, med en forklaring på,
     await expect(dialog.getByRole('button', { name: 'Installér som app' })).toBeHidden();
     await expect(dialog.locator('#appIconHint')).toContainText('Åbn siden i Safari');
 });
+
+test('Oversigt: de fire nøgletal kan vælges, et valgt kort bytter plads, og valget huskes', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        const nw = (date, value, pension, debt) => ({date, value, liquid: value - pension + debt, netCatKontanter: 50000, netCatAktier: value - pension - 50000 + debt, netCatPension: pension, netCatFrivaerdi: 0, netCatAndet: 0, debt});
+        localStorage.setItem('netWorthHistory', JSON.stringify([nw('2025-09-30', 400000, 100000, 20000), nw('2026-08-31', 480000, 118000, 16000), nw('2026-09-30', 500000, 120000, 15000)]));
+        localStorage.setItem('portfolioHistory', JSON.stringify([
+            {date:'2025-09-30', portfolioValue:250000, stockValue:250000, cash:0, deposit:250000, traded:240000, dividend:0},
+            {date:'2026-09-30', portfolioValue:300000, stockValue:300000, cash:0, deposit:20000, traded:20000, dividend:1500}
+        ]));
+    });
+    await page.reload();
+    const labels = () => page.locator('#ovKpis .stat .label').allTextContents();
+    expect(await labels()).toEqual(['Nettoformue', 'Porteføljeværdi', 'Budget pr. måned', 'Stigning pr. måned']);
+
+    await page.getByRole('button', { name: 'Tilpas oversigt' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Tilpas oversigt' });
+    await dialog.getByLabel('Kort 2').selectOption('pension');
+    await dialog.getByLabel('Kort 3').selectOption('totalReturn');
+    await dialog.getByLabel('Kort 4').selectOption('debt');
+    await dialog.getByLabel('Kort 1').selectOption('debt');                 // allerede på kort 4: de bytter
+    await expect(dialog.getByLabel('Kort 4')).toHaveValue('netWorth');
+    await dialog.getByRole('button', { name: 'Gem' }).click();
+    expect(await labels()).toEqual(['Gæld', 'Pension', 'Totalt afkast', 'Nettoformue']);
+
+    // Tallene: gæld faldt (godt), pension steg, afkast = 300.000 - 270.000 kr. i indskud.
+    await expect(page.locator('#ovDebt')).toHaveText('15.000 kr.');
+    await expect(page.locator('#ovDebtSub')).toHaveText('−1.000 kr. siden 31. aug.');
+    await expect(page.locator('#ovDebtSub')).toHaveClass(/is-up/);
+    await expect(page.locator('#ovPension')).toHaveText('120.000 kr.');
+    await expect(page.locator('#ovTotalReturn')).toHaveText('+30.000 kr.');
+    await expect(page.locator('#ovTotalReturnSub')).toHaveText('+11,1 % af dine indskud');
+
+    await page.reload();
+    expect(await labels()).toEqual(['Gæld', 'Pension', 'Totalt afkast', 'Nettoformue']);
+    // Knappen står kun på Oversigt.
+    await page.evaluate(() => showSection('budget'));
+    await expect(page.getByRole('button', { name: 'Tilpas oversigt' })).toBeHidden();
+    await page.evaluate(() => showSection('overview'));
+    await page.getByRole('button', { name: 'Tilpas oversigt' }).click();
+    await dialog.getByRole('button', { name: 'Standard' }).click();
+    expect(await labels()).toEqual(['Nettoformue', 'Porteføljeværdi', 'Budget pr. måned', 'Stigning pr. måned']);
+});
+
+test('Oversigt: hvert kort i vælgeren kan vises uden fejl, også uden data', async ({ page }) => {
+    const errors = collectErrors(page);
+    await page.goto('/index.html');
+    const ids = await page.evaluate(() => Object.keys(OVERVIEW_CARDS));
+    for(let i = 0; i < ids.length; i += 4){
+        const four = ids.slice(i, i + 4);
+        while(four.length < 4) four.push(ids.find(id => !four.includes(id)));
+        await page.evaluate(four => { localStorage.setItem('overviewCards', JSON.stringify(four)); renderOverview(); }, four);
+        expect(await page.locator('#ovKpis .stat').count()).toBe(4);
+    }
+    expect(errors).toEqual([]);
+});

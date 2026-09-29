@@ -27,11 +27,6 @@ function monthsBetween(fromIso, toIso){
     return (Number(toIso.slice(0, 4)) - Number(fromIso.slice(0, 4))) * 12 + Number(toIso.slice(5, 7)) - Number(fromIso.slice(5, 7));
 }
 
-/** Procent med fortegn, fx "+2,4 %". */
-function formatSignedPct(p){
-    return (p > 0 ? '+' : p < 0 ? '−' : '') + formatPct(Math.abs(p));
-}
-
 /**
  * Fylder års- og periodevælgeren ud fra de måneder, der har en månedsstatus.
  * @param {{years:number[], months:Object<number, number[]>}} options fra periodOptions

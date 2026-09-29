@@ -1767,3 +1767,15 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
     .month-table td.change-cell .month-sub{ color:inherit; }
     .month-sub{ display:block; margin-top:2px; font-family:var(--font-mono); font-size:11.5px; color:var(--subtle); white-space:nowrap; }
 }
+
+/* ---- Tilpas nøgletal: knappen står i sidehovedet på Oversigt ---- */
+.customize-btn{ display:none; }
+body[data-section="overview"] .customize-btn{ display:inline-flex; }
+.customize-btn .btn-icon, .ov-kpi-tools .btn-icon{ width:15px; height:15px; }
+.ov-kpi-tools{ display:none; }
+@media (max-width:1250px){
+    /* I én kolonne står grafen øverst, så knappen flyttes ned lige over kortene. */
+    body[data-section="overview"] .customize-btn{ display:none; }
+    #section-overview .ov-kpi-tools{ display:flex; justify-content:flex-end; order:1; margin:0 0 calc(-1 * var(--s2)); }
+}
+.cards-chooser .field{ margin-bottom:var(--s3); }
