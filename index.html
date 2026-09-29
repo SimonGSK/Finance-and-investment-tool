@@ -141,7 +141,7 @@
                 <p class="backup-status" id="syncStatus"></p>
                 <button class="btn btn-secondary" style="width:100%; margin-top:8px;" type="button" onclick="printOverview()">Udskriv overblik (PDF)</button>
 
-                <div id="installAppRow" hidden>
+                <div id="installAppRow">
                     <div class="eyebrow" style="margin-top:18px; margin-bottom:10px;">App</div>
                     <p class="explainer" style="margin:0 0 10px 0; padding-top:0; border-top:none;">Læg siden på din hjemmeskærm eller computer som en app. Den åbner i sit eget vindue og virker også uden internet.</p>
                     <fieldset class="icon-choice">
@@ -150,8 +150,8 @@
                         <label class="icon-option"><input type="radio" name="appIcon" value="black" onchange="setAppIcon(this.value)"><img src="icons/black/icon-192.png" alt="" width="48" height="48">Sort</label>
                         <label class="icon-option"><input type="radio" name="appIcon" value="white" onchange="setAppIcon(this.value)"><img src="icons/white/icon-192.png" alt="" width="48" height="48">Hvid</label>
                     </fieldset>
-                    <p class="icon-choice-hint">Ikonet følger med, når du lægger appen på hjemmeskærmen. Vil du skifte senere, så fjern appen og læg den på igen.</p>
-                    <button class="btn btn-secondary" style="width:100%;" type="button" onclick="installApp()">Installér som app</button>
+                    <p class="icon-choice-hint" id="appIconHint">Ikonet følger med, når du lægger appen på hjemmeskærmen. Vil du skifte senere, så fjern appen og læg den på igen.</p>
+                    <button class="btn btn-secondary" style="width:100%;" type="button" id="installAppBtn" onclick="installApp()">Installér som app</button>
                 </div>
                     </div>
                 </div>
@@ -1781,9 +1781,9 @@
     <script src="js/debt-payoff.js?v=d92e8193"></script>
     <script src="js/navigation.js?v=31a09daa"></script>
     <script src="js/feedback.js?v=a2a4c48b"></script>
-    <script src="js/pwa.js?v=951b5704"></script>
+    <script src="js/pwa.js?v=70965acb"></script>
     <script src="js/report.js?v=d2fb079b"></script>
-    <script src="js/overview.js?v=a45c4609"></script>
+    <script src="js/overview.js?v=41b21aa9"></script>
     <script src="js/budget.js?v=e88109ad"></script>
     <script src="js/net-worth.js?v=98080aa3"></script>
     <script src="js/month-overview.js?v=a6967271"></script>

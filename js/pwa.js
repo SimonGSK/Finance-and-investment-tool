@@ -61,10 +61,18 @@ function isIOS(){
     return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 }
 
-/** Viser knappen, når appen kan installeres og ikke allerede kører som app. */
+/**
+ * App-afsnittet i indstillingerne står der altid, så man kan se og vælge app-ikonet.
+ * Installér-knappen vises kun, hvor browseren kan installere appen, og ikke i den
+ * installerede app. Dér forklares i stedet, hvordan man skifter ikon: det kan ikke
+ * ske inde fra appen, kun ved at lægge den på hjemmeskærmen igen.
+ */
 function updateInstallButton(){
-    const row = document.getElementById('installAppRow');
-    row.hidden = isInstalledApp() || !(deferredInstallPrompt || isIOS());
+    const installed = isInstalledApp();
+    document.getElementById('installAppBtn').hidden = installed || !(deferredInstallPrompt || isIOS());
+    document.getElementById('appIconHint').textContent = installed
+        ? 'Du bruger den installerede app, og dens ikon kan ikke skifte herfra. Åbn siden i Safari (eller din browser), vælg farven dér, fjern appen fra hjemmeskærmen og læg den på igen.'
+        : 'Ikonet følger med, når du lægger appen på hjemmeskærmen. Vil du skifte senere, så fjern appen og læg den på igen.';
 }
 
 window.addEventListener('beforeinstallprompt', e => {
