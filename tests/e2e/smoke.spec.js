@@ -1141,9 +1141,14 @@ test('Månedsoverblik: vælg år og måned eller hele året, og se ændringen i 
     await page.locator('#monthPeriod').selectOption('0');
     await expect(page.locator('#monthNetWorth')).toHaveText('+112.000 kr.');
     await expect(page.locator('#monthRange')).toContainText('Hele 2026');
-    // Et år med kun én status: intet at sammenligne med.
+    // Et år med kun én status: intet at sammenligne med. Nyt år viser hele året.
     await page.locator('#monthYear').selectOption('2025');
+    await expect(page.locator('#monthPeriod')).toHaveValue('0');
     await expect(page.locator('#monthNetWorthSub')).toHaveText('Første månedsstatus – intet at sammenligne med');
+    await page.locator('#monthPeriod').selectOption('12');
+    await page.locator('#monthYear').selectOption('2026');
+    await expect(page.locator('#monthPeriod')).toHaveValue('0');
+    await expect(page.locator('#monthRange')).toContainText('Hele 2026');
 });
 
 test('Månedsoverblik uden data forklarer, hvordan man kommer i gang', async ({ page }) => {
@@ -1151,6 +1156,21 @@ test('Månedsoverblik uden data forklarer, hvordan man kommer i gang', async ({ 
     await page.evaluate(() => showSection('month'));
     await expect(page.locator('#monthEmpty')).toBeVisible();
     await expect(page.locator('#monthContent')).toBeHidden();
+});
+
+test('Månedsoverblik har sin egen + Månedsstatus-knap, og siden opdateres, når statussen er gemt', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => showSection('month'));
+    await expect(page.locator('#monthEmpty')).toBeVisible();
+    await page.locator('#section-month').getByRole('button', { name: '+ Månedsstatus' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Månedsstatus' });
+    await dialog.getByLabel('Dato').fill('2026-09-30');
+    await dialog.getByLabel('Bank- og opsparingskonti', { exact: true }).fill('50000');
+    await dialog.getByRole('button', { name: 'Gem i begge' }).click();
+    await expect(dialog).toBeHidden();
+    await expect(page.locator('#monthEmpty')).toBeHidden();
+    await expect(page.locator('#monthContent')).toBeVisible();
+    await expect(page.locator('#monthNetWorth')).toHaveText('50.000 kr.');
 });
 
 test('Månedsoverblik markerer en måned, der dækker flere måneder, når der mangler en månedsstatus', async ({ page }) => {

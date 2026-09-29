@@ -52,10 +52,9 @@ function syncMonthSelects(options){
     );
 }
 
-/** Nyt år valgt: vis årets seneste måned. */
+/** Nyt år valgt: vis hele året. */
 function setMonthYear(year){
-    const options = periodOptions(readNetWorthHistory());
-    monthSelection = {year, month: options.months[year]?.at(-1) ?? null};
+    monthSelection = {year, month: null};
     renderMonthOverview();
 }
 
