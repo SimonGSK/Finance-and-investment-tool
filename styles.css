@@ -1740,6 +1740,7 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
 /* ---- Månedsoverblik ---- */
 .month-controls{ display:flex; flex-wrap:wrap; gap:var(--s4); align-items:flex-end; max-width:1600px; margin-bottom:var(--s5); }
 .month-controls .field{ margin:0; flex:1 1 180px; max-width:260px; }
+.month-status-btn{ margin-left:auto; }
 .month-content{ display:flex; flex-direction:column; gap:var(--s5); max-width:1600px; }
 .month-content .stats{ margin:0; }
 .month-range{ margin:0; font-size:15px; color:var(--muted); }
@@ -1756,6 +1757,7 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
 @media (max-width:640px){
     .month-controls{ gap:var(--s3); margin-bottom:var(--s3); }
     .month-controls .field{ flex-basis:120px; }
+    .month-status-btn{ flex:1 1 100%; justify-content:center; }
     .month-content{ gap:var(--s3); }
     .month-range{ font-size:13.5px; }
     /* Kategori, ændring og procent; start og slut står under navnet. */

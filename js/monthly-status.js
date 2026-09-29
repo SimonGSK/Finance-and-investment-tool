@@ -265,6 +265,7 @@ async function saveMonthlyStatus(date, values){
     }
     renderNetWorthHistory();
     renderPortfolioHistory();
+    if(typeof renderMonthOverview === 'function') renderMonthOverview();
     notify(`Månedsstatus for ${formatDanishDate(date)} er gemt i Formue og Porteføljetracker.`);
     return true;
 }
