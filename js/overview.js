@@ -167,13 +167,11 @@ function renderOverviewSplit(figures){
         box.replaceChildren(el('p', {className:'empty-note'}, ['Udfyld dine aktiver for at se fordelingen. ', el('button', {className:'link-btn', type:'button', textContent:'Gå til Formue', onclick: () => showSection('formue')})]));
         return;
     }
-    // Nuancer af hovedfarven: den største søjle stærkest. Kontanter får en fast
-    // nuance mellem de to stærkeste, så de skiller sig lidt ud uden at blive blegest.
+    // Nuancer af hovedfarven: den største søjle stærkest.
     const base = getCSSVar('--akt');
-    let rank = 0;
-    box.replaceChildren(...rows.map(r => {
+    box.replaceChildren(...rows.map((r, i) => {
         const pct = r.value / figures.assets;
-        const color = hexToRgba(base, r.label.startsWith('Kontanter') ? 0.91 : Math.max(0.45, 1 - rank++ * 0.18));
+        const color = hexToRgba(base, Math.max(0.45, 1 - i * 0.18));
         return el('div', {className:'ov-split-row'}, [
             el('div', {className:'ov-row'}, [el('span', {textContent: r.label}), el('strong', {textContent: `${Math.round(pct * 100)} %`})]),
             el('div', {className:'progress-track'}, [el('div', {className:'progress-fill', attrs:{style:`width:${pct * 100}%; background:${color}`}})])
