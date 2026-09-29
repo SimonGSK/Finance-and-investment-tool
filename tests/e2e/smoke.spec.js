@@ -9,7 +9,7 @@ const VIEWS = [
     ['tools', 'showTool', 1], ['tools', 'showTool', 2], ['tools', 'showTool', 3],
     ['tools', 'showTool', 4], ['tools', 'showTool', 5], ['tools', 'showTool', 6],
     ['housing', 'showHousingTool', 1], ['housing', 'showHousingTool', 2], ['housing', 'showHousingTool', 3],
-    ['budget', null, null], ['formue', null, null], ['overview', null, null]
+    ['budget', null, null], ['formue', null, null], ['month', null, null], ['overview', null, null]
 ];
 
 async function openView(page, [section, fn, n]){
@@ -1106,6 +1106,68 @@ test('påmindelsen om månedsstatus holder sig inden for skærmen @mobil', async
     const overflow = await banner.evaluate(b => [...b.querySelectorAll('button')].map(x => x.getBoundingClientRect().right - b.getBoundingClientRect().right));
     expect(Math.max(...overflow)).toBeLessThanOrEqual(1);
     expect(box.x + box.width).toBeLessThanOrEqual(await page.evaluate(() => window.innerWidth) + 1);
+});
+
+test('Månedsoverblik: vælg år og måned eller hele året, og se ændringen i hver kategori og porteføljens afkast', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        const nw = (date, value, pension, aktier, debt) => ({date, value, liquid: value - pension + debt, netCatKontanter: 50000, netCatAktier: aktier, netCatPension: pension, netCatFrivaerdi: 0, netCatAndet: 0, debt});
+        localStorage.setItem('netWorthHistory', JSON.stringify([nw('2025-12-31', 300000, 100000, 170000, 20000), nw('2026-08-31', 400000, 120000, 250000, 20000), nw('2026-09-30', 412000, 123000, 257000, 18000)]));
+        localStorage.setItem('portfolioHistory', JSON.stringify([
+            {date:'2026-08-31', portfolioValue:250000, stockValue:240000, cash:10000, deposit:0},
+            {date:'2026-09-30', portfolioValue:257000, stockValue:250000, cash:7000, deposit:3000, dividend:400}
+        ]));
+    });
+    await page.reload();
+    await page.getByRole('button', { name: 'Månedsoverblik', exact: true }).click();
+    await expect(page.locator('#pageTitle')).toHaveText('Måned for måned');
+
+    // Standard: den seneste måned (september 2026, sammenlignet med august).
+    await expect(page.locator('#monthYear')).toHaveValue('2026');
+    await expect(page.locator('#monthPeriod')).toHaveValue('9');
+    await expect(page.locator('#monthRange')).toContainText('fra din månedsstatus 31. aug. 2026 til 30. sep. 2026');
+    await expect(page.locator('#monthNetWorth')).toHaveText('+12.000 kr.');
+    await expect(page.locator('#monthNetWorth')).toHaveClass(/positive/);       // stigninger er grønne
+    await expect(page.locator('.month-span')).toHaveCount(0);                  // august → september er én måned
+    await expect(page.locator('#monthPension')).toHaveText('+3.000 kr.');
+    await expect(page.locator('#monthPensionSub')).toContainText('120.000 → 123.000 kr. (+2,5 %)');
+    await expect(page.locator('#monthReturn')).toHaveText('+4.000 kr.');        // 7.000 kr. mere, heraf 3.000 kr. indskud
+    await expect(page.locator('#monthReturnSub')).toContainText('+3.000 kr. indskudt');
+    const debtRow = page.locator('#monthTableBody tr', { hasText: 'Gæld' });
+    await expect(debtRow.locator('td').nth(3)).toContainText('−2.000 kr.');
+    await expect(debtRow.locator('td').nth(3)).toHaveClass(/is-up/);           // mindre gæld er godt
+
+    // Hele året: fra 31. dec. 2025.
+    await page.locator('#monthPeriod').selectOption('0');
+    await expect(page.locator('#monthNetWorth')).toHaveText('+112.000 kr.');
+    await expect(page.locator('#monthRange')).toContainText('Hele 2026');
+    // Et år med kun én status: intet at sammenligne med.
+    await page.locator('#monthYear').selectOption('2025');
+    await expect(page.locator('#monthNetWorthSub')).toHaveText('Første månedsstatus – intet at sammenligne med');
+});
+
+test('Månedsoverblik uden data forklarer, hvordan man kommer i gang', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => showSection('month'));
+    await expect(page.locator('#monthEmpty')).toBeVisible();
+    await expect(page.locator('#monthContent')).toBeHidden();
+});
+
+test('Månedsoverblik markerer en måned, der dækker flere måneder, når der mangler en månedsstatus', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        const nw = (date, value) => ({date, value, liquid: value, netCatKontanter: value, netCatAktier: 0, netCatPension: 0, netCatFrivaerdi: 0, netCatAndet: 0, debt: 0});
+        localStorage.setItem('netWorthHistory', JSON.stringify([nw('2026-07-31', 410000), nw('2026-09-30', 400000)]));
+    });
+    await page.reload();
+    await page.evaluate(() => showSection('month'));
+    await expect(page.locator('#monthRange .month-span')).toHaveText('2 mdr.');
+    await expect(page.locator('#monthNetWorthSub')).toContainText('· 2 mdr.');
+    await expect(page.locator('#monthNetWorth')).toHaveText('−10.000 kr.');
+    await expect(page.locator('#monthNetWorth')).toHaveClass(/negative/);       // fald er røde
+    // Hele året dækker hele perioden og får intet mærke.
+    await page.locator('#monthPeriod').selectOption('0');
+    await expect(page.locator('#monthRange .month-span')).toHaveCount(0);
 });
 
 test('i den installerede app står ikonvalget der stadig, med en forklaring på, hvordan man skifter', async ({ page }) => {

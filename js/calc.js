@@ -1539,6 +1539,82 @@ function portfolioCashFlows(history){
     return flows;
 }
 
+// ==== Månedsoverblik ====
+
+/**
+ * Start- og slutpunkt for en måned eller et helt år i en historik. Slut er periodens
+ * seneste punkt, start det seneste punkt før perioden. Er der intet før perioden,
+ * regnes et helt år fra årets første punkt, mens en måned så intet startpunkt har.
+ * @param {{date:string}[]} history
+ * @param {number} year fx 2026
+ * @param {number|null} month 1-12, eller null for hele året
+ * @returns {{start:object|null, end:object}|null} null, hvis perioden intet punkt har
+ */
+function periodBounds(history, year, month){
+    const sorted = history.slice().sort((a, b) => a.date.localeCompare(b.date));
+    const prefix = month ? `${year}-${String(month).padStart(2, '0')}` : `${year}-`;
+    const inPeriod = sorted.filter(h => h.date.startsWith(prefix));
+    if(!inPeriod.length) return null;
+    const end = inPeriod.at(-1);
+    const before = sorted.filter(h => h.date < (month ? `${prefix}-01` : `${year}-01-01`)).at(-1);
+    if(before) return {start: before, end};
+    return {start: !month && inPeriod[0] !== end ? inPeriod[0] : null, end};
+}
+
+/**
+ * Ændringen i hvert felt fra periodens start til slut.
+ * @param {{start:object|null, end:object}} bounds fra periodBounds
+ * @param {string[]} keys fx ['value', 'netCatPension']
+ * @returns {{key:string, start:number|null, end:number, change:number|null, pct:number|null}[]}
+ *   pct i forhold til startværdien (null uden startpunkt eller med en start på 0)
+ */
+function periodRows(bounds, keys){
+    return keys.map(key => {
+        const end = bounds.end[key] || 0;
+        if(!bounds.start) return {key, start: null, end, change: null, pct: null};
+        const start = bounds.start[key] || 0, change = end - start;
+        return {key, start, end, change, pct: start !== 0 ? change / Math.abs(start) : null};
+    });
+}
+
+/**
+ * Porteføljens afkast i en måned eller et år: ændringen i værdi minus egne indskud
+ * (indskud gør porteføljen større uden at være afkast). Procenten regnes af
+ * startværdien plus halvdelen af indskuddene, som har været der halvdelen af tiden.
+ * @param {{date:string, portfolioValue:number, deposit?:number, dividend?:number}[]} history
+ * @param {number} year
+ * @param {number|null} month
+ * @returns {{startDate:string, endDate:string, start:number, end:number, change:number,
+ *   flows:number, dividends:number, gain:number, pct:number|null}|null} null uden to punkter
+ */
+function periodReturn(history, year, month){
+    const bounds = periodBounds(history, year, month);
+    if(!bounds || !bounds.start) return null;
+    const {start: s, end: e} = bounds;
+    const between = history.filter(h => h.date > s.date && h.date <= e.date);
+    const flows = between.reduce((sum, h) => sum + (h.deposit || 0), 0);
+    const dividends = between.reduce((sum, h) => sum + (h.dividend || 0), 0);
+    const start = s.portfolioValue || 0, end = e.portfolioValue || 0;
+    const gain = end - start - flows, base = start + flows / 2;
+    return {startDate: s.date, endDate: e.date, start, end, change: end - start, flows, dividends, gain,
+        pct: base > 0 ? gain / base : null};
+}
+
+/**
+ * De år og måneder, der har mindst ét punkt - til vælgerne i Månedsoverblik.
+ * @param {{date:string}[]} history
+ * @returns {{years:number[], months:Object<number, number[]>}} nyeste år først, måneder i rækkefølge
+ */
+function periodOptions(history){
+    const months = {};
+    history.forEach(h => {
+        const y = Number(h.date.slice(0, 4)), m = Number(h.date.slice(5, 7));
+        (months[y] ||= new Set()).add(m);
+    });
+    const years = Object.keys(months).map(Number).sort((a, b) => b - a);
+    return {years, months: Object.fromEntries(years.map(y => [y, [...months[y]].sort((a, b) => a - b)]))};
+}
+
 // ==== Mål i Formue ====
 
 /**
@@ -1585,7 +1661,7 @@ function goalProgress(g){
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
-        addMonthsIso, periodChoices, yearSummary, projectTrend, projectionReaches,
+        addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, projectTrend, projectionReaches,
         periodChanges, bestPeriods,
         planSync, applySync,
         CAPITAL_INCOME_LIMIT,

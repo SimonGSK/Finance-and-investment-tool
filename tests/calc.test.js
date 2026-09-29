@@ -927,3 +927,45 @@ describe('år for år og prognose', () => {
         assert.equal(calc.projectTrend([{date:'2026-09-30', value:1}], 'value'), null);
     });
 });
+
+describe('Månedsoverblik', () => {
+    const h = [
+        {date:'2025-11-30', value:400000, netCatPension:100000, debt:20000},
+        {date:'2025-12-31', value:410000, netCatPension:102000, debt:19000},
+        {date:'2026-01-31', value:420000, netCatPension:104000, debt:18000},
+        {date:'2026-03-31', value:445000, netCatPension:108000, debt:16000}
+    ];
+    test('en måned regnes fra den forrige månedsstatus, også hen over et hul', () => {
+        const b = calc.periodBounds(h, 2026, 3);
+        assert.deepEqual([b.start.date, b.end.date], ['2026-01-31', '2026-03-31']);
+        const [nw, pension, debt] = calc.periodRows(b, ['value', 'netCatPension', 'debt']);
+        assert.deepEqual([nw.start, nw.end, nw.change], [420000, 445000, 25000]);
+        assert.equal(Math.round(pension.pct * 1000) / 10, 3.8);           // 4.000 / 104.000
+        assert.equal(debt.change, -2000);
+    });
+    test('et helt år regnes fra sidste status før 1. januar, ellers fra årets første', () => {
+        assert.deepEqual(Object.values(calc.periodBounds(h, 2026, null)).map(x => x.date), ['2025-12-31', '2026-03-31']);
+        assert.deepEqual(Object.values(calc.periodBounds(h, 2025, null)).map(x => x.date), ['2025-11-30', '2025-12-31']);
+    });
+    test('første måned har intet at sammenligne med, og en måned uden status giver null', () => {
+        const b = calc.periodBounds(h, 2025, 11);
+        assert.equal(b.start, null);
+        assert.deepEqual(calc.periodRows(b, ['value'])[0], {key:'value', start:null, end:400000, change:null, pct:null});
+        assert.equal(calc.periodBounds(h, 2026, 2), null);
+    });
+    test('porteføljens afkast trækker egne indskud fra og tæller udbytte', () => {
+        const pt = [
+            {date:'2026-07-31', portfolioValue:100000, deposit:100000},
+            {date:'2026-08-31', portfolioValue:106000, deposit:3000, dividend:500},
+            {date:'2026-09-30', portfolioValue:110000, deposit:2000}
+        ];
+        const r = calc.periodReturn(pt, 2026, 9);
+        assert.deepEqual([r.change, r.flows, r.gain, r.dividends], [4000, 2000, 2000, 0]);
+        const y = calc.periodReturn(pt, 2026, null);
+        assert.deepEqual([y.startDate, y.flows, y.gain, y.dividends], ['2026-07-31', 5000, 5000, 500]);
+        assert.equal(calc.periodReturn(pt, 2026, 7), null);
+    });
+    test('vælgerne: år med nyeste først og årets måneder i rækkefølge', () => {
+        assert.deepEqual(calc.periodOptions(h), {years:[2026, 2025], months:{2026:[1, 3], 2025:[11, 12]}});
+    });
+});

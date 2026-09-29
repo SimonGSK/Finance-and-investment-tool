@@ -38,6 +38,10 @@ The start page: net worth (with the change since the last status), the portfolio
 
 Build a monthly budget from itemised posts in 15 categories plus your own, each edited in its own dialog. Posts can be monthly, quarterly, half-yearly or yearly. Shows the split across needs / wants / savings against the 50/30/20 rule, and projects yearly savings. **Udskriv overblik** prints (or saves as PDF) a one-page overview of net worth, budget, loans, goals and portfolio; **Download budget** saves a CSV (opens in Excel or Numbers) with every post per month and per year plus a 50/30/20 summary, e.g. to show a financial advisor.
 
+### Månedsoverblik
+
+Pick a year and a month (or the whole year) and see how each part of your net worth changed in that period: net worth, liquid wealth, pension, cash, shares, home equity, other and debt, each with start, end, change in kr. and %. A month is compared with the previous monthly status (the text says which dates, so a gap is visible); a whole year runs from the last status before 1 January. The portfolio's return for the same period comes from the portfolio tracker, with your own deposits taken out.
+
 ### Formue
 
 Enter your assets (cash, stocks, pension, home equity, other) and debt to get your net worth and liquid wealth. Save a dated *månedsstatus* to build a history (rows can be edited or deleted; each row shows the change since the previous one, and *Bedste perioder* lists the three biggest increases; *År for år* sums up each calendar year, and a dashed forecast on the history chart (can be switched off) continues the last 12 months' pace two years ahead, with when the next milestone is reached — all calculated on the fly, not stored) — or use **Månedsstatus** to save the same date into both the Formue history and the portfolio tracker in one go — see how the composition has changed over time, set your own goals (with the monthly saving needed to reach them by a deadline and whether your pace over the last year is enough), track milestones, and compare your net worth to other Danes of exactly your age using CEPOS's per-age table (2024 data at 2026 levels, pension counted after 40% tax, as CEPOS does). The full table opens with your age highlighted. Plus a light-hearted "your wealth equals *n* bananas / iPhones / Porsches" comparison. The emergency-fund bar runs from 0 to 9 months with the recommended 3–6 months marked, and *Tilføj datapunkt* folds away like in the portfolio tracker.
@@ -124,6 +128,7 @@ js/monthly-status.js    Månedsstatus (saves to both trackers)
 js/share.js             Shareable calculator links
 js/budget.js            Budget
 js/net-worth.js         Formue: net worth, history, milestones, comparison
+js/month-overview.js    Månedsoverblik: change per category for a month or a year
 js/goals.js             Formue goals
 js/navigation.js        Menu, sections and tools, page header, settings dialog, reminders
 js/sync.js              Backup file and syncing between devices (merge, not overwrite)

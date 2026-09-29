@@ -79,6 +79,7 @@ function showSection(name){
     document.querySelectorAll('.nav-group').forEach(g => g.setAttribute('aria-expanded', String(g.dataset.section === name)));
     resizeChartsIn(document.getElementById('section-' + name));
     if(name === 'overview' && typeof renderOverview === 'function') renderOverview();
+    if(name === 'month' && typeof renderMonthOverview === 'function') renderMonthOverview();
     updatePageHeader();
     closeNav();
     window.scrollTo({top: 0});
@@ -88,6 +89,7 @@ function showSection(name){
 const PAGE_TITLES = {
     overview: ['Oversigt', 'Din økonomi'],
     budget: ['Budget', 'Dit budget'],
+    month: ['Månedsoverblik', 'Måned for måned'],
     formue: ['Formue', 'Din formue']
 };
 
