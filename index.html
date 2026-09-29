@@ -27,7 +27,7 @@
          TODO: Erstat ca-pub-XXXXXXXXXXXXXXXX med mit eget AdSense-udgiver-ID, og fjern kommentaren.
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
     -->
-    <link rel="stylesheet" href="styles.css?v=aeb781f8">
+    <link rel="stylesheet" href="styles.css?v=d6b25bac">
 </head>
 <body>
 
@@ -110,12 +110,8 @@
             <header class="page-header">
                 <div class="page-heading">
                     <div class="page-eyebrow" id="pageEyebrow">Oversigt</div>
-                    <h1 id="pageTitle">Din økonomi i overblik</h1>
+                    <h1 id="pageTitle">Din økonomi</h1>
                     <p class="page-sub" id="pageSub"></p>
-                </div>
-                <div class="page-actions" id="overviewActions">
-                    <button class="btn btn-secondary" type="button" onclick="printOverview()"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 9V4h10v5"/><rect x="4" y="9" width="16" height="8" rx="2"/><path d="M7 14h10v6H7z"/></svg>Udskriv overblik</button>
-                    <button class="btn btn-primary" type="button" onclick="exportAllData()"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>Tag backup</button>
                 </div>
             </header>
             <!-- Indstillinger åbner som en dialog (som Hjælp og Feedback), med sløret baggrund. -->
@@ -187,7 +183,7 @@
         <div class="stat"><div class="label">Nettoformue</div><div class="value akt" id="ovNetWorth">–</div><div class="sub" id="ovNetWorthSub"></div></div>
         <div class="stat"><div class="label">Porteføljen</div><div class="value" id="ovPortfolio">–</div><div class="sub" id="ovPortfolioSub"></div></div>
         <div class="stat"><div class="label">Budget pr. måned</div><div class="value" id="ovBudget">–</div><div class="sub" id="ovBudgetSub"></div></div>
-        <div class="stat"><div class="label">Nødopsparing</div><div class="value" id="ovBuffer">–</div><div class="sub" id="ovBufferSub"></div></div>
+        <div class="stat"><div class="label">Stigning pr. måned</div><div class="value" id="ovGrowth">–</div><div class="sub" id="ovGrowthSub"></div></div>
     </div>
 
     <div class="overview-grid">
@@ -1313,7 +1309,6 @@
             <p class="tool-intro">Byg dit budget op fra bunden, eller indtast et samlet beløb og fordel det ud på kategorier for at se, hvor meget der er tilbage.</p>
         </details>
         <div class="tool-actions">
-            <button class="btn btn-secondary btn-sm" type="button" onclick="printOverview()">Udskriv overblik</button>
             <button class="btn btn-secondary btn-sm" type="button" onclick="downloadBudget()">Download budget</button>
         </div>
     </div>
@@ -1747,13 +1742,13 @@
     <script src="js/loan-capacity.js?v=b4f645bb"></script>
     <script src="js/buy-vs-rent.js?v=75764a5e"></script>
     <script src="js/debt-payoff.js?v=d92e8193"></script>
-    <script src="js/navigation.js?v=bcca5516"></script>
+    <script src="js/navigation.js?v=a37c0995"></script>
     <script src="js/feedback.js?v=a2a4c48b"></script>
     <script src="js/pwa.js?v=951b5704"></script>
     <script src="js/report.js?v=d2fb079b"></script>
-    <script src="js/overview.js?v=3cb52351"></script>
+    <script src="js/overview.js?v=a45c4609"></script>
     <script src="js/budget.js?v=e88109ad"></script>
-    <script src="js/net-worth.js?v=e5c7d686"></script>
+    <script src="js/net-worth.js?v=98080aa3"></script>
     <script src="js/monthly-status.js?v=1d9d637f"></script>
     <script src="js/goals.js?v=aae96981"></script>
     <script src="js/theme.js?v=f47f37be"></script>

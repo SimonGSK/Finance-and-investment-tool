@@ -522,8 +522,9 @@ test('udskriv overblik: rapporten har formue, budget, lån og mål og er det ene
         localStorage.setItem('netWorthGoals', JSON.stringify([{id:'g1', name:'Første million', metric:'value', target:1000000, deadline:null}]));
     });
     await page.reload();
-    await page.getByRole('button', { name: 'Budget', exact: true }).click();
-    await page.getByRole('button', { name: 'Udskriv overblik' }).click();
+    // Udskriv overblik ligger kun i indstillingerne.
+    await page.locator('#settingsBtn').click();
+    await page.getByRole('dialog', { name: 'Indstillinger' }).getByRole('button', { name: 'Udskriv overblik (PDF)' }).click();
     expect(await page.evaluate(() => window.__printed)).toBe(true);
     const report = page.locator('#printReport');
     await expect(report.locator('h2')).toHaveText(['Formue', 'Budget', 'Lån', 'Mål']);
@@ -843,7 +844,7 @@ test('prognosen kan slås fra og til, og valget huskes', async ({ page }) => {
 
 test('oversigt og sidemenu: nøgletal fra de andre dele, sidehovedet følger med, og telefonmenuen åbner og lukker', async ({ page }) => {
     await page.goto('/index.html');
-    await expect(page.locator('#pageTitle')).toHaveText('Din økonomi i overblik');
+    await expect(page.locator('#pageTitle')).toHaveText('Din økonomi');
     await expect(page.locator('#ovNext')).toContainText('Skriv dine aktiver og din gæld ind.');
 
     await page.evaluate(() => {
@@ -855,7 +856,9 @@ test('oversigt og sidemenu: nøgletal fra de andre dele, sidehovedet følger med
     await expect(page.locator('#ovNetWorth')).toHaveText('520.000 kr.');
     await expect(page.locator('#ovNetWorthSub')).toContainText('+20.000 kr. siden 31. jul.');
     await expect(page.locator('#ovBudget')).toHaveText('12.000 kr.');
-    await expect(page.locator('#ovBuffer')).toHaveText('26,0 mdr.');     // 260.000 kr. kontanter / 10.000 kr. udgifter
+    // 20.000 kr. på en måned (31 dage = 1,018 mdr.) = 19.639 kr. i snit pr. måned.
+    await expect(page.locator('#ovGrowth')).toHaveText('+19.639 kr.');
+    await expect(page.locator('#ovGrowthSub')).toHaveText('i snit siden 31. jul.');
     expect(await page.evaluate(() => overviewChart.data.datasets[0].data)).toEqual([500000, 520000]);
     await expect(page.locator('#ovSplit .ov-split-row')).toHaveCount(2);
 
@@ -864,7 +867,7 @@ test('oversigt og sidemenu: nøgletal fra de andre dele, sidehovedet følger med
     const group = page.getByRole('button', { name: 'Investering', exact: true });
     await group.click();
     await expect(group).toHaveAttribute('aria-expanded', 'true');
-    await expect(page.locator('#pageTitle')).toHaveText('Din økonomi i overblik');
+    await expect(page.locator('#pageTitle')).toHaveText('Din økonomi');
     await page.getByRole('button', { name: 'ASK vs. Aktiedepot', exact: true }).click();
     await expect(page.locator('#pageEyebrow')).toHaveText('Investering');
     await expect(page.locator('#pageTitle')).toHaveText('ASK vs. Aktiedepot');
@@ -998,13 +1001,17 @@ test('oversigten beholder sit layout, når man går til en anden side og tilbage
     expect(after.chartFirst).toBe(width <= 1250);
 });
 
-test('porteføljetrackeren: "Tilføj datapunkt" foldes sammen og huskes, og oversigtens genveje står kun på Oversigt', async ({ page }) => {
+test('porteføljetrackeren: "Tilføj datapunkt" foldes sammen og huskes, og backup og udskrift står kun i indstillingerne', async ({ page }) => {
     await page.goto('/index.html');
-    await expect(page.getByRole('button', { name: 'Udskriv overblik' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Tag backup' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Udskriv overblik/ })).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Tag backup' })).toHaveCount(0);
+    await page.locator('#settingsBtn').click();
+    const settings = page.getByRole('dialog', { name: 'Indstillinger' });
+    await expect(settings.getByRole('button', { name: 'Gem mine data' })).toBeVisible();
+    await expect(settings.getByRole('button', { name: 'Udskriv overblik (PDF)' })).toBeVisible();
+    await page.keyboard.press('Escape');
 
     await page.evaluate(() => showTool(4));
-    await expect(page.getByRole('button', { name: 'Tag backup' })).toBeHidden();
     const toggle = page.locator('#ptEntryPanel .panel-toggle');
     await expect(toggle).toHaveText('Tilføj datapunkt');
     await expect(page.locator('#ptStockValue')).toBeVisible();
@@ -1072,4 +1079,33 @@ test('app-ikonet kan vælges i grøn, sort eller hvid, før appen lægges på hj
     await expect(dialog.getByRole('radio', { name: 'Sort' })).toBeChecked();
     await dialog.getByText('Hvid', { exact: true }).click();
     expect(await links()).toEqual(['icons/white/apple-touch-icon.png', 'manifest-white.webmanifest']);
+});
+
+test('Formue: infoboksen om tallene fra seneste månedsstatus kan lukkes, og den forbliver lukket', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        localStorage.setItem('netWorthHistory', JSON.stringify([{date:'2026-08-31', value:100000, liquid:100000, netCatKontanter:100000, netCatAktier:0, netCatPension:0, netCatFrivaerdi:0, netCatAndet:0, debt:0}]));
+    });
+    await page.reload();
+    await page.evaluate(() => showSection('formue'));
+    const note = page.locator('#netWorthSourceNote');
+    await expect(note).toBeVisible();
+    await note.getByRole('button', { name: 'Luk' }).click();
+    await expect(note).toBeHidden();
+    await page.reload();
+    await page.evaluate(() => showSection('formue'));
+    await expect(note).toBeHidden();
+});
+
+test('påmindelsen om månedsstatus holder sig inden for skærmen @mobil', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        document.getElementById('monthlyReminderText').textContent = 'Tid til månedsstatus: gem dine tal for september, så din formue- og porteføljehistorik bliver ved med at være komplet.';
+        document.getElementById('monthlyReminderBanner').hidden = false;
+    });
+    const banner = page.locator('#monthlyReminderBanner');
+    const box = await banner.boundingBox();
+    const overflow = await banner.evaluate(b => [...b.querySelectorAll('button')].map(x => x.getBoundingClientRect().right - b.getBoundingClientRect().right));
+    expect(Math.max(...overflow)).toBeLessThanOrEqual(1);
+    expect(box.x + box.width).toBeLessThanOrEqual(await page.evaluate(() => window.innerWidth) + 1);
 });

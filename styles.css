@@ -1433,12 +1433,6 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
 .page-header h1{ margin:0; font-size:44px; font-weight:600; letter-spacing:-0.02em; line-height:1.1; }
 .page-sub{ margin:var(--s2) 0 0; font-size:17px; color:var(--muted); }
 .page-sub:empty{ display:none; }
-.page-actions{ display:none; gap:var(--s3); }
-body[data-section="overview"] #overviewActions{ display:flex; }
-.page-actions .btn + .btn{ margin-left:0; }
-/* Små, rolige knapper i sidehovedet - de er genveje, ikke sidens hovedhandling. */
-.page-actions .btn{ padding:7px 14px; font-size:13px; gap:6px; }
-.page-actions .btn-icon{ width:15px; height:15px; }
 
 /* ---- Kort, nøgletal og tekst ---- */
 .panel, .stat{ border-radius:var(--r-card); box-shadow:none; }
@@ -1531,7 +1525,6 @@ body[data-section="overview"] #overviewActions{ display:flex; }
     .panel-title{ font-size:21px; }
     .ov-next li{ flex-direction:column; align-items:flex-start; gap:var(--s2); }
     .ov-chart-wrap{ height:220px; }
-    .page-actions{ width:100%; gap:var(--s2); }
 }
 
 /* Nøgletal skaleres med skærmen, så de normalt står på én linje. Et beløb skjules
@@ -1729,3 +1722,17 @@ body[data-section="overview"] #overviewActions{ display:flex; }
 .icon-option:has(input:checked){ border-color:var(--akt); background:var(--akt-soft); color:var(--text); font-weight:600; }
 .icon-option:has(input:focus-visible){ outline:2px solid var(--akt); outline-offset:2px; }
 .icon-choice-hint{ margin:0 0 var(--s3); font-size:12.5px; line-height:1.5; color:var(--muted); }
+
+/* ---- Påmindelser (månedsstatus, backup): knapperne går ned under teksten, når der ikke er plads ---- */
+.intro-banner:has(> .banner-actions){ flex-wrap:wrap; }
+.intro-banner:has(> .banner-actions) > span{ flex:1 1 260px; min-width:0; }
+.intro-banner .banner-actions{ flex-shrink:1; }
+
+/* ---- Infoboksen i Formue kan lukkes ---- */
+.notice.source-note{ display:flex; align-items:flex-start; gap:var(--s3); }
+.notice.source-note > span{ flex:1; min-width:0; }
+.note-close{
+    flex-shrink:0; background:transparent; border:none; padding:2px 6px; margin:-2px -6px 0 0;
+    border-radius:var(--r-sm); color:var(--subtle); font-size:15px; line-height:1; cursor:pointer;
+}
+.note-close:hover{ color:var(--text); background:var(--panel-hover); }

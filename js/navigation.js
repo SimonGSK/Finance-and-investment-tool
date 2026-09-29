@@ -86,7 +86,7 @@ function showSection(name){
 
 // Overskriften øverst på siden: område som lille tekst, værktøj eller side som titel.
 const PAGE_TITLES = {
-    overview: ['Oversigt', 'Din økonomi i overblik'],
+    overview: ['Oversigt', 'Din økonomi'],
     budget: ['Budget', 'Dit budget'],
     formue: ['Formue', 'Din formue']
 };
