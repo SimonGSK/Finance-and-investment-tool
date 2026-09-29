@@ -1129,12 +1129,14 @@ test('Månedsoverblik: vælg år og måned eller hele året, og se ændringen i 
     await expect(page.locator('#monthPeriod')).toHaveValue('9');
     await expect(page.locator('#monthRange')).toContainText('fra din månedsstatus 31. aug. 2026 til 30. sep. 2026');
     await expect(page.locator('#monthNetWorth')).toHaveText('+12.000 kr.');
+    await expect(page.locator('#monthNetWorth')).toHaveClass(/positive/);       // stigninger er grønne
+    await expect(page.locator('.month-span')).toHaveCount(0);                  // august → september er én måned
     await expect(page.locator('#monthPension')).toHaveText('+3.000 kr.');
     await expect(page.locator('#monthPensionSub')).toContainText('120.000 → 123.000 kr. (+2,5 %)');
     await expect(page.locator('#monthReturn')).toHaveText('+4.000 kr.');        // 7.000 kr. mere, heraf 3.000 kr. indskud
     await expect(page.locator('#monthReturnSub')).toContainText('+3.000 kr. indskudt');
     const debtRow = page.locator('#monthTableBody tr', { hasText: 'Gæld' });
-    await expect(debtRow.locator('td').nth(3)).toHaveText('−2.000 kr.');
+    await expect(debtRow.locator('td').nth(3)).toContainText('−2.000 kr.');
     await expect(debtRow.locator('td').nth(3)).toHaveClass(/is-up/);           // mindre gæld er godt
 
     // Hele året: fra 31. dec. 2025.
@@ -1151,4 +1153,21 @@ test('Månedsoverblik uden data forklarer, hvordan man kommer i gang', async ({ 
     await page.evaluate(() => showSection('month'));
     await expect(page.locator('#monthEmpty')).toBeVisible();
     await expect(page.locator('#monthContent')).toBeHidden();
+});
+
+test('Månedsoverblik markerer en måned, der dækker flere måneder, når der mangler en månedsstatus', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        const nw = (date, value) => ({date, value, liquid: value, netCatKontanter: value, netCatAktier: 0, netCatPension: 0, netCatFrivaerdi: 0, netCatAndet: 0, debt: 0});
+        localStorage.setItem('netWorthHistory', JSON.stringify([nw('2026-07-31', 410000), nw('2026-09-30', 400000)]));
+    });
+    await page.reload();
+    await page.evaluate(() => showSection('month'));
+    await expect(page.locator('#monthRange .month-span')).toHaveText('2 mdr.');
+    await expect(page.locator('#monthNetWorthSub')).toContainText('· 2 mdr.');
+    await expect(page.locator('#monthNetWorth')).toHaveText('−10.000 kr.');
+    await expect(page.locator('#monthNetWorth')).toHaveClass(/negative/);       // fald er røde
+    // Hele året dækker hele perioden og får intet mærke.
+    await page.locator('#monthPeriod').selectOption('0');
+    await expect(page.locator('#monthRange .month-span')).toHaveCount(0);
 });

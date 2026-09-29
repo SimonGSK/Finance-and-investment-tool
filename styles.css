@@ -1744,6 +1744,13 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
 .month-content .stats{ margin:0; }
 .month-range{ margin:0; font-size:15px; color:var(--muted); }
 .month-content .data-table-wrap{ max-height:none; }
+/* Stigninger grønne, fald røde (for gæld omvendt, se month-overview.js). */
+#section-month .stat .value.positive{ color:var(--pos); }
+.month-span{
+    display:inline-block; margin-left:2px; padding:1px 9px; border-radius:var(--r-pill);
+    font-size:12.5px; font-weight:600; color:var(--text); background:var(--panel-sunken); border:1px solid var(--border-strong);
+    white-space:nowrap;
+}
 .month-table td:first-child{ color:var(--text); font-family:var(--font-sans); font-size:13.5px; white-space:normal; }
 .month-sub{ display:none; }
 @media (max-width:640px){
@@ -1753,6 +1760,8 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
     .month-range{ font-size:13.5px; }
     /* Kategori, ændring og procent; start og slut står under navnet. */
     .month-table th:nth-child(2), .month-table td:nth-child(2),
-    .month-table th:nth-child(3), .month-table td:nth-child(3){ display:none; }
+    .month-table th:nth-child(3), .month-table td:nth-child(3),
+    .month-table th:nth-child(5), .month-table td:nth-child(5){ display:none; }
+    .month-table td.change-cell .month-sub{ color:inherit; }
     .month-sub{ display:block; margin-top:2px; font-family:var(--font-mono); font-size:11.5px; color:var(--subtle); white-space:nowrap; }
 }

@@ -22,6 +22,11 @@ function periodLabel(year, month){
     return month ? new Date(year, month - 1, 15).toLocaleDateString('da-DK', {month:'long', year:'numeric'}) : `hele ${year}`;
 }
 
+/** Hele måneder mellem to ISO-datoer, fx 31. jul. → 30. sep. = 2. */
+function monthsBetween(fromIso, toIso){
+    return (Number(toIso.slice(0, 4)) - Number(fromIso.slice(0, 4))) * 12 + Number(toIso.slice(5, 7)) - Number(fromIso.slice(5, 7));
+}
+
 /** Procent med fortegn, fx "+2,4 %". */
 function formatSignedPct(p){
     return (p > 0 ? '+' : p < 0 ? '−' : '') + formatPct(Math.abs(p));
@@ -66,17 +71,27 @@ function setMonthPeriod(month){
  * @param {{start:number|null, end:number, change:number|null, pct:number|null}|null} row
  * @param {boolean} [inverse] en stigning er dårlig (gæld)
  */
-function setMonthKpi(id, row, inverse = false){
+function setMonthKpi(id, row, inverse = false, span = ''){
     const valueEl = document.getElementById(id), subEl = document.getElementById(id + 'Sub');
     if(!row || row.change === null){
         valueEl.textContent = row ? DK.format(row.end) + ' kr.' : '–';
-        valueEl.classList.remove('negative');
+        setChangeTone(valueEl, 0);
         subEl.textContent = row ? 'Første månedsstatus – intet at sammenligne med' : '';
         return;
     }
     valueEl.textContent = formatSignedKr(row.change);
-    valueEl.classList.toggle('negative', inverse ? row.change > 0 : row.change < 0);
-    subEl.textContent = `${DK.format(row.start)} → ${DK.format(row.end)} kr.${row.pct !== null ? ` (${formatSignedPct(row.pct)})` : ''}`;
+    setChangeTone(valueEl, inverse ? -row.change : row.change);
+    subEl.textContent = `${DK.format(row.start)} → ${DK.format(row.end)} kr.${row.pct !== null ? ` (${formatSignedPct(row.pct)})` : ''}${span}`;
+}
+
+/**
+ * Farver et tal grønt, når det er godt (en stigning), og rødt, når det er skidt.
+ * @param {HTMLElement} node
+ * @param {number} good positiv = godt, negativ = skidt, 0 = neutral (gæld vendes af kalderen)
+ */
+function setChangeTone(node, good){
+    node.classList.toggle('positive', good > 0);
+    node.classList.toggle('negative', good < 0);
 }
 
 /** Tegner hele Månedsoverblik for det valgte år og den valgte periode. */
@@ -94,19 +109,25 @@ function renderMonthOverview(){
     const rows = periodRows(bounds, MONTH_ROWS.map(r => r.key));
     const byKey = Object.fromEntries(rows.map(r => [r.key, r]));
 
-    document.getElementById('monthRange').textContent = bounds.start
-        ? `${periodLabel(year, month).replace(/^./, c => c.toUpperCase())}: fra din månedsstatus ${formatDanishDate(bounds.start.date)} til ${formatDanishDate(bounds.end.date)}.`
-        : `${periodLabel(year, month).replace(/^./, c => c.toUpperCase())}: din første månedsstatus (${formatDanishDate(bounds.end.date)}), så der er intet at sammenligne med endnu.`;
+    // Mangler der månedsstatusser, dækker en måned mere end én måned: det markeres ("2 mdr.").
+    const spanMonths = month && bounds.start ? monthsBetween(bounds.start.date, bounds.end.date) : 1;
+    const spanText = spanMonths > 1 ? ` · ${spanMonths} mdr.` : '';
+    const title = periodLabel(year, month).replace(/^./, c => c.toUpperCase());
+    document.getElementById('monthRange').replaceChildren(bounds.start
+        ? `${title}: fra din månedsstatus ${formatDanishDate(bounds.start.date)} til ${formatDanishDate(bounds.end.date)}.`
+        : `${title}: din første månedsstatus (${formatDanishDate(bounds.end.date)}), så der er intet at sammenligne med endnu.`,
+        ...(spanMonths > 1 ? [' ', el('span', {className:'month-span', textContent:`${spanMonths} mdr.`,
+            attrs:{title:`Der er ingen månedsstatus imellem, så ændringen dækker ${spanMonths} måneder.`}})] : []));
 
-    setMonthKpi('monthNetWorth', byKey.value);
-    setMonthKpi('monthPension', byKey.netCatPension);
-    setMonthKpi('monthLiquid', byKey.liquid);
+    setMonthKpi('monthNetWorth', byKey.value, false, spanText);
+    setMonthKpi('monthPension', byKey.netCatPension, false, spanText);
+    setMonthKpi('monthLiquid', byKey.liquid, false, spanText);
 
     // Porteføljens afkast i samme periode (fra Porteføljetrackeren).
     const ret = periodReturn(readPortfolioHistory(), year, month);
     const retEl = document.getElementById('monthReturn'), retSub = document.getElementById('monthReturnSub');
     retEl.textContent = ret ? formatSignedKr(ret.gain) : '–';
-    retEl.classList.toggle('negative', !!ret && ret.gain < 0);
+    setChangeTone(retEl, ret ? ret.gain : 0);
     retSub.textContent = ret
         ? `${ret.pct !== null ? formatSignedPct(ret.pct) + ' · ' : ''}${ret.flows ? `${formatSignedKr(ret.flows)} indskudt` : 'ingen indskud'}${ret.dividends ? ` · ${DK.format(ret.dividends)} kr. i udbytte` : ''}`
         : 'Kræver to datapunkter i Porteføljetrackeren';
@@ -116,11 +137,11 @@ function renderMonthOverview(){
         const r = byKey[key];
         const tone = r.change === null || r.change === 0 ? '' : (r.change > 0) !== !!inverse ? 'is-up' : 'is-down';
         // På telefonen er Start og Slut skjult; de står så med små tal under navnet.
-        const fromTo = r.start === null ? `${DK.format(r.end)} kr.` : `${DK.format(r.start)} → ${DK.format(r.end)} kr.`;
+        const fromTo = r.start === null ? DK.format(r.end) : `${DK.format(r.start)} → ${DK.format(r.end)}`;
         return `<tr><td>${label}<span class="month-sub">${fromTo}</span></td>`
             + `<td data-csv="${r.start ?? ''}">${r.start === null ? '–' : DK.format(r.start) + ' kr.'}</td>`
             + `<td data-csv="${r.end}">${DK.format(r.end)} kr.</td>`
-            + `<td class="change-cell ${tone}" data-csv="${r.change ?? ''}">${r.change === null ? '–' : formatSignedKr(r.change)}</td>`
+            + `<td class="change-cell ${tone}" data-csv="${r.change ?? ''}">${r.change === null ? '–' : formatSignedKr(r.change)}${r.pct === null ? '' : `<span class="month-sub">${formatSignedPct(r.pct)}</span>`}</td>`
             + `<td class="change-cell ${tone}">${r.pct === null ? '–' : formatSignedPct(r.pct)}</td></tr>`;
     }).join('');
 }
