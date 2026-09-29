@@ -1062,8 +1062,7 @@ test('app-ikonet kan vælges i grøn, sort eller hvid, før appen lægges på hj
     const links = () => page.evaluate(() => [document.querySelector('link[rel="apple-touch-icon"]').getAttribute('href'), document.querySelector('link[rel="manifest"]').getAttribute('href')]);
     expect(await links()).toEqual(['icons/apple-touch-icon.png', 'manifest.webmanifest']);
 
-    // Valget står under "App" i indstillingerne (vises, hvor appen kan installeres).
-    await page.evaluate(() => { document.getElementById('installAppRow').hidden = false; });
+    // Valget står altid under "App" i indstillingerne.
     await page.locator('#settingsBtn').click();
     const dialog = page.getByRole('dialog', { name: 'Indstillinger' });
     await expect(dialog.getByRole('radio', { name: 'Grøn' })).toBeChecked();
@@ -1074,7 +1073,6 @@ test('app-ikonet kan vælges i grøn, sort eller hvid, før appen lægges på hj
     // Valget huskes.
     await page.reload();
     expect(await links()).toEqual(['icons/black/apple-touch-icon.png', 'manifest-black.webmanifest']);
-    await page.evaluate(() => { document.getElementById('installAppRow').hidden = false; });
     await page.locator('#settingsBtn').click();
     await expect(dialog.getByRole('radio', { name: 'Sort' })).toBeChecked();
     await dialog.getByText('Hvid', { exact: true }).click();
@@ -1108,4 +1106,14 @@ test('påmindelsen om månedsstatus holder sig inden for skærmen @mobil', async
     const overflow = await banner.evaluate(b => [...b.querySelectorAll('button')].map(x => x.getBoundingClientRect().right - b.getBoundingClientRect().right));
     expect(Math.max(...overflow)).toBeLessThanOrEqual(1);
     expect(box.x + box.width).toBeLessThanOrEqual(await page.evaluate(() => window.innerWidth) + 1);
+});
+
+test('i den installerede app står ikonvalget der stadig, med en forklaring på, hvordan man skifter', async ({ page }) => {
+    await page.addInitScript(() => { Object.defineProperty(navigator, 'standalone', { value: true }); });
+    await page.goto('/index.html');
+    await page.locator('#settingsBtn').click();
+    const dialog = page.getByRole('dialog', { name: 'Indstillinger' });
+    await expect(dialog.getByRole('radio', { name: 'Grøn' })).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Installér som app' })).toBeHidden();
+    await expect(dialog.locator('#appIconHint')).toContainText('Åbn siden i Safari');
 });

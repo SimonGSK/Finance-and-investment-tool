@@ -78,7 +78,7 @@ function renderOverview(){
         '', thisYear ? (thisYear.gain >= 0 ? 'up' : 'down') : '');
 
     setKpi('ovBudget', budgetSum > 0 ? DK.format(budgetSum) + ' kr.' : '–',
-        budgetSum <= 0 ? 'Byg dit budget' : budgetTotal > 0 ? `${DK.format(budgetTotal - budgetSum)} kr. tilbage om måneden` : `${Math.round(groupSums.opsparing / budgetSum * 100)} % går til opsparing`,
+        budgetSum <= 0 ? 'Byg dit budget' : budgetTotal > 0 ? `${DK.format(budgetTotal - budgetSum)} kr. tilbage` : `${Math.round(groupSums.opsparing / budgetSum * 100)} % går til opsparing`,
         budgetTotal > 0 && budgetTotal - budgetSum < 0 ? 'negative' : '');
 
     // Gennemsnitlig ændring i nettoformuen pr. måned det seneste år (eller siden første
