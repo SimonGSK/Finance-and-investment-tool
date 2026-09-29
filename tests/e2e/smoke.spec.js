@@ -1220,8 +1220,8 @@ test('Oversigt: de fire nøgletal kan vælges, et valgt kort bytter plads, og va
     const labels = () => page.locator('#ovKpis .stat .label').allTextContents();
     expect(await labels()).toEqual(['Nettoformue', 'Porteføljeværdi', 'Budget pr. måned', 'Stigning pr. måned']);
 
-    await page.getByRole('button', { name: 'Tilpas nøgletal' }).click();
-    const dialog = page.getByRole('dialog', { name: 'Tilpas nøgletal' });
+    await page.getByRole('button', { name: 'Tilpas oversigt' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Tilpas oversigt' });
     await dialog.getByLabel('Kort 2').selectOption('pension');
     await dialog.getByLabel('Kort 3').selectOption('totalReturn');
     await dialog.getByLabel('Kort 4').selectOption('debt');
@@ -1242,9 +1242,9 @@ test('Oversigt: de fire nøgletal kan vælges, et valgt kort bytter plads, og va
     expect(await labels()).toEqual(['Gæld', 'Pension', 'Totalt afkast', 'Nettoformue']);
     // Knappen står kun på Oversigt.
     await page.evaluate(() => showSection('budget'));
-    await expect(page.getByRole('button', { name: 'Tilpas nøgletal' })).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Tilpas oversigt' })).toBeHidden();
     await page.evaluate(() => showSection('overview'));
-    await page.getByRole('button', { name: 'Tilpas nøgletal' }).click();
+    await page.getByRole('button', { name: 'Tilpas oversigt' }).click();
     await dialog.getByRole('button', { name: 'Standard' }).click();
     expect(await labels()).toEqual(['Nettoformue', 'Porteføljeværdi', 'Budget pr. måned', 'Stigning pr. måned']);
 });

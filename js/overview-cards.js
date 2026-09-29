@@ -158,7 +158,7 @@ function openOverviewCardsDialog(){
         renderOverview();
     };
     openDialog({
-        title: 'Tilpas nøgletal',
+        title: 'Tilpas oversigt',
         content: el('div', {className: 'cards-chooser'}, [
             el('p', {className: 'dialog-hint', textContent: 'Vælg de fire tal øverst på Oversigt. Tallene hentes fra Formue, Månedsoverblik, Porteføljetrackeren og Budget.'}),
             ...selects.map((s, i) => fieldEl(`Kort ${i + 1}`, s))
