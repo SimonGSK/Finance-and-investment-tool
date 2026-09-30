@@ -2,14 +2,17 @@
 
 ## Commit messages
 
-Start every commit subject with one of these prefixes:
+Follow Conventional Commits: start every commit subject with a type prefix.
+These four are the usual choices:
 
 - `feat:` a new feature or visible addition
 - `fix:` a bug fix, or correcting something that looks or behaves wrong
 - `refactor:` a code change that doesn't change behaviour
 - `docs:` documentation only (README, comments, this file)
 
-Don't use other prefixes (such as `design:` or `test:`); pick the closest of the four.
+The other standard types are also fine when they fit better: `test:`, `style:`
+(code formatting only, not visual design), `perf:`, `build:`, `ci:`, `chore:`
+and `revert:`. Visual changes to the app go under `feat:` or `fix:`.
 Example: `fix: Månedsoverblik shows the whole year when you pick a new year`
 
 ## Before committing
