@@ -691,6 +691,8 @@ function renderNetWorthComposition(history){
                         backgroundColor:CHART_COLOR('--tooltip-bg'), borderColor:CHART_COLOR('--border'), borderWidth:1,
                         titleColor:CHART_COLOR('--text'), bodyColor:CHART_COLOR('--text'), footerColor:CHART_COLOR('--text'),
                         itemSort: (a, b) => b.datasetIndex === 5 ? -1 : a.datasetIndex === 5 ? 1 : b.raw - a.raw,
+                        // Kun kategorier med et beløb; tomme kategorier (0 kr.) udelades.
+                        filter: item => Number(item.raw) !== 0,
                         callbacks:{
                             label: c => {
                                 if(c.dataset.label === 'Gæld') return `Gæld: −${DK.format(-c.raw)} kr.`;
@@ -699,6 +701,7 @@ function renderNetWorthComposition(history){
                                 return `${c.dataset.label}: ${DK.format(c.raw)} kr. (${share} %)`;
                             },
                             footer: items => {
+                                if(!items.length) return '';
                                 const i = items[0].dataIndex;
                                 const net = items[0].chart.data.datasets.reduce((s, ds) => s + (ds.data[i] || 0), 0);
                                 return `Nettoformue: ${DK.format(net)} kr.`;

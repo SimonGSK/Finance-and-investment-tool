@@ -213,7 +213,7 @@ test('formue: mål oprettes i en dialog, og hele alderstabellen fremhæver din a
     await expect(table.locator('tr.is-highlight')).toBeInViewport();
 });
 
-test('formue: sammensætningen viser alle kategorier for datoen, man peger på', async ({ page }) => {
+test('formue: sammensætningen viser kategorierne med et beløb for datoen, man peger på', async ({ page }) => {
     await page.goto('/index.html');
     await page.evaluate(() => localStorage.setItem('netWorthHistory', JSON.stringify([
         {date:'2026-07-31', value:500000, liquid:300000, netCatKontanter:100000, netCatAktier:200000, netCatPension:200000, netCatFrivaerdi:0, netCatAndet:0, debt:0},
@@ -233,8 +233,8 @@ test('formue: sammensætningen viser alle kategorier for datoen, man peger på',
         return {opacity: t.opacity, lines: t.body.map(b => b.lines.join('')), footer: t.footer};
     });
     expect(tip.opacity).toBeGreaterThan(0);
-    expect(tip.lines).toHaveLength(6);
-    expect(tip.lines[0]).toBe('Pension: 230.000 kr. (42 %)');
+    // Friværdi og Andet er 0 kr. og udelades; gæld står til sidst.
+    expect(tip.lines).toEqual(['Pension: 230.000 kr. (42 %)', 'Aktier: 210.000 kr. (38 %)', 'Kontanter: 110.000 kr. (20 %)', 'Gæld: −30.000 kr.']);
     expect(tip.footer).toEqual(['Nettoformue: 520.000 kr.']);
 });
 
