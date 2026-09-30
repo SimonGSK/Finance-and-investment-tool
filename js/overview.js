@@ -120,7 +120,7 @@ function renderOverviewGoals(){
     }));
 }
 
-/** Formuens fordeling som vandrette søjler, sorteret efter størrelse. */
+/** Formuens fordeling som én samlet søjle med en forklaring under, sorteret efter størrelse. */
 function renderOverviewSplit(figures){
     const box = document.getElementById('ovSplit');
     const rows = NET_WORTH_CATEGORIES.map(c => ({label: c.label, color: c.color, value: figures[c.id]})).filter(r => r.value > 0).sort((a, b) => b.value - a.value);
@@ -129,16 +129,21 @@ function renderOverviewSplit(figures){
         box.replaceChildren(el('p', {className:'empty-note'}, ['Udfyld dine aktiver for at se fordelingen. ', el('button', {className:'link-btn', type:'button', textContent:'Gå til Formue', onclick: () => showSection('formue')})]));
         return;
     }
-    // Nuancer af hovedfarven: den største søjle stærkest.
+    // Nuancer af hovedfarven: den største del stærkest. I forklaringen står kun
+    // kategoriens første ord (fx "Kontanter"); det fulde navn står i tooltippet.
     const base = getCSSVar('--akt');
-    box.replaceChildren(...rows.map((r, i) => {
-        const pct = r.value / figures.assets;
-        const color = hexToRgba(base, Math.max(0.45, 1 - i * 0.18));
-        return el('div', {className:'ov-split-row'}, [
-            el('div', {className:'ov-row'}, [el('span', {textContent: r.label}), el('strong', {textContent: `${Math.round(pct * 100)} %`})]),
-            el('div', {className:'progress-track'}, [el('div', {className:'progress-fill', attrs:{style:`width:${pct * 100}%; background:${color}`}})])
-        ]);
-    }));
+    const parts = rows.map((r, i) => ({...r, pct: Math.round(r.value / figures.assets * 100),
+        short: r.label.split(' ')[0], color: hexToRgba(base, Math.max(0.28, 1 - i * 0.18))}));
+    const tip = p => `${p.label}: ${p.pct} % (${DK.format(p.value)} kr.)`;
+    box.replaceChildren(
+        el('div', {className:'ov-split-bar', attrs:{role:'img', 'aria-label': 'Fordeling: ' + parts.map(tip).join(', ')}},
+            parts.map(p => el('div', {className:'ov-split-seg', attrs:{title: tip(p), style:`flex-grow:${p.value}; background:${p.color}`}}))),
+        el('ul', {className:'ov-split-legend' + (parts.length <= 4 ? ' is-one-row' : ''), attrs:{style:`--parts:${parts.length}`}}, parts.map(p => el('li', {className:'ov-split-item', attrs:{title: tip(p)}}, [
+            el('span', {className:'ov-split-dot', attrs:{style:`background:${p.color}`, 'aria-hidden':'true'}}),
+            el('strong', {textContent: `${p.pct} %`}),
+            el('span', {textContent: p.short})
+        ])))
+    );
 }
 
 /** Højst fire konkrete ting at gøre nu, vigtigste først. */
