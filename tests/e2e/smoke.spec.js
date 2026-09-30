@@ -866,7 +866,7 @@ test('oversigt og sidemenu: nøgletal fra de andre dele, sidehovedet følger med
     await expect(page.locator('#ovGrowth')).toHaveText('+19.639 kr.');
     await expect(page.locator('#ovGrowthSub')).toHaveText('i snit siden 31. jul.');
     expect(await page.evaluate(() => overviewChart.data.datasets[0].data)).toEqual([500000, 520000]);
-    await expect(page.locator('#ovSplit .ov-split-row')).toHaveCount(2);
+    await expect(page.locator('#ovSplit .ov-split-item')).toHaveCount(2);
 
     // Menuen: Investering folder sine værktøjer ud, og sidehovedet viser område og værktøj.
     // Et klik på "Investering" folder kun gruppen ud - siden skifter først ved et værktøj.

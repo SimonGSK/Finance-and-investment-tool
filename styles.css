@@ -1466,6 +1466,16 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
 .ov-row{ display:flex; justify-content:space-between; gap:var(--s3); font-size:16px; color:var(--text); margin-bottom:10px; }
 .ov-row strong{ font-family:var(--font-sans); font-weight:600; }
 .ov-goals, .ov-split{ display:flex; flex-direction:column; gap:var(--s5); }
+/* Fordeling: én samlet søjle (2 px luft mellem delene) og en forklaring under. */
+.ov-split{ gap:var(--s4); }
+.ov-split-bar{ display:flex; gap:2px; height:12px; border-radius:var(--r-pill); overflow:hidden; }
+.ov-split-seg{ flex-basis:0; min-width:3px; }
+.ov-split-legend{ list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:var(--s3) var(--s4); }
+.ov-split-legend.is-one-row{ grid-template-columns:repeat(var(--parts), minmax(0, 1fr)); }
+.ov-split-item{ display:grid; grid-template-columns:auto 1fr; column-gap:8px; align-items:center; }
+.ov-split-dot{ width:10px; height:10px; border-radius:50%; }
+.ov-split-item strong{ font-family:var(--font-sans); font-size:17px; font-weight:600; color:var(--text); font-variant-numeric:tabular-nums; }
+.ov-split-item span:last-child{ grid-column:2; font-size:14px; color:var(--muted); }
 .ov-goal-sub{ margin-top:6px; font-size:13.5px; color:var(--subtle); }
 #section-overview .progress-track{ height:8px; border-radius:var(--r-pill); background:var(--panel-sunken); }
 #section-overview .progress-fill{ border-radius:var(--r-pill); background:var(--akt); }
@@ -1667,29 +1677,36 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
    iPhone ikke zoomer ind, når man trykker i dem. Kortene får mindre luft, og graferne et
    liggende format (ca. 4:3) i stedet for at være højere end de er brede. */
 @media (max-width:640px){
-    body{ font-size:14.5px; }
+    body{ font-size:14px; }
     .app{ padding:var(--s2) var(--s3) var(--s5); }
     .app-header{ padding:var(--s1) 0 var(--s3); }
-    .page-header{ margin-bottom:var(--s4); }
-    .page-eyebrow{ font-size:11.5px; margin-bottom:var(--s1); }
-    .page-header h1{ font-size:24px; }
-    .page-sub{ font-size:13.5px; }
-    .panel{ padding:16px; border-radius:16px; margin-bottom:var(--s3); }
+    .page-header{ margin-bottom:var(--s3); }
+    .page-eyebrow{ font-size:11px; margin-bottom:2px; }
+    .page-header h1{ font-size:22px; }
+    .page-sub{ font-size:13px; }
+    .panel{ padding:14px 16px; border-radius:16px; margin-bottom:var(--s3); }
     .stat{ border-radius:16px; }
     .stats, .overview-kpis{ gap:var(--s2); margin-bottom:var(--s3); }
-    .overview-kpis .stat, .compact-stats .stat{ padding:12px 14px; }
-    .stat .label, .compact-stats .stat .label{ font-size:13px; margin-bottom:2px; }
-    .stat .sub{ font-size:12.5px; margin-top:2px; }
+    .overview-kpis .stat, .compact-stats .stat{ padding:10px 12px; }
+    .stat .label, .compact-stats .stat .label{ font-size:12.5px; margin-bottom:2px; }
+    .stat .sub{ font-size:12px; margin-top:2px; }
     .overview-grid, .ov-side{ gap:var(--s3); margin-bottom:var(--s3); }
     .panel-title-row{ margin-bottom:var(--s3); }
-    .panel-title{ font-size:18px; }
-    .panel-sub{ font-size:13px; }
-    .panel-toggle{ font-size:17px; }
-    .ov-row{ font-size:14px; margin-bottom:6px; }
-    .ov-goals, .ov-split{ gap:var(--s4); }
-    .ov-next li{ font-size:14px; }
-    .ov-tool{ padding:12px 14px; font-size:13px; }
-    .ov-tool strong{ font-size:14.5px; }
+    .panel-title{ font-size:17px; }
+    .panel-sub{ font-size:12.5px; }
+    .panel-toggle{ font-size:16px; }
+    .ov-row{ font-size:13.5px; margin-bottom:6px; }
+    .ov-goals{ gap:var(--s4); }
+    .ov-split{ gap:var(--s3); }
+    .ov-split-bar{ height:10px; }
+    .ov-split-legend{ grid-template-columns:repeat(auto-fill, minmax(76px, 1fr)); gap:var(--s2) var(--s3); }
+    .ov-split-legend.is-one-row{ grid-template-columns:repeat(var(--parts), minmax(0, 1fr)); }
+    .ov-split-item{ column-gap:6px; }
+    .ov-split-item strong{ font-size:15px; }
+    .ov-split-item span:last-child{ font-size:12.5px; }
+    .ov-next li{ font-size:13.5px; padding:10px 0; }
+    .ov-tool{ padding:10px 12px; font-size:12.5px; }
+    .ov-tool strong{ font-size:14px; }
     .result-value{ font-size:24px; }
     .layout, .layout-wide, .layout-net-worth{ gap:var(--s3); }
     .legend{ gap:4px var(--s4); margin-bottom:var(--s3); }
