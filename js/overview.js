@@ -138,7 +138,7 @@ function renderOverviewSplit(figures){
     box.replaceChildren(
         el('div', {className:'ov-split-bar', attrs:{role:'img', 'aria-label': 'Fordeling: ' + parts.map(tip).join(', ')}},
             parts.map(p => el('div', {className:'ov-split-seg', attrs:{title: tip(p), style:`flex-grow:${p.value}; background:${p.color}`}}))),
-        el('ul', {className:'ov-split-legend' + (parts.length <= 4 ? ' is-one-row' : ''), attrs:{style:`--parts:${parts.length}`}}, parts.map(p => el('li', {className:'ov-split-item', attrs:{title: tip(p)}}, [
+        el('ul', {className:'ov-split-legend' + (parts.length >= 5 ? ' is-tight' : ''), attrs:{style:`--parts:${parts.length}`}}, parts.map(p => el('li', {className:'ov-split-item', attrs:{title: tip(p)}}, [
             el('span', {className:'ov-split-dot', attrs:{style:`background:${p.color}`, 'aria-hidden':'true'}}),
             el('strong', {textContent: `${p.pct} %`}),
             el('span', {textContent: p.short})

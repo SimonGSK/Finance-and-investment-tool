@@ -1470,11 +1470,11 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
 .ov-split{ gap:var(--s4); }
 .ov-split-bar{ display:flex; gap:2px; height:12px; border-radius:var(--r-pill); overflow:hidden; }
 .ov-split-seg{ flex-basis:0; min-width:3px; }
-.ov-split-legend{ list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:var(--s3) var(--s4); }
-.ov-split-legend.is-one-row{ grid-template-columns:repeat(var(--parts), minmax(0, 1fr)); }
+/* Højst fem kategorier, altid på én række. */
+.ov-split-legend{ list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(var(--parts), minmax(0, 1fr)); gap:var(--s3) var(--s4); }
 .ov-split-item{ display:grid; grid-template-columns:auto 1fr; column-gap:8px; align-items:center; }
 .ov-split-dot{ width:10px; height:10px; border-radius:50%; }
-.ov-split-item strong{ font-family:var(--font-sans); font-size:17px; font-weight:600; color:var(--text); font-variant-numeric:tabular-nums; }
+.ov-split-item strong{ white-space:nowrap; font-family:var(--font-sans); font-size:17px; font-weight:600; color:var(--text); font-variant-numeric:tabular-nums; }
 .ov-split-item span:last-child{ grid-column:2; font-size:14px; color:var(--muted); }
 .ov-goal-sub{ margin-top:6px; font-size:13.5px; color:var(--subtle); }
 #section-overview .progress-track{ height:8px; border-radius:var(--r-pill); background:var(--panel-sunken); }
@@ -1699,11 +1699,16 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
     .ov-goals{ gap:var(--s4); }
     .ov-split{ gap:var(--s3); }
     .ov-split-bar{ height:10px; }
-    .ov-split-legend{ grid-template-columns:repeat(auto-fill, minmax(76px, 1fr)); gap:var(--s2) var(--s3); }
-    .ov-split-legend.is-one-row{ grid-template-columns:repeat(var(--parts), minmax(0, 1fr)); }
+    .ov-split-legend{ gap:var(--s2) var(--s3); }
     .ov-split-item{ column-gap:6px; }
     .ov-split-item strong{ font-size:15px; }
     .ov-split-item span:last-child{ font-size:12.5px; }
+    /* Fem kategorier: navnet står under prikken og får hele kolonnens bredde. */
+    .ov-split-legend.is-tight{ grid-template-columns:repeat(var(--parts), auto); justify-content:space-between; column-gap:6px; }
+    .ov-split-legend.is-tight .ov-split-item{ column-gap:5px; }
+    .ov-split-legend.is-tight .ov-split-dot{ width:8px; height:8px; }
+    .ov-split-legend.is-tight strong{ font-size:14px; }
+    .ov-split-legend.is-tight span:last-child{ grid-column:1 / -1; font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .ov-next li{ font-size:13.5px; padding:10px 0; }
     .ov-tool{ padding:10px 12px; font-size:12.5px; }
     .ov-tool strong{ font-size:14px; }
@@ -1714,6 +1719,10 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
     /* Cirkeldiagrammet med forklaring under skal være højere for ikke at blive lille. */
     .site-content .panel .chart-wrap:has(#netWorthChart){ height:290px; }
     .site-content .panel .ov-chart-wrap{ height:clamp(150px, 45vw, 210px); }
+}
+/* Meget smalle telefoner (fx 320 px): forklaringen må gå på to rækker. */
+@media (max-width:350px){
+    .ov-split-legend, .ov-split-legend.is-tight{ grid-template-columns:repeat(3, minmax(0, 1fr)); justify-content:normal; }
 }
 
 /* ---- Oversigt i én kolonne (telefon og tablet): grafen øverst, nøgletallene under ----
