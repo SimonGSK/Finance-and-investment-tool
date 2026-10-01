@@ -27,7 +27,7 @@
          TODO: Erstat ca-pub-XXXXXXXXXXXXXXXX med mit eget AdSense-udgiver-ID, og fjern kommentaren.
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
     -->
-    <link rel="stylesheet" href="styles.css?v=b55133e2">
+    <link rel="stylesheet" href="styles.css?v=4f75c3e6">
 </head>
 <body>
 
@@ -77,15 +77,15 @@
             <div class="app-body">
         <aside class="sidebar" id="sidebar" aria-label="Menu">
             <nav class="side-nav" aria-label="Hovedmenu">
-                <div class="nav-label">Områder</div>
                 <button class="top-tab-btn nav-item active" data-section="overview" type="button" onclick="showSection('overview')"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg>Oversigt</button>
-                <button class="top-tab-btn nav-item nav-group" data-section="tools" type="button" onclick="toggleNavGroup(this)" aria-expanded="false" aria-controls="navSubTools"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>Investering<span class="nav-count" aria-hidden="true">6</span></button>
+
+                <div class="nav-label">Værktøjer</div>
+                <button class="top-tab-btn nav-item nav-group" data-section="tools" type="button" onclick="toggleNavGroup(this)" aria-expanded="false" aria-controls="navSubTools"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>Investering<span class="nav-count" aria-hidden="true">5</span></button>
                 <div class="nav-sub" id="navSubTools">
                 <button class="tab-btn nav-subitem active" id="tabBtn1" type="button" onclick="showTool(1)">ASK vs. Aktiedepot</button>
                 <button class="tab-btn nav-subitem" id="tabBtn2" type="button" onclick="showTool(2)">Aktiedepot: fast + månedligt</button>
                 <button class="tab-btn nav-subitem" id="tabBtn3" type="button" onclick="showTool(3)">FIRE-beregner (4%-reglen)</button>
                 <button class="tab-btn nav-subitem" id="tabBtn5" type="button" onclick="showTool(5)">Pension</button>
-                <button class="tab-btn nav-subitem" id="tabBtn4" type="button" onclick="showTool(4)">Porteføljetracker</button>
                 <button class="tab-btn nav-subitem" id="tabBtn6" type="button" onclick="showTool(6)">Tips &amp; viden</button>
                 </div>
                 <button class="top-tab-btn nav-item nav-group" data-section="housing" type="button" onclick="toggleNavGroup(this)" aria-expanded="false" aria-controls="navSubHousing"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg>Bolig &amp; lån<span class="nav-count" aria-hidden="true">3</span></button>
@@ -95,8 +95,11 @@
                 <button class="tab-btn nav-subitem" id="housingTabBtn3" type="button" onclick="showHousingTool(3)">Gældsafvikling</button>
                 </div>
                 <button class="top-tab-btn nav-item" data-section="budget" type="button" onclick="showSection('budget')"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M16 15h2"/></svg>Budget</button>
-                <button class="top-tab-btn nav-item" data-section="month" type="button" onclick="showSection('month')"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4M16 3v4"/><path d="M8 15l3-2 2 1.5 3-3"/></svg>Månedsoverblik</button>
+
+                <div class="nav-label">Trackers</div>
                 <button class="top-tab-btn nav-item" data-section="formue" type="button" onclick="showSection('formue')"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18"/><path d="M5 17V10M9.5 17V10M14.5 17V10M19 17V10"/><path d="M3 8l9-5 9 5"/></svg>Formue</button>
+                <button class="top-tab-btn nav-item" data-section="month" type="button" onclick="showSection('month')"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4M16 3v4"/><path d="M8 15l3-2 2 1.5 3-3"/></svg>Månedsoverblik</button>
+                <button class="top-tab-btn nav-item" data-section="portfolio" type="button" onclick="showSection('portfolio')"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l7.5 4.5"/></svg>Portefølje</button>
 
                 <div class="nav-label">Hjælp</div>
                 <button class="nav-item" id="settingsBtn" type="button" onclick="toggleSettings()" aria-haspopup="dialog"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Indstillinger</button>
@@ -588,177 +591,6 @@
                     </table>
                 </div>
                 <button class="btn btn-secondary" onclick="downloadTableAsCSV('dataTableBody3', 'fire-beregner.csv')">Download som CSV</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="tool4" style="display:none;">
-        <div class="tool-head">
-            <details class="tool-about">
-                <summary>Hvad gør dette værktøj?</summary>
-                <p class="tool-intro">Indtast dine porteføljetal en gang om måneden for at følge udviklingen i din aktieportefølje over tid – inklusiv effekten af egne indskud/udbetalinger, køb/salg og udbytte.</p>
-            </details>
-        </div>
-
-        <div class="full-width-above">
-            <div class="stats">
-                <div class="stat">
-                    <div class="label">Porteføljeværdi (seneste)</div>
-                    <div class="value akt" id="ptLatestValue">–</div>
-                </div>
-                <div class="stat">
-                    <div class="label">Totalt investeret</div>
-                    <div class="value ask" id="ptTotalInvested">–</div>
-                    <div class="sub">kumuleret køb/solgt</div>
-                </div>
-                <div class="stat">
-                    <div class="label">Totalt afkast</div>
-                    <div class="value" id="ptTotalReturn">–</div>
-                </div>
-                <div class="stat">
-                    <div class="label">Udbytte i alt</div>
-                    <div class="value ask" id="ptTotalDividend">–</div>
-                    <div class="sub">efter skat, kumuleret</div>
-                </div>
-                <div class="stat">
-                    <div class="label">Dit afkast pr. år</div>
-                    <div class="value" id="ptAnnualReturn">–</div>
-                    <div class="sub" id="ptAnnualReturnSub">pengevægtet, tager højde for indskud</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="layout">
-
-            <div class="panel collapsible" id="ptEntryPanel">
-                <button class="panel-toggle" type="button" aria-expanded="true" onclick="togglePanel(this)">Tilføj datapunkt</button>
-
-                <div class="field">
-                    <label for="ptPortfolioValue">Værdi af portefølje</label>
-                    <input type="number" id="ptPortfolioValue" class="number-input" value="0" readonly style="opacity:0.7; cursor:not-allowed;">
-                    <div class="limit-hint">Udregnes automatisk: aktier + kontanter</div>
-                </div>
-                <div class="field">
-                    <label for="ptStockValue">Værdi af aktier</label>
-                    <input type="number" id="ptStockValue" class="number-input" value="0" min="0" step="500">
-                </div>
-                <div class="field">
-                    <label for="ptCash">Kontantbeholdning</label>
-                    <input type="number" id="ptCash" class="number-input" value="0" min="0" step="500">
-                </div>
-                <div class="field">
-                    <label for="ptTraded">Købt/solgt</label>
-                    <input type="number" id="ptTraded" class="number-input" value="0" step="500">
-                    <div class="limit-hint">Denne periode · negativ ved netto-salg</div>
-                </div>
-                <div class="field">
-                    <label for="ptDeposit">Indskud/udbetaling</label>
-                    <input type="number" id="ptDeposit" class="number-input" value="0" step="500">
-                    <div class="limit-hint">Denne periode · negativ ved udbetaling</div>
-                </div>
-                <div class="field">
-                    <label for="ptDividend">Udbytte efter skat</label>
-                    <input type="number" id="ptDividend" class="number-input" value="0" min="0" step="100">
-                    <div class="limit-hint">Denne periode</div>
-                </div>
-
-                <div class="save-row">
-                    <div class="field">
-                        <label for="ptDate">Dato</label>
-                        <input type="date" id="ptDate" class="number-input">
-                    </div>
-                    <button class="btn btn-primary" type="button" onclick="savePortfolioSnapshot()">+ Gem datapunkt</button>
-                    <button class="btn btn-secondary" type="button" onclick="clearPortfolioHistory()">Ryd hele historikken</button>
-                </div>
-            </div>
-
-            <div class="panel chart-panel">
-                <div class="legend">
-                    <span><i class="dot" style="background:var(--akt)"></i>Porteføljeværdi</span>
-                    <span><i class="dot" style="background:var(--ask)"></i>Kumuleret indskud/udbetaling</span>
-                </div>
-                <div class="chart-wrap">
-                    <canvas id="ptChart1"></canvas>
-                    <div class="chart-empty-state" id="ptChart1Empty">Ingen data endnu – gem dit første datapunkt til venstre for at se grafen.</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="full-width-below">
-            <div class="panel">
-                <div class="legend">
-                    <span><i class="dot" style="background:var(--akt)"></i>Aktieværdi</span>
-                    <span><i class="dot" style="background:#8E7BB5"></i>Køb/solgt (pr. måned)</span>
-                </div>
-                <div class="chart-wrap chart-wrap-standalone">
-                    <canvas id="ptChart2"></canvas>
-                    <div class="chart-empty-state" id="ptChart2Empty">Ingen data endnu – gem dit første datapunkt til venstre for at se grafen.</div>
-                </div>
-            </div>
-
-            <div class="panel">
-                <div class="legend">
-                    <span><i class="dot" style="background:var(--akt)"></i>Aktieværdi</span>
-                    <span><i class="dot" style="background:var(--ask)"></i>Totalt investeret</span>
-                </div>
-                <div class="chart-wrap chart-wrap-standalone">
-                    <canvas id="ptChart3"></canvas>
-                    <div class="chart-empty-state" id="ptChart3Empty">Ingen data endnu – gem dit første datapunkt til venstre for at se grafen.</div>
-                </div>
-            </div>
-
-            <div class="panel">
-                <div class="legend">
-                    <span><i class="dot" style="background:var(--akt)"></i>Totalt afkast</span>
-                </div>
-                <div class="chart-wrap chart-wrap-standalone">
-                    <canvas id="ptChart4"></canvas>
-                    <div class="chart-empty-state" id="ptChart4Empty">Ingen data endnu – gem dit første datapunkt til venstre for at se grafen.</div>
-                </div>
-            </div>
-
-            <div class="panel">
-                <div class="eyebrow">Bedste perioder</div>
-                <p class="dialog-hint">De tre perioder med det største afkast – ændringen i porteføljens værdi minus det, du har sat ind.</p>
-                <ol class="best-periods" id="ptBestPeriods"></ol>
-            </div>
-
-            <div class="panel">
-                <div class="eyebrow">År for år</div>
-                <div class="data-table-wrap">
-                    <table class="data-table year-table">
-                        <thead><tr><th>År</th><th>Start</th><th>Slut</th><th>Indsat</th><th>Afkast</th><th>Afkast i %</th></tr></thead>
-                        <tbody id="ptYearBody"></tbody>
-                    </table>
-                </div>
-                <p class="dialog-hint year-hint">Afkast er ændringen i værdi minus det, du har sat ind. Procenten regner indskuddene med halvt, fordi de i snit kun har været investeret halvdelen af året.</p>
-            </div>
-
-            <div class="panel">
-                <div class="eyebrow">Data pr. datapunkt</div>
-                <div class="data-table-wrap">
-                    <table class="data-table">
-                        <thead>
-                        <tr>
-                            <th>Dato</th>
-                            <th>Porteføljeværdi</th>
-                            <th>Ændring</th>
-                            <th>Heraf afkast</th>
-                            <th>Aktieværdi</th>
-                            <th>Kontant</th>
-                            <th>Købt/solgt</th>
-                            <th>Indskud/udb.</th>
-                            <th>Udbytte</th>
-                            <th></th>
-                        </tr>
-                        </thead>
-                        <tbody id="ptTableBody"></tbody>
-                    </table>
-                </div>
-                <p class="explainer" style="margin:12px 0 12px 0;">Tryk "Download" for at gemme alle dine datapunkter i en CSV-fil, som du fx kan tage med til en anden enhed. Tryk "Upload" for at indlæse punkter fra en CSV-fil igen – dine eksisterende punkter bevares, men punkter med samme dato som i filen bliver overskrevet.</p>
-                <button class="btn btn-secondary" onclick="downloadTableAsCSV('ptTableBody', 'portefoeljetracker.csv')">Download som CSV</button>
-                <button class="btn btn-secondary" onclick="document.getElementById('portfolioCsvUpload').click()">Upload CSV</button>
-                <input type="file" id="portfolioCsvUpload" accept=".csv" style="display:none;" onchange="importPortfolioCSV(event)">
             </div>
         </div>
     </div>
@@ -1422,6 +1254,177 @@
     </div>
 </div>
 
+<div id="section-portfolio" style="display:none;">
+    <div class="tool-head">
+        <details class="tool-about">
+            <summary>Hvad gør dette værktøj?</summary>
+            <p class="tool-intro">Indtast dine porteføljetal en gang om måneden for at følge udviklingen i din aktieportefølje over tid – inklusiv effekten af egne indskud/udbetalinger, køb/salg og udbytte.</p>
+        </details>
+    </div>
+
+    <div class="full-width-above">
+        <div class="stats">
+            <div class="stat">
+                <div class="label">Porteføljeværdi (seneste)</div>
+                <div class="value akt" id="ptLatestValue">–</div>
+            </div>
+            <div class="stat">
+                <div class="label">Totalt investeret</div>
+                <div class="value ask" id="ptTotalInvested">–</div>
+                <div class="sub">kumuleret køb/solgt</div>
+            </div>
+            <div class="stat">
+                <div class="label">Totalt afkast</div>
+                <div class="value" id="ptTotalReturn">–</div>
+            </div>
+            <div class="stat">
+                <div class="label">Udbytte i alt</div>
+                <div class="value ask" id="ptTotalDividend">–</div>
+                <div class="sub">efter skat, kumuleret</div>
+            </div>
+            <div class="stat">
+                <div class="label">Dit afkast pr. år</div>
+                <div class="value" id="ptAnnualReturn">–</div>
+                <div class="sub" id="ptAnnualReturnSub">pengevægtet, tager højde for indskud</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layout">
+
+        <div class="panel collapsible" id="ptEntryPanel">
+            <button class="panel-toggle" type="button" aria-expanded="true" onclick="togglePanel(this)">Tilføj datapunkt</button>
+
+            <div class="field">
+                <label for="ptPortfolioValue">Værdi af portefølje</label>
+                <input type="number" id="ptPortfolioValue" class="number-input" value="0" readonly style="opacity:0.7; cursor:not-allowed;">
+                <div class="limit-hint">Udregnes automatisk: aktier + kontanter</div>
+            </div>
+            <div class="field">
+                <label for="ptStockValue">Værdi af aktier</label>
+                <input type="number" id="ptStockValue" class="number-input" value="0" min="0" step="500">
+            </div>
+            <div class="field">
+                <label for="ptCash">Kontantbeholdning</label>
+                <input type="number" id="ptCash" class="number-input" value="0" min="0" step="500">
+            </div>
+            <div class="field">
+                <label for="ptTraded">Købt/solgt</label>
+                <input type="number" id="ptTraded" class="number-input" value="0" step="500">
+                <div class="limit-hint">Denne periode · negativ ved netto-salg</div>
+            </div>
+            <div class="field">
+                <label for="ptDeposit">Indskud/udbetaling</label>
+                <input type="number" id="ptDeposit" class="number-input" value="0" step="500">
+                <div class="limit-hint">Denne periode · negativ ved udbetaling</div>
+            </div>
+            <div class="field">
+                <label for="ptDividend">Udbytte efter skat</label>
+                <input type="number" id="ptDividend" class="number-input" value="0" min="0" step="100">
+                <div class="limit-hint">Denne periode</div>
+            </div>
+
+            <div class="save-row">
+                <div class="field">
+                    <label for="ptDate">Dato</label>
+                    <input type="date" id="ptDate" class="number-input">
+                </div>
+                <button class="btn btn-primary" type="button" onclick="savePortfolioSnapshot()">+ Gem datapunkt</button>
+                <button class="btn btn-secondary" type="button" onclick="clearPortfolioHistory()">Ryd hele historikken</button>
+            </div>
+        </div>
+
+        <div class="panel chart-panel">
+            <div class="legend">
+                <span><i class="dot" style="background:var(--akt)"></i>Porteføljeværdi</span>
+                <span><i class="dot" style="background:var(--ask)"></i>Kumuleret indskud/udbetaling</span>
+            </div>
+            <div class="chart-wrap">
+                <canvas id="ptChart1"></canvas>
+                <div class="chart-empty-state" id="ptChart1Empty">Ingen data endnu – gem dit første datapunkt til venstre for at se grafen.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="full-width-below">
+        <div class="panel">
+            <div class="legend">
+                <span><i class="dot" style="background:var(--akt)"></i>Aktieværdi</span>
+                <span><i class="dot" style="background:#8E7BB5"></i>Køb/solgt (pr. måned)</span>
+            </div>
+            <div class="chart-wrap chart-wrap-standalone">
+                <canvas id="ptChart2"></canvas>
+                <div class="chart-empty-state" id="ptChart2Empty">Ingen data endnu – gem dit første datapunkt til venstre for at se grafen.</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="legend">
+                <span><i class="dot" style="background:var(--akt)"></i>Aktieværdi</span>
+                <span><i class="dot" style="background:var(--ask)"></i>Totalt investeret</span>
+            </div>
+            <div class="chart-wrap chart-wrap-standalone">
+                <canvas id="ptChart3"></canvas>
+                <div class="chart-empty-state" id="ptChart3Empty">Ingen data endnu – gem dit første datapunkt til venstre for at se grafen.</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="legend">
+                <span><i class="dot" style="background:var(--akt)"></i>Totalt afkast</span>
+            </div>
+            <div class="chart-wrap chart-wrap-standalone">
+                <canvas id="ptChart4"></canvas>
+                <div class="chart-empty-state" id="ptChart4Empty">Ingen data endnu – gem dit første datapunkt til venstre for at se grafen.</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="eyebrow">Bedste perioder</div>
+            <p class="dialog-hint">De tre perioder med det største afkast – ændringen i porteføljens værdi minus det, du har sat ind.</p>
+            <ol class="best-periods" id="ptBestPeriods"></ol>
+        </div>
+
+        <div class="panel">
+            <div class="eyebrow">År for år</div>
+            <div class="data-table-wrap">
+                <table class="data-table year-table">
+                    <thead><tr><th>År</th><th>Start</th><th>Slut</th><th>Indsat</th><th>Afkast</th><th>Afkast i %</th></tr></thead>
+                    <tbody id="ptYearBody"></tbody>
+                </table>
+            </div>
+            <p class="dialog-hint year-hint">Afkast er ændringen i værdi minus det, du har sat ind. Procenten regner indskuddene med halvt, fordi de i snit kun har været investeret halvdelen af året.</p>
+        </div>
+
+        <div class="panel">
+            <div class="eyebrow">Data pr. datapunkt</div>
+            <div class="data-table-wrap">
+                <table class="data-table">
+                    <thead>
+                    <tr>
+                        <th>Dato</th>
+                        <th>Porteføljeværdi</th>
+                        <th>Ændring</th>
+                        <th>Heraf afkast</th>
+                        <th>Aktieværdi</th>
+                        <th>Kontant</th>
+                        <th>Købt/solgt</th>
+                        <th>Indskud/udb.</th>
+                        <th>Udbytte</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody id="ptTableBody"></tbody>
+                </table>
+            </div>
+            <p class="explainer" style="margin:12px 0 12px 0;">Tryk "Download" for at gemme alle dine datapunkter i en CSV-fil, som du fx kan tage med til en anden enhed. Tryk "Upload" for at indlæse punkter fra en CSV-fil igen – dine eksisterende punkter bevares, men punkter med samme dato som i filen bliver overskrevet.</p>
+            <button class="btn btn-secondary" onclick="downloadTableAsCSV('ptTableBody', 'portefoeljetracker.csv')">Download som CSV</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('portfolioCsvUpload').click()">Upload CSV</button>
+            <input type="file" id="portfolioCsvUpload" accept=".csv" style="display:none;" onchange="importPortfolioCSV(event)">
+        </div>
+    </div>
+</div>
+
 <div id="section-formue" style="display:none;">
     <div class="tool-head">
         <details class="tool-about">
@@ -1779,7 +1782,7 @@
     <script src="js/loan-capacity.js?v=b4f645bb"></script>
     <script src="js/buy-vs-rent.js?v=75764a5e"></script>
     <script src="js/debt-payoff.js?v=d92e8193"></script>
-    <script src="js/navigation.js?v=be84dd3f"></script>
+    <script src="js/navigation.js?v=428f6528"></script>
     <script src="js/feedback.js?v=a2a4c48b"></script>
     <script src="js/pwa.js?v=70965acb"></script>
     <script src="js/report.js?v=d2fb079b"></script>
