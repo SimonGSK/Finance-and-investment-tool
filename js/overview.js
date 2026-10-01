@@ -80,6 +80,17 @@ function renderOverviewChart(history){
     document.getElementById('ovChartSub').textContent = !points.length ? 'Dine seneste månedsstatusser'
         : years === 1 ? 'Det seneste år' : years ? `De seneste ${years} år` : `Alle dine månedsstatusser siden ${formatMonthYear(points[0].date)}`;
 
+    // Ændringen i den viste periode: fra første til sidste søjle, grøn ved stigning og rød ved fald.
+    const changeEl = document.getElementById('ovChartChange');
+    changeEl.hidden = points.length < 2;
+    if(points.length >= 2){
+        const change = points.at(-1).value - points[0].value;
+        const pct = points[0].value !== 0 ? change / Math.abs(points[0].value) : null;
+        changeEl.textContent = `${formatSignedKr(change)}${pct !== null ? ` (${formatSignedPct(pct)})` : ''}`;
+        changeEl.classList.toggle('is-up', change > 0);
+        changeEl.classList.toggle('is-down', change < 0);
+    }
+
     const data = {labels, datasets:[{label:'Nettoformue', data: points.map(h => h.value), backgroundColor: colors, borderRadius:8, borderSkipped:false, maxBarThickness:52}]};
     if(overviewChart){
         overviewChart.data = data;
