@@ -1805,3 +1805,11 @@ body[data-section="overview"] .customize-btn{ display:inline-flex; }
     #section-overview .ov-kpi-tools{ display:flex; justify-content:flex-end; order:1; margin:0 0 calc(-1 * var(--s2)); }
 }
 .cards-chooser .field{ margin-bottom:var(--s3); }
+
+/* ---- Ændringen i den valgte periode på Oversigtens graf ---- */
+.ov-chart-change{ margin:var(--s1) 0 0; font-size:15px; font-weight:600; font-variant-numeric:tabular-nums; color:var(--muted); }
+.ov-chart-change.is-up{ color:var(--pos); }
+.ov-chart-change.is-down{ color:var(--cross); }
+@media (max-width:640px){
+    .ov-chart-change{ font-size:14px; }
+}

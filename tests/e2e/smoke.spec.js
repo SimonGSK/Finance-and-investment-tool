@@ -970,6 +970,9 @@ test('periodevælger, foldbar "Tilføj datapunkt" og nødopsparingens anbefalede
     expect(await page.evaluate(() => overviewChart.data.datasets[0].data.length)).toBe(13);
     await period.selectOption('3');
     expect(await page.evaluate(() => overviewChart.data.datasets[0].data.length)).toBe(37);
+    // Ændringen i perioden står under titlen: 36 måneder × 5.000 kr. fra 365.000 kr.
+    await expect(page.locator('#ovChartChange')).toHaveText('+180.000 kr. (+49,3 %)');
+    await expect(page.locator('#ovChartChange')).toHaveClass(/is-up/);
 
     // Formue: "Tilføj datapunkt" foldes sammen, og det huskes.
     await page.getByRole('button', { name: 'Formue', exact: true }).click();
