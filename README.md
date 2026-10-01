@@ -8,6 +8,8 @@ All data stays in your browser's `localStorage`. There are no accounts, no serve
 
 ## The tools
 
+The menu has **Oversigt** at the top, then three groups: **Værktøjer** (Investering, Bolig & lån, Budget), **Trackers** (Formue, Månedsoverblik, Portefølje) and **Hjælp** (Indstillinger, Hjælp og spørgsmål, Giv feedback).
+
 ### Oversigt
 
 The start page: net worth (with the change since the last status), the portfolio (this year's return), the monthly budget and how many months the emergency fund covers; net worth over time (all data by default, or the last 1, 3, 5, 10 … years — only periods your data covers are offered), goals, how assets are split, a short list of next steps (save this month's status, build a budget, take a backup …) and shortcuts to every tool. **Tilpas oversigt** chooses the four key figures at the top, grouped by where the number comes from: Formue (net worth, liquid wealth, pension, debt), Månedsoverblik (average growth per month, growth in % over the last year, growth this year), Portefølje (value, total invested, total return, dividends, return per year) and Budget (budget per month, emergency fund). On phones and tablets the chart comes first and the key figures under it.

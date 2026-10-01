@@ -7,7 +7,7 @@ const { test, expect } = require('@playwright/test');
 // Alle steder på siden, der kan vises: [sektion, funktion der viser værktøjet, nummer]
 const VIEWS = [
     ['tools', 'showTool', 1], ['tools', 'showTool', 2], ['tools', 'showTool', 3],
-    ['tools', 'showTool', 4], ['tools', 'showTool', 5], ['tools', 'showTool', 6],
+    ['portfolio', null, null], ['tools', 'showTool', 5], ['tools', 'showTool', 6],
     ['housing', 'showHousingTool', 1], ['housing', 'showHousingTool', 2], ['housing', 'showHousingTool', 3],
     ['budget', null, null], ['formue', null, null], ['month', null, null], ['overview', null, null]
 ];
@@ -1263,4 +1263,27 @@ test('Oversigt: hvert kort i vælgeren kan vises uden fejl, også uden data', as
         expect(await page.locator('#ovKpis .stat').count()).toBe(4);
     }
     expect(errors).toEqual([]);
+});
+
+test('menuen: Oversigt øverst, så Værktøjer, Trackers og Hjælp, og Portefølje har sin egen side', async ({ page }) => {
+    await page.goto('/index.html');
+    const items = await page.locator('.side-nav > .nav-label, .side-nav > .nav-item:not([hidden])').evaluateAll(nodes =>
+        nodes.map(n => n.classList.contains('nav-label') ? '# ' + n.textContent.trim() : [...n.childNodes].filter(c => c.nodeType === 3).map(c => c.textContent).join('').trim()));
+    expect(items).toEqual(['Oversigt', '# Værktøjer', 'Investering', 'Bolig & lån', 'Budget', '# Trackers', 'Formue', 'Månedsoverblik', 'Portefølje',
+        '# Hjælp', 'Indstillinger', 'Hjælp og spørgsmål', 'Giv feedback']);
+    await expect(page.locator('#navSubTools .nav-subitem')).toHaveText(['ASK vs. Aktiedepot', 'Aktiedepot: fast + månedligt', 'FIRE-beregner (4%-reglen)', 'Pension', 'Tips & viden']);
+
+    await page.getByRole('button', { name: 'Portefølje', exact: true }).click();
+    await expect(page.locator('#pageEyebrow')).toHaveText('Portefølje');
+    await expect(page.locator('#pageTitle')).toHaveText('Porteføljetracker');
+    await expect(page.locator('#ptEntryPanel')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Portefølje', exact: true })).toHaveClass(/active/);
+    // Det gamle link fra Oversigtens værktøjskort åbner også siden.
+    await page.getByRole('button', { name: 'Oversigt', exact: true }).click();
+    await page.locator('.ov-tool', { hasText: 'Porteføljetracker' }).click();
+    await expect(page.locator('#pageTitle')).toHaveText('Porteføljetracker');
+    // Investeringsværktøjerne skifter stadig, og porteføljen skjules.
+    await page.evaluate(() => showTool(5));
+    await expect(page.locator('#tool5')).toBeVisible();
+    await expect(page.locator('#ptEntryPanel')).toBeHidden();
 });

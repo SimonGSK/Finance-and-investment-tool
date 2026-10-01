@@ -1,5 +1,5 @@
 /**
- * @file Navigation mellem sektioner (Investering/Budget/Formue) og værktøjer,
+ * @file Navigation mellem sektioner (Oversigt, Værktøjer, Trackers) og værktøjer,
  * indstillingspanelet, intro-banneret og fuld backup af alle data som JSON.
  */
 
@@ -21,10 +21,16 @@ function resizeChartsIn(container){
  * @param {number} n
  */
 function showToolIn(toolPrefix, buttonPrefix, n){
-    for(let i = 1; document.getElementById(toolPrefix + i); i++){
-        document.getElementById(toolPrefix + i).style.display = i === n ? 'block' : 'none';
+    // Alle #tool1, #tool2 ... der findes (numrene behøver ikke være i træk: porteføljen, der var
+    // nr. 4, har nu sin egen side under Trackers).
+    const pattern = new RegExp(`^${toolPrefix}(\\d+)$`);
+    document.querySelectorAll(`[id^="${toolPrefix}"]`).forEach(node => {
+        const m = pattern.exec(node.id);
+        if(!m) return;
+        const i = Number(m[1]);
+        node.style.display = i === n ? 'block' : 'none';
         document.getElementById(buttonPrefix + i)?.classList.toggle('active', i === n);
-    }
+    });
     resizeChartsIn(document.getElementById(toolPrefix + n));
 }
 
@@ -32,10 +38,15 @@ function showToolIn(toolPrefix, buttonPrefix, n){
  * Viser et af investeringsværktøjerne. "Dobbelt fradrag" gælder kun de to
  * første og flyttes derfor ind i det værktøj, der vises. Er Investering ikke
  * den viste sektion, skiftes der dertil.
- * @param {number} n 1 ASK vs. depot, 2 månedligt depot, 3 FIRE, 4 portefølje, 5 pension, 6 tips & viden
+ * @param {number} n 1 ASK vs. depot, 2 månedligt depot, 3 FIRE, 5 pension, 6 tips & viden;
+ *   4 (porteføljen) har nu sin egen side under Trackers og åbner den
  * @param {boolean} [stay] true = skift ikke sektion (bruges ved indlæsning)
  */
 function showTool(n, stay){
+    if(n === 4){
+        if(!stay) showSection('portfolio');
+        return;
+    }
     showToolIn('tool', 'tabBtn', n);
     const ddRow = document.getElementById('doubleDeductionRow');
     if(n === 1){
@@ -90,6 +101,7 @@ const PAGE_TITLES = {
     overview: ['Oversigt', 'Din økonomi'],
     budget: ['Budget', 'Dit budget'],
     month: ['Månedsoverblik', 'Måned for måned'],
+    portfolio: ['Portefølje', 'Porteføljetracker'],
     formue: ['Formue', 'Din formue']
 };
 

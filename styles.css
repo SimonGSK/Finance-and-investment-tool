@@ -1555,7 +1555,7 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
 /* ---- Værktøjerne tilpasser sig pladsen ved siden af menuen (ikke skærmens bredde) ----
    Er der under ca. 1150 px til indholdet, kommer grafen ind under indtastningen i fuld
    bredde og et fornuftigt bredt format, og felterne står i kolonner i stedet for én lang stribe. */
-#section-tools, #section-housing{ container-type:inline-size; container-name:tools; }
+#section-tools, #section-housing, #section-portfolio{ container-type:inline-size; container-name:tools; }
 @container tools (max-width:1150px){
     .layout{ grid-template-columns:minmax(0, 1fr); }
     .layout > .panel.chart-panel, .panel.chart-panel-sticky{ position:static; }
