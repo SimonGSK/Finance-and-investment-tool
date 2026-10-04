@@ -1487,12 +1487,17 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
 .ov-side{ display:flex; flex-direction:column; gap:var(--s4); }
 .ov-tools{ display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:var(--s3); }
 .ov-tool{
-    display:flex; flex-direction:column; gap:4px; text-align:left; cursor:pointer;
+    display:flex; align-items:flex-start; gap:var(--s3); text-align:left; cursor:pointer;
     padding:var(--s4) var(--s5); border:1px solid var(--border); border-radius:18px; background:var(--panel);
     font-family:var(--font-sans); color:var(--muted); font-size:14px; line-height:1.45;
     transition:border-color 0.15s var(--ease), background 0.15s var(--ease);
 }
 .ov-tool strong{ color:var(--text); font-size:15.5px; }
+/* Et lille ikon i en blød grøn flade, som i menuen */
+.ov-tool-icon{ display:grid; place-items:center; flex-shrink:0; width:38px; height:38px; border-radius:12px; background:var(--akt-soft); color:var(--akt); }
+.ov-tool-icon svg{ width:20px; height:20px; }
+.ov-tool-text{ display:flex; flex-direction:column; gap:4px; min-width:0; }
+.ov-tool:hover .ov-tool-icon{ background:var(--akt); color:var(--on-akt); }
 .ov-tool:hover{ border-color:var(--akt); background:var(--panel-hover); }
 
 /* Indstillinger åbner under topbjælkens højre side */
@@ -1712,6 +1717,8 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
     .ov-next li{ font-size:13.5px; padding:10px 0; }
     .ov-tool{ padding:10px 12px; font-size:12.5px; }
     .ov-tool strong{ font-size:14px; }
+    .ov-tool-icon{ width:32px; height:32px; border-radius:10px; }
+    .ov-tool-icon svg{ width:18px; height:18px; }
     .result-value{ font-size:24px; }
     .layout, .layout-wide, .layout-net-worth{ gap:var(--s3); }
     .legend{ gap:4px var(--s4); margin-bottom:var(--s3); }
