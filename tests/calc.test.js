@@ -967,6 +967,15 @@ describe('Månedsoverblik', () => {
         assert.deepEqual([y.startDate, y.flows, y.gain, y.dividends], ['2026-07-31', 5000, 5000, 500]);
         assert.equal(calc.periodReturn(pt, 2026, 7), null);
     });
+    test('dit år i tal: årets ændring, bedste og værste måned (et hul tæller som flere måneder)', () => {
+        const y = calc.yearInNumbers(h, [], 2026);
+        assert.deepEqual([y.from, y.to, y.statuses, y.change, y.steps, y.ups], ['2025-12-31', '2026-03-31', 2, 35000, 2, 2]);
+        assert.deepEqual([y.best.from, y.best.to, y.best.change, y.best.months], ['2026-01-31', '2026-03-31', 25000, 2]);
+        assert.deepEqual([y.worst.to, y.worst.change, y.worst.months], ['2026-01-31', 10000, 1]);
+        assert.equal(y.portfolio, null);
+        assert.equal(calc.yearInNumbers(h.slice(0, 1), [], 2025), null);
+        assert.equal(calc.monthSpan('2025-12-31', '2026-03-31'), 3);
+    });
     test('vælgerne: år med nyeste først og årets måneder i rækkefølge', () => {
         assert.deepEqual(calc.periodOptions(h), {years:[2026, 2025], months:{2026:[1, 3], 2025:[11, 12]}});
     });

@@ -1605,6 +1605,43 @@ function periodReturn(history, year, month){
 }
 
 /**
+ * Hele måneder mellem to ISO-datoer, fx 31. jul. → 30. sep. = 2.
+ * @param {string} fromIso
+ * @param {string} toIso
+ * @returns {number}
+ */
+function monthSpan(fromIso, toIso){
+    return (Number(toIso.slice(0, 4)) - Number(fromIso.slice(0, 4))) * 12 + Number(toIso.slice(5, 7)) - Number(fromIso.slice(5, 7));
+}
+
+/**
+ * "Dit år i tal": årets udvikling i nettoformuen fra månedsstatus til månedsstatus, den
+ * bedste og den værste måned, og porteføljens afkast. Året regnes som i Månedsoverblik:
+ * fra den seneste status før 1. januar (ellers årets første) til årets seneste.
+ * Mangler der en status, dækker et skridt flere måneder (months > 1).
+ * @param {{date:string, value:number}[]} nwHistory
+ * @param {{date:string, portfolioValue:number}[]} ptHistory
+ * @param {number} year
+ * @returns {{year:number, from:string, to:string, statuses:number, change:number, pct:number|null,
+ *   steps:number, ups:number, best:object|null, worst:object|null, portfolio:object|null}|null}
+ *   null med under to datapunkter; best/worst = {from, to, change, pct, months}; worst er null med kun ét skridt
+ */
+function yearInNumbers(nwHistory, ptHistory, year){
+    const bounds = periodBounds(nwHistory, year, null);
+    if(!bounds || !bounds.start) return null;
+    const [row] = periodRows(bounds, ['value']);
+    const steps = periodChanges(nwHistory, h => h.value)
+        .filter(c => c.from >= bounds.start.date && c.to <= bounds.end.date)
+        .map(c => ({from: c.from, to: c.to, change: c.change, pct: c.pct, months: Math.max(1, monthSpan(c.from, c.to))}));
+    const byChange = steps.slice().sort((a, b) => b.change - a.change);
+    return {year, from: bounds.start.date, to: bounds.end.date,
+        statuses: nwHistory.filter(h => h.date.startsWith(`${year}-`)).length,
+        change: row.change, pct: row.pct, steps: steps.length, ups: steps.filter(c => c.change > 0).length,
+        best: byChange[0] || null, worst: byChange.length > 1 ? byChange.at(-1) : null,
+        portfolio: periodReturn(ptHistory, year, null)};
+}
+
+/**
  * De år og måneder, der har mindst ét punkt - til vælgerne i Månedsoverblik.
  * @param {{date:string}[]} history
  * @returns {{years:number[], months:Object<number, number[]>}} nyeste år først, måneder i rækkefølge
@@ -1720,7 +1757,7 @@ function goalProgress(g){
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
-        addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, portfolioTotals, recentChange, fireProgress, projectTrend, projectionReaches,
+        addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, projectTrend, projectionReaches,
         periodChanges, bestPeriods,
         planSync, applySync,
         CAPITAL_INCOME_LIMIT,

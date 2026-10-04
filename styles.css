@@ -1813,3 +1813,38 @@ body[data-section="overview"] .customize-btn{ display:inline-flex; }
 @media (max-width:640px){
     .ov-chart-change{ font-size:14px; }
 }
+
+/* ---- Månedsoverblik: kurver, årets bedste og værste måned, og "Dit år i tal" ---- */
+.month-cat{ display:flex; align-items:center; justify-content:space-between; gap:var(--s3); }
+.spark{ width:64px; height:18px; flex-shrink:0; }
+.spark polyline{ fill:none; stroke:var(--muted); stroke-width:1.6; stroke-linejoin:round; stroke-linecap:round; }
+.spark.is-up polyline{ stroke:var(--pos); }
+.spark.is-down polyline{ stroke:var(--cross); }
+.month-badge{
+    display:inline-block; margin-left:2px; padding:1px 9px; border-radius:var(--r-pill); white-space:nowrap;
+    font-size:12.5px; font-weight:600; color:var(--text); background:var(--panel-sunken); border:1px solid var(--border-strong);
+}
+.month-badge.is-up{ border-color:var(--pos); color:var(--pos); }
+.month-badge.is-down{ border-color:var(--cross); color:var(--cross); }
+.month-best{ margin:0; font-size:14px; color:var(--muted); }
+.month-best strong{ color:var(--text); font-weight:600; }
+.month-best .is-up{ color:var(--pos); font-weight:600; }
+.month-best .is-down{ color:var(--cross); font-weight:600; }
+.year-lead{ margin:0 0 var(--s5); font-size:17px; color:var(--text); }
+.year-lead .is-up{ color:var(--pos); }
+.year-lead .is-down{ color:var(--cross); }
+.year-facts{ display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:var(--s4) var(--s5); margin:0; }
+.year-fact{ min-width:0; }
+.year-fact dt{ font-size:13.5px; color:var(--muted); }
+.year-fact dd{ margin:2px 0 0; font-family:var(--font-display); font-size:22px; font-weight:600; color:var(--text); font-variant-numeric:lining-nums tabular-nums; }
+.year-fact dd.is-up{ color:var(--pos); }
+.year-fact dd.is-down{ color:var(--cross); }
+.year-fact dd.year-fact-sub{ font-family:var(--font-sans); font-size:13px; font-weight:400; color:var(--subtle); }
+.year-share{ display:flex; flex-direction:column; gap:var(--s4); }
+.year-share-preview{ width:100%; max-width:360px; align-self:center; border-radius:var(--r-md); border:1px solid var(--border); background:var(--panel-sunken); aspect-ratio:1080 / 1350; }
+@media (max-width:640px){
+    .year-facts{ grid-template-columns:repeat(2, minmax(0, 1fr)); gap:var(--s3); }
+    .year-fact dd{ font-size:18px; }
+    .year-lead{ font-size:15px; margin-bottom:var(--s4); }
+    .spark{ width:48px; }
+}
