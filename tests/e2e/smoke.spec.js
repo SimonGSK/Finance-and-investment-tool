@@ -7,7 +7,7 @@ const { test, expect } = require('@playwright/test');
 // Alle steder på siden, der kan vises: [sektion, funktion der viser værktøjet, nummer]
 const VIEWS = [
     ['tools', 'showTool', 1], ['tools', 'showTool', 2], ['tools', 'showTool', 3],
-    ['portfolio', null, null], ['tools', 'showTool', 5], ['tools', 'showTool', 6],
+    ['portfolio', null, null], ['tools', 'showTool', 5], ['tools', 'showTool', 6], ['tools', 'showTool', 7],
     ['housing', 'showHousingTool', 1], ['housing', 'showHousingTool', 2], ['housing', 'showHousingTool', 3],
     ['budget', null, null], ['formue', null, null], ['month', null, null], ['overview', null, null]
 ];
@@ -1271,7 +1271,7 @@ test('menuen: Oversigt øverst, så Værktøjer, Trackers og Hjælp, og Portefø
         nodes.map(n => n.classList.contains('nav-label') ? '# ' + n.textContent.trim() : [...n.childNodes].filter(c => c.nodeType === 3).map(c => c.textContent).join('').trim()));
     expect(items).toEqual(['Oversigt', '# Værktøjer', 'Investering', 'Bolig & lån', 'Budget', '# Trackers', 'Formue', 'Månedsoverblik', 'Portefølje',
         '# Hjælp', 'Indstillinger', 'Hjælp og spørgsmål', 'Giv feedback']);
-    await expect(page.locator('#navSubTools .nav-subitem')).toHaveText(['ASK vs. Aktiedepot', 'Aktiedepot: fast + månedligt', 'FIRE-beregner (4%-reglen)', 'Pension', 'Tips & viden']);
+    await expect(page.locator('#navSubTools .nav-subitem')).toHaveText(['ASK vs. Aktiedepot', 'Aktiedepot: fast + månedligt', 'FIRE-beregner (4%-reglen)', 'Pension', 'Skattegrænse', 'Tips & viden']);
 
     await page.getByRole('button', { name: 'Portefølje', exact: true }).click();
     await expect(page.locator('#pageEyebrow')).toHaveText('Portefølje');
@@ -1346,4 +1346,34 @@ test('Månedsoverblik: Dit år i tal, årets bedste og værste måned, kurver og
     await dialog.getByText('Vis beløb').click();
     await expect.poll(() => dialog.locator('img').evaluate(img => img.naturalWidth)).toBe(1080);
     expect(errors).toEqual([]);
+});
+
+test('Skattegrænse: plads til 27 %, skat over grænsen, dobbelt grænse for gifte, og tallene huskes', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.getByRole('button', { name: 'Investering', exact: true }).click();
+    await page.getByRole('button', { name: 'Skattegrænse', exact: true }).click();
+    await expect(page.locator('#pageTitle')).toHaveText('Skattegrænse');
+    const l27 = await page.evaluate(() => TAX_LIMIT_27);
+    const kr = n => n.toLocaleString('da-DK') + ' kr.';
+
+    await page.locator('#taxRealizedGains').fill('60000');
+    await page.locator('#taxRealizedLosses').fill('10000');
+    await page.locator('#taxDividends').fill('4000');
+    await expect(page.locator('#taxIncomeTotal')).toHaveText('54.000 kr.');
+    await expect(page.locator('#taxRoom')).toHaveText(kr(l27 - 54000));
+    await expect(page.locator('#taxEstimate')).toHaveText('14.580 kr.');                 // 27 % af 54.000
+
+    // Over grænsen: rød bjælke og 42 % af resten.
+    await page.locator('#taxRealizedGains').fill(String(l27 + 16000));
+    await expect(page.locator('#taxIncomeFill')).toHaveClass(/is-over/);
+    await expect(page.locator('#taxIncomeNote')).toContainText(`${(10000).toLocaleString('da-DK')} kr. ligger over grænsen`);
+    // Dobbelt grænse for gifte.
+    await page.locator('#taxMarried').check();
+    await expect(page.locator('#taxIncomeFill')).not.toHaveClass(/is-over/);
+
+    await page.reload();
+    await page.evaluate(() => showTool(7));
+    await expect(page.locator('#taxRealizedGains')).toHaveValue(String(l27 + 16000));
+    await expect(page.locator('#taxMarried')).toBeChecked();
+    expect(await page.evaluate(() => BACKUP_KEYS.includes('taxTracker'))).toBe(true);
 });

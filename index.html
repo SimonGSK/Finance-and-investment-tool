@@ -27,7 +27,7 @@
          TODO: Erstat ca-pub-XXXXXXXXXXXXXXXX med mit eget AdSense-udgiver-ID, og fjern kommentaren.
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
     -->
-    <link rel="stylesheet" href="styles.css?v=16cbec22">
+    <link rel="stylesheet" href="styles.css?v=cbad0ec6">
 </head>
 <body>
 
@@ -80,12 +80,13 @@
                 <button class="top-tab-btn nav-item active" data-section="overview" type="button" onclick="showSection('overview')"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg>Oversigt</button>
 
                 <div class="nav-label">Værktøjer</div>
-                <button class="top-tab-btn nav-item nav-group" data-section="tools" type="button" onclick="toggleNavGroup(this)" aria-expanded="false" aria-controls="navSubTools"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>Investering<span class="nav-count" aria-hidden="true">5</span></button>
+                <button class="top-tab-btn nav-item nav-group" data-section="tools" type="button" onclick="toggleNavGroup(this)" aria-expanded="false" aria-controls="navSubTools"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>Investering<span class="nav-count" aria-hidden="true">6</span></button>
                 <div class="nav-sub" id="navSubTools">
                 <button class="tab-btn nav-subitem active" id="tabBtn1" type="button" onclick="showTool(1)">ASK vs. Aktiedepot</button>
                 <button class="tab-btn nav-subitem" id="tabBtn2" type="button" onclick="showTool(2)">Aktiedepot: fast + månedligt</button>
                 <button class="tab-btn nav-subitem" id="tabBtn3" type="button" onclick="showTool(3)">FIRE-beregner (4%-reglen)</button>
                 <button class="tab-btn nav-subitem" id="tabBtn5" type="button" onclick="showTool(5)">Pension</button>
+                <button class="tab-btn nav-subitem" id="tabBtn7" type="button" onclick="showTool(7)">Skattegrænse</button>
                 <button class="tab-btn nav-subitem" id="tabBtn6" type="button" onclick="showTool(6)">Tips &amp; viden</button>
                 </div>
                 <button class="top-tab-btn nav-item nav-group" data-section="housing" type="button" onclick="toggleNavGroup(this)" aria-expanded="false" aria-controls="navSubHousing"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg>Bolig &amp; lån<span class="nav-count" aria-hidden="true">3</span></button>
@@ -894,6 +895,61 @@
         </div>
     </div>
 
+
+    <div id="tool7" style="display:none;">
+        <div class="tool-head">
+            <details class="tool-about">
+                <summary>Hvad gør dette værktøj?</summary>
+                <p class="tool-intro">På dit <strong>aktiedepot</strong> beskattes aktieindkomst med <span data-rule="AKT_TAX_LOW">27</span> % op til <span data-rule="TAX_LIMIT_27">79.400</span> kr. og med <span data-rule="AKT_TAX_HIGH">42</span> % over (det dobbelte for ægtefæller, når den ene ikke bruger sin del). Skriv årets tal ind fra din bank, så kan du se, hvor meget gevinst du kan realisere, før skatten stiger – fx i december, hvis du overvejer at sælge før nytår. Tallene gemmes kun her i browseren og kommer med i din backup. Det er en forenklet beregning; din årsopgørelse er den endelige.</p>
+            </details>
+        </div>
+        <div class="layout">
+
+            <div class="panel">
+                <div class="eyebrow">Dit aktiedepot i <span data-rule="TAX_YEAR">2026</span></div>
+                <p class="save-status" id="taxSaveStatus"></p>
+                <div class="field">
+                    <label for="taxRealizedGains">Realiserede gevinster (kr.)</label>
+                    <input type="number" id="taxRealizedGains" class="number-input" min="0" step="1000" placeholder="0">
+                    <div class="limit-hint">Gevinst på aktier og aktiebaserede fonde, du har solgt i år</div>
+                </div>
+                <div class="field">
+                    <label for="taxRealizedLosses">Realiserede tab (kr.)</label>
+                    <input type="number" id="taxRealizedLosses" class="number-input" min="0" step="1000" placeholder="0">
+                    <div class="limit-hint">Tab på børsnoterede aktier trækkes fra</div>
+                </div>
+                <div class="field">
+                    <label for="taxDividends">Udbytte (kr.)</label>
+                    <input type="number" id="taxDividends" class="number-input" min="0" step="100" placeholder="0">
+                    <div class="limit-hint">Udbytte i aktiedepotet, før skat – ikke på aktiesparekontoen</div>
+                </div>
+                <div class="field">
+                    <label for="taxLagerGains">Gevinst på ETF'er fra positivlisten (kr.)</label>
+                    <input type="number" id="taxLagerGains" class="number-input" step="1000" placeholder="0">
+                    <div class="limit-hint">Lagerbeskattes: årets værdistigning tæller, også uden salg. Et fald skrives med minus.</div>
+                </div>
+                <label class="toggle-row" for="taxMarried">
+                    <input type="checkbox" id="taxMarried">
+                    <span class="toggle-text">Gift, og din ægtefælle bruger ikke sin del af grænsen (dobbelt grænse)</span>
+                </label>
+            </div>
+
+            <div class="panel">
+                <div class="eyebrow">Status for <span data-rule="TAX_YEAR">2026</span></div>
+                <div class="limit-row tax-limit-row">
+                    <div class="limit-row-head"><span class="limit-row-title">Aktieindkomst til <span data-rule="AKT_TAX_LOW">27</span> %</span><span class="limit-row-value" id="taxIncomeValue"></span></div>
+                    <div class="progress-track"><div class="progress-fill tax-fill" id="taxIncomeFill"></div></div>
+                    <p class="tax-note" id="taxIncomeNote"></p>
+                </div>
+                <div class="stats">
+                    <div class="stat"><div class="label">Aktieindkomst i år</div><div class="value" id="taxIncomeTotal">–</div><div class="sub">gevinst − tab + udbytte + lagergevinst</div></div>
+                    <div class="stat"><div class="label">Plads til <span data-rule="AKT_TAX_LOW">27</span> %</div><div class="value" id="taxRoom">–</div><div class="sub">før skatten stiger til <span data-rule="AKT_TAX_HIGH">42</span> %</div></div>
+                    <div class="stat"><div class="label">Anslået skat</div><div class="value" id="taxEstimate">–</div><div class="sub" id="taxEstimateSub"></div></div>
+                </div>
+                <p class="explainer">Udbytteskat, som banken allerede har trukket, modregnes i årsopgørelsen. Aktiesparekontoen beskattes for sig med <span data-rule="ASK_TAX">17</span> % af årets afkast og tæller ikke med i aktieindkomsten. Viden, ikke rådgivning: beregningen er forenklet, så tjek altid tallene i din bank og på din årsopgørelse.</p>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div id="section-housing" style="display:none;">
@@ -1768,8 +1824,8 @@
             </details>
         </div>
     </template>
-    <script src="js/calc.js?v=1c39a1e9"></script>
-    <script src="js/sync.js?v=90e83759"></script>
+    <script src="js/calc.js?v=ed5b2301"></script>
+    <script src="js/sync.js?v=614e4051"></script>
     <script src="js/shared.js?v=4c50757b"></script>
     <script src="js/ui.js?v=9e2dff05"></script>
     <script src="js/field-help.js?v=6a83e008"></script>
@@ -1779,12 +1835,13 @@
     <script src="js/tool2-monthly.js?v=c215de07"></script>
     <script src="js/tool3-fire.js?v=b050eef0"></script>
     <script src="js/tool4-portfolio.js?v=87a403bd"></script>
+    <script src="js/tax-tracker.js?v=8def9962"></script>
     <script src="js/pension.js?v=1b60de3a"></script>
     <script src="js/etf-tax.js?v=3b183bd8"></script>
     <script src="js/loan-capacity.js?v=b4f645bb"></script>
     <script src="js/buy-vs-rent.js?v=75764a5e"></script>
     <script src="js/debt-payoff.js?v=d92e8193"></script>
-    <script src="js/navigation.js?v=428f6528"></script>
+    <script src="js/navigation.js?v=d4cd25ca"></script>
     <script src="js/feedback.js?v=a2a4c48b"></script>
     <script src="js/pwa.js?v=70965acb"></script>
     <script src="js/report.js?v=d2fb079b"></script>

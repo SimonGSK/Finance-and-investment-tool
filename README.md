@@ -26,6 +26,8 @@ The start page: net worth (with the change since the last status), the portfolio
 
 **Porteføljetracker** — Log your portfolio's value, cash, trades, deposits and dividends over time. Charts value vs. cumulative deposits, monthly buys/sells, and total return. Import and export as CSV. The *Tilføj datapunkt* panel can be folded away to its heading, and the choice is remembered.
 
+**Skattegrænse** — Type in this year's numbers for your aktiedepot from your bank and see how close your aktieindkomst is to the 27 % limit (79.400 kr. in 2026, doubled for married couples), above which tax rises to 42 %. Aktieindkomst is realised gains minus losses, plus dividends and the year's gain on ETFs from the positive list (taxed on unrealised gains). Shows a progress bar, how much more gain you can realise at 27 %, and an estimated tax. The numbers are saved per tax year and included in the backup file. A simplified calculation; the annual tax statement is final.
+
 **Tips & viden** — A beginner's guide in foldable sections: before you start, account types (aktiedepot, ASK, pension, børneopsparing), tax and the positive-list lookup (search Skattestyrelsens list by ISIN or name, loaded only when you search), shares vs funds vs ETFs vs bonds, sectors and their volatility, risk, a glossary (afkast, udbytte, GAK …) and company key figures from easy (market value, revenue) to technical (EBITDA, free cash flow, net debt/EBITDA). General knowledge, not advice.
 
 ### Bolig & lån
@@ -121,6 +123,7 @@ js/tool2-monthly.js     Aktiedepot with monthly contributions
 js/tool3-fire.js        FIRE calculator
 js/tool4-portfolio.js   Portfolio tracker
 js/pension.js           Pension
+js/tax-tracker.js       Skattegrænse (27 %-grænsen for aktieindkomst)
 js/etf-tax.js           Positive-list lookup in Tips & viden
 data/positivliste.json  Skattestyrelsens positive list (built by scripts/build-positivliste.py)
 js/loan-capacity.js     Hvor meget kan jeg låne?

@@ -38,7 +38,7 @@ function showToolIn(toolPrefix, buttonPrefix, n){
  * Viser et af investeringsværktøjerne. "Dobbelt fradrag" gælder kun de to
  * første og flyttes derfor ind i det værktøj, der vises. Er Investering ikke
  * den viste sektion, skiftes der dertil.
- * @param {number} n 1 ASK vs. depot, 2 månedligt depot, 3 FIRE, 5 pension, 6 tips & viden;
+ * @param {number} n 1 ASK vs. depot, 2 månedligt depot, 3 FIRE, 5 pension, 6 tips & viden, 7 skattegrænse;
  *   4 (porteføljen) har nu sin egen side under Trackers og åbner den
  * @param {boolean} [stay] true = skift ikke sektion (bruges ved indlæsning)
  */

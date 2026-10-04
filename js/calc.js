@@ -1656,6 +1656,26 @@ function periodOptions(history){
     return {years, months: Object.fromEntries(years.map(y => [y, [...months[y]].sort((a, b) => a - b)]))};
 }
 
+// ==== Skattegrænse (aktieindkomst) ====
+
+/**
+ * Hvor tæt årets aktieindkomst er på grænsen, hvor skatten stiger fra 27 % til 42 %.
+ * Forenklet: realiserede gevinster minus tab, plus udbytte og lagerbeskattet gevinst;
+ * udbytteskat, der allerede er trukket, modregnes først i årsopgørelsen.
+ * @param {{realizedGains?:number, realizedLosses?:number, dividends?:number, lagerGains?:number, married?:boolean}} s
+ *   married = dobbelt grænse (ægtefællen bruger ikke sin del)
+ * @returns {{amount:number, limit:number, room:number, above:number, pct:number, tax:number, loss:number}}
+ *   loss = et negativt beløb, der kan fremføres til et senere år
+ */
+function taxLimitStatus({realizedGains = 0, realizedLosses = 0, dividends = 0, lagerGains = 0, married = false}){
+    const limit = married ? TAX_LIMIT_27 * 2 : TAX_LIMIT_27;
+    const amount = realizedGains - realizedLosses + dividends + lagerGains;
+    const taxable = Math.max(0, amount);
+    const low = Math.min(taxable, limit), above = taxable - low;
+    return {amount, limit, room: Math.max(0, limit - taxable), above, pct: taxable / limit,
+        tax: low * AKT_TAX_LOW + above * AKT_TAX_HIGH, loss: amount < 0 ? -amount : 0};
+}
+
 // ==== Nøgletal på Oversigt ====
 
 /**
@@ -1757,7 +1777,7 @@ function goalProgress(g){
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
-        addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, projectTrend, projectionReaches,
+        addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
         periodChanges, bestPeriods,
         planSync, applySync,
         CAPITAL_INCOME_LIMIT,
