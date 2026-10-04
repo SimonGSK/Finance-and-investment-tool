@@ -1642,6 +1642,21 @@ function portfolioTotals(history, year){
 }
 
 /**
+ * Hvor langt man er mod FIRE (økonomisk uafhængighed) efter 4 %-reglen: FIRE-tallet
+ * er det årlige forbrug divideret med udtræksraten (25 × årligt forbrug ved 4 %),
+ * som i FIRE-beregneren.
+ * @param {{wealth:number, monthlyExpenses:number, withdrawalRate?:number}} s
+ *   wealth = den formue, der tæller (likvid formue); monthlyExpenses = budgettet uden opsparing
+ * @returns {{target:number, pct:number, remaining:number, reached:boolean}|null} null uden forbrug
+ */
+function fireProgress({wealth, monthlyExpenses, withdrawalRate = 0.04}){
+    if(!(monthlyExpenses > 0)) return null;
+    const target = monthlyExpenses * 12 / withdrawalRate;
+    const pct = Math.max(0, wealth) / target;
+    return {target, pct, remaining: Math.max(0, target - wealth), reached: wealth >= target};
+}
+
+/**
  * Ændringen i et felt over det seneste år (højst 12 måneder tilbage fra seneste
  * datapunkt; er der mindre data, fra det første).
  * @param {{date:string}[]} history
@@ -1705,7 +1720,7 @@ function goalProgress(g){
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
-        addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, portfolioTotals, recentChange, projectTrend, projectionReaches,
+        addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, portfolioTotals, recentChange, fireProgress, projectTrend, projectionReaches,
         periodChanges, bestPeriods,
         planSync, applySync,
         CAPITAL_INCOME_LIMIT,

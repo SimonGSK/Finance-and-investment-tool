@@ -1287,3 +1287,20 @@ test('menuen: Oversigt øverst, så Værktøjer, Trackers og Hjælp, og Portefø
     await expect(page.locator('#tool5')).toBeVisible();
     await expect(page.locator('#ptEntryPanel')).toBeHidden();
 });
+
+test('Oversigt: FIRE-fremskridt måler den likvide formue mod 25 × årligt forbrug', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        localStorage.setItem('netWorthHistory', JSON.stringify([{date:'2026-09-30', value:900000, liquid:600000, netCatKontanter:100000, netCatAktier:500000, netCatPension:300000, netCatFrivaerdi:0, netCatAndet:0, debt:0}]));
+        // 10.000 kr. i forbrug om måneden (opsparingen tæller ikke med) = 3.000.000 kr. i FIRE-tal.
+        localStorage.setItem('budgetItems', JSON.stringify({catBolig:[{label:'Husleje', amount:10000}], catOpsparing:[{label:'Aktier', amount:2000}]}));
+        localStorage.setItem('overviewCards', JSON.stringify(['fire', 'netWorth', 'budget', 'growth']));
+    });
+    await page.reload();
+    await expect(page.locator('#ovKpis .stat .label').first()).toHaveText('FIRE-fremskridt');
+    await expect(page.locator('#ovFire')).toHaveText('20 %');
+    await expect(page.locator('#ovFireSub')).toHaveText('600.000 af 3.000.000 kr.');
+    // Uden budget kan FIRE-tallet ikke regnes ud.
+    await page.evaluate(() => { localStorage.removeItem('budgetItems'); location.reload(); });
+    await expect(page.locator('#ovFireSub')).toHaveText('Kræver et budget med dit forbrug');
+});

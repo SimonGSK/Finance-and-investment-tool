@@ -1,7 +1,7 @@
 /**
  * @file De fire nøgletal øverst på Oversigt kan vælges frit: "Tilpas" åbner en dialog
  * med fire vælgere, og hvert kort kan være et af tallene nedenfor, ordnet efter, hvor
- * de kommer fra (Formue, Månedsoverblik, Portefølje, Budget). Valget huskes i
+ * de kommer fra (Formue, Månedsoverblik, Portefølje, FIRE, Budget). Valget huskes i
  * localStorage ('overviewCards'). Selve tegningen sker i renderOverview (overview.js).
  */
 
@@ -91,6 +91,18 @@ const OVERVIEW_CARD_GROUPS = [
             if(rate === null) return {value: '–', sub: days < 90 ? 'Kræver mindst 3 måneders datapunkter' : 'Kan ikke beregnes ud fra dataene'};
             return {value: formatSignedPct(rate), cls: rate < 0 ? 'negative' : '',
                 sub: days < 365 ? `omregnet til år fra ${Math.round(days / 30)} mdr.` : `pengevægtet siden ${formatDanishDate(h[0].date)}`};
+        }}
+    ]},
+    {label: 'FIRE', cards: [
+        // Som i FIRE-beregneren: 25 × årligt forbrug (budgettet uden opsparing), målt mod den likvide formue.
+        {id: 'fire', label: 'FIRE-fremskridt', render: ctx => {
+            if(!ctx.hasNetWorth) return {value: '–', sub: 'Udfyld din formue'};
+            const f = fireProgress({wealth: ctx.figures.liquid || 0, monthlyExpenses: ctx.budgetSum - ctx.savings});
+            if(!f) return {value: '–', sub: 'Kræver et budget med dit forbrug'};
+            return {value: formatPct(Math.min(f.pct, 9.99), f.pct < 0.1 ? 1 : 0),
+                sub: f.reached ? `FIRE-tallet på ${DK.format(Math.round(f.target))} kr. er nået`
+                    : `${DK.format(Math.round(ctx.figures.liquid || 0))} af ${DK.format(Math.round(f.target))} kr.`,
+                subTone: f.reached ? 'up' : ''};
         }}
     ]},
     {label: 'Budget', cards: [
