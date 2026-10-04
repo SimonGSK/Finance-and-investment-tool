@@ -245,6 +245,17 @@ function checkMonthlyReminder(){
     }
 }
 
+/**
+ * "Tilføj påmindelse til din kalender": henter en .ics-fil med en gentagen begivenhed den
+ * sidste dag i hver måned. Telefonen og computeren tilbyder at lægge den i kalenderen.
+ */
+function downloadMonthlyReminder(){
+    const url = location.href.split('#')[0].split('?')[0].replace(/index\.html$/, '');
+    const ics = monthlyReminderIcs({today: todayIso(), now: new Date(), url});
+    downloadBlob(new Blob([ics], {type: 'text/calendar;charset=utf-8'}), 'okonomis-maanedsstatus.ics');
+    notify('Åbn filen, så lægges påmindelsen i din kalender.');
+}
+
 /** "Udfyld nu" i påmindelsen: åbner månedsstatus med den foreslåede dato (månedens sidste dag, eller i dag, hvis den ikke er nået). */
 function openMonthlyStatusFromReminder(){
     openMonthlyStatus(monthlyReminderState?.suggestedDate);

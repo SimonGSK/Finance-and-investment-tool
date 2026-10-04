@@ -1400,3 +1400,15 @@ test('månedsstatus: ændringen siden sidst under hver saldo, og "Hent seneste t
     await expect(debt).toHaveValue('20000');
     await expect(dialog.locator('.status-diff:not(:empty)')).toHaveCount(0);
 });
+
+test('indstillinger: påmindelsen kan lægges i kalenderen som en .ics-fil', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.locator('#settingsBtn').click();
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Tilføj påmindelse til din kalender' }).click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toBe('okonomis-maanedsstatus.ics');
+    const text = require('fs').readFileSync(await download.path(), 'utf8');
+    expect(text).toContain('RRULE:FREQ=MONTHLY;BYMONTHDAY=-1');
+    expect(text).toContain('SUMMARY:Gem din månedsstatus i Økonomis');
+});

@@ -1874,3 +1874,8 @@ body[data-section="overview"] .customize-btn{ display:inline-flex; }
 @media (max-width:640px){
     .status-intro{ flex-direction:column; }
 }
+
+/* ---- Kalenderpåmindelse i indstillingerne ---- */
+.calendar-btn{ margin-top:var(--s3); }
+.calendar-btn .btn-icon{ width:15px; height:15px; }
+.calendar-hint{ margin:var(--s1) 0 0; font-size:12.5px; color:var(--muted); }

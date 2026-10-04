@@ -1497,6 +1497,29 @@ function monthlyStatusReminder({today, latestSaved, snoozedOn = null, enabled = 
 }
 
 /**
+ * En kalenderfil (.ics) med en gentagen påmindelse om månedsstatus: den sidste dag i
+ * hver måned kl. 19, med en alarm på tidspunktet. Tiden er "flydende" (uden tidszone),
+ * så den følger telefonens egen tid. Samme UID, så en ny import erstatter den gamle.
+ * @param {{today:string, now:Date, url:string}} s today = ISO-dato; now giver DTSTAMP
+ * @returns {string} filens indhold med CRLF-linjeskift
+ */
+function monthlyReminderIcs({today, now, url}){
+    const [y, m] = today.split('-').map(Number);
+    const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    const start = `${y}${String(m).padStart(2, '0')}${String(last).padStart(2, '0')}`;
+    const stamp = now.toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
+    const escape = t => t.replace(/[\;,]/g, c => '\\' + c);
+    return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Økonomis//Månedsstatus//DA', 'CALSCALE:GREGORIAN',
+        'BEGIN:VEVENT', 'UID:maanedsstatus@okonomis', `DTSTAMP:${stamp}`,
+        `DTSTART:${start}T190000`, `DTEND:${start}T191500`, 'RRULE:FREQ=MONTHLY;BYMONTHDAY=-1',
+        `SUMMARY:${escape('Gem din månedsstatus i Økonomis')}`,
+        `DESCRIPTION:${escape('Skriv månedens tal ind, så din formue- og porteføljehistorik bliver ved med at være komplet: ' + url)}`,
+        `URL:${url}`,
+        'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:Gem din månedsstatus', 'TRIGGER:PT0M', 'END:VALARM',
+        'END:VEVENT', 'END:VCALENDAR', ''].join('\r\n');
+}
+
+/**
  * Hvor mange måneders udgifter kontanterne dækker.
  * @param {number} cash
  * @param {number} monthlyExpenses
@@ -1781,7 +1804,7 @@ if(typeof module !== 'undefined' && module.exports){
         periodChanges, bestPeriods,
         planSync, applySync,
         CAPITAL_INCOME_LIMIT,
-        monthlyStatusReminder,
+        monthlyStatusReminder, monthlyReminderIcs,
         pickNetWorthFigures,
         compareDebtStrategies,
         csvNumber, budgetExportRows,
