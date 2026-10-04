@@ -984,6 +984,13 @@ describe('nøgletal på Oversigt', () => {
         assert.equal(Math.round(t.gainPct * 1000) / 10, 16.7);
         assert.equal(calc.portfolioTotals([]), null);
     });
+    test('FIRE: 25 × årligt forbrug ved 4 %-reglen, og hvor langt formuen rækker', () => {
+        const f = calc.fireProgress({wealth: 900000, monthlyExpenses: 15000});
+        assert.deepEqual([f.target, f.pct, f.remaining, f.reached], [4500000, 0.2, 3600000, false]);
+        assert.equal(calc.fireProgress({wealth: 5000000, monthlyExpenses: 15000}).reached, true);
+        assert.equal(calc.fireProgress({wealth: -20000, monthlyExpenses: 15000}).pct, 0);
+        assert.equal(calc.fireProgress({wealth: 900000, monthlyExpenses: 0}), null);
+    });
     test('ændringen det seneste år, eller siden første punkt med mindre data', () => {
         const h = [{date:'2025-06-30', value:300000}, {date:'2025-09-30', value:400000}, {date:'2026-09-30', value:500000}];
         const r = calc.recentChange(h, 'value');
