@@ -1879,3 +1879,24 @@ body[data-section="overview"] .customize-btn{ display:inline-flex; }
 .calendar-btn{ margin-top:var(--s3); }
 .calendar-btn .btn-icon{ width:15px; height:15px; }
 .calendar-hint{ margin:var(--s1) 0 0; font-size:12.5px; color:var(--muted); }
+
+/* ---- Kodelås ---- */
+.lock-screen{ display:none; }
+html.is-locked .lock-screen{
+    display:grid; place-items:center; position:fixed; inset:0; z-index:1000; overflow-y:auto;
+    padding:max(var(--s5), env(safe-area-inset-top)) var(--s4) var(--s5); background:var(--bg);
+}
+/* Siden under låseskærmen er skjult, så den hverken ses eller kan nås med tastaturet. */
+html.is-locked .page-shell, html.is-locked #printReport, html.is-locked .toast-region{ visibility:hidden; }
+.lock-card{ width:min(360px, 100%); display:flex; flex-direction:column; align-items:center; gap:var(--s4); text-align:center; }
+.lock-logo{ width:64px; height:64px; border-radius:16px; }
+.lock-title{ margin:0; font-family:var(--font-display); font-size:26px; font-weight:600; color:var(--text); }
+.lock-form{ display:flex; gap:var(--s2); width:100%; }
+.lock-input{ flex:1; text-align:center; letter-spacing:0.4em; font-size:20px; }
+.lock-input::placeholder{ letter-spacing:normal; font-family:var(--font-sans); font-size:16px; }
+.lock-form .btn{ margin:0; flex-shrink:0; }
+.lock-error{ margin:0; min-height:1.2em; }
+.lock-biometric{ width:100%; }
+.lock-status{ margin:0 0 var(--s3); font-size:13.5px; color:var(--pos); font-weight:600; }
+.lock-actions{ display:flex; gap:var(--s2); flex-wrap:wrap; margin-top:var(--s3); }
+.lock-actions .btn + .btn{ margin-left:0; }
