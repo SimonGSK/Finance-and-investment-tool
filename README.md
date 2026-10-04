@@ -42,7 +42,7 @@ Build a monthly budget from itemised posts in 15 categories plus your own, each 
 
 ### Månedsoverblik
 
-Pick a year and a month (or the whole year) and see how each part of your net worth changed in that period: net worth, liquid wealth, pension, cash, shares, home equity, other and debt, each with start, end, change in kr. and %. A month is compared with the previous monthly status (the text says which dates, so a gap is visible); a whole year runs from the last status before 1 January. The portfolio's return for the same period comes from the portfolio tracker, with your own deposits taken out.
+Pick a year and a month (or the whole year) and see how each part of your net worth changed in that period: net worth, liquid wealth, pension, cash, shares, home equity, other and debt, each with start, end, change in kr. and %. A month is compared with the previous monthly status (the text says which dates, so a gap is visible); a whole year runs from the last status before 1 January. The portfolio's return for the same period comes from the portfolio tracker, with your own deposits taken out. Each category has a small trend line over the last year, and the year's best and worst month are shown under the key figures (a month after a skipped status counts as one step, e.g. "aug.–sep. (2 mdr.)"). Choosing *Hele året* shows **Dit år i tal**: the year's growth, best and worst month, months with growth, the portfolio's return, deposits and dividends, and *Del som billede*, which draws the year as a 1080 × 1350 image to share or save, with or without amounts.
 
 ### Formue
 

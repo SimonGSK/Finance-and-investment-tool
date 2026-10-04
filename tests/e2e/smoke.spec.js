@@ -1304,3 +1304,46 @@ test('Oversigt: FIRE-fremskridt måler den likvide formue mod 25 × årligt forb
     await page.evaluate(() => { localStorage.removeItem('budgetItems'); location.reload(); });
     await expect(page.locator('#ovFireSub')).toHaveText('Kræver et budget med dit forbrug');
 });
+
+test('Månedsoverblik: Dit år i tal, årets bedste og værste måned, kurver og deling som billede', async ({ page }) => {
+    const errors = collectErrors(page);
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        const nw = (date, value) => ({date, value, liquid: value, netCatKontanter: value, netCatAktier: 0, netCatPension: 0, netCatFrivaerdi: 0, netCatAndet: 0, debt: 0});
+        // 2026: jan +10.000, feb −5.000, apr +30.000 over to måneder (marts mangler).
+        localStorage.setItem('netWorthHistory', JSON.stringify([nw('2025-12-31', 400000), nw('2026-01-31', 410000), nw('2026-02-28', 405000), nw('2026-04-30', 435000)]));
+        localStorage.setItem('portfolioHistory', JSON.stringify([
+            {date:'2025-12-31', portfolioValue:100000, deposit:100000, dividend:0},
+            {date:'2026-04-30', portfolioValue:112000, deposit:6000, dividend:300}
+        ]));
+    });
+    await page.reload();
+    await page.evaluate(() => showSection('month'));
+
+    // En måned: årets bedste og værste måned under nøgletallene, og mærket på den valgte måned.
+    await expect(page.locator('#monthPeriod')).toHaveValue('4');
+    await expect(page.locator('#monthBest')).toContainText('bedste måned mar.–apr. (2 mdr.) +30.000 kr.');
+    await expect(page.locator('#monthBest')).toContainText('værste måned februar −5.000 kr.');
+    await expect(page.locator('#monthRange')).toContainText('Årets bedste måned');
+    await expect(page.locator('#yearPanel')).toBeHidden();
+    // Hver kategori har en lille kurve.
+    await expect(page.locator('#monthTableBody svg.spark').first()).toBeVisible();
+
+    // Hele året: Dit år i tal.
+    await page.locator('#monthPeriod').selectOption('0');
+    const panel = page.locator('#yearPanel');
+    await expect(panel).toBeVisible();
+    await expect(panel.locator('.year-lead')).toHaveText('Din nettoformue steg 35.000 kr. (+8,8 %) i 2026.');
+    await expect(panel).toContainText('Måneder med fremgang2 af 3');
+    await expect(panel).toContainText('Porteføljens afkast+6.000 kr.');       // 12.000 kr. mere, heraf 6.000 kr. indskud
+    await expect(page.locator('#monthBest')).toBeHidden();
+
+    // Del som billede: en forhåndsvisning, uden beløb som udgangspunkt.
+    await panel.getByRole('button', { name: 'Del som billede' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Del dit år' });
+    await expect(dialog.getByRole('checkbox')).not.toBeChecked();
+    await expect.poll(() => dialog.locator('img').evaluate(img => img.naturalWidth)).toBe(1080);
+    await dialog.getByText('Vis beløb').click();
+    await expect.poll(() => dialog.locator('img').evaluate(img => img.naturalWidth)).toBe(1080);
+    expect(errors).toEqual([]);
+});
