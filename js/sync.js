@@ -23,7 +23,7 @@ const SYNC_HISTORY_KEYS = ['netWorthHistory', 'portfolioHistory'];
 const SYNC_LABELS = {
     budgetItems: 'Budgetposter', budgetData: 'Budgettets samlede beløb', budgetCustomCategories: 'Egne budgetkategorier',
     netWorthData: 'Formue-felterne', netWorthHistory: 'Formuehistorik', portfolioHistory: 'Porteføljehistorik',
-    debtPayoffData: 'Lån i gældsafvikling', netWorthGoals: 'Mål', taxTracker: 'ASK og skattegrænser'
+    debtPayoffData: 'Lån i gældsafvikling', netWorthGoals: 'Mål', taxTracker: 'Skattegrænse'
 };
 
 (function trackChanges(){

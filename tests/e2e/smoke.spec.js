@@ -1271,7 +1271,7 @@ test('menuen: Oversigt øverst, så Værktøjer, Trackers og Hjælp, og Portefø
         nodes.map(n => n.classList.contains('nav-label') ? '# ' + n.textContent.trim() : [...n.childNodes].filter(c => c.nodeType === 3).map(c => c.textContent).join('').trim()));
     expect(items).toEqual(['Oversigt', '# Værktøjer', 'Investering', 'Bolig & lån', 'Budget', '# Trackers', 'Formue', 'Månedsoverblik', 'Portefølje',
         '# Hjælp', 'Indstillinger', 'Hjælp og spørgsmål', 'Giv feedback']);
-    await expect(page.locator('#navSubTools .nav-subitem')).toHaveText(['ASK vs. Aktiedepot', 'Aktiedepot: fast + månedligt', 'FIRE-beregner (4%-reglen)', 'Pension', 'ASK og skattegrænser', 'Tips & viden']);
+    await expect(page.locator('#navSubTools .nav-subitem')).toHaveText(['ASK vs. Aktiedepot', 'Aktiedepot: fast + månedligt', 'FIRE-beregner (4%-reglen)', 'Pension', 'Skattegrænse', 'Tips & viden']);
 
     await page.getByRole('button', { name: 'Portefølje', exact: true }).click();
     await expect(page.locator('#pageEyebrow')).toHaveText('Portefølje');
@@ -1348,25 +1348,23 @@ test('Månedsoverblik: Dit år i tal, årets bedste og værste måned, kurver og
     expect(errors).toEqual([]);
 });
 
-test('ASK og skattegrænser: plads under ASK-loftet og 27 %-grænsen, skat over grænsen, og tallene huskes', async ({ page }) => {
+test('Skattegrænse: plads til 27 %, skat over grænsen, dobbelt grænse for gifte, og tallene huskes', async ({ page }) => {
     await page.goto('/index.html');
     await page.getByRole('button', { name: 'Investering', exact: true }).click();
-    await page.getByRole('button', { name: 'ASK og skattegrænser', exact: true }).click();
-    await expect(page.locator('#pageTitle')).toHaveText('ASK og skattegrænser');
-    const limits = await page.evaluate(() => ({ask: ASK_DEPOSIT_LIMIT, l27: TAX_LIMIT_27}));
+    await page.getByRole('button', { name: 'Skattegrænse', exact: true }).click();
+    await expect(page.locator('#pageTitle')).toHaveText('Skattegrænse');
+    const l27 = await page.evaluate(() => TAX_LIMIT_27);
     const kr = n => n.toLocaleString('da-DK') + ' kr.';
 
-    await page.locator('#taxAskDeposits').fill('100000');
-    await expect(page.locator('#taxAskNote')).toHaveText(`Du kan sætte ${(limits.ask - 100000).toLocaleString('da-DK')} kr. mere ind.`);
     await page.locator('#taxRealizedGains').fill('60000');
     await page.locator('#taxRealizedLosses').fill('10000');
     await page.locator('#taxDividends').fill('4000');
     await expect(page.locator('#taxIncomeTotal')).toHaveText('54.000 kr.');
-    await expect(page.locator('#taxRoom')).toHaveText(kr(limits.l27 - 54000));
+    await expect(page.locator('#taxRoom')).toHaveText(kr(l27 - 54000));
     await expect(page.locator('#taxEstimate')).toHaveText('14.580 kr.');                 // 27 % af 54.000
 
     // Over grænsen: rød bjælke og 42 % af resten.
-    await page.locator('#taxRealizedGains').fill(String(limits.l27 + 16000));
+    await page.locator('#taxRealizedGains').fill(String(l27 + 16000));
     await expect(page.locator('#taxIncomeFill')).toHaveClass(/is-over/);
     await expect(page.locator('#taxIncomeNote')).toContainText(`${(10000).toLocaleString('da-DK')} kr. ligger over grænsen`);
     // Dobbelt grænse for gifte.
@@ -1375,7 +1373,7 @@ test('ASK og skattegrænser: plads under ASK-loftet og 27 %-grænsen, skat over 
 
     await page.reload();
     await page.evaluate(() => showTool(7));
-    await expect(page.locator('#taxAskDeposits')).toHaveValue('100000');
+    await expect(page.locator('#taxRealizedGains')).toHaveValue(String(l27 + 16000));
     await expect(page.locator('#taxMarried')).toBeChecked();
     expect(await page.evaluate(() => BACKUP_KEYS.includes('taxTracker'))).toBe(true);
 });
