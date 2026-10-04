@@ -1656,6 +1656,34 @@ function periodOptions(history){
     return {years, months: Object.fromEntries(years.map(y => [y, [...months[y]].sort((a, b) => a - b)]))};
 }
 
+// ==== ASK og skattegrænser ====
+
+/**
+ * Status på årets to grænser: hvor meget der endnu kan sættes ind på aktiesparekontoen
+ * (loftet gælder de samlede indskud, ikke gevinsterne), og hvor tæt aktieindkomsten er
+ * på grænsen, hvor skatten stiger fra 27 % til 42 %. Forenklet: realiserede gevinster
+ * minus tab, plus udbytte og lagerbeskattet gevinst; udbytteskat, der allerede er
+ * trukket, modregnes først i årsopgørelsen.
+ * @param {{askDeposits?:number, realizedGains?:number, realizedLosses?:number, dividends?:number,
+ *   lagerGains?:number, married?:boolean}} s married = dobbelt grænse (ægtefællen bruger ikke sin)
+ * @returns {{ask:{deposits:number, limit:number, room:number, over:number, pct:number},
+ *   income:{amount:number, limit:number, room:number, above:number, pct:number, tax:number, loss:number}}}
+ *   loss = et negativt beløb, der kan fremføres til et senere år
+ */
+function taxLimitStatus({askDeposits = 0, realizedGains = 0, realizedLosses = 0, dividends = 0, lagerGains = 0, married = false}){
+    const deposits = Math.max(0, askDeposits);
+    const limit27 = married ? TAX_LIMIT_27 * 2 : TAX_LIMIT_27;
+    const amount = realizedGains - realizedLosses + dividends + lagerGains;
+    const taxable = Math.max(0, amount);
+    const low = Math.min(taxable, limit27), above = taxable - low;
+    return {
+        ask: {deposits, limit: ASK_DEPOSIT_LIMIT, room: Math.max(0, ASK_DEPOSIT_LIMIT - deposits),
+            over: Math.max(0, deposits - ASK_DEPOSIT_LIMIT), pct: deposits / ASK_DEPOSIT_LIMIT},
+        income: {amount, limit: limit27, room: Math.max(0, limit27 - taxable), above, pct: taxable / limit27,
+            tax: low * AKT_TAX_LOW + above * AKT_TAX_HIGH, loss: amount < 0 ? -amount : 0}
+    };
+}
+
 // ==== Nøgletal på Oversigt ====
 
 /**
@@ -1757,7 +1785,7 @@ function goalProgress(g){
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
-        addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, projectTrend, projectionReaches,
+        addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
         periodChanges, bestPeriods,
         planSync, applySync,
         CAPITAL_INCOME_LIMIT,

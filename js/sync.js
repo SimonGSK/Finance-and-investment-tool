@@ -16,14 +16,14 @@
 
 // Alt, der gemmes i filen og flettes. Indstillinger er rå tekst (ikke JSON) og
 // ligger i filens 'settings'-afsnit.
-const BACKUP_KEYS = ['budgetItems', 'budgetData', 'budgetCustomCategories', 'netWorthData', 'netWorthHistory', 'portfolioHistory', 'monthlyStatusLast', 'debtPayoffData', 'netWorthGoals'];
+const BACKUP_KEYS = ['budgetItems', 'budgetData', 'budgetCustomCategories', 'netWorthData', 'netWorthHistory', 'portfolioHistory', 'monthlyStatusLast', 'debtPayoffData', 'netWorthGoals', 'taxTracker'];
 const BACKUP_SETTING_KEYS = ['theme', 'monthlyReminderOff', 'wealthAge', 'showForecast'];
 const SYNC_HISTORY_KEYS = ['netWorthHistory', 'portfolioHistory'];
 // Dele, brugeren skal tage stilling til, hvis de er forskellige. Resten (fx tema) følger den nyeste.
 const SYNC_LABELS = {
     budgetItems: 'Budgetposter', budgetData: 'Budgettets samlede beløb', budgetCustomCategories: 'Egne budgetkategorier',
     netWorthData: 'Formue-felterne', netWorthHistory: 'Formuehistorik', portfolioHistory: 'Porteføljehistorik',
-    debtPayoffData: 'Lån i gældsafvikling', netWorthGoals: 'Mål'
+    debtPayoffData: 'Lån i gældsafvikling', netWorthGoals: 'Mål', taxTracker: 'ASK og skattegrænser'
 };
 
 (function trackChanges(){

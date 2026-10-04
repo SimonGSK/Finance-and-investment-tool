@@ -1010,3 +1010,23 @@ describe('nøgletal på Oversigt', () => {
         assert.equal(calc.recentChange(h.slice(0, 1), 'value'), null);
     });
 });
+
+describe('ASK og skattegrænser', () => {
+    test('ASK: plads under loftet og et indskud over det', () => {
+        const a = calc.taxLimitStatus({askDeposits: 150000}).ask;
+        assert.deepEqual([a.limit, a.room, a.over], [calc.ASK_DEPOSIT_LIMIT, calc.ASK_DEPOSIT_LIMIT - 150000, 0]);
+        assert.equal(calc.taxLimitStatus({askDeposits: calc.ASK_DEPOSIT_LIMIT + 1000}).ask.over, 1000);
+    });
+    test('aktieindkomst: gevinst minus tab plus udbytte og lagergevinst, 27 % under grænsen og 42 % over', () => {
+        const L = calc.TAX_LIMIT_27;
+        const under = calc.taxLimitStatus({realizedGains: 50000, realizedLosses: 10000, dividends: 5000, lagerGains: 5000}).income;
+        assert.deepEqual([under.amount, under.room, under.above], [50000, L - 50000, 0]);
+        assert.equal(Math.round(under.tax), 13500);                       // 27 % af 50.000
+        const over = calc.taxLimitStatus({realizedGains: L + 20000}).income;
+        assert.deepEqual([over.room, over.above], [0, 20000]);
+        assert.equal(Math.round(over.tax), Math.round(L * 0.27 + 20000 * 0.42));
+        assert.equal(calc.taxLimitStatus({realizedGains: L + 20000, married: true}).income.above, 0);   // dobbelt grænse
+        const loss = calc.taxLimitStatus({realizedGains: 10000, realizedLosses: 25000}).income;
+        assert.deepEqual([loss.tax, loss.loss, loss.room], [0, 15000, L]);
+    });
+});
