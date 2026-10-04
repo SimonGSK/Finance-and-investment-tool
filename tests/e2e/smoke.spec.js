@@ -1377,3 +1377,26 @@ test('Skattegrænse: plads til 27 %, skat over grænsen, dobbelt grænse for gif
     await expect(page.locator('#taxMarried')).toBeChecked();
     expect(await page.evaluate(() => BACKUP_KEYS.includes('taxTracker'))).toBe(true);
 });
+
+test('månedsstatus: ændringen siden sidst under hver saldo, og "Hent seneste tal" sætter felterne tilbage', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        localStorage.setItem('netWorthHistory', JSON.stringify([{date:'2026-08-31', value:300000, liquid:200000, netCatKontanter:50000, netCatAktier:150000, netCatPension:100000, netCatFrivaerdi:0, netCatAndet:0, debt:20000}]));
+        localStorage.setItem('monthlyStatusLast', JSON.stringify({bank:45000, physical:0, depotCash:5000, stocks:150000, pension:100000, homeEquity:0, other:0, debt:20000}));
+    });
+    await page.reload();
+    await page.evaluate(() => openMonthlyStatus('2026-09-30'));
+    const dialog = page.getByRole('dialog', { name: 'Månedsstatus' });
+    const bank = dialog.getByRole('textbox', { name: 'Bank- og opsparingskonti', exact: true });
+    await expect(bank).toHaveValue('45000');
+    await bank.fill('47400');
+    await expect(dialog.locator('.status-diff').first()).toHaveText('+2.400 kr. siden sidst');
+    await expect(dialog.locator('.status-diff').first()).toHaveClass(/is-up/);
+    const debt = dialog.getByRole('textbox', { name: 'Gæld', exact: true });
+    await debt.fill('18000');
+    await expect(dialog.locator('.status-diff.is-up', { hasText: '−2.000 kr. siden sidst' })).toHaveCount(1);   // mindre gæld er godt
+    await dialog.getByRole('button', { name: 'Hent seneste tal' }).click();
+    await expect(bank).toHaveValue('45000');
+    await expect(debt).toHaveValue('20000');
+    await expect(dialog.locator('.status-diff:not(:empty)')).toHaveCount(0);
+});

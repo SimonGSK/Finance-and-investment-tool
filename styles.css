@@ -1862,3 +1862,15 @@ body[data-section="overview"] .customize-btn{ display:inline-flex; }
 .tax-limit-row .tax-fill.is-over{ background:var(--cross); }
 .tax-note{ margin:var(--s2) 0 0; font-size:13.5px; color:var(--muted); }
 .tax-note.hint-warning{ color:var(--cross); }
+
+/* ---- Månedsstatus: "Hent seneste tal" og ændringen siden sidst under hver saldo ---- */
+.status-intro{ display:flex; align-items:flex-start; justify-content:space-between; gap:var(--s3); margin-bottom:var(--s4); }
+.status-intro .dialog-hint{ margin:0; }
+.status-intro .btn{ flex-shrink:0; }
+.status-diff{ min-height:0; font-size:12.5px; font-weight:600; color:var(--muted); }
+.status-diff:empty{ display:none; }
+.status-diff.is-up{ color:var(--pos); }
+.status-diff.is-down{ color:var(--cross); }
+@media (max-width:640px){
+    .status-intro{ flex-direction:column; }
+}
