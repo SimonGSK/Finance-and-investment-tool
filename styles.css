@@ -1487,12 +1487,17 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
 .ov-side{ display:flex; flex-direction:column; gap:var(--s4); }
 .ov-tools{ display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:var(--s3); }
 .ov-tool{
-    display:flex; flex-direction:column; gap:4px; text-align:left; cursor:pointer;
+    display:flex; align-items:flex-start; gap:var(--s3); text-align:left; cursor:pointer;
     padding:var(--s4) var(--s5); border:1px solid var(--border); border-radius:18px; background:var(--panel);
     font-family:var(--font-sans); color:var(--muted); font-size:14px; line-height:1.45;
     transition:border-color 0.15s var(--ease), background 0.15s var(--ease);
 }
 .ov-tool strong{ color:var(--text); font-size:15.5px; }
+/* Et lille ikon i en blød grøn flade, som i menuen */
+.ov-tool-icon{ display:grid; place-items:center; flex-shrink:0; width:38px; height:38px; border-radius:12px; background:var(--akt-soft); color:var(--akt); }
+.ov-tool-icon svg{ width:20px; height:20px; }
+.ov-tool-text{ display:flex; flex-direction:column; gap:4px; min-width:0; }
+.ov-tool:hover .ov-tool-icon{ background:var(--akt); color:var(--on-akt); }
 .ov-tool:hover{ border-color:var(--akt); background:var(--panel-hover); }
 
 /* Indstillinger åbner under topbjælkens højre side */
@@ -1712,6 +1717,8 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
     .ov-next li{ font-size:13.5px; padding:10px 0; }
     .ov-tool{ padding:10px 12px; font-size:12.5px; }
     .ov-tool strong{ font-size:14px; }
+    .ov-tool-icon{ width:32px; height:32px; border-radius:10px; }
+    .ov-tool-icon svg{ width:18px; height:18px; }
     .result-value{ font-size:24px; }
     .layout, .layout-wide, .layout-net-worth{ gap:var(--s3); }
     .legend{ gap:4px var(--s4); margin-bottom:var(--s3); }
@@ -1855,3 +1862,41 @@ body[data-section="overview"] .customize-btn{ display:inline-flex; }
 .tax-limit-row .tax-fill.is-over{ background:var(--cross); }
 .tax-note{ margin:var(--s2) 0 0; font-size:13.5px; color:var(--muted); }
 .tax-note.hint-warning{ color:var(--cross); }
+
+/* ---- Månedsstatus: "Hent seneste tal" og ændringen siden sidst under hver saldo ---- */
+.status-intro{ display:flex; align-items:flex-start; justify-content:space-between; gap:var(--s3); margin-bottom:var(--s4); }
+.status-intro .dialog-hint{ margin:0; }
+.status-intro .btn{ flex-shrink:0; }
+.status-diff{ min-height:0; font-size:12.5px; font-weight:600; color:var(--muted); }
+.status-diff:empty{ display:none; }
+.status-diff.is-up{ color:var(--pos); }
+.status-diff.is-down{ color:var(--cross); }
+@media (max-width:640px){
+    .status-intro{ flex-direction:column; }
+}
+
+/* ---- Kalenderpåmindelse i indstillingerne ---- */
+.calendar-btn{ margin-top:var(--s3); }
+.calendar-btn .btn-icon{ width:15px; height:15px; }
+.calendar-hint{ margin:var(--s1) 0 0; font-size:12.5px; color:var(--muted); }
+
+/* ---- Kodelås ---- */
+.lock-screen{ display:none; }
+html.is-locked .lock-screen{
+    display:grid; place-items:center; position:fixed; inset:0; z-index:1000; overflow-y:auto;
+    padding:max(var(--s5), env(safe-area-inset-top)) var(--s4) var(--s5); background:var(--bg);
+}
+/* Siden under låseskærmen er skjult, så den hverken ses eller kan nås med tastaturet. */
+html.is-locked .page-shell, html.is-locked #printReport, html.is-locked .toast-region{ visibility:hidden; }
+.lock-card{ width:min(360px, 100%); display:flex; flex-direction:column; align-items:center; gap:var(--s4); text-align:center; }
+.lock-logo{ width:64px; height:64px; border-radius:16px; }
+.lock-title{ margin:0; font-family:var(--font-display); font-size:26px; font-weight:600; color:var(--text); }
+.lock-form{ display:flex; gap:var(--s2); width:100%; }
+.lock-input{ flex:1; text-align:center; letter-spacing:0.4em; font-size:20px; }
+.lock-input::placeholder{ letter-spacing:normal; font-family:var(--font-sans); font-size:16px; }
+.lock-form .btn{ margin:0; flex-shrink:0; }
+.lock-error{ margin:0; min-height:1.2em; }
+.lock-biometric{ width:100%; }
+.lock-status{ margin:0 0 var(--s3); font-size:13.5px; color:var(--pos); font-weight:600; }
+.lock-actions{ display:flex; gap:var(--s2); flex-wrap:wrap; margin-top:var(--s3); }
+.lock-actions .btn + .btn{ margin-left:0; }

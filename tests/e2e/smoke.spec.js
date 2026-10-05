@@ -1377,3 +1377,117 @@ test('Skattegrænse: plads til 27 %, skat over grænsen, dobbelt grænse for gif
     await expect(page.locator('#taxMarried')).toBeChecked();
     expect(await page.evaluate(() => BACKUP_KEYS.includes('taxTracker'))).toBe(true);
 });
+
+test('månedsstatus: ændringen siden sidst under hver saldo, og "Hent seneste tal" sætter felterne tilbage', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        localStorage.setItem('netWorthHistory', JSON.stringify([{date:'2026-08-31', value:300000, liquid:200000, netCatKontanter:50000, netCatAktier:150000, netCatPension:100000, netCatFrivaerdi:0, netCatAndet:0, debt:20000}]));
+        localStorage.setItem('monthlyStatusLast', JSON.stringify({bank:45000, physical:0, depotCash:5000, stocks:150000, pension:100000, homeEquity:0, other:0, debt:20000}));
+    });
+    await page.reload();
+    await page.evaluate(() => openMonthlyStatus('2026-09-30'));
+    const dialog = page.getByRole('dialog', { name: 'Månedsstatus' });
+    const bank = dialog.getByRole('textbox', { name: 'Bank- og opsparingskonti', exact: true });
+    await expect(bank).toHaveValue('45000');
+    await bank.fill('47400');
+    await expect(dialog.locator('.status-diff').first()).toHaveText('+2.400 kr. siden sidst');
+    await expect(dialog.locator('.status-diff').first()).toHaveClass(/is-up/);
+    const debt = dialog.getByRole('textbox', { name: 'Gæld', exact: true });
+    await debt.fill('18000');
+    await expect(dialog.locator('.status-diff.is-up', { hasText: '−2.000 kr. siden sidst' })).toHaveCount(1);   // mindre gæld er godt
+    await dialog.getByRole('button', { name: 'Hent seneste tal' }).click();
+    await expect(bank).toHaveValue('45000');
+    await expect(debt).toHaveValue('20000');
+    await expect(dialog.locator('.status-diff:not(:empty)')).toHaveCount(0);
+});
+
+test('indstillinger: påmindelsen kan lægges i kalenderen som en .ics-fil', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.locator('#settingsBtn').click();
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Tilføj påmindelse til din kalender' }).click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toBe('okonomis-maanedsstatus.ics');
+    const text = require('fs').readFileSync(await download.path(), 'utf8');
+    expect(text).toContain('RRULE:FREQ=MONTHLY;BYMONTHDAY=-1');
+    expect(text).toContain('SUMMARY:Gem din månedsstatus i Økonomis');
+});
+
+test('kodelås: slås til med en kode, låser ved åbning og efter 5 minutter væk, og slås fra igen', async ({ page }) => {
+    await page.clock.install({ time: new Date('2026-10-04T12:00:00') });
+    await page.goto('/index.html');
+    await page.evaluate(() => localStorage.setItem('netWorthHistory', JSON.stringify([{date:'2026-09-30', value:123456, liquid:123456, netCatKontanter:123456, netCatAktier:0, netCatPension:0, netCatFrivaerdi:0, netCatAndet:0, debt:0}])));
+    await page.reload();
+
+    // Slå til i indstillingerne.
+    await page.locator('#settingsBtn').click();
+    await page.getByRole('button', { name: 'Slå kodelås til' }).click();
+    const codeDialog = page.getByRole('dialog', { name: 'Vælg en kode' });
+    await codeDialog.getByLabel('Kode', { exact: true }).fill('12');
+    await codeDialog.getByLabel('Gentag koden').fill('12');
+    await codeDialog.getByRole('button', { name: 'Gem kode' }).click();
+    await expect(codeDialog).toContainText('Koden skal være 4-6 cifre.');
+    await codeDialog.getByLabel('Kode', { exact: true }).fill('1234');
+    await codeDialog.getByLabel('Gentag koden').fill('1234');
+    await codeDialog.getByRole('button', { name: 'Gem kode' }).click();
+    await expect(page.locator('#lockSettings')).toContainText('Kodelåsen er slået til.');
+    expect(await page.evaluate(() => localStorage.getItem('appLock'))).not.toContain('1234');   // kun et hash gemmes
+
+    // Låst ved åbning: siden er skjult, og forkert kode afvises.
+    await page.reload();
+    const lock = page.locator('#lockScreen');
+    await expect(lock).toBeVisible();
+    await expect(page.locator('.page-shell')).toBeHidden();
+    await page.locator('#lockCode').fill('0000');
+    await page.getByRole('button', { name: 'Lås op' }).click();
+    await expect(page.locator('#lockError')).toHaveText('Forkert kode. Prøv igen.');
+    await page.locator('#lockCode').fill('1234');
+    await page.getByRole('button', { name: 'Lås op' }).click();
+    await expect(lock).toBeHidden();
+    await expect(page.locator('#ovNetWorth')).toHaveText('123.456 kr.');
+
+    // Efter mere end 5 minutter væk låses den igen.
+    const setVisibility = state => page.evaluate(s => {
+        Object.defineProperty(document, 'visibilityState', { value: s, configurable: true });
+        document.dispatchEvent(new Event('visibilitychange'));
+    }, state);
+    await setVisibility('hidden');
+    await page.clock.fastForward('04:00');
+    await setVisibility('visible');
+    await expect(lock).toBeHidden();                   // 4 minutter: stadig åben
+    await setVisibility('hidden');
+    await page.clock.fastForward('06:00');
+    await setVisibility('visible');
+    await expect(lock).toBeVisible();
+    await page.locator('#lockCode').fill('1234');
+    await page.getByRole('button', { name: 'Lås op' }).click();
+    await expect(lock).toBeHidden();
+
+    // Slå fra kræver koden.
+    await page.locator('#settingsBtn').click();
+    await page.getByRole('button', { name: 'Slå kodelås fra' }).click();
+    const off = page.getByRole('dialog', { name: 'Slå kodelåsen fra' });
+    await off.getByLabel('Din nuværende kode').fill('9999');
+    await off.getByRole('button', { name: 'Slå fra' }).click();
+    await expect(off).toContainText('Forkert kode.');
+    await off.getByLabel('Din nuværende kode').fill('1234');
+    await off.getByRole('button', { name: 'Slå fra' }).click();
+    await expect(page.getByRole('button', { name: 'Slå kodelås til' })).toBeVisible();
+    await page.reload();
+    await expect(lock).toBeHidden();
+});
+
+test('kodelås: "Glemt koden?" sletter dataene på enheden og fjerner låsen', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(async () => {
+        localStorage.setItem('budgetItems', JSON.stringify({catBolig:[{label:'Husleje', amount:9000}]}));
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        localStorage.setItem('appLock', JSON.stringify({hash: await hashLockCode('4321', salt), salt: btoa(String.fromCharCode(...salt))}));
+    });
+    await page.reload();
+    await expect(page.locator('#lockScreen')).toBeVisible();
+    await page.getByRole('button', { name: 'Glemt koden?' }).click();
+    await page.getByRole('dialog', { name: 'Glemt koden?' }).getByRole('button', { name: 'Slet data og fjern koden' }).click();
+    await expect(page.locator('#lockScreen')).toBeHidden();
+    expect(await page.evaluate(() => [localStorage.getItem('appLock'), localStorage.getItem('budgetItems')])).toEqual([null, null]);
+});

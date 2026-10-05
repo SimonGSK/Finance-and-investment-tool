@@ -58,6 +58,10 @@ Every field has a small **?** that explains it, and each tool has a foldable *Hv
 
 **Indstillinger** in the menu opens a dialog: light or dark theme (follows the system by default), and a one-file JSON backup/restore of all Budget, Formue and Portefølje data. An optional reminder (on by default) appears around each month-end for people who track their numbers — from the last three days of a month to the 10th of the next — and opens *Månedsstatus* on the month's last day.
 
+**Kalender:** *Tilføj påmindelse til din kalender* downloads an .ics file with a repeating event on the last day of every month at 19:00, so the monthly-status reminder arrives even when the site isn't open.
+
+**Kodelås:** an optional 4–6 digit code that hides the site when it's opened and after more than 5 minutes away, with Face ID or fingerprint where the device supports it (WebAuthn, no server). It's a screen lock, not encryption: the numbers stay readable in the browser, and only a salted PBKDF2 hash of the code is stored. A forgotten code can only be cleared by erasing the data on the device and restoring a backup. The lock stays on the device and isn't part of the backup file.
+
 ## Design
 
 The page is **responsive**: one layout that adapts to the space available rather than separate designs per device.
@@ -137,6 +141,7 @@ js/month-overview.js    Månedsoverblik: change per category for a month or a ye
 js/goals.js             Formue goals
 js/navigation.js        Menu, sections and tools, page header, settings dialog, reminders
 js/sync.js              Backup file and syncing between devices (merge, not overwrite)
+js/app-lock.js          Kodelås: lock screen, code and Face ID / fingerprint
 js/feedback.js          Feedback button and form (sent via Formspree)
 js/pwa.js               "Install as app" button; registers the service worker
 js/report.js            Printable one-page overview (Udskriv overblik)

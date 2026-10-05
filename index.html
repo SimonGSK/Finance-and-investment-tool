@@ -17,6 +17,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;500;600&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <!-- Kodelås: skjuler siden med det samme, før den tegnes (se js/app-lock.js). -->
+    <script>try{ if(localStorage.getItem('appLock')) document.documentElement.classList.add('is-locked'); }catch(e){}</script>
 
     <!-- Slået fra indtil der er rigtige ID'er: pladsholderne giver 403-fejl i konsollen.
          TODO: Erstat "mitsite" med mit eget goatcounter brugernavn, og fjern kommentaren.
@@ -27,9 +29,25 @@
          TODO: Erstat ca-pub-XXXXXXXXXXXXXXXX med mit eget AdSense-udgiver-ID, og fjern kommentaren.
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
     -->
-    <link rel="stylesheet" href="styles.css?v=cbad0ec6">
+    <link rel="stylesheet" href="styles.css?v=96079d49">
 </head>
 <body>
+
+    <!-- Låseskærm: vises over alt, når kodelåsen er slået til og siden er låst. -->
+    <div class="lock-screen" id="lockScreen" role="dialog" aria-modal="true" aria-labelledby="lockTitle">
+        <div class="lock-card">
+            <img class="lock-logo" src="icons/icon-192.png" alt="" width="64" height="64">
+            <h2 class="lock-title" id="lockTitle">Økonomis er låst</h2>
+            <form class="lock-form" id="lockForm">
+                <label class="visually-hidden" for="lockCode">Kode</label>
+                <input class="number-input lock-input" id="lockCode" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="Din kode">
+                <button class="btn btn-primary" type="submit">Lås op</button>
+            </form>
+            <p class="field-error lock-error" id="lockError" role="alert"></p>
+            <button class="btn btn-secondary lock-biometric" id="lockBiometric" type="button" onclick="unlockWithBiometric()" hidden>Brug Face ID eller fingeraftryk</button>
+            <button class="link-btn lock-forgot" type="button" onclick="forgotLockCode()">Glemt koden?</button>
+        </div>
+    </div>
 
     <div class="page-shell">
 
@@ -136,6 +154,12 @@
                     <input type="checkbox" id="monthlyReminderToggle" checked>
                     Påmind mig om månedsstatus ved hvert månedsskifte
                 </label>
+                <button class="btn btn-secondary btn-sm calendar-btn" type="button" onclick="downloadMonthlyReminder()"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/></svg>Tilføj påmindelse til din kalender</button>
+                <p class="calendar-hint">Den sidste dag i hver måned kl. 19 – så bliver du mindet om det, også når siden ikke er åben.</p>
+
+                <div class="eyebrow" style="margin-top:18px; margin-bottom:10px;">Kodelås</div>
+                <p class="explainer" style="margin:0 0 10px 0; padding-top:0; border-top:none;">Skjul dine tal bag en kode, når siden åbnes, og når du har været væk i mere end 5 minutter. Tallene ligger stadig i browseren, så låsen beskytter mod nysgerrige blikke – ikke mod en med teknisk adgang til din enhed.</p>
+                <div id="lockSettings"></div>
 
                 <div class="eyebrow" style="margin-top:18px; margin-bottom:10px;">Dine data og synkronisering</div>
                 <p class="explainer" style="margin:0 0 10px 0; padding-top:0; border-top:none;">Alt gemmes kun her i browseren. Gem dine data i én fil som backup – eller for at få de samme tal på telefon og computer: læg filen i fx Google Drive eller iCloud, og hent den på den anden enhed. Tallene flettes, så intet går tabt.</p>
@@ -230,15 +254,16 @@
     <div class="panel">
         <h2 class="panel-title">Værktøjer</h2>
         <div class="ov-tools">
-            <button type="button" class="ov-tool" onclick="showTool(1)"><strong>ASK vs. Aktiedepot</strong><span>Hvor skal pengene stå? Sammenlign skatten.</span></button>
-            <button type="button" class="ov-tool" onclick="showTool(2)"><strong>Aktiedepot: fast + månedligt</strong><span>Hvad bliver en månedlig opsparing til?</span></button>
-            <button type="button" class="ov-tool" onclick="showTool(3)"><strong>FIRE-beregner</strong><span>Hvornår kan du leve af din formue?</span></button>
-            <button type="button" class="ov-tool" onclick="showTool(5)"><strong>Pension</strong><span>Hvad giver din pension om måneden?</span></button>
-            <button type="button" class="ov-tool" onclick="showTool(4)"><strong>Porteføljetracker</strong><span>Følg din portefølje og dit afkast.</span></button>
-            <button type="button" class="ov-tool" onclick="showHousingTool(1)"><strong>Hvor meget kan jeg låne?</strong><span>Din købsramme ud fra indkomst og opsparing.</span></button>
-            <button type="button" class="ov-tool" onclick="showHousingTool(2)"><strong>Køb eller leje?</strong><span>Hvad er billigst på lang sigt?</span></button>
-            <button type="button" class="ov-tool" onclick="showHousingTool(3)"><strong>Gældsafvikling</strong><span>Hvornår er du gældfri – lavine eller snebold?</span></button>
-            <button type="button" class="ov-tool" onclick="showTool(6)"><strong>Tips &amp; viden</strong><span>Grundbegreber, skat, risiko og nøgletal.</span></button>
+            <button type="button" class="ov-tool" onclick="showTool(1)"><span class="ov-tool-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16M6 20h12M5 8h14"/><path d="M8 8l-3 6a3 3 0 0 0 6 0zM16 8l-3 6a3 3 0 0 0 6 0z"/></svg></span><span class="ov-tool-text"><strong>ASK vs. Aktiedepot</strong><span>Hvor skal pengene stå? Sammenlign skatten.</span></span></button>
+            <button type="button" class="ov-tool" onclick="showTool(2)"><span class="ov-tool-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg></span><span class="ov-tool-text"><strong>Aktiedepot: fast + månedligt</strong><span>Hvad bliver en månedlig opsparing til?</span></span></button>
+            <button type="button" class="ov-tool" onclick="showTool(3)"><span class="ov-tool-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1.2 3 4.5 5.3 4.5 9.5a4.5 4.5 0 0 1-9 0c0-2.1 1-3.6 2.2-4.6.2 1.8 1 2.9 2.1 3.2C11.4 8.4 10.8 5.7 12 3z"/></svg></span><span class="ov-tool-text"><strong>FIRE-beregner</strong><span>Hvornår kan du leve af din formue?</span></span></button>
+            <button type="button" class="ov-tool" onclick="showTool(5)"><span class="ov-tool-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12M6 21h12M7 3v3a5 5 0 0 0 10 0V3M7 21v-3a5 5 0 0 1 10 0v3"/></svg></span><span class="ov-tool-text"><strong>Pension</strong><span>Hvad giver din pension om måneden?</span></span></button>
+            <button type="button" class="ov-tool" onclick="showTool(4)"><span class="ov-tool-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l7.5 4.5"/></svg></span><span class="ov-tool-text"><strong>Porteføljetracker</strong><span>Følg din portefølje og dit afkast.</span></span></button>
+            <button type="button" class="ov-tool" onclick="showHousingTool(1)"><span class="ov-tool-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg></span><span class="ov-tool-text"><strong>Hvor meget kan jeg låne?</strong><span>Din købsramme ud fra indkomst og opsparing.</span></span></button>
+            <button type="button" class="ov-tool" onclick="showHousingTool(2)"><span class="ov-tool-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M9 15h6M13 13l2 2-2 2"/></svg></span><span class="ov-tool-text"><strong>Køb eller leje?</strong><span>Hvad er billigst på lang sigt?</span></span></button>
+            <button type="button" class="ov-tool" onclick="showHousingTool(3)"><span class="ov-tool-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l6 6 4-4 8 8"/><path d="M15 17h6v-6"/></svg></span><span class="ov-tool-text"><strong>Gældsafvikling</strong><span>Hvornår er du gældfri – lavine eller snebold?</span></span></button>
+            <button type="button" class="ov-tool" onclick="showTool(7)"><span class="ov-tool-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5L5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/></svg></span><span class="ov-tool-text"><strong>Skattegrænse</strong><span>Hvor meget kan du realisere til 27 % i år?</span></span></button>
+            <button type="button" class="ov-tool" onclick="showTool(6)"><span class="ov-tool-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19"/><path d="M9 7h6"/></svg></span><span class="ov-tool-text"><strong>Tips &amp; viden</strong><span>Grundbegreber, skat, risiko og nøgletal.</span></span></button>
         </div>
     </div>
 </div>
@@ -1824,7 +1849,7 @@
             </details>
         </div>
     </template>
-    <script src="js/calc.js?v=ed5b2301"></script>
+    <script src="js/calc.js?v=4c9727e0"></script>
     <script src="js/sync.js?v=614e4051"></script>
     <script src="js/shared.js?v=4c50757b"></script>
     <script src="js/ui.js?v=9e2dff05"></script>
@@ -1841,7 +1866,8 @@
     <script src="js/loan-capacity.js?v=b4f645bb"></script>
     <script src="js/buy-vs-rent.js?v=75764a5e"></script>
     <script src="js/debt-payoff.js?v=d92e8193"></script>
-    <script src="js/navigation.js?v=d4cd25ca"></script>
+    <script src="js/navigation.js?v=c001db69"></script>
+    <script src="js/app-lock.js?v=6be3349f"></script>
     <script src="js/feedback.js?v=a2a4c48b"></script>
     <script src="js/pwa.js?v=70965acb"></script>
     <script src="js/report.js?v=d2fb079b"></script>
@@ -1850,7 +1876,7 @@
     <script src="js/budget.js?v=e88109ad"></script>
     <script src="js/net-worth.js?v=78cff884"></script>
     <script src="js/month-overview.js?v=b3f42713"></script>
-    <script src="js/monthly-status.js?v=d28ccb96"></script>
+    <script src="js/monthly-status.js?v=bf3edd7b"></script>
     <script src="js/goals.js?v=aae96981"></script>
     <script src="js/theme.js?v=f47f37be"></script>
     <script src="js/share.js?v=e0899adf"></script>

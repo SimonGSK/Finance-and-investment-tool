@@ -1025,3 +1025,16 @@ describe('skattegrænse for aktieindkomst', () => {
         assert.deepEqual([loss.tax, loss.loss, loss.room], [0, 15000, L]);
     });
 });
+
+describe('kalenderpåmindelse', () => {
+    test('en .ics med en gentagelse den sidste dag i hver måned kl. 19', () => {
+        const ics = calc.monthlyReminderIcs({today: '2026-10-04', now: new Date('2026-10-04T10:00:00Z'), url: 'https://example.dk/'});
+        assert.match(ics, /^BEGIN:VCALENDAR\r\n/);
+        assert.match(ics, /DTSTART:20261031T190000\r\n/);
+        assert.match(ics, /RRULE:FREQ=MONTHLY;BYMONTHDAY=-1\r\n/);
+        assert.match(ics, /DTSTAMP:20261004T100000Z\r\n/);
+        assert.match(ics, /BEGIN:VALARM/);
+        assert.match(ics, /DESCRIPTION:.*komplet: https:\/\/example.dk\//);
+        assert.match(calc.monthlyReminderIcs({today: '2028-02-10', now: new Date(), url: ''}), /DTSTART:20280229T190000/);   // skudår
+    });
+});

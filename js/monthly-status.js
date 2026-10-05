@@ -126,6 +126,8 @@ function latestStatusDate(){
  */
 function openMonthlyStatus(initialDate){
     const values = monthlyStatusPrefill();
+    // Udgangspunktet: de seneste tal. Bruges til "Hent seneste tal" og til at vise, hvad der er ændret.
+    const baseline = {...values};
     const hasHistory = !!latestStatusDate();
 
     const dateInput = el('input', {type:'date', className:'number-input', value: (typeof initialDate === 'string' && initialDate) || todayIso(), attrs:{'aria-describedby':'msDateError'}});
@@ -142,6 +144,7 @@ function openMonthlyStatus(initialDate){
                 Object.assign(values, saved);
                 Object.entries(inputs).forEach(([key, input]) => input.value = values[key] || 0);
                 refreshSummary();
+                refreshDiffs();
                 existingNote.replaceChildren(el('span', {textContent:`Viser de gemte tal for ${formatDanishDate(date)} – ret det, der skal ændres.`}));
             }})
         );
@@ -150,6 +153,27 @@ function openMonthlyStatus(initialDate){
 
     const summary = el('dl', {className:'status-summary'});
     const inputs = {};
+    const diffs = {};
+
+    /** Under hver saldo: hvor meget den er ændret siden de seneste tal (tom, når den er uændret). */
+    function refreshDiffs(){
+        Object.entries(diffs).forEach(([key, node]) => {
+            const change = (values[key] || 0) - (baseline[key] || 0);
+            const good = key === 'debt' ? -change : change;
+            node.textContent = hasHistory && change ? `${formatSignedKr(change)} siden sidst` : '';
+            node.classList.toggle('is-up', good > 0);
+            node.classList.toggle('is-down', good < 0);
+        });
+    }
+
+    /** "Hent seneste tal": alle felter tilbage til de seneste tal (periodetallene til 0). */
+    function restoreLatest(){
+        Object.assign(values, baseline);
+        Object.entries(inputs).forEach(([key, input]) => input.value = values[key] || 0);
+        refreshSummary();
+        refreshDiffs();
+        notify('Felterne viser igen dine seneste tal.');
+    }
 
     function refreshSummary(){
         const {netWorth, portfolio} = monthlyStatusEntries('x', values);
@@ -169,10 +193,12 @@ function openMonthlyStatus(initialDate){
         el('legend', {className:'eyebrow', textContent:section.title}),
         el('div', {className:'status-grid'}, section.fields.map(f => {
             const input = el('input', {type:'number', className:'number-input', value: values[f.key] || 0, step: f.flow ? 100 : 1000,
-                oninput: e => { values[f.key] = parseFloat(e.target.value) || 0; refreshSummary(); }});
+                oninput: e => { values[f.key] = parseFloat(e.target.value) || 0; refreshSummary(); refreshDiffs(); }});
             if(!f.allowNegative) input.min = 0;
             inputs[f.key] = input;
-            const field = fieldEl(f.label, input, f.hint ? [el('div', {className:'limit-hint', textContent:f.hint})] : [], 'status-field');
+            const extra = f.hint ? [el('div', {className:'limit-hint', textContent:f.hint})] : [];
+            if(!f.flow){ diffs[f.key] = el('div', {className:'status-diff', attrs:{'aria-live':'polite'}}); extra.push(diffs[f.key]); }
+            const field = fieldEl(f.label, input, extra, 'status-field');
             if(f.help) attachFieldHelp(field.querySelector('label'), f.help);
             return field;
         }))
@@ -183,7 +209,10 @@ function openMonthlyStatus(initialDate){
         : 'Udfyld dine tal én gang om måneden. Status gemmes i både formuehistorikken og porteføljetrackeren.';
 
     const content = el('div', {}, [
-        el('p', {className:'dialog-hint', textContent:intro}),
+        el('div', {className:'status-intro'}, [
+            el('p', {className:'dialog-hint', textContent:intro}),
+            hasHistory ? el('button', {className:'btn btn-secondary btn-sm', type:'button', textContent:'Hent seneste tal', onclick: restoreLatest}) : ''
+        ]),
         fieldEl('Dato', dateInput, [dateError], 'status-date'),
         existingNote,
         ...sections,
