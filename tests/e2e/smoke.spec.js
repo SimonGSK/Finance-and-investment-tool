@@ -901,8 +901,9 @@ test('oversigt og sidemenu: nøgletal fra de andre dele, sidehovedet følger med
 
 test('telefonmenuen åbner fra knappen, lukker ved valg og med Esc @mobil', async ({ page }) => {
     await page.goto('/index.html');
-    const phone = await page.evaluate(() => window.innerWidth <= 900);
-    test.skip(!phone, 'kun når menuen er skjult bag en knap');
+    // Telefoner har bundmenuen i stedet; menuknappen findes kun på tablets.
+    const tablet = await page.evaluate(() => window.innerWidth <= 900 && window.innerWidth > 640);
+    test.skip(!tablet, 'kun når menuen er skjult bag en knap');
     const menu = page.getByRole('button', { name: 'Åbn menu' });
     await menu.click();
     await expect(menu).toHaveAttribute('aria-expanded', 'true');
@@ -1490,4 +1491,79 @@ test('kodelås: "Glemt koden?" sletter dataene på enheden og fjerner låsen', a
     await page.getByRole('dialog', { name: 'Glemt koden?' }).getByRole('button', { name: 'Slet data og fjern koden' }).click();
     await expect(page.locator('#lockScreen')).toBeHidden();
     expect(await page.evaluate(() => [localStorage.getItem('appLock'), localStorage.getItem('budgetItems')])).toEqual([null, null]);
+});
+
+test('bundmenu på telefoner: Oversigt, Trackers, + Status, Værktøjer og Mere @mobil', async ({ page }) => {
+    await page.goto('/index.html');
+    const phone = await page.evaluate(() => window.innerWidth <= 640);
+    test.skip(!phone, 'bundmenuen findes kun på telefoner');
+    const bar = page.getByRole('navigation', { name: 'Bundmenu' });
+    const tab = name => bar.getByRole('button', { name, exact: true });
+    await expect(bar).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Åbn menu' })).toBeHidden();
+    await expect(page.locator('.app-header .monthly-status-btn')).toBeHidden();
+    await expect(tab('Oversigt')).toHaveAttribute('aria-current', 'page');
+
+    // Værktøjer: et ark med alle værktøjer i de tre grupper; et valg åbner værktøjet og lukker arket.
+    await tab('Værktøjer').click();
+    const sheet = page.getByRole('dialog', { name: 'Værktøjer' });
+    await expect(sheet).toBeVisible();
+    await expect(sheet.locator('.nav-sheet-label')).toHaveText(['Investering', 'Bolig & lån', 'Budget']);
+    await expect(sheet.locator('.nav-sheet-item')).toHaveCount(10);
+    await sheet.getByRole('button', { name: 'Skattegrænse' }).click();
+    await expect(sheet).toBeHidden();
+    await expect(page.locator('#pageTitle')).toHaveText('Skattegrænse');
+    await expect(tab('Værktøjer')).toHaveAttribute('aria-current', 'page');
+    await tab('Værktøjer').click();
+    await expect(sheet.getByRole('button', { name: 'Skattegrænse' })).toHaveAttribute('aria-current', 'page');
+    await page.keyboard.press('Escape');
+    await expect(sheet).toBeHidden();
+
+    // Trackers: et ark med de tre trackers.
+    await tab('Trackers').click();
+    const trackers = page.getByRole('dialog', { name: 'Trackers' });
+    await expect(trackers.locator('.nav-sheet-item')).toHaveText(['Formuetracker', 'Porteføljetracker', 'Månedsoverblik']);
+    await trackers.getByRole('button', { name: 'Porteføljetracker' }).click();
+    await expect(trackers).toBeHidden();
+    await expect(page.locator('#pageTitle')).toHaveText('Porteføljetracker');
+    await expect(tab('Trackers')).toHaveAttribute('aria-current', 'page');
+    await tab('Trackers').click();
+    await expect(trackers.getByRole('button', { name: 'Porteføljetracker' })).toHaveAttribute('aria-current', 'page');
+    await trackers.getByRole('button', { name: 'Månedsoverblik' }).click();
+    await expect(page.locator('#pageTitle')).toHaveText('Måned for måned');
+
+    // Mere: indstillinger, hjælp (og feedback, når den er sat op).
+    await tab('Mere').click();
+    const more = page.getByRole('dialog', { name: 'Mere' });
+    await expect(more.locator('.nav-sheet-item').first()).toHaveText('Indstillinger');
+    await more.getByRole('button', { name: 'Indstillinger' }).click();
+    await expect(page.getByRole('dialog', { name: 'Indstillinger' })).toBeVisible();
+    await page.keyboard.press('Escape');
+
+    // + Status åbner månedsstatus.
+    await bar.getByRole('button', { name: /Status/ }).click();
+    await expect(page.getByRole('dialog', { name: 'Månedsstatus' })).toBeVisible();
+    await page.keyboard.press('Escape');
+
+    // Mens man skriver i et felt, er bundmenuen væk (tastaturet ligger dér).
+    await page.evaluate(() => showSection('formue'));
+    await page.locator('#section-formue input.number-input').first().focus();
+    await expect(bar).toBeHidden();
+    await page.locator('#section-formue input.number-input').first().blur();
+    await expect(bar).toBeVisible();
+
+    // Det nederste indhold kan rulles fri af bundmenuen.
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    const lastBottom = await page.evaluate(() => {
+        const panels = [...document.querySelectorAll('#section-formue .panel')].filter(p => p.offsetParent);
+        return panels[panels.length - 1].getBoundingClientRect().bottom;
+    });
+    const barTop = (await bar.boundingBox()).y;
+    expect(lastBottom).toBeLessThanOrEqual(barTop);
+});
+
+test('bundmenuen vises ikke på computer', async ({ page }) => {
+    await page.goto('/index.html');
+    await expect(page.getByRole('navigation', { name: 'Bundmenu' })).toBeHidden();
+    await expect(page.locator('.app-header .monthly-status-btn')).toBeVisible();
 });

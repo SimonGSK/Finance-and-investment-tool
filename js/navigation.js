@@ -88,6 +88,7 @@ function showSection(name){
     document.querySelectorAll('.top-tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.section === name));
     // Den gruppe, man står i, er foldet ud, og de andre foldes sammen, så menuen ikke bliver lang.
     document.querySelectorAll('.nav-group').forEach(g => g.setAttribute('aria-expanded', String(g.dataset.section === name)));
+    if(typeof syncBottomNav === 'function') syncBottomNav(name);    // bundmenuen på telefoner (bottom-nav.js)
     resizeChartsIn(document.getElementById('section-' + name));
     if(name === 'overview' && typeof renderOverview === 'function') renderOverview();
     if(name === 'month' && typeof renderMonthOverview === 'function') renderMonthOverview();
