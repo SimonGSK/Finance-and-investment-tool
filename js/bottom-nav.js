@@ -3,25 +3,17 @@
  * Computer og tablet bruger menukortet til venstre; stilarket viser kun bundmenuen
  * på smalle skærme.
  *
- * Værktøjer og Mere åbner et ark nedefra, der bygges ud fra menukortet, så de to
- * menuer altid har de samme punkter. Trackers åbner den tracker, man sidst brugte,
- * og øverst på tracker-siderne kan man skifte mellem de tre.
+ * Trackers, Værktøjer og Mere åbner hver et ark nedefra, der bygges ud fra
+ * menukortet, så menuerne altid har de samme punkter.
  */
 
-const TRACKER_SECTIONS = ['formue', 'month', 'portfolio'];
-const LAST_TRACKER_KEY = 'lastTracker';
+// Trackerne i den rækkefølge og med de navne, de har i arket.
+const TRACKERS = [['formue', 'Formuetracker'], ['portfolio', 'Porteføljetracker'], ['month', 'Månedsoverblik']];
+const TRACKER_SECTIONS = TRACKERS.map(([section]) => section);
 const TOOL_SECTIONS = ['tools', 'housing', 'budget'];
 
-/** "Trackers": åbner den tracker, man sidst brugte (Formue første gang). */
-function openLastTracker(){
-    let last = null;
-    try{ last = localStorage.getItem(LAST_TRACKER_KEY); } catch(e){}
-    showSection(TRACKER_SECTIONS.includes(last) ? last : 'formue');
-}
-
 /**
- * Markerer fanen for den viste side i bundmenuen og i tracker-skifteren, og husker
- * den seneste tracker. Kaldes fra showSection.
+ * Markerer fanen for den viste side i bundmenuen. Kaldes fra showSection.
  * @param {string} section
  */
 function syncBottomNav(section){
@@ -32,13 +24,6 @@ function syncBottomNav(section){
         if(btn.dataset.tab === tab) btn.setAttribute('aria-current', 'page');
         else btn.removeAttribute('aria-current');
     });
-    document.querySelectorAll('.tracker-switch button').forEach(btn => {
-        if(btn.dataset.section === section) btn.setAttribute('aria-current', 'page');
-        else btn.removeAttribute('aria-current');
-    });
-    if(TRACKER_SECTIONS.includes(section)){
-        try{ localStorage.setItem(LAST_TRACKER_KEY, section); } catch(e){}
-    }
 }
 
 /**
@@ -46,10 +31,11 @@ function syncBottomNav(section){
  * @param {HTMLButtonElement} source knappen i menukortet
  * @param {Node|null} icon
  * @param {boolean} active
+ * @param {string} [label] navnet i arket; udeladt bruges menukortets
  * @returns {HTMLButtonElement}
  */
-function navSheetItem(source, icon, active){
-    const label = [...source.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim();
+function navSheetItem(source, icon, active, label){
+    label = label || [...source.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim();
     const item = el('button', {className: 'nav-sheet-item' + (active ? ' active' : ''), type: 'button', onclick: () => {
         closeNavSheet();
         source.click();
@@ -86,6 +72,15 @@ function toolsSheetContent(){
     return groups;
 }
 
+/** @returns {HTMLElement[]} arket "Trackers": Formue, Portefølje og Månedsoverblik */
+function trackersSheetContent(){
+    const current = document.body.dataset.section;
+    return TRACKERS.map(([section, label]) => {
+        const btn = document.querySelector(`#sidebar .nav-item[data-section="${section}"]`);
+        return navSheetItem(btn, btn.querySelector('svg')?.cloneNode(true), current === section, label);
+    });
+}
+
 /** @returns {HTMLElement[]} arket "Mere": indstillinger, hjælp og feedback */
 function moreSheetContent(){
     return ['settingsBtn', 'helpBtn', 'feedbackBtn']
@@ -94,14 +89,21 @@ function moreSheetContent(){
         .map(btn => navSheetItem(btn, btn.querySelector('svg')?.cloneNode(true), false));
 }
 
+const NAV_SHEETS = {
+    trackers: ['Trackers', trackersSheetContent],
+    tools: ['Værktøjer', toolsSheetContent],
+    more: ['Mere', moreSheetContent]
+};
+
 /**
  * Åbner arket nedefra.
- * @param {'tools'|'more'} kind
+ * @param {'trackers'|'tools'|'more'} kind
  */
 function openNavSheet(kind){
     const sheet = document.getElementById('navSheet');
-    document.getElementById('navSheetTitle').textContent = kind === 'tools' ? 'Værktøjer' : 'Mere';
-    document.getElementById('navSheetBody').replaceChildren(...(kind === 'tools' ? toolsSheetContent() : moreSheetContent()));
+    const [title, content] = NAV_SHEETS[kind];
+    document.getElementById('navSheetTitle').textContent = title;
+    document.getElementById('navSheetBody').replaceChildren(...content());
     sheet.dataset.kind = kind;
     if(!sheet.open) sheet.showModal();
     sheet.querySelector('.nav-sheet-item.active, .nav-sheet-item')?.focus();

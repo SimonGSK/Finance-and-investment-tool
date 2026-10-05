@@ -1519,18 +1519,18 @@ test('bundmenu på telefoner: Oversigt, Trackers, + Status, Værktøjer og Mere 
     await page.keyboard.press('Escape');
     await expect(sheet).toBeHidden();
 
-    // Trackers: Formue første gang, skift øverst på siden, og den seneste huskes.
+    // Trackers: et ark med de tre trackers.
     await tab('Trackers').click();
-    await expect(page.locator('#pageTitle')).toHaveText('Din formue');
-    const trackers = page.getByRole('navigation', { name: 'Trackers' });
-    await expect(trackers).toBeVisible();
-    await trackers.getByRole('button', { name: 'Portefølje' }).click();
-    await expect(page.locator('#pageTitle')).toHaveText('Porteføljetracker');
-    await expect(trackers.getByRole('button', { name: 'Portefølje' })).toHaveAttribute('aria-current', 'page');
-    await tab('Oversigt').click();
+    const trackers = page.getByRole('dialog', { name: 'Trackers' });
+    await expect(trackers.locator('.nav-sheet-item')).toHaveText(['Formuetracker', 'Porteføljetracker', 'Månedsoverblik']);
+    await trackers.getByRole('button', { name: 'Porteføljetracker' }).click();
     await expect(trackers).toBeHidden();
-    await tab('Trackers').click();
     await expect(page.locator('#pageTitle')).toHaveText('Porteføljetracker');
+    await expect(tab('Trackers')).toHaveAttribute('aria-current', 'page');
+    await tab('Trackers').click();
+    await expect(trackers.getByRole('button', { name: 'Porteføljetracker' })).toHaveAttribute('aria-current', 'page');
+    await trackers.getByRole('button', { name: 'Månedsoverblik' }).click();
+    await expect(page.locator('#pageTitle')).toHaveText('Måned for måned');
 
     // Mere: indstillinger, hjælp (og feedback, når den er sat op).
     await tab('Mere').click();
@@ -1562,10 +1562,8 @@ test('bundmenu på telefoner: Oversigt, Trackers, + Status, Værktøjer og Mere 
     expect(lastBottom).toBeLessThanOrEqual(barTop);
 });
 
-test('bundmenuen og tracker-skifteren vises ikke på computer', async ({ page }) => {
+test('bundmenuen vises ikke på computer', async ({ page }) => {
     await page.goto('/index.html');
     await expect(page.getByRole('navigation', { name: 'Bundmenu' })).toBeHidden();
-    await page.evaluate(() => showSection('formue'));
-    await expect(page.getByRole('navigation', { name: 'Trackers' })).toBeHidden();
     await expect(page.locator('.app-header .monthly-status-btn')).toBeVisible();
 });

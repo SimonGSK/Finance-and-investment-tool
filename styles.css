@@ -1904,7 +1904,7 @@ html.is-locked .page-shell, html.is-locked #printReport, html.is-locked .toast-r
 /* ---- Bundmenu på telefoner (bottom-nav.js) ----
    Computer og tablet beholder menukortet. På telefoner afløser bundmenuen
    menuknappen og "+ Månedsstatus" i topbjælken. */
-.bottom-nav, .tracker-switch{ display:none; }
+.bottom-nav{ display:none; }
 /* viewport-fit=cover: indholdet må gå ud til skærmens kanter, så der skal være plads til hak og statuslinje. */
 @media (max-width:900px){
     .app{ padding-left:max(var(--s4), env(safe-area-inset-left)); padding-right:max(var(--s4), env(safe-area-inset-right)); }
@@ -1925,14 +1925,6 @@ html.is-locked .page-shell, html.is-locked #printReport, html.is-locked .toast-r
     /* Mens man skriver, ligger tastaturet dér, hvor bundmenuen er. */
     body.is-typing .bottom-nav{ display:none; }
     .toast-region{ bottom:calc(80px + env(safe-area-inset-bottom)); }
-
-    body[data-section="formue"] .tracker-switch,
-    body[data-section="month"] .tracker-switch,
-    body[data-section="portfolio"] .tracker-switch{
-        display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:3px;
-        margin:0 0 var(--s3); padding:3px; border-radius:var(--r-pill);
-        background:var(--panel-sunken); border:1px solid var(--border);
-    }
 }
 .bottom-tab{
     display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:3px;
@@ -1950,13 +1942,7 @@ html.is-locked .page-shell, html.is-locked #printReport, html.is-locked .toast-r
 .bottom-plus svg{ width:22px; height:22px; }
 .bottom-tab:active .bottom-plus{ transform:scale(0.95); }
 
-.tracker-switch button{
-    padding:7px 4px; border:0; border-radius:var(--r-pill); background:transparent; cursor:pointer;
-    font:600 13px var(--font-sans); color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-}
-.tracker-switch button[aria-current="page"]{ background:var(--panel); color:var(--akt); box-shadow:var(--shadow-sm); }
-
-/* Arket "Værktøjer" / "Mere": glider op fra bunden. */
+/* Arkene "Trackers", "Værktøjer" og "Mere": glider op fra bunden. */
 .nav-sheet{
     inset:auto 0 0 0; margin:0; width:100%; max-width:none; max-height:85vh;
     border-radius:var(--r-lg) var(--r-lg) 0 0; border-bottom:0;
