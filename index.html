@@ -2,7 +2,7 @@
 <html lang="da">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#0B0B0C">
     <meta name="description" content="Budget, formue, investering og lån – danske økonomiværktøjer, hvor dine tal bliver på din egen enhed.">
     <link rel="manifest" href="manifest.webmanifest">
@@ -29,7 +29,7 @@
          TODO: Erstat ca-pub-XXXXXXXXXXXXXXXX med mit eget AdSense-udgiver-ID, og fjern kommentaren.
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
     -->
-    <link rel="stylesheet" href="styles.css?v=96079d49">
+    <link rel="stylesheet" href="styles.css?v=bcbbd30c">
 </head>
 <body>
 
@@ -129,6 +129,13 @@
         <div class="nav-backdrop" onclick="closeNav()"></div>
 
         <div class="site-content">
+
+            <!-- På telefoner: skift mellem de tre trackers uden at åbne menuen. -->
+            <nav class="tracker-switch" aria-label="Trackers">
+                <button type="button" data-section="formue" onclick="showSection('formue')">Formue</button>
+                <button type="button" data-section="month" onclick="showSection('month')">Måned</button>
+                <button type="button" data-section="portfolio" onclick="showSection('portfolio')">Portefølje</button>
+            </nav>
 
             <header class="page-header">
                 <div class="page-heading">
@@ -1778,6 +1785,25 @@
         </aside>
     </div>
 
+    <!-- Bundmenuen på telefoner (bottom-nav.js). Computer og tablet har menukortet til venstre. -->
+    <nav class="bottom-nav" id="bottomNav" aria-label="Bundmenu">
+        <button class="bottom-tab" type="button" data-tab="overview" onclick="showSection('overview')"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg><span>Oversigt</span></button>
+        <button class="bottom-tab" type="button" data-tab="trackers" onclick="openLastTracker()"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 3 8-8"/><path d="M3 21h18"/></svg><span>Trackers</span></button>
+        <button class="bottom-tab bottom-tab-status" type="button" onclick="openMonthlyStatus()" title="Gem dine tal i både Formue og Porteføljetracker på én gang"><span class="bottom-plus" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span><span>Status</span><span class="visually-hidden"> – ny månedsstatus</span></button>
+        <button class="bottom-tab" type="button" data-tab="tools" onclick="openNavSheet('tools')" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span>Værktøjer</span></button>
+        <button class="bottom-tab" type="button" data-tab="more" onclick="openNavSheet('more')" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg><span>Mere</span></button>
+    </nav>
+    <dialog class="dialog nav-sheet" id="navSheet" aria-labelledby="navSheetTitle">
+        <div class="dialog-inner">
+            <div class="nav-sheet-grip" aria-hidden="true"></div>
+            <div class="dialog-header">
+                <h2 class="dialog-title" id="navSheetTitle"></h2>
+                <button class="dialog-close" type="button" aria-label="Luk" onclick="closeNavSheet()">×</button>
+            </div>
+            <div class="dialog-body" id="navSheetBody"></div>
+        </div>
+    </dialog>
+
 
     <template id="helpContent">
         <div class="faq">
@@ -1866,7 +1892,8 @@
     <script src="js/loan-capacity.js?v=b4f645bb"></script>
     <script src="js/buy-vs-rent.js?v=75764a5e"></script>
     <script src="js/debt-payoff.js?v=d92e8193"></script>
-    <script src="js/navigation.js?v=c001db69"></script>
+    <script src="js/navigation.js?v=7404a2ee"></script>
+    <script src="js/bottom-nav.js?v=8a69b4cc"></script>
     <script src="js/app-lock.js?v=6be3349f"></script>
     <script src="js/feedback.js?v=a2a4c48b"></script>
     <script src="js/pwa.js?v=70965acb"></script>

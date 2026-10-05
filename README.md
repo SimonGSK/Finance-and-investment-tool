@@ -66,7 +66,7 @@ Every field has a small **?** that explains it, and each tool has a foldable *Hv
 
 The page is **responsive**: one layout that adapts to the space available rather than separate designs per device.
 
-- **Menu.** A floating menu card on the left; below 900 px it becomes a menu button that slides the menu in from the left.
+- **Menu.** A floating menu card on the left; below 900 px it becomes a menu button that slides the menu in from the left. On phones (below 640 px) a bottom bar replaces the menu button: **Oversigt**, **Trackers** (the last tracker you used, with a switcher between Formue, Måned and Portefølje at the top of the page), a raised **+ Status** for the monthly status, **Værktøjer** and **Mere** (sheets that slide up, built from the menu card so both always list the same items). The bar hides while you type, so it never sits on the keyboard.
 - **Stacking by available space.** The tools, Budget and Formue use CSS container queries: when the content area (not the screen) is narrower than about 1150 px, the chart moves under the inputs, so it never gets squeezed next to the menu.
 - **Phones (below 640 px).** Body text is about 14.5 px and small text never under 12 px, in line with Apple's and Material Design's type scales. Form fields stay at 16 px so iPhone doesn't zoom in. Cards are tighter, charts have a landscape shape (roughly 4:3), and long explanations are folded.
 - **Themes.** The light theme is forest green on warm off-white; the dark theme is black and greys with the same green and red.
@@ -140,6 +140,7 @@ js/net-worth.js         Formue: net worth, history, milestones, comparison
 js/month-overview.js    Månedsoverblik: change per category for a month or a year
 js/goals.js             Formue goals
 js/navigation.js        Menu, sections and tools, page header, settings dialog, reminders
+js/bottom-nav.js        Bottom bar and sheets on phones
 js/sync.js              Backup file and syncing between devices (merge, not overwrite)
 js/app-lock.js          Kodelås: lock screen, code and Face ID / fingerprint
 js/feedback.js          Feedback button and form (sent via Formspree)
