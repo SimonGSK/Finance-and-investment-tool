@@ -1400,6 +1400,14 @@ test('månedsstatus: ændringen siden sidst under hver saldo, og "Hent seneste t
     await expect(bank).toHaveValue('45000');
     await expect(debt).toHaveValue('20000');
     await expect(dialog.locator('.status-diff:not(:empty)')).toHaveCount(0);
+
+    // Et ufærdigt regnestykke giver en fejl under feltet; "Hent seneste tal" fjerner den igen.
+    await bank.fill('47400+');
+    await bank.press('Tab');
+    await expect(dialog.locator('.range-hint')).toContainText('Kunne ikke regne det ud');
+    await dialog.getByRole('button', { name: 'Hent seneste tal' }).click();
+    await expect(bank).toHaveValue('45000');
+    await expect(dialog.locator('.range-hint, .calc-hint')).toHaveCount(0);
 });
 
 test('månedsstatus: et regnestykke opdaterer "siden sidst" og opsummeringen mens man skriver, og Enter gemmer ikke', async ({ page }) => {

@@ -142,7 +142,7 @@ function openMonthlyStatus(initialDate){
             el('span', {textContent:`Der er allerede gemt data for ${formatDanishDate(date)}. Gemmer du, bliver de erstattet.`}),
             el('button', {className:'btn btn-secondary btn-sm', type:'button', textContent:'Indlæs de gemte tal', onclick: () => {
                 Object.assign(values, saved);
-                Object.entries(inputs).forEach(([key, input]) => input.value = values[key] || 0);
+                Object.keys(inputs).forEach(showValue);
                 refreshSummary();
                 refreshDiffs();
                 existingNote.replaceChildren(el('span', {textContent:`Viser de gemte tal for ${formatDanishDate(date)} – ret det, der skal ændres.`}));
@@ -154,6 +154,14 @@ function openMonthlyStatus(initialDate){
     const summary = el('dl', {className:'status-summary'});
     const inputs = {};
     const diffs = {};
+
+    /** Viser values[key] i feltet og fjerner gamle beskeder under det ("= …", "Kunne ikke regne det ud"). */
+    function showValue(key){
+        const input = inputs[key];
+        input.value = values[key] || 0;
+        showCalcHint(input, null);
+        showRangeHint(input);
+    }
 
     /** Under hver saldo: hvor meget den er ændret siden de seneste tal (tom, når den er uændret). */
     function refreshDiffs(){
@@ -169,7 +177,7 @@ function openMonthlyStatus(initialDate){
     /** "Hent seneste tal": alle felter tilbage til de seneste tal (periodetallene til 0). */
     function restoreLatest(){
         Object.assign(values, baseline);
-        Object.entries(inputs).forEach(([key, input]) => input.value = values[key] || 0);
+        Object.keys(inputs).forEach(showValue);
         refreshSummary();
         refreshDiffs();
         notify('Felterne viser igen dine seneste tal.');
@@ -261,7 +269,7 @@ function openMonthlyStatus(initialDate){
                     .then(saveAnyway => {
                         if(!saveAnyway){ inputs[unfinished[0]].focus(); return; }
                         // Felterne får det tal, der gemmes, så skemaet viser det samme.
-                        unfinished.forEach(key => { inputs[key].value = values[key] || 0; showRangeHint(inputs[key]); });
+                        unfinished.forEach(showValue);
                         save();
                     });
                 return false;
