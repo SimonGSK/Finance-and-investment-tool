@@ -1891,12 +1891,39 @@ html.is-locked .page-shell, html.is-locked #printReport, html.is-locked .toast-r
 .lock-card{ width:min(360px, 100%); display:flex; flex-direction:column; align-items:center; gap:var(--s4); text-align:center; }
 .lock-logo{ width:64px; height:64px; border-radius:16px; }
 .lock-title{ margin:0; font-family:var(--font-display); font-size:26px; font-weight:600; color:var(--text); }
-.lock-form{ display:flex; gap:var(--s2); width:100%; }
-.lock-input{ flex:1; text-align:center; letter-spacing:0.4em; font-size:20px; }
-.lock-input::placeholder{ letter-spacing:normal; font-family:var(--font-sans); font-size:16px; }
-.lock-form .btn{ margin:0; flex-shrink:0; }
+.lock-form{ display:flex; flex-direction:column; align-items:center; gap:var(--s3); width:100%; }
+.lock-form .btn{ margin:0; }
+/* Koden som prikker: én pr. ciffer, fyldt efterhånden som man trykker. */
+.lock-dots{ display:flex; justify-content:center; gap:18px; padding:10px; }
+.lock-dot{ width:16px; height:16px; border-radius:50%; border:2px solid var(--akt); transition:background-color 0.1s var(--ease); }
+.lock-dot.is-filled{ background:var(--akt); }
+.lock-pin.is-waiting .lock-dots, .lock-keypad:has(.lock-key:disabled){ opacity:0.35; }
+.lock-pin.is-wrong{ animation:lock-shake 0.35s var(--ease); }
+@keyframes lock-shake{ 20%, 60%{ transform:translateX(-8px); } 40%, 80%{ transform:translateX(8px); } }
+@media (prefers-reduced-motion: reduce){ .lock-pin.is-wrong{ animation:none; } }
+/* Taltastaturet: runde taster som på telefonens egen låseskærm. touch-action undgår
+   zoom ved hurtige dobbelttryk; et tryk ses som en mørkere tast i stedet for en ramme. */
+.lock-keypad{ display:grid; grid-template-columns:repeat(3, 72px); gap:14px 26px; justify-content:center; }
+.lock-key{
+    width:72px; height:72px; border-radius:50%; border:1px solid var(--border); background:var(--panel);
+    display:grid; place-items:center; padding:0; color:var(--text); font:500 28px var(--font-sans);
+    cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; user-select:none;
+    transition:background-color 0.1s var(--ease);
+}
+.lock-key:active{ background:var(--panel-sunken); }
+.lock-key:disabled{ cursor:default; }
+.lock-key-delete{ border-color:transparent; background:transparent; color:var(--muted); }
+.lock-key-delete svg{ width:28px; height:28px; }
+/* Lave telefonskærme (fx iPhone SE): lidt mindre, så alt kan ses uden at rulle. */
+@media (max-height:720px){
+    .lock-card{ gap:var(--s3); }
+    .lock-logo{ width:48px; height:48px; border-radius:12px; }
+    .lock-title{ font-size:22px; }
+    .lock-keypad{ grid-template-columns:repeat(3, 64px); gap:10px 22px; }
+    .lock-key{ width:64px; height:64px; font-size:25px; }
+}
 .lock-error{ margin:0; min-height:1.2em; }
-.lock-biometric{ width:100%; }
+.lock-biometric{ width:100%; justify-content:center; text-align:center; }
 .lock-status{ margin:0 0 var(--s3); font-size:13.5px; color:var(--pos); font-weight:600; }
 .lock-actions{ display:flex; gap:var(--s2); flex-wrap:wrap; margin-top:var(--s3); }
 .lock-actions .btn + .btn{ margin-left:0; }
@@ -1949,6 +1976,8 @@ html.is-locked .page-shell, html.is-locked #printReport, html.is-locked .toast-r
     padding-bottom:env(safe-area-inset-bottom);
 }
 .nav-sheet[open]{ animation:sheet-in 0.22s var(--ease); }
+/* Arket selv får fokus, når det åbnes med et tryk - uden ramme om det hele. */
+.nav-sheet:focus, .nav-sheet:focus-visible{ outline:none; }
 @keyframes sheet-in{ from{ transform:translateY(40px); opacity:0; } to{ transform:none; opacity:1; } }
 .nav-sheet::backdrop{ background:rgba(0,0,0,0.5); }
 .nav-sheet-grip{ width:36px; height:4px; margin:var(--s2) auto 0; border-radius:2px; background:var(--border-strong); }

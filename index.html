@@ -31,7 +31,7 @@
          TODO: Erstat ca-pub-XXXXXXXXXXXXXXXX med mit eget AdSense-udgiver-ID, og fjern kommentaren.
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
     -->
-    <link rel="stylesheet" href="styles.css?v=30ab4ac1">
+    <link rel="stylesheet" href="styles.css?v=f3e4e749">
 </head>
 <body>
 
@@ -41,9 +41,27 @@
             <img class="lock-logo" src="icons/icon-192.png" alt="" width="64" height="64">
             <h2 class="lock-title" id="lockTitle">Økonomis er låst</h2>
             <form class="lock-form" id="lockForm">
-                <label class="visually-hidden" for="lockCode">Kode</label>
-                <input class="number-input lock-input" id="lockCode" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="Din kode">
-                <button class="btn btn-primary" type="submit">Lås op</button>
+                <!-- Én prik pr. ciffer i koden, og et tastatur som på telefonens egen låseskærm,
+                     så man ikke skal finde et felt at trykke i. På en computer kan man også skrive. -->
+                <div class="lock-pin" id="lockPin">
+                    <div class="lock-dots" id="lockDots" aria-hidden="true"></div>
+                </div>
+                <p class="visually-hidden" id="lockDigitsHint" aria-live="polite"></p>
+                <div class="lock-keypad" id="lockKeypad" role="group" aria-label="Kode">
+                    <button class="lock-key" type="button" data-digit="1">1</button>
+                    <button class="lock-key" type="button" data-digit="2">2</button>
+                    <button class="lock-key" type="button" data-digit="3">3</button>
+                    <button class="lock-key" type="button" data-digit="4">4</button>
+                    <button class="lock-key" type="button" data-digit="5">5</button>
+                    <button class="lock-key" type="button" data-digit="6">6</button>
+                    <button class="lock-key" type="button" data-digit="7">7</button>
+                    <button class="lock-key" type="button" data-digit="8">8</button>
+                    <button class="lock-key" type="button" data-digit="9">9</button>
+                    <span aria-hidden="true"></span>
+                    <button class="lock-key" type="button" data-digit="0">0</button>
+                    <button class="lock-key lock-key-delete" type="button" data-action="delete" aria-label="Slet"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h11a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H9l-6-7z"/><path d="M12 9.5l5 5M17 9.5l-5 5"/></svg></button>
+                </div>
+                <button class="btn btn-primary" id="lockSubmit" type="submit">Lås op</button>
             </form>
             <p class="field-error lock-error" id="lockError" role="alert"></p>
             <button class="btn btn-secondary lock-biometric" id="lockBiometric" type="button" onclick="unlockWithBiometric()" hidden>Brug Face ID eller fingeraftryk</button>
@@ -1789,7 +1807,7 @@
         <button class="bottom-tab" type="button" data-tab="tools" onclick="openNavSheet('tools')" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span>Værktøjer</span></button>
         <button class="bottom-tab" type="button" data-tab="more" onclick="openNavSheet('more')" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg><span>Mere</span></button>
     </nav>
-    <dialog class="dialog nav-sheet" id="navSheet" aria-labelledby="navSheetTitle">
+    <dialog class="dialog nav-sheet" id="navSheet" aria-labelledby="navSheetTitle" tabindex="-1">
         <div class="dialog-inner">
             <div class="nav-sheet-grip" aria-hidden="true"></div>
             <div class="dialog-header">
@@ -1871,12 +1889,12 @@
             </details>
         </div>
     </template>
-    <script src="js/calc.js?v=c0b574f7"></script>
-    <script src="js/sync.js?v=614e4051"></script>
+    <script src="js/calc.js?v=c929d24d"></script>
+    <script src="js/sync.js?v=27ea91b3"></script>
     <script src="js/shared.js?v=4c50757b"></script>
-    <script src="js/ui.js?v=9e2dff05"></script>
+    <script src="js/ui.js?v=43bed7e1"></script>
     <script src="js/field-help.js?v=6a83e008"></script>
-    <script src="js/number-fields.js?v=5deecf1d"></script>
+    <script src="js/number-fields.js?v=a35de4ce"></script>
     <script src="js/hide-amounts.js?v=8c823b8d"></script>
     <script src="js/fold.js?v=cad5b3ff"></script>
     <script src="js/tool1-ask-akt.js?v=3608c8e7"></script>
@@ -1890,17 +1908,17 @@
     <script src="js/buy-vs-rent.js?v=75764a5e"></script>
     <script src="js/debt-payoff.js?v=d92e8193"></script>
     <script src="js/navigation.js?v=7404a2ee"></script>
-    <script src="js/bottom-nav.js?v=cf9fa952"></script>
-    <script src="js/app-lock.js?v=6be3349f"></script>
+    <script src="js/bottom-nav.js?v=d9a5cbd0"></script>
+    <script src="js/app-lock.js?v=f08bdb28"></script>
     <script src="js/feedback.js?v=a2a4c48b"></script>
     <script src="js/pwa.js?v=70965acb"></script>
     <script src="js/report.js?v=d2fb079b"></script>
     <script src="js/overview-cards.js?v=a4804772"></script>
-    <script src="js/overview.js?v=699864d9"></script>
+    <script src="js/overview.js?v=5f340b27"></script>
     <script src="js/budget.js?v=9c9e0798"></script>
     <script src="js/net-worth.js?v=78cff884"></script>
     <script src="js/month-overview.js?v=b3f42713"></script>
-    <script src="js/monthly-status.js?v=bf3edd7b"></script>
+    <script src="js/monthly-status.js?v=47c3e082"></script>
     <script src="js/goals.js?v=aae96981"></script>
     <script src="js/theme.js?v=f47f37be"></script>
     <script src="js/share.js?v=e0899adf"></script>

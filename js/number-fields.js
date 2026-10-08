@@ -7,7 +7,8 @@
  * om til tekstfelter med data-number. Værdien i feltet er altid et almindeligt
  * tal med punktum som decimaltegn, så resten af koden bare kan bruge parseFloat.
  * Så længe der står et regnestykke eller et dansk tal, holdes 'input'-events
- * tilbage, så beregningerne ikke regner med et halvt skrevet tal.
+ * tilbage, så beregningerne ikke regner med et halvt skrevet tal; i stedet
+ * sendes 'calcpreview' med resultatet til de skemaer, der vil følge med.
  * Pil op/ned tæller stadig op og ned i feltets step, ligesom før.
  * Selve regningen ligger i calc.js (parseAmount).
  */
@@ -85,6 +86,9 @@ document.addEventListener('input', e => {
     e.stopImmediatePropagation();
     const v = parseAmount(text);
     showCalcHint(input, v === null ? '' : '= ' + DK.format(v).replace(/^-/, '−'));
+    // Skemaer, der vil følge med, mens der regnes (fx Månedsstatus), lytter efter
+    // 'calcpreview' med resultatet. Et ufuldstændigt regnestykke ("100 +") sender intet.
+    if(v !== null) input.dispatchEvent(new CustomEvent('calcpreview', {detail:{value: v}}));
     // En gammel "skal være mellem"-besked passer ikke længere til teksten.
     const range = input.parentElement?.querySelector(':scope > .range-hint');
     if(range){ range.remove(); input.removeAttribute('aria-invalid'); }

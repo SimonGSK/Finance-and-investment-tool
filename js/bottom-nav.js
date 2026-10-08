@@ -95,6 +95,13 @@ const NAV_SHEETS = {
     more: ['Mere', moreSheetContent]
 };
 
+// Bruges tastaturet, eller fingeren/musen? Med tastaturet flyttes fokus til et punkt i arket
+// (og tilbage til fanen bagefter). Ved et tryk gør det ikke: iPhone viser fokus fra koden som
+// en grøn ramme om punktet, selvom man har trykket.
+let navByKeyboard = false;
+document.addEventListener('keydown', () => { navByKeyboard = true; }, true);
+document.addEventListener('pointerdown', () => { navByKeyboard = false; }, true);
+
 /**
  * Åbner arket nedefra.
  * @param {'trackers'|'tools'|'more'} kind
@@ -106,7 +113,8 @@ function openNavSheet(kind){
     document.getElementById('navSheetBody').replaceChildren(...content());
     sheet.dataset.kind = kind;
     if(!sheet.open) sheet.showModal();
-    sheet.querySelector('.nav-sheet-item.active, .nav-sheet-item')?.focus();
+    if(navByKeyboard) sheet.querySelector('.nav-sheet-item.active, .nav-sheet-item')?.focus();
+    else sheet.focus({preventScroll: true});   // selve arket, uden ramme (ikke lukkeknappen)
 }
 
 /** Lukker arket (gør intet, hvis det er lukket). */
@@ -117,11 +125,14 @@ function closeNavSheet(){
 
 (function initBottomNav(){
     const sheet = document.getElementById('navSheet');
-    // Et tryk på den mørke baggrund lukker arket; fokus går tilbage til fanen, der åbnede det.
+    // Et tryk på den mørke baggrund lukker arket. Med tastaturet går fokus tilbage til fanen,
+    // der åbnede det; efter et tryk fjernes fokus, så fanen ikke får en grøn ramme.
     sheet.addEventListener('click', e => { if(e.target === sheet) sheet.close(); });
     sheet.addEventListener('close', () => {
         const tab = document.querySelector(`.bottom-tab[data-tab="${sheet.dataset.kind}"]`);
-        if(tab && !document.querySelector('dialog[open]')) tab.focus({preventScroll: true});
+        if(!tab || document.querySelector('dialog[open]')) return;
+        if(navByKeyboard) tab.focus({preventScroll: true});
+        else if(document.activeElement === tab) tab.blur();
     });
 
     // Mens man skriver i et felt, skjules bundmenuen, så den ikke ligger oven på tastaturet.

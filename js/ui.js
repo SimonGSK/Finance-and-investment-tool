@@ -60,10 +60,11 @@ function fieldEl(labelText, control, extra = [], className = ''){
  * Åbner en dialog. Indholdet kan være en node eller en tekst. Hver knap i
  * `actions` lukker dialogen og opfylder løftet med sin `value`, medmindre dens
  * onClick returnerer false (bruges til validering).
- * @param {{title:string, content?:Node|string, actions?:{label:string, variant?:'primary'|'secondary'|'danger', value?:any, onClick?:() => boolean|void}[], wide?:boolean, onClose?:() => void}} opts
+ * @param {{title:string, content?:Node|string, actions?:{label:string, variant?:'primary'|'secondary'|'danger', value?:any, onClick?:() => boolean|void}[], wide?:boolean, onClose?:() => void, enterSubmits?:boolean}} opts
+ *   enterSubmits: false i lange skemaer, hvor Enter i et felt ikke må gemme det hele
  * @returns {{dialog:HTMLDialogElement, close:(value?:any) => void, result:Promise<any>}}
  */
-function openDialog({title, content, actions = [], wide = false, onClose}){
+function openDialog({title, content, actions = [], wide = false, onClose, enterSubmits = true}){
     let resolve;
     const result = new Promise(r => { resolve = r; });
     let settled = false;
@@ -105,9 +106,11 @@ function openDialog({title, content, actions = [], wide = false, onClose}){
 
     // Esc og klik på baggrunden lukker som "annullér".
     dialog.addEventListener('cancel', e => { e.preventDefault(); close(undefined); });
-    // Enter i et felt udfører dialogens hovedhandling, som i en almindelig formular.
+    // Enter i et felt udfører dialogens hovedhandling, som i en almindelig formular
+    // (medmindre dialogen er et langt skema, se enterSubmits).
     dialog.addEventListener('keydown', e => {
         if(e.key !== 'Enter' || !e.target.matches('input:not([type=checkbox]):not([type=radio]), select')) return;
+        if(!enterSubmits){ e.preventDefault(); return; }
         const primary = dialog.querySelector('.dialog-footer .btn-primary');
         if(primary){ e.preventDefault(); primary.click(); }
     });
