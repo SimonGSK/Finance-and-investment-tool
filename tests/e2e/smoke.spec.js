@@ -1491,20 +1491,26 @@ test('kodelås: slås til med en kode, låser ved åbning og efter 5 minutter v�
     await expect(page.locator('#lockSettings')).toContainText('Kodelåsen er slået til.');
     expect(await page.evaluate(() => localStorage.getItem('appLock'))).not.toContain('1234');   // kun et hash gemmes
 
-    // Låst ved åbning: siden er skjult, og koden skrives som fire prikker, der tjekkes, så snart de er fyldt.
+    // Låst ved åbning: siden er skjult, og koden tastes på tastaturet på skærmen som fire prikker,
+    // der tjekkes, så snart de er fyldt.
     await page.reload();
     const lock = page.locator('#lockScreen');
     await expect(lock).toBeVisible();
     await expect(page.locator('.page-shell')).toBeHidden();
     const dots = page.locator('#lockDots .lock-dot');
+    const filled = page.locator('#lockDots .lock-dot.is-filled');
+    const tap = async code => { for(const d of code) await page.locator('#lockKeypad').getByRole('button', { name: d, exact: true }).click(); };
     await expect(dots).toHaveCount(4);
     await expect(page.getByRole('button', { name: 'Lås op' })).toBeHidden();
-    await page.locator('#lockCode').pressSequentially('12');
-    await expect(page.locator('#lockDots .lock-dot.is-filled')).toHaveCount(2);
-    await page.locator('#lockCode').pressSequentially('00');
+    await tap('12');
+    await expect(filled).toHaveCount(2);
+    await tap('00');
     await expect(page.locator('#lockError')).toHaveText('Forkert kode. Prøv igen.');
-    await expect(page.locator('#lockDots .lock-dot.is-filled')).toHaveCount(0);
-    await page.locator('#lockCode').pressSequentially('1234');
+    await expect(filled).toHaveCount(0);
+    await tap('19');
+    await page.locator('#lockKeypad').getByRole('button', { name: 'Slet' }).click();
+    await expect(filled).toHaveCount(1);
+    await tap('234');
     await expect(lock).toBeHidden();
     await expect(page.locator('#ovNetWorth')).toHaveText('123.456 kr.');
 
@@ -1521,7 +1527,7 @@ test('kodelås: slås til med en kode, låser ved åbning og efter 5 minutter v�
     await page.clock.fastForward('06:00');
     await setVisibility('visible');
     await expect(lock).toBeVisible();
-    await page.locator('#lockCode').fill('1234');
+    await page.keyboard.type('1234');                  // på en computer kan koden også skrives
     await expect(lock).toBeHidden();
 
     // Slå fra kræver koden.
@@ -1546,10 +1552,11 @@ test('kodelås: en kode fra før prikkerne bruger "Lås op" én gang, og derefte
     });
     await page.reload();
     const dots = page.locator('#lockDots .lock-dot');
+    const tap = async code => { for(const d of code) await page.locator('#lockKeypad').getByRole('button', { name: d, exact: true }).click(); };
     await expect(dots).toHaveCount(4);
-    await page.locator('#lockCode').pressSequentially('5678');
+    await tap('5678');
     await expect(page.locator('#lockScreen')).toBeVisible();        // længden kendes ikke: intet automatisk tjek
-    await page.locator('#lockCode').pressSequentially('9');
+    await tap('9');
     await expect(dots).toHaveCount(5);
     await page.getByRole('button', { name: 'Lås op' }).click();
     await expect(page.locator('#lockScreen')).toBeHidden();
@@ -1559,8 +1566,23 @@ test('kodelås: en kode fra før prikkerne bruger "Lås op" én gang, og derefte
     await page.reload();
     await expect(dots).toHaveCount(5);
     await expect(page.getByRole('button', { name: 'Lås op' })).toBeHidden();
-    await page.locator('#lockCode').pressSequentially('56789');
+    await tap('56789');
     await expect(page.locator('#lockScreen')).toBeHidden();
+});
+
+test('kodelås: taltastaturet passer på skærmen uden at rulle og låser op ved fjerde ciffer @mobil', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(async () => {
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        localStorage.setItem('appLock', JSON.stringify({hash: await hashLockCode('2580', salt), salt: btoa(String.fromCharCode(...salt)), digits: 4}));
+    });
+    await page.reload();
+    const lock = page.locator('#lockScreen');
+    await expect(lock).toBeVisible();
+    expect(await lock.evaluate(s => s.scrollHeight <= s.clientHeight + 1)).toBe(true);
+    await expect(page.getByRole('button', { name: 'Glemt koden?' })).toBeInViewport();
+    for(const d of '2580') await page.locator('#lockKeypad').getByRole('button', { name: d, exact: true }).click();
+    await expect(lock).toBeHidden();
 });
 
 test('kodelås: "Glemt koden?" sletter dataene på enheden og fjerner låsen', async ({ page }) => {
@@ -1598,14 +1620,14 @@ test('kodelås: Face ID eller fingeraftryk spørges automatisk, og ellers står 
     await page.reload();
     await expect(page.locator('#lockScreen')).toBeHidden();
 
-    // Lykkes det ikke, bliver siden låst med koden klar og knappen til at prøve igen - uden fejlbesked.
+    // Lykkes det ikke, bliver siden låst med tastaturet klar og knappen til at prøve igen - uden fejlbesked.
     await cdp.send('WebAuthn.setUserVerified', {authenticatorId, isUserVerified: false});
     await page.reload();
     await expect(page.locator('#lockScreen')).toBeVisible();
-    await expect(page.locator('#lockCode')).toBeFocused();
+    await expect(page.locator('#lockKeypad')).toBeVisible();
     await expect(page.locator('#lockError')).toHaveText('');
     await expect(page.getByRole('button', { name: 'Brug Face ID eller fingeraftryk' })).toBeVisible();
-    await page.locator('#lockCode').fill('4321');
+    for(const d of '4321') await page.locator('#lockKeypad').getByRole('button', { name: d, exact: true }).click();
     await page.getByRole('button', { name: 'Lås op' }).click();
     await expect(page.locator('#lockScreen')).toBeHidden();
 });
