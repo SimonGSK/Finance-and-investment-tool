@@ -1605,6 +1605,15 @@ test('backup: en hentet fil med alle enhedens tal tæller som backup, men ikke h
     expect(await lastBackup()).toBe(String(savedAt));
 });
 
+test('Fordeling: procenterne passer til søjlen, også når et ældre datapunkts formue ikke er summen af kategorierne', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => localStorage.setItem('netWorthHistory', JSON.stringify([
+        {date:'2026-08-31', value:500000, liquid:400000, netCatKontanter:100000, netCatAktier:300000, netCatPension:0, netCatFrivaerdi:0, netCatAndet:0, debt:0}
+    ])));
+    await page.reload();
+    await expect(page.locator('#ovSplit .ov-split-item strong')).toHaveText(['75 %', '25 %']);
+});
+
 test('bundmenu på telefoner: Oversigt, Trackers, + Status, Værktøjer og Mere @mobil', async ({ page }) => {
     await page.goto('/index.html');
     const phone = await page.evaluate(() => window.innerWidth <= 640);
