@@ -29,7 +29,7 @@
          TODO: Erstat ca-pub-XXXXXXXXXXXXXXXX med mit eget AdSense-udgiver-ID, og fjern kommentaren.
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
     -->
-    <link rel="stylesheet" href="styles.css?v=7096f05e">
+    <link rel="stylesheet" href="styles.css?v=9c2310f4">
 </head>
 <body>
 
@@ -40,8 +40,14 @@
             <h2 class="lock-title" id="lockTitle">Økonomis er låst</h2>
             <form class="lock-form" id="lockForm">
                 <label class="visually-hidden" for="lockCode">Kode</label>
-                <input class="number-input lock-input" id="lockCode" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="Din kode">
-                <button class="btn btn-primary" type="submit">Lås op</button>
+                <!-- Én prik pr. ciffer i koden. Det rigtige felt ligger usynligt oven på prikkerne,
+                     så et tryk på dem åbner tastaturet. -->
+                <div class="lock-pin" id="lockPin">
+                    <div class="lock-dots" id="lockDots" aria-hidden="true"></div>
+                    <input class="lock-input" id="lockCode" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" aria-describedby="lockDigitsHint">
+                </div>
+                <span class="visually-hidden" id="lockDigitsHint"></span>
+                <button class="btn btn-primary" id="lockSubmit" type="submit">Lås op</button>
             </form>
             <p class="field-error lock-error" id="lockError" role="alert"></p>
             <button class="btn btn-secondary lock-biometric" id="lockBiometric" type="button" onclick="unlockWithBiometric()" hidden>Brug Face ID eller fingeraftryk</button>
@@ -1887,7 +1893,7 @@
     <script src="js/debt-payoff.js?v=d92e8193"></script>
     <script src="js/navigation.js?v=7404a2ee"></script>
     <script src="js/bottom-nav.js?v=d9a5cbd0"></script>
-    <script src="js/app-lock.js?v=161117f0"></script>
+    <script src="js/app-lock.js?v=843ef483"></script>
     <script src="js/feedback.js?v=a2a4c48b"></script>
     <script src="js/pwa.js?v=70965acb"></script>
     <script src="js/report.js?v=d2fb079b"></script>
