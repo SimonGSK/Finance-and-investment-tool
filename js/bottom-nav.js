@@ -4,7 +4,8 @@
  * på smalle skærme.
  *
  * Trackers, Værktøjer og Mere åbner hver et ark nedefra, der bygges ud fra
- * menukortet, så menuerne altid har de samme punkter.
+ * menukortet, så menuerne altid har de samme punkter. Arket lukkes med krydset,
+ * et tryk udenfor, Esc, eller ved at trække det ned.
  */
 
 // Trackerne i den rækkefølge og med de navne, de har i arket.
@@ -113,6 +114,9 @@ function openNavSheet(kind){
     document.getElementById('navSheetBody').replaceChildren(...content());
     sheet.dataset.kind = kind;
     if(!sheet.open) sheet.showModal();
+    // Kan indholdet være der uden at rulle, kan hele arket trækkes ned; ellers kun i toppen (håndtaget og titlen).
+    const body = document.getElementById('navSheetBody');
+    sheet.classList.toggle('is-static', body.scrollHeight <= body.clientHeight + 1);
     if(navByKeyboard) sheet.querySelector('.nav-sheet-item.active, .nav-sheet-item')?.focus();
     else sheet.focus({preventScroll: true});   // selve arket, uden ramme (ikke lukkeknappen)
 }
@@ -123,11 +127,82 @@ function closeNavSheet(){
     if(sheet.open) sheet.close();
 }
 
+/**
+ * Træk arket ned for at lukke det, som på en iPhone: arket følger fingeren, og slippes
+ * det mere end en tredjedel nede eller med et hurtigt svip nedad, glider det ud og lukkes.
+ * Ellers glider det tilbage. Et træk tæller ikke som et tryk på punktet, man startede på.
+ * @param {HTMLDialogElement} sheet
+ */
+function initSheetSwipe(sheet){
+    let start = null, dragging = false, dy = 0, swallowClick = false;
+    const reset = () => {
+        sheet.classList.remove('is-dragging', 'is-settling');
+        sheet.style.transform = '';
+    };
+    const settle = (to, then) => {
+        sheet.classList.remove('is-dragging');
+        sheet.classList.add('is-settling');
+        sheet.style.transform = to;
+        let done = false;
+        const finish = () => { if(done) return; done = true; sheet.classList.remove('is-settling'); then?.(); };
+        sheet.addEventListener('transitionend', finish, {once: true});
+        setTimeout(finish, 260);   // hvis der ingen overgang er (fx "reducer bevægelse")
+    };
+
+    sheet.addEventListener('pointerdown', e => {
+        if(!e.isPrimary || e.button !== 0) return;
+        // I et ark, der skal rulle, trækkes kun i toppen, så man stadig kan rulle i listen.
+        if(!sheet.classList.contains('is-static') && !e.target.closest('.nav-sheet-grip, .dialog-header')) return;
+        start = {y: e.clientY, t: e.timeStamp, id: e.pointerId};
+        dragging = false; dy = 0;
+    });
+    sheet.addEventListener('pointermove', e => {
+        if(!start || e.pointerId !== start.id) return;
+        // En mus, der bevæger sig uden knappen nede, er sluppet - også hvis "slip" aldrig nåede frem.
+        if(e.pointerType !== 'touch' && e.buttons === 0){ end(e, true); return; }
+        dy = e.clientY - start.y;
+        if(!dragging){
+            if(dy < 6) return;
+            dragging = true;
+            sheet.classList.add('is-dragging');
+            try{ sheet.setPointerCapture(e.pointerId); } catch(err){}
+        }
+        // Opad giver arket kun lidt efter.
+        sheet.style.transform = `translateY(${dy > 0 ? dy : dy / 4}px)`;
+    });
+    /**
+     * Slutter et træk: lukker arket eller lader det glide tilbage.
+     * @param {PointerEvent} e
+     * @param {boolean} [released] fingeren eller knappen blev sluppet (ikke afbrudt af browseren)
+     */
+    function end(e, released = e.type === 'pointerup'){
+        if(!start || e.pointerId !== start.id) return;
+        const velocity = dy / Math.max(1, e.timeStamp - start.t);   // px pr. ms
+        start = null;
+        if(!dragging) return;
+        dragging = false;
+        swallowClick = true;
+        setTimeout(() => { swallowClick = false; }, 0);
+        try{ sheet.releasePointerCapture(e.pointerId); } catch(err){}
+        if(released && (dy > sheet.offsetHeight / 3 || (dy > 40 && velocity > 0.6))){
+            settle('translateY(100%)', () => sheet.close());
+        } else settle('');
+    }
+    // Slip lyttes efter på hele vinduet, så et træk aldrig hænger fast, hvis slip sker et andet sted end på arket.
+    window.addEventListener('pointerup', e => end(e), true);
+    window.addEventListener('pointercancel', e => end(e), true);
+    sheet.addEventListener('lostpointercapture', e => end(e, true));
+    // Klikket, der kommer efter et træk, må ikke åbne det punkt, man startede på.
+    sheet.addEventListener('click', e => { if(swallowClick){ e.stopPropagation(); e.preventDefault(); swallowClick = false; } }, true);
+    sheet.addEventListener('close', reset);
+}
+
 (function initBottomNav(){
     const sheet = document.getElementById('navSheet');
     // Et tryk på den mørke baggrund lukker arket. Med tastaturet går fokus tilbage til fanen,
     // der åbnede det; efter et tryk fjernes fokus, så fanen ikke får en grøn ramme.
     sheet.addEventListener('click', e => { if(e.target === sheet) sheet.close(); });
+    initSheetSwipe(sheet);
     sheet.addEventListener('close', () => {
         const tab = document.querySelector(`.bottom-tab[data-tab="${sheet.dataset.kind}"]`);
         if(!tab || document.querySelector('dialog[open]')) return;
