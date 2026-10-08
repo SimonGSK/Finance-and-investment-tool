@@ -146,6 +146,7 @@ js/bottom-nav.js        Bottom bar and sheets on phones
 js/sync.js              Backup file and syncing between devices (merge, not overwrite)
 js/app-lock.js          Kodelås: lock screen, code and Face ID / fingerprint
 js/hide-amounts.js      Skjul beløb: blurs amounts, chart axes and tooltips
+js/update-check.js      "En ny version er klar" with a reload button
 js/feedback.js          Feedback button and form (sent via Formspree)
 js/pwa.js               "Install as app" button; registers the service worker
 js/report.js            Printable one-page overview (Udskriv overblik)
@@ -185,7 +186,7 @@ There's no server, so phone and computer share data through a file. **Gem mine d
 
 ## Install as an app
 
-The site is a Progressive Web App. In Chrome, Edge or on Android, **Installér som app** in the settings panel installs it; on iPhone/iPad it's Safari's **Share → Add to Home Screen** (the button explains this). The service worker (`sw.js`) fetches from the network first, so a new version is picked up as soon as you're online, and falls back to cached copies offline. On install it caches every file `index.html` refers to, so nothing needs updating when files are added. Note that on iOS the installed app has its own storage, separate from Safari — move data with *Gem mine data / Hent data fra fil*.
+The site is a Progressive Web App. In Chrome, Edge or on Android, **Installér som app** in the settings panel installs it; on iPhone/iPad it's Safari's **Share → Add to Home Screen** (the button explains this). The service worker (`sw.js`) fetches from the network first, so a new version is picked up as soon as you're online, and falls back to cached copies offline. On install it caches every file `index.html` refers to, so nothing needs updating when files are added. A page that stays open for a long time (the installed app is often kept alive in the background) checks for a newer version when you come back to it (at most every 10 minutes) and every 30 minutes while it's open: `npm run stamp` writes a version number for the whole page into `<meta name="app-version">`, and if the newest `index.html` has a different one, a message says **En ny version er klar** with a **Genindlæs** button (`js/update-check.js`). Note that on iOS the installed app has its own storage, separate from Safari — move data with *Gem mine data / Hent data fra fil*.
 
 ## Feedback
 

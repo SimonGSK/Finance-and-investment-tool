@@ -11,6 +11,15 @@ test('index.html har opdaterede versionsstempler på CSS og JS (kør "npm run st
     assert.equal(html, stamp(html));
     assert.match(html, /href="styles\.css\?v=[0-9a-f]{8}"/);
     assert.equal((html.match(/src="js\/[\w.-]+\.js\?v=[0-9a-f]{8}"/g) || []).length, (html.match(/src="js\//g) || []).length);
+    assert.match(html, /<meta name="app-version" content="[0-9a-f]{8}">/);
+});
+
+test('sidens versionsnummer følger hele index.html, og stemplet er det samme, når intet er ændret', () => {
+    const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+    const version = h => /<meta name="app-version" content="([0-9a-f]*)">/.exec(h)[1];
+    assert.equal(stamp(stamp(html)), stamp(html));
+    const changed = stamp(html.replace('Økonomis er låst', 'Økonomis er låst nu'));
+    assert.notEqual(version(changed), version(stamp(html)));
 });
 
 test('app-ikonet i tre farver: hvert manifest peger på sine egne ikoner, og de findes', () => {

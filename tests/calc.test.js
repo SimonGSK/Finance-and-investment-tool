@@ -1073,3 +1073,11 @@ describe('containsAmount', () => {
             assert.equal(calc.containsAmount(t), false, t);
     });
 });
+
+describe('appVersionOf', () => {
+    test('læser versionsnummeret fra index.html, og null uden et', () => {
+        assert.equal(calc.appVersionOf('<head><meta name="app-version" content="1a2b3c4d"></head>'), '1a2b3c4d');
+        assert.equal(calc.appVersionOf('<head><meta name="app-version" content=""></head>'), null);
+        assert.equal(calc.appVersionOf('<html></html>'), null);
+    });
+});
