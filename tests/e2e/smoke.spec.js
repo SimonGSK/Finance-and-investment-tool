@@ -1542,6 +1542,37 @@ test('kodelås: "Glemt koden?" sletter dataene på enheden og fjerner låsen', a
     expect(await page.evaluate(() => [localStorage.getItem('appLock'), localStorage.getItem('budgetItems')])).toEqual([null, null]);
 });
 
+test('backup: en hentet fil med alle enhedens tal tæller som backup, men ikke hvis enheden har mere', async ({ page }, testInfo) => {
+    const fs = require('fs');
+    const day = 24 * 60 * 60 * 1000;
+    const nw = (date, value) => ({date, value, liquid:value, netCatKontanter:value, netCatAktier:0, netCatPension:0, netCatFrivaerdi:0, netCatAndet:0, debt:0});
+    const writeFile = (name, exportedAt) => {
+        const path = testInfo.outputPath(name);
+        fs.writeFileSync(path, JSON.stringify({format:'okonomivaerktoejer', version:2, exportedAt, device:'Mac',
+            times:{netWorthHistory: exportedAt - day, budgetItems: exportedAt - day}, settings:{},
+            netWorthHistory:[nw('2026-08-31', 200000), nw('2026-09-30', 210000)],
+            budgetItems:{catBolig:[{label:'Husleje', amount:9500}]}}));
+        return path;
+    };
+    const lastBackup = () => page.evaluate(() => localStorage.getItem('lastBackupAt'));
+
+    // Telefonen har ingen tal af sine egne: filen fra computeren dækker alt.
+    await page.goto('/index.html');
+    const savedAt = Date.now() - 2 * day;
+    await page.locator('#settingsBtn').click();
+    await page.locator('#allDataUpload').setInputFiles(writeFile('fra-computeren.json', savedAt));
+    await page.getByRole('dialog', { name: 'Hent data fra fil' }).getByRole('button', { name: 'Hent og flet' }).click();
+    await expect(page.locator('.toast')).toContainText('hentet og flettet');
+    expect(await lastBackup()).toBe(String(savedAt));
+
+    // Har telefonen noget, filen ikke har (her et mål), er det ikke sikret - "seneste backup" står stille.
+    await page.evaluate(() => localStorage.setItem('netWorthGoals', JSON.stringify([{id:'g1', name:'Kun på telefonen', metric:'value', target:1000000, deadline:null}])));
+    await page.locator('#settingsBtn').click();
+    await page.locator('#allDataUpload').setInputFiles(writeFile('nyere.json', Date.now() - day));
+    await expect(page.getByRole('dialog', { name: 'Allerede opdateret' })).toBeVisible();
+    expect(await lastBackup()).toBe(String(savedAt));
+});
+
 test('bundmenu på telefoner: Oversigt, Trackers, + Status, Værktøjer og Mere @mobil', async ({ page }) => {
     await page.goto('/index.html');
     const phone = await page.evaluate(() => window.innerWidth <= 640);

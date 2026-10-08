@@ -18,7 +18,7 @@ const {
     annuityPayment, purchaseCosts, loanSplit, interestDeductionValue, loanCapacity,
     simulateBuyVsRent, simulateDebtPayoff,
     PAL_SKAT, PENSION_LIMITS, folkepensionAge, simulatePension,
-    backupReminderDue, emergencyFundMonths, xirr, portfolioCashFlows,
+    backupReminderDue, fileCoversLocalData, emergencyFundMonths, xirr, portfolioCashFlows,
     monthlyTrend, goalProgress
 } = calc;
 
@@ -553,6 +553,30 @@ describe('backup-påmindelse', () => {
         const base = {hasData:true, now, lastBackupAt:now - 60 * day, firstDataAt:null};
         assert.equal(backupReminderDue({...base, snoozedUntil: now + day}).due, false);
         assert.equal(backupReminderDue({...base, snoozedUntil: now - day}).due, true);
+    });
+});
+
+describe('hentet backup tæller som backup', () => {
+    const keys = ['budgetItems', 'netWorthHistory'], historyKeys = ['netWorthHistory'];
+    const aug = {date:'2026-08-31', value:100}, sep = {date:'2026-09-30', value:110};
+    const budget = {catBolig:[{label:'Husleje', amount:9000}]};
+    test('alt på enheden findes i filen', () => {
+        const incoming = {budgetItems: budget, netWorthHistory:[aug, sep]};
+        assert.equal(fileCoversLocalData({result:{...incoming}, incoming, localTimes:{budgetItems:1, netWorthHistory:1}, keys, historyKeys}), true);
+    });
+    test('enheden har en dato, filen ikke har', () => {
+        const incoming = {netWorthHistory:[sep]};
+        assert.equal(fileCoversLocalData({result:{netWorthHistory:[aug, sep]}, incoming, localTimes:{netWorthHistory:1}, keys, historyKeys}), false);
+    });
+    test('samme dato med andre tal på enheden', () => {
+        const incoming = {netWorthHistory:[{...sep, value:120}]};
+        assert.equal(fileCoversLocalData({result:{netWorthHistory:[sep]}, incoming, localTimes:{netWorthHistory:1}, keys, historyKeys}), false);
+    });
+    test('en del, der kun findes på enheden', () => {
+        assert.equal(fileCoversLocalData({result:{budgetItems: budget}, incoming:{}, localTimes:{budgetItems:1}, keys, historyKeys}), false);
+    });
+    test('standardværdier, brugeren aldrig har ændret, tæller ikke', () => {
+        assert.equal(fileCoversLocalData({result:{budgetItems: budget}, incoming:{}, localTimes:{}, keys, historyKeys}), true);
     });
 });
 
