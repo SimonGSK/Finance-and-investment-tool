@@ -225,6 +225,24 @@ function openMonthlyStatus(initialDate){
     refreshSummary();
     checkExistingDate();
 
+    function save(){
+        const date = normalizeDate(dateInput.value);
+        if(!date){
+            dateError.textContent = 'Vælg en gyldig dato.';
+            dateInput.setAttribute('aria-invalid', 'true');
+            dateInput.focus();
+            return;
+        }
+        saving = true;
+        saveMonthlyStatus(date, values).then(saved => {
+            saving = false;
+            if(saved){
+                handle.close(true);
+                if(typeof checkMonthlyReminder === 'function') checkMonthlyReminder();
+            }
+        });
+    }
+
     let saving = false;
     const handle = openDialog({
         title:'Månedsstatus',
@@ -236,30 +254,56 @@ function openMonthlyStatus(initialDate){
             {label:'Annullér', variant:'secondary'},
             {label:'Gem i begge', variant:'primary', onClick: () => {
                 if(saving) return false;
-                // Et regnestykke, der ikke kan regnes ud ("12.000 +"), gemmes ikke.
-                const unfinished = Object.values(inputs).find(input => !commitNumberInput(input));
-                if(unfinished){ unfinished.focus(); return false; }
-                const date = normalizeDate(dateInput.value);
-                if(!date){
-                    dateError.textContent = 'Vælg en gyldig dato.';
-                    dateInput.setAttribute('aria-invalid', 'true');
-                    dateInput.focus();
-                    return false;
-                }
-                saving = true;
-                saveMonthlyStatus(date, values).then(saved => {
-                    saving = false;
-                    if(saved){
-                        handle.close(true);
-                        if(typeof checkMonthlyReminder === 'function') checkMonthlyReminder();
-                    }
-                });
+                // Et regnestykke, der ikke kan regnes ud ("12.000 +"), gemmes ikke - advar først.
+                const unfinished = Object.keys(inputs).filter(key => !commitNumberInput(inputs[key]));
+                if(!unfinished.length){ save(); return false; }
+                warnUnfinishedSums(unfinished.map(key => ({label: MONTHLY_STATUS_LABELS[key], text: inputs[key].value.trim(), value: values[key] || 0})))
+                    .then(saveAnyway => {
+                        if(!saveAnyway){ inputs[unfinished[0]].focus(); return; }
+                        // Felterne får det tal, der gemmes, så skemaet viser det samme.
+                        unfinished.forEach(key => { inputs[key].value = values[key] || 0; showRangeHint(inputs[key]); });
+                        save();
+                    });
                 return false;
             }}
         ]
     });
     inputs.bank.focus();
     inputs.bank.select();
+}
+
+/** Feltnavnene i skemaet, fx bank -> "Bank- og opsparingskonti". */
+const MONTHLY_STATUS_LABELS = Object.fromEntries(MONTHLY_STATUS_SECTIONS.flatMap(s => s.fields).map(f => [f.key, f.label]));
+
+/**
+ * Advarer, når et felt har et regnestykke, der ikke kan regnes ud: det bliver
+ * ikke gemt, og i stedet bruges det sidste tal, der kunne regnes ud.
+ * @param {{label:string, text:string, value:number}[]} fields
+ * @returns {Promise<boolean>} true = gem alligevel, false = ret feltet
+ */
+function warnUnfinishedSums(fields){
+    const one = fields.length === 1;
+    return openDialog({
+        title: one ? 'Et regnestykke er ikke færdigt' : 'Nogle regnestykker er ikke færdige',
+        content: el('div', {}, [
+            el('p', {className:'dialog-text', textContent: one
+                ? 'Feltet herunder kan ikke regnes ud, så det, du har skrevet, bliver ikke gemt. Gemmer du alligevel, bruges det sidste tal, der kunne regnes ud.'
+                : 'Felterne herunder kan ikke regnes ud, så det, du har skrevet, bliver ikke gemt. Gemmer du alligevel, bruges de sidste tal, der kunne regnes ud.'}),
+            // Det skrevne (overstreget) → det, der gemmes, hvis man gemmer alligevel.
+            el('dl', {className:'change-list'}, fields.flatMap(f => [
+                el('dt', {textContent: f.label}),
+                el('dd', {}, [
+                    el('span', {className:'change-from', textContent: f.text}),
+                    ' → ',
+                    el('span', {className:'change-to', textContent: DK.format(f.value) + ' kr.'})
+                ])
+            ]))
+        ]),
+        actions:[
+            {label:'Gem alligevel', variant:'secondary', value:true},
+            {label: one ? 'Ret feltet' : 'Ret felterne', variant:'primary', value:false}
+        ]
+    }).result.then(v => v === true);
 }
 
 /**

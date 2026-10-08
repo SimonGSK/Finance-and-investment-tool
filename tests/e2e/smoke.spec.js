@@ -1429,15 +1429,23 @@ test('månedsstatus: et regnestykke opdaterer "siden sidst" og opsummeringen men
     await bank.press('Enter');
     await expect(dialog).toBeVisible();
 
-    // Et ufærdigt regnestykke kan ikke gemmes.
+    // Et ufærdigt regnestykke giver en advarsel: "Ret feltet" går tilbage til feltet...
     await bank.fill('');
     await bank.pressSequentially('40000+');
     await dialog.getByRole('button', { name: 'Gem i begge' }).click();
+    const warning = page.getByRole('dialog', { name: 'Et regnestykke er ikke færdigt' });
+    await expect(warning).toContainText('Bank- og opsparingskonti');
+    await expect(warning.locator('.change-from')).toHaveText('40000+');
+    await expect(warning.locator('.change-to')).toHaveText('40.000 kr.');
+    await warning.getByRole('button', { name: 'Ret feltet' }).click();
+    await expect(warning).toBeHidden();
     await expect(dialog).toBeVisible();
+    await expect(bank).toBeFocused();
     await expect(dialog.locator('.range-hint')).toContainText('Kunne ikke regne det ud');
 
-    await bank.fill('40000');
+    // ... og "Gem alligevel" gemmer det sidste tal, der kunne regnes ud.
     await dialog.getByRole('button', { name: 'Gem i begge' }).click();
+    await warning.getByRole('button', { name: 'Gem alligevel' }).click();
     await expect(dialog).toBeHidden();
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('netWorthHistory')).find(h => h.date === '2026-09-30'));
     expect(saved).toMatchObject({netCatKontanter: 45000, value: 275000});
