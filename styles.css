@@ -1981,6 +1981,10 @@ html.is-locked .page-shell, html.is-locked #printReport, html.is-locked .toast-r
 @keyframes sheet-in{ from{ transform:translateY(40px); opacity:0; } to{ transform:none; opacity:1; } }
 .nav-sheet::backdrop{ background:rgba(0,0,0,0.5); }
 .nav-sheet-grip{ width:36px; height:4px; margin:var(--s2) auto 0; border-radius:2px; background:var(--border-strong); }
+/* Træk ned for at lukke (bottom-nav.js): toppen kan altid trækkes; hele arket, når listen ikke skal rulle. */
+.nav-sheet .nav-sheet-grip, .nav-sheet .dialog-header, .nav-sheet.is-static{ touch-action:none; }
+.nav-sheet.is-dragging{ transition:none; user-select:none; -webkit-user-select:none; }
+.nav-sheet.is-settling{ transition:transform 0.22s var(--ease); }
 .nav-sheet .dialog-header{ padding:var(--s3) var(--s4) var(--s1); }
 .nav-sheet .dialog-body{ padding:0 var(--s4) var(--s4); }
 .nav-sheet-group + .nav-sheet-group{ margin-top:var(--s3); }

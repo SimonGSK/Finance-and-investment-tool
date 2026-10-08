@@ -1826,3 +1826,42 @@ test('skjul beløb: øjet slører beløb, felter og grafernes beløbsakse, huske
     expect(await historyAxis()).toEqual([true, true]);
     expect(await page.evaluate(() => localStorage.getItem('hideAmounts'))).toBeNull();
 });
+
+test('arkene i bundmenuen kan trækkes ned for at lukke, og et kort træk glider tilbage @mobil', async ({ page }) => {
+    await page.goto('/index.html');
+    const phone = await page.evaluate(() => window.innerWidth <= 640);
+    test.skip(!phone, 'bundmenuen findes kun på telefoner');
+    const bar = page.getByRole('navigation', { name: 'Bundmenu' });
+    const sheet = page.locator('#navSheet');
+    /** Trækker lodret fra et punkt med et antal pixels i små skridt. */
+    const drag = async (x, y, dy) => {
+        await page.mouse.move(x, y);
+        await page.mouse.down();
+        await page.mouse.move(x, y + dy, { steps: 8 });
+        await page.mouse.up();
+    };
+
+    // Et kort træk: arket bliver og glider på plads igen.
+    await bar.getByRole('button', { name: 'Trackers', exact: true }).click();
+    await expect(sheet).toBeVisible();
+    const item = await sheet.getByRole('button', { name: 'Porteføljetracker' }).boundingBox();
+    await drag(item.x + 40, item.y + item.height / 2, 25);
+    await expect(sheet).toBeVisible();
+    await expect.poll(() => sheet.evaluate(s => s.style.transform)).toBe('');
+
+    // Et langt træk, der starter på et punkt, lukker arket uden at åbne punktet.
+    await drag(item.x + 40, item.y + item.height / 2, 220);
+    await expect(sheet).toBeHidden();
+    await expect(page.locator('#pageTitle')).toHaveText('Din økonomi');
+
+    // Et almindeligt tryk virker stadig.
+    await bar.getByRole('button', { name: 'Trackers', exact: true }).click();
+    await sheet.getByRole('button', { name: 'Porteføljetracker' }).click();
+    await expect(page.locator('#pageTitle')).toHaveText('Porteføljetracker');
+
+    // Værktøjer: håndtaget i toppen kan altid trækkes, også når listen skal rulle.
+    await bar.getByRole('button', { name: 'Værktøjer', exact: true }).click();
+    const grip = await sheet.locator('.nav-sheet-grip').boundingBox();
+    await drag(grip.x + grip.width / 2, grip.y + 2, 400);
+    await expect(sheet).toBeHidden();
+});
