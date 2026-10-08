@@ -1885,3 +1885,50 @@ test('arkene i bundmenuen kan trækkes ned for at lukke, og et kort træk glider
     await drag(grip.x + grip.width / 2, grip.y + 2, 400);
     await expect(sheet).toBeHidden();
 });
+
+test.describe('ny version', () => {
+    // Uden service worker, så testen selv kan svare med en "nyere" index.html.
+    test.use({ serviceWorkers: 'block' });
+
+    test('"Ny version klar": vises, når der ligger en nyere side, kun én gang, og Genindlæs henter den', async ({ page }) => {
+        await page.goto('/index.html');
+        const current = await page.evaluate(() => APP_VERSION);
+        expect(current).toMatch(/^[0-9a-f]{8}$/);
+        // Samme version: ingen besked.
+        expect(await page.evaluate(() => checkForNewVersion())).toBe(false);
+        await expect(page.locator('.toast', { hasText: 'ny version er klar' })).toHaveCount(0);
+
+        // Der lægges en ny version ud.
+        await page.route('**/index.html', async route => {
+            const response = await route.fetch();
+            const html = (await response.text()).replace(/(<meta name="app-version" content=")[0-9a-f]+/, '$1ffffffff');
+            await route.fulfill({ response, body: html });
+        });
+        expect(await page.evaluate(() => checkForNewVersion())).toBe(true);
+        const toast = page.locator('.toast', { hasText: 'En ny version er klar.' });
+        await expect(toast).toBeVisible();
+        await page.waitForTimeout(5500);     // en almindelig besked ville være væk nu
+        await expect(toast).toBeVisible();
+        // Den samme nye version giver ikke en besked mere.
+        expect(await page.evaluate(() => checkForNewVersion())).toBe(false);
+        await expect(toast).toHaveCount(1);
+
+        await toast.getByRole('button', { name: 'Genindlæs' }).click();
+        await expect.poll(() => page.evaluate(() => typeof APP_VERSION !== 'undefined' && APP_VERSION)).toBe('ffffffff');
+        await expect(page.locator('.toast', { hasText: 'ny version er klar' })).toHaveCount(0);
+    });
+
+    test('"Ny version klar" kan lukkes med krydset og kommer ikke igen for samme version', async ({ page }) => {
+        await page.goto('/index.html');
+        await page.route('**/index.html', async route => {
+            const response = await route.fetch();
+            await route.fulfill({ response, body: (await response.text()).replace(/(<meta name="app-version" content=")[0-9a-f]+/, '$1eeeeeee') });
+        });
+        await page.evaluate(() => checkForNewVersion());
+        const toast = page.locator('.toast', { hasText: 'ny version er klar' });
+        await toast.getByRole('button', { name: 'Luk' }).click();
+        await expect(toast).toHaveCount(0);
+        expect(await page.evaluate(() => checkForNewVersion())).toBe(false);
+        await expect(toast).toHaveCount(0);
+    });
+});

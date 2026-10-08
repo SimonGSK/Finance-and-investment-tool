@@ -159,7 +159,7 @@ let toastRegion = null;
  * Kort besked nederst på skærmen, fx "Datapunkt gemt". Kan have en knap som
  * "Fortryd". Meddeles også til skærmlæsere.
  * @param {string} message
- * @param {{actionLabel?:string, onAction?:() => void, duration?:number}} [opts]
+ * @param {{actionLabel?:string, onAction?:() => void, duration?:number}} [opts] duration i ms; Infinity = bliver stående med et luk-kryds
  */
 function notify(message, {actionLabel, onAction, duration = 5000} = {}){
     if(!toastRegion){
@@ -171,8 +171,10 @@ function notify(message, {actionLabel, onAction, duration = 5000} = {}){
     if(actionLabel && onAction){
         toast.append(el('button', {className:'toast-action', type:'button', textContent: actionLabel, onclick: () => { onAction(); dismiss(); }}));
     }
+    // duration: Infinity = bliver stående, til man lukker den med krydset.
+    if(duration === Infinity) toast.append(el('button', {className:'toast-close', type:'button', textContent:'×', attrs:{'aria-label':'Luk'}, onclick: dismiss}));
     toastRegion.append(toast);
-    setTimeout(dismiss, duration);
+    if(duration !== Infinity) setTimeout(dismiss, duration);
 }
 
 /**

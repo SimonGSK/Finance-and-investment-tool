@@ -1832,10 +1832,19 @@ function containsAmount(text){
     return /(^|[^\d.,])\d{1,3}(\.\d{3})+(?![\d.])|\d(,\d+)?\s?(kr\.|mio\.|mia\.)/.test(text);
 }
 
+/**
+ * Sidens versionsnummer i en index.html (<meta name="app-version">, sat af npm run stamp).
+ * @param {string} html
+ * @returns {string|null} null, hvis siden ikke har et
+ */
+function appVersionOf(html){
+    return /<meta name="app-version" content="([0-9a-f]+)">/.exec(html)?.[1] || null;
+}
+
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
-        containsAmount, addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
+        containsAmount, appVersionOf, addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
         periodChanges, bestPeriods,
         planSync, applySync,
         CAPITAL_INCOME_LIMIT,

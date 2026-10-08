@@ -1014,6 +1014,8 @@ table.data-table td.is-negative{ color:var(--ask); }
 /* ---- Toast ---- */
 .toast-region{
     position:fixed; left:50%; bottom:var(--s5); transform:translateX(-50%);
+    /* Fast bredde efter indholdet (højst skærmen minus kanter), så en længere besked ikke presses sammen. */
+    width:max-content; max-width:calc(100vw - 32px);
     z-index:300; display:flex; flex-direction:column; align-items:center; gap:var(--s2);
     pointer-events:none;
 }
@@ -1034,6 +1036,11 @@ table.data-table td.is-negative{ color:var(--ask); }
     cursor:pointer;
 }
 .toast-action:hover{ text-decoration:underline; }
+.toast-close{
+    margin:-4px -6px -4px calc(-1 * var(--s2)); padding:2px 6px; border:0; background:transparent; cursor:pointer;
+    color:var(--muted); font-size:20px; line-height:1;
+}
+.toast-close:hover{ color:var(--text); }
 @keyframes toast-in{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
 
 /* ---- Small screens ---- */
