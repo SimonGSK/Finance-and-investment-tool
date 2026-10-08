@@ -29,7 +29,7 @@
          TODO: Erstat ca-pub-XXXXXXXXXXXXXXXX med mit eget AdSense-udgiver-ID, og fjern kommentaren.
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
     -->
-    <link rel="stylesheet" href="styles.css?v=9c2310f4">
+    <link rel="stylesheet" href="styles.css?v=de172225">
 </head>
 <body>
 
@@ -39,14 +39,26 @@
             <img class="lock-logo" src="icons/icon-192.png" alt="" width="64" height="64">
             <h2 class="lock-title" id="lockTitle">Økonomis er låst</h2>
             <form class="lock-form" id="lockForm">
-                <label class="visually-hidden" for="lockCode">Kode</label>
-                <!-- Én prik pr. ciffer i koden. Det rigtige felt ligger usynligt oven på prikkerne,
-                     så et tryk på dem åbner tastaturet. -->
+                <!-- Én prik pr. ciffer i koden, og et tastatur som på telefonens egen låseskærm,
+                     så man ikke skal finde et felt at trykke i. På en computer kan man også skrive. -->
                 <div class="lock-pin" id="lockPin">
                     <div class="lock-dots" id="lockDots" aria-hidden="true"></div>
-                    <input class="lock-input" id="lockCode" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" aria-describedby="lockDigitsHint">
                 </div>
-                <span class="visually-hidden" id="lockDigitsHint"></span>
+                <p class="visually-hidden" id="lockDigitsHint" aria-live="polite"></p>
+                <div class="lock-keypad" id="lockKeypad" role="group" aria-label="Kode">
+                    <button class="lock-key" type="button" data-digit="1">1</button>
+                    <button class="lock-key" type="button" data-digit="2">2</button>
+                    <button class="lock-key" type="button" data-digit="3">3</button>
+                    <button class="lock-key" type="button" data-digit="4">4</button>
+                    <button class="lock-key" type="button" data-digit="5">5</button>
+                    <button class="lock-key" type="button" data-digit="6">6</button>
+                    <button class="lock-key" type="button" data-digit="7">7</button>
+                    <button class="lock-key" type="button" data-digit="8">8</button>
+                    <button class="lock-key" type="button" data-digit="9">9</button>
+                    <span aria-hidden="true"></span>
+                    <button class="lock-key" type="button" data-digit="0">0</button>
+                    <button class="lock-key lock-key-delete" type="button" data-action="delete" aria-label="Slet"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h11a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H9l-6-7z"/><path d="M12 9.5l5 5M17 9.5l-5 5"/></svg></button>
+                </div>
                 <button class="btn btn-primary" id="lockSubmit" type="submit">Lås op</button>
             </form>
             <p class="field-error lock-error" id="lockError" role="alert"></p>
@@ -1893,7 +1905,7 @@
     <script src="js/debt-payoff.js?v=d92e8193"></script>
     <script src="js/navigation.js?v=7404a2ee"></script>
     <script src="js/bottom-nav.js?v=d9a5cbd0"></script>
-    <script src="js/app-lock.js?v=843ef483"></script>
+    <script src="js/app-lock.js?v=f08bdb28"></script>
     <script src="js/feedback.js?v=a2a4c48b"></script>
     <script src="js/pwa.js?v=70965acb"></script>
     <script src="js/report.js?v=d2fb079b"></script>

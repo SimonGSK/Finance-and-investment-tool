@@ -1893,27 +1893,37 @@ html.is-locked .page-shell, html.is-locked #printReport, html.is-locked .toast-r
 .lock-title{ margin:0; font-family:var(--font-display); font-size:26px; font-weight:600; color:var(--text); }
 .lock-form{ display:flex; flex-direction:column; align-items:center; gap:var(--s3); width:100%; }
 .lock-form .btn{ margin:0; }
-/* Koden som prikker: én pr. ciffer, fyldt efterhånden som man skriver. Feltet ligger
-   usynligt oven på (16 px, så iPhone ikke zoomer ind), så et tryk åbner tastaturet. */
-.lock-pin{ position:relative; }
-.lock-dots{ display:flex; justify-content:center; gap:18px; padding:14px 10px; }
-.lock-dot{ width:16px; height:16px; border-radius:50%; border:2px solid var(--text); transition:background-color 0.1s var(--ease); }
-.lock-dot.is-filled{ background:var(--text); }
-/* Mens man skriver, er prikkerne grønne - i stedet for en ramme om feltet. */
-.lock-pin:focus-within .lock-dot{ border-color:var(--akt); }
-.lock-pin:focus-within .lock-dot.is-filled{ background:var(--akt); }
-.lock-input{
-    position:absolute; inset:0; width:100%; height:100%; margin:0; padding:0;
-    border:0; background:transparent; color:transparent; caret-color:transparent;
-    font-size:16px; opacity:0; cursor:pointer;
-}
-.lock-input:focus-visible{ outline:none; }
-.lock-pin.is-waiting .lock-dots{ opacity:0.35; }
+/* Koden som prikker: én pr. ciffer, fyldt efterhånden som man trykker. */
+.lock-dots{ display:flex; justify-content:center; gap:18px; padding:10px; }
+.lock-dot{ width:16px; height:16px; border-radius:50%; border:2px solid var(--akt); transition:background-color 0.1s var(--ease); }
+.lock-dot.is-filled{ background:var(--akt); }
+.lock-pin.is-waiting .lock-dots, .lock-keypad:has(.lock-key:disabled){ opacity:0.35; }
 .lock-pin.is-wrong{ animation:lock-shake 0.35s var(--ease); }
 @keyframes lock-shake{ 20%, 60%{ transform:translateX(-8px); } 40%, 80%{ transform:translateX(8px); } }
 @media (prefers-reduced-motion: reduce){ .lock-pin.is-wrong{ animation:none; } }
+/* Taltastaturet: runde taster som på telefonens egen låseskærm. touch-action undgår
+   zoom ved hurtige dobbelttryk; et tryk ses som en mørkere tast i stedet for en ramme. */
+.lock-keypad{ display:grid; grid-template-columns:repeat(3, 72px); gap:14px 26px; justify-content:center; }
+.lock-key{
+    width:72px; height:72px; border-radius:50%; border:1px solid var(--border); background:var(--panel);
+    display:grid; place-items:center; padding:0; color:var(--text); font:500 28px var(--font-sans);
+    cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; user-select:none;
+    transition:background-color 0.1s var(--ease);
+}
+.lock-key:active{ background:var(--panel-sunken); }
+.lock-key:disabled{ cursor:default; }
+.lock-key-delete{ border-color:transparent; background:transparent; color:var(--muted); }
+.lock-key-delete svg{ width:28px; height:28px; }
+/* Lave telefonskærme (fx iPhone SE): lidt mindre, så alt kan ses uden at rulle. */
+@media (max-height:720px){
+    .lock-card{ gap:var(--s3); }
+    .lock-logo{ width:48px; height:48px; border-radius:12px; }
+    .lock-title{ font-size:22px; }
+    .lock-keypad{ grid-template-columns:repeat(3, 64px); gap:10px 22px; }
+    .lock-key{ width:64px; height:64px; font-size:25px; }
+}
 .lock-error{ margin:0; min-height:1.2em; }
-.lock-biometric{ width:100%; }
+.lock-biometric{ width:100%; justify-content:center; text-align:center; }
 .lock-status{ margin:0 0 var(--s3); font-size:13.5px; color:var(--pos); font-weight:600; }
 .lock-actions{ display:flex; gap:var(--s2); flex-wrap:wrap; margin-top:var(--s3); }
 .lock-actions .btn + .btn{ margin-left:0; }

@@ -1,5 +1,5 @@
 /**
- * @file Kodelås: skjuler siden bag en kode (4-6 cifre), når den åbnes, og når man
+ * @file Kodelås: skjuler siden bag en kode på 4 cifre (ældre låse kan have op til 6), når den åbnes, og når man
  * kommer tilbage efter mere end 5 minutter i en anden app eller fane. Hvor enheden
  * understøtter det, kan man i stedet låse op med Face ID eller fingeraftryk (WebAuthn);
  * er det slået til, spørges der automatisk, når låseskærmen vises.
@@ -9,7 +9,8 @@
  * Koden gemmes aldrig, kun et saltet PBKDF2-hash af den. Glemmer man koden, kan man
  * kun komme ind ved at slette dataene på enheden (og hente en backup bagefter).
  *
- * Koden skrives som prikker, én pr. ciffer, og tjekkes, så snart alle prikker er fyldt.
+ * Koden tastes på et taltastatur på skærmen (eller computerens tastatur) og vises som
+ * prikker, én pr. ciffer; den tjekkes, så snart alle prikker er fyldt.
  *
  * Låsen gælder kun den enhed, den er slået til på, og kommer ikke med i backupfilen.
  * Et lille script i <head> skjuler siden, før noget vises, når låsen er slået til.
@@ -57,66 +58,73 @@ async function biometricAvailable(){
 /**
  * Låser: skjuler siden, lukker åbne dialoger og viser låseskærmen. Er Face ID eller
  * fingeraftryk slået til, spørges der med det samme; ellers (eller hvis det ikke
- * lykkes) står markøren klar i kodefeltet.
+ * lykkes) skrives koden på tastaturet på skærmen.
  */
 function lockApp(){
     if(!readAppLock()) return;
     document.querySelectorAll('dialog[open]').forEach(d => d.close());
     document.documentElement.classList.add('is-locked');
-    const input = document.getElementById('lockCode');
-    input.value = '';
+    lockEntry = '';
     document.getElementById('lockError').textContent = '';
     renderLockDots();
     const biometric = !!readAppLock()?.credentialId;
     document.getElementById('lockBiometric').hidden = !biometric;
-    // Ikke fokus i kodefeltet først: på en telefon ville tastaturet komme frem bag Face ID.
     if(biometric) unlockWithBiometric(true);
-    else setTimeout(() => input.focus(), 50);
 }
 
 /** Låser op og viser siden igen. */
 function unlockApp(){
     document.documentElement.classList.remove('is-locked');
     lockFailures = 0;
+    lockEntry = '';
     // Grafer, der blev tegnet, mens siden var skjult, skal måle sig igen.
     window.dispatchEvent(new Event('resize'));
 }
 
+/** De cifre, der er tastet indtil nu (kun i hukommelsen, aldrig på siden). */
+let lockEntry = '';
+let lockChecking = false;
+
 /**
- * Prikkerne på låseskærmen: én pr. ciffer i koden, fyldt efterhånden som man skriver.
+ * Prikkerne på låseskærmen: én pr. ciffer i koden, fyldt efterhånden som man taster.
  * Kendes kodens længde ikke (en lås fra før prikkerne), vises fire, og der kommer flere
- * til, hvis man skriver mere - og "Lås op"-knappen bruges, indtil længden er kendt.
+ * til, hvis man taster mere - og "Lås op"-knappen bruges, indtil længden er kendt.
  */
 function renderLockDots(){
-    const input = document.getElementById('lockCode');
     const digits = readAppLock()?.digits || null;
-    const count = digits || Math.max(4, input.value.length);
-    input.maxLength = digits || 6;
+    const count = digits || Math.max(4, lockEntry.length);
     document.getElementById('lockDots').replaceChildren(...Array.from({length: count}, (_, i) =>
-        el('span', {className: 'lock-dot' + (i < input.value.length ? ' is-filled' : '')})));
-    document.getElementById('lockDigitsHint').textContent = digits ? `Koden har ${digits} cifre.` : 'Koden har 4-6 cifre.';
+        el('span', {className: 'lock-dot' + (i < lockEntry.length ? ' is-filled' : '')})));
+    document.getElementById('lockDigitsHint').textContent = digits
+        ? `${lockEntry.length} af ${digits} cifre tastet.`
+        : `${lockEntry.length} cifre tastet. Koden har 4-6 cifre.`;
     document.getElementById('lockSubmit').hidden = !!digits;
 }
 
-/** Mens man skriver: kun cifre, prikkerne følger med, og koden tjekkes, så snart den er skrevet helt. */
-function onLockCodeInput(){
-    const input = document.getElementById('lockCode');
+/** Et ciffer fra tastaturet på skærmen (eller computerens): koden tjekkes, så snart den er tastet helt. */
+function pressLockDigit(digit){
     const digits = readAppLock()?.digits || null;
-    input.value = input.value.replace(/\D/g, '').slice(0, digits || 6);
-    if(input.value) document.getElementById('lockError').textContent = '';
+    if(lockChecking || document.getElementById('lockPin').classList.contains('is-waiting') || lockEntry.length >= (digits || 6)) return;
+    lockEntry += digit;
+    document.getElementById('lockError').textContent = '';
     renderLockDots();
-    if(digits && input.value.length === digits) submitLockCode();
+    if(digits && lockEntry.length === digits) submitLockCode();
 }
 
-let lockChecking = false;
+/** Sletter det sidst tastede ciffer. */
+function deleteLockDigit(){
+    if(lockChecking) return;
+    lockEntry = lockEntry.slice(0, -1);
+    renderLockDots();
+}
 
 /** Tjekker koden (fyldte prikker eller "Lås op"). Efter flere forkerte forsøg venter man lidt længere hver gang. */
 async function submitLockCode(event){
     event?.preventDefault();
-    const input = document.getElementById('lockCode'), error = document.getElementById('lockError');
-    if(lockChecking || !input.value) return;
+    const error = document.getElementById('lockError');
+    if(lockChecking || !lockEntry) return;
     lockChecking = true;
-    const code = input.value;
+    const code = lockEntry;
     const right = await checkLockCode(code);
     lockChecking = false;
     if(right){
@@ -127,7 +135,7 @@ async function submitLockCode(event){
         return;
     }
     lockFailures++;
-    input.value = '';
+    lockEntry = '';
     renderLockDots();
     const pin = document.getElementById('lockPin');
     pin.classList.remove('is-wrong');
@@ -136,10 +144,11 @@ async function submitLockCode(event){
     const wait = lockFailures >= 5 ? Math.min(60, (lockFailures - 4) * 10) : 0;
     error.textContent = wait ? `Forkert kode. Prøv igen om ${wait} sekunder.` : 'Forkert kode. Prøv igen.';
     if(wait){
-        input.disabled = true;
+        const keys = document.querySelectorAll('#lockKeypad .lock-key');
+        keys.forEach(k => { k.disabled = true; });
         pin.classList.add('is-waiting');
-        setTimeout(() => { input.disabled = false; pin.classList.remove('is-waiting'); error.textContent = ''; input.focus(); }, wait * 1000);
-    } else input.focus();
+        setTimeout(() => { keys.forEach(k => { k.disabled = false; }); pin.classList.remove('is-waiting'); error.textContent = ''; }, wait * 1000);
+    }
 }
 
 let biometricPending = false;
@@ -148,7 +157,7 @@ let biometricPending = false;
  * "Brug Face ID eller fingeraftryk": beder enheden bekræfte, at det er ejeren.
  * @param {boolean} [auto] true, når låseskærmen selv spørger. Lykkes det ikke
  *   (annulleret, eller browseren vil have et tryk først), vises ingen fejl -
- *   kodefeltet og knappen står klar.
+ *   tastaturet på skærmen og knappen står klar.
  */
 async function unlockWithBiometric(auto = false){
     const lock = readAppLock();
@@ -163,7 +172,6 @@ async function unlockWithBiometric(auto = false){
         unlockApp();
     } catch(e){
         if(!auto) document.getElementById('lockError').textContent = 'Det lykkedes ikke. Brug din kode i stedet.';
-        document.getElementById('lockCode').focus();
     } finally {
         biometricPending = false;
     }
@@ -186,20 +194,20 @@ async function forgotLockCode(){
  * @returns {Promise<string|null>} koden, eller null hvis man fortrød
  */
 function askNewLockCode(){
-    const first = el('input', {type: 'password', className: 'number-input', attrs: {inputmode: 'numeric', autocomplete: 'off', maxlength: '6'}});
-    const second = el('input', {type: 'password', className: 'number-input', attrs: {inputmode: 'numeric', autocomplete: 'off', maxlength: '6'}});
+    const first = el('input', {type: 'password', className: 'number-input', attrs: {inputmode: 'numeric', autocomplete: 'off', maxlength: '4'}});
+    const second = el('input', {type: 'password', className: 'number-input', attrs: {inputmode: 'numeric', autocomplete: 'off', maxlength: '4'}});
     const error = el('div', {className: 'field-error', attrs: {role: 'alert'}});
     let code = null;
     const handle = openDialog({
         title: 'Vælg en kode',
         content: el('div', {}, [
-            el('p', {className: 'dialog-hint', textContent: 'Vælg 4-6 cifre. Glemmer du koden, kan du kun komme ind ved at slette dine tal på denne enhed – så tag gerne en backup først.'}),
+            el('p', {className: 'dialog-hint', textContent: 'Vælg 4 cifre. Glemmer du koden, kan du kun komme ind ved at slette dine tal på denne enhed – så tag gerne en backup først.'}),
             fieldEl('Kode', first), fieldEl('Gentag koden', second, [error])
         ]),
         actions: [
             {label: 'Annullér', variant: 'secondary'},
             {label: 'Gem kode', variant: 'primary', onClick: () => {
-                if(!/^\d{4,6}$/.test(first.value)){ error.textContent = 'Koden skal være 4-6 cifre.'; first.focus(); return false; }
+                if(!/^\d{4}$/.test(first.value)){ error.textContent = 'Koden skal være 4 cifre.'; first.focus(); return false; }
                 if(first.value !== second.value){ error.textContent = 'De to koder er ikke ens.'; second.value = ''; second.focus(); return false; }
                 code = first.value;
             }}
@@ -304,8 +312,21 @@ async function renderLockSettings(){
 
 // Låst fra start (scriptet i <head> har allerede skjult siden), og igen efter 5 minutter væk.
 document.getElementById('lockForm').addEventListener('submit', submitLockCode);
-document.getElementById('lockCode').addEventListener('input', onLockCodeInput);
 document.getElementById('lockPin').addEventListener('animationend', e => e.currentTarget.classList.remove('is-wrong'));
+document.getElementById('lockKeypad').addEventListener('click', e => {
+    const key = e.target.closest('.lock-key');
+    if(!key) return;
+    if(key.dataset.digit) pressLockDigit(key.dataset.digit);
+    else if(key.dataset.action === 'delete') deleteLockDigit();
+});
+// På en computer kan koden også skrives: cifre, Backspace og (ved en ældre kode) Enter.
+document.addEventListener('keydown', e => {
+    if(!document.documentElement.classList.contains('is-locked') || document.querySelector('dialog[open]')) return;
+    if(e.ctrlKey || e.metaKey || e.altKey) return;
+    if(/^[0-9]$/.test(e.key)){ e.preventDefault(); pressLockDigit(e.key); }
+    else if(e.key === 'Backspace'){ e.preventDefault(); deleteLockDigit(); }
+    else if(e.key === 'Enter' && !e.target.closest?.('button')){ e.preventDefault(); submitLockCode(); }
+});
 document.addEventListener('visibilitychange', () => {
     if(document.visibilityState === 'hidden'){ lockHiddenAt = Date.now(); return; }
     if(lockHiddenAt !== null && Date.now() - lockHiddenAt > RELOCK_AFTER_MS) lockApp();
