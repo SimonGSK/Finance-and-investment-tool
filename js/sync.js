@@ -300,7 +300,11 @@ function applySyncChanges(plan, local, incoming, incomingTimes, choices, device,
 function countImportAsBackup(result, incoming, localTimes, fileTime){
     if(!fileTime || !fileCoversLocalData({result, incoming, localTimes, keys: BACKUP_KEYS, historyKeys: SYNC_HISTORY_KEYS})) return;
     const last = parseInt(localStorage.getItem('lastBackupAt'), 10) || 0;
-    if(fileTime > last) localStorage.setItem('lastBackupAt', String(Math.min(fileTime, Date.now())));
+    if(fileTime <= last) return;
+    localStorage.setItem('lastBackupAt', String(Math.min(fileTime, Date.now())));
+    // Uden genindlæsning ("Allerede opdateret") skal påmindelsen og "Seneste backup" følge med nu.
+    if(typeof checkBackupReminder === 'function') checkBackupReminder();
+    if(typeof renderBackupStatus === 'function') renderBackupStatus();
 }
 
 /** Efter en hentning: besked med fortryd. */

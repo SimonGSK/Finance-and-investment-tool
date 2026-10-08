@@ -1605,12 +1605,21 @@ test('backup: en hentet fil med alle enhedens tal tæller som backup, men ikke h
     await expect(page.locator('.toast')).toContainText('hentet og flettet');
     expect(await lastBackup()).toBe(String(savedAt));
 
+    // En nyere fil med de samme tal: intet at hente, men den tæller - og vises med det samme.
+    const newerAt = Date.now() - day;
+    await page.locator('#settingsBtn').click();
+    await page.locator('#allDataUpload').setInputFiles(writeFile('nyere.json', newerAt));
+    const already = page.getByRole('dialog', { name: 'Allerede opdateret' });
+    await expect(already).toBeVisible();
+    expect(await lastBackup()).toBe(String(newerAt));
+    await expect(page.locator('#backupStatus')).toContainText('(i går)');
+    await already.getByRole('button', { name: 'Luk' }).click();
+
     // Har telefonen noget, filen ikke har (her et mål), er det ikke sikret - "seneste backup" står stille.
     await page.evaluate(() => localStorage.setItem('netWorthGoals', JSON.stringify([{id:'g1', name:'Kun på telefonen', metric:'value', target:1000000, deadline:null}])));
-    await page.locator('#settingsBtn').click();
-    await page.locator('#allDataUpload').setInputFiles(writeFile('nyere.json', Date.now() - day));
+    await page.locator('#allDataUpload').setInputFiles(writeFile('nyest.json', Date.now() - 60 * 60 * 1000));
     await expect(page.getByRole('dialog', { name: 'Allerede opdateret' })).toBeVisible();
-    expect(await lastBackup()).toBe(String(savedAt));
+    expect(await lastBackup()).toBe(String(newerAt));
 });
 
 test('Fordeling: procenterne passer til søjlen, også når et ældre datapunkts formue ikke er summen af kategorierne', async ({ page }) => {
