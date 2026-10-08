@@ -143,7 +143,10 @@ function renderOverviewSplit(figures){
     // Nuancer af hovedfarven: den største del stærkest. I forklaringen står kun
     // kategoriens første ord (fx "Kontanter"); det fulde navn står i tooltippet.
     const base = getCSSVar('--akt');
-    const parts = rows.map((r, i) => ({...r, pct: Math.round(r.value / figures.assets * 100),
+    // Procenterne regnes af søjlens egen sum, så de passer til søjlen og giver 100 % -
+    // også når et ældre datapunkts samlede formue ikke er lig summen af kategorierne.
+    const total = rows.reduce((sum, r) => sum + r.value, 0);
+    const parts = rows.map((r, i) => ({...r, pct: Math.round(r.value / total * 100),
         short: r.label.split(' ')[0], color: hexToRgba(base, Math.max(0.28, 1 - i * 0.18))}));
     const tip = p => `${p.label}: ${p.pct} % (${DK.format(p.value)} kr.)`;
     box.replaceChildren(

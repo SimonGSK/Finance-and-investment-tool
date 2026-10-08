@@ -1464,6 +1464,30 @@ function backupReminderDue(s){
 }
 
 /**
+ * Har en backupfil alle brugerens data, som de ser ud på enheden efter en hentning?
+ * Så tæller hentningen som en backup (fx når tallene tastes på computeren og
+ * hentes på telefonen). Dele, brugeren aldrig selv har ændret på enheden (intet
+ * tidsstempel - fx standardværdier), tæller ikke med. Historikker er dækket, når
+ * hvert datapunkt på enheden findes uændret i filen.
+ * @param {{result:Object<string, *>, incoming:Object<string, *>, localTimes:Object<string, number>, keys:string[], historyKeys?:string[]}} s
+ *   result = enhedens data efter hentningen, localTimes = ændringstidspunkter fra før
+ * @returns {boolean}
+ */
+function fileCoversLocalData({result, incoming, localTimes, keys, historyKeys = []}){
+    return keys.every(key => {
+        const mine = result[key];
+        if(mine === undefined || mine === null || !localTimes[key]) return true;
+        const theirs = incoming[key];
+        if(theirs === undefined || theirs === null) return false;
+        if(historyKeys.includes(key) && Array.isArray(mine) && Array.isArray(theirs)){
+            const inFile = new Map(theirs.map(h => [h.date, JSON.stringify(h)]));
+            return mine.every(h => inFile.get(h.date) === JSON.stringify(h));
+        }
+        return JSON.stringify(mine) === JSON.stringify(theirs);
+    });
+}
+
+/**
  * Skal siden minde om at gemme månedens tal? Påmindelsen gælder en måned fra
  * dens sidste tre dage til og med den 10. i næste måned, og kun hvis der ikke
  * er gemt noget i månedens sidste uge eller senere. Nye brugere (uden gemte
@@ -1823,7 +1847,7 @@ if(typeof module !== 'undefined' && module.exports){
         annuityPayment, purchaseCosts, loanSplit, interestDeductionValue, loanCapacity,
         simulateBuyVsRent, simulateDebtPayoff,
         PAL_SKAT, PENSION_LIMITS, BOERNEOPSPARING, folkepensionAge, simulatePension,
-        backupReminderDue, emergencyFundMonths, xirr, portfolioCashFlows,
+        backupReminderDue, fileCoversLocalData, emergencyFundMonths, xirr, portfolioCashFlows,
         monthlyTrend, goalProgress
     };
 }

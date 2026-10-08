@@ -196,6 +196,7 @@ function openSyncDialog({incoming, incomingTimes, fileTime, device}){
     const choices = {};
 
     if(!plan.some(p => p.kind === 'added' || p.kind === 'differs' || p.kind === 'history')){
+        countImportAsBackup(local, incoming, localTimes, fileTime);
         infoDialog({title:'Allerede opdateret', message:'Filen indeholder ikke noget, der ikke allerede er på denne enhed.'});
         return;
     }
@@ -224,7 +225,7 @@ function openSyncDialog({incoming, incomingTimes, fileTime, device}){
         ]),
         actions:[
             {label:'Annullér', variant:'secondary'},
-            {label:'Hent og flet', variant:'primary', onClick: () => applySyncChanges(plan, local, incoming, incomingTimes, choices, device)}
+            {label:'Hent og flet', variant:'primary', onClick: () => applySyncChanges(plan, local, incoming, incomingTimes, choices, device, fileTime)}
         ]
     });
 }
@@ -267,11 +268,13 @@ function choiceSelect(item, prefix, incomingTimes, localTimes, choices){
  * Skriver resultatet, husker det forrige, så det kan fortrydes, og genindlæser
  * siden, så alle værktøjer læser de nye tal.
  */
-function applySyncChanges(plan, local, incoming, incomingTimes, choices, device){
+function applySyncChanges(plan, local, incoming, incomingTimes, choices, device, fileTime){
     const {changes, chosen} = applySync(plan, local, incoming, choices);
+    const localTimes = readSyncTimes();
     try{
-        sessionStorage.setItem('syncUndo', JSON.stringify({data: local, times: readSyncTimes()}));
+        sessionStorage.setItem('syncUndo', JSON.stringify({data: local, times: localTimes, lastBackupAt: localStorage.getItem('lastBackupAt')}));
     } catch(e){ /* uden fortryd, hvis der ikke er plads */ }
+    countImportAsBackup({...local, ...changes}, incoming, localTimes, fileTime);
     Object.entries(changes).forEach(([key, value]) => writeLocalValue(key, value));
     // Det hentede beholder filens ændringstidspunkt, så det ikke fejlagtigt ser nyere ud næste gang.
     const times = readSyncTimes();
@@ -285,6 +288,25 @@ function applySyncChanges(plan, local, incoming, incomingTimes, choices, device)
     location.reload();
 }
 
+/**
+ * En hentet fil er en backup af det, der nu er på enheden, hvis filen har alle
+ * brugerens data herfra. Så sættes "seneste backup" til filens tidspunkt, og
+ * telefonen minder ikke om backup for tal, der allerede ligger i en fil.
+ * @param {Object<string, *>} result enhedens data efter hentningen
+ * @param {Object<string, *>} incoming filens data
+ * @param {Object<string, number>} localTimes enhedens ændringstidspunkter fra før hentningen
+ * @param {number} fileTime hvornår filen blev gemt (ms)
+ */
+function countImportAsBackup(result, incoming, localTimes, fileTime){
+    if(!fileTime || !fileCoversLocalData({result, incoming, localTimes, keys: BACKUP_KEYS, historyKeys: SYNC_HISTORY_KEYS})) return;
+    const last = parseInt(localStorage.getItem('lastBackupAt'), 10) || 0;
+    if(fileTime <= last) return;
+    localStorage.setItem('lastBackupAt', String(Math.min(fileTime, Date.now())));
+    // Uden genindlæsning ("Allerede opdateret") skal påmindelsen og "Seneste backup" følge med nu.
+    if(typeof checkBackupReminder === 'function') checkBackupReminder();
+    if(typeof renderBackupStatus === 'function') renderBackupStatus();
+}
+
 /** Efter en hentning: besked med fortryd. */
 (function announceSync(){
     if(sessionStorage.getItem('syncJustApplied') !== '1') return;
@@ -295,6 +317,8 @@ function applySyncChanges(plan, local, incoming, incomingTimes, choices, device)
             if(!undo) return;
             BACKUP_KEYS.concat(BACKUP_SETTING_KEYS).forEach(key => writeLocalValue(key, undo.data[key]));
             Storage.prototype.setItem.call(localStorage, 'syncTimes', JSON.stringify(undo.times));
+            if(undo.lastBackupAt) localStorage.setItem('lastBackupAt', undo.lastBackupAt);
+            else localStorage.removeItem('lastBackupAt');
             sessionStorage.removeItem('syncUndo');
             location.reload();
         }});

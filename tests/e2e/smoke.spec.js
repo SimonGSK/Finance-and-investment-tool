@@ -1400,6 +1400,14 @@ test('månedsstatus: ændringen siden sidst under hver saldo, og "Hent seneste t
     await expect(bank).toHaveValue('45000');
     await expect(debt).toHaveValue('20000');
     await expect(dialog.locator('.status-diff:not(:empty)')).toHaveCount(0);
+
+    // Et ufærdigt regnestykke giver en fejl under feltet; "Hent seneste tal" fjerner den igen.
+    await bank.fill('47400+');
+    await bank.press('Tab');
+    await expect(dialog.locator('.range-hint')).toContainText('Kunne ikke regne det ud');
+    await dialog.getByRole('button', { name: 'Hent seneste tal' }).click();
+    await expect(bank).toHaveValue('45000');
+    await expect(dialog.locator('.range-hint, .calc-hint')).toHaveCount(0);
 });
 
 test('månedsstatus: et regnestykke opdaterer "siden sidst" og opsummeringen mens man skriver, og Enter gemmer ikke', async ({ page }) => {
@@ -1429,15 +1437,23 @@ test('månedsstatus: et regnestykke opdaterer "siden sidst" og opsummeringen men
     await bank.press('Enter');
     await expect(dialog).toBeVisible();
 
-    // Et ufærdigt regnestykke kan ikke gemmes.
+    // Et ufærdigt regnestykke giver en advarsel: "Ret feltet" går tilbage til feltet...
     await bank.fill('');
     await bank.pressSequentially('40000+');
     await dialog.getByRole('button', { name: 'Gem i begge' }).click();
+    const warning = page.getByRole('dialog', { name: 'Et regnestykke er ikke færdigt' });
+    await expect(warning).toContainText('Bank- og opsparingskonti');
+    await expect(warning.locator('.change-from')).toHaveText('40000+');
+    await expect(warning.locator('.change-to')).toHaveText('40.000 kr.');
+    await warning.getByRole('button', { name: 'Ret feltet' }).click();
+    await expect(warning).toBeHidden();
     await expect(dialog).toBeVisible();
+    await expect(bank).toBeFocused();
     await expect(dialog.locator('.range-hint')).toContainText('Kunne ikke regne det ud');
 
-    await bank.fill('40000');
+    // ... og "Gem alligevel" gemmer det sidste tal, der kunne regnes ud.
     await dialog.getByRole('button', { name: 'Gem i begge' }).click();
+    await warning.getByRole('button', { name: 'Gem alligevel' }).click();
     await expect(dialog).toBeHidden();
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('netWorthHistory')).find(h => h.date === '2026-09-30'));
     expect(saved).toMatchObject({netCatKontanter: 45000, value: 275000});
@@ -1532,6 +1548,87 @@ test('kodelås: "Glemt koden?" sletter dataene på enheden og fjerner låsen', a
     await page.getByRole('dialog', { name: 'Glemt koden?' }).getByRole('button', { name: 'Slet data og fjern koden' }).click();
     await expect(page.locator('#lockScreen')).toBeHidden();
     expect(await page.evaluate(() => [localStorage.getItem('appLock'), localStorage.getItem('budgetItems')])).toEqual([null, null]);
+});
+
+test('kodelås: Face ID eller fingeraftryk spørges automatisk, og ellers står koden klar', async ({ page, browserName }) => {
+    test.skip(browserName !== 'chromium', 'en virtuel Face ID/fingeraftryk-læser findes kun i Chromium');
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('WebAuthn.enable');
+    const {authenticatorId} = await cdp.send('WebAuthn.addVirtualAuthenticator', {options: {
+        protocol: 'ctap2', transport: 'internal', hasResidentKey: true, hasUserVerification: true,
+        isUserVerified: true, automaticPresenceSimulation: true
+    }});
+    await page.goto('/index.html');
+    await page.evaluate(async () => {
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        localStorage.setItem('appLock', JSON.stringify({hash: await hashLockCode('4321', salt), salt: btoa(String.fromCharCode(...salt))}));
+        await toggleBiometric(true);
+    });
+    expect(await page.evaluate(() => !!JSON.parse(localStorage.getItem('appLock')).credentialId)).toBe(true);
+
+    // Ved åbning låses der op med det samme - uden at trykke på noget.
+    await page.reload();
+    await expect(page.locator('#lockScreen')).toBeHidden();
+
+    // Lykkes det ikke, bliver siden låst med koden klar og knappen til at prøve igen - uden fejlbesked.
+    await cdp.send('WebAuthn.setUserVerified', {authenticatorId, isUserVerified: false});
+    await page.reload();
+    await expect(page.locator('#lockScreen')).toBeVisible();
+    await expect(page.locator('#lockCode')).toBeFocused();
+    await expect(page.locator('#lockError')).toHaveText('');
+    await expect(page.getByRole('button', { name: 'Brug Face ID eller fingeraftryk' })).toBeVisible();
+    await page.locator('#lockCode').fill('4321');
+    await page.getByRole('button', { name: 'Lås op' }).click();
+    await expect(page.locator('#lockScreen')).toBeHidden();
+});
+
+test('backup: en hentet fil med alle enhedens tal tæller som backup, men ikke hvis enheden har mere', async ({ page }, testInfo) => {
+    const fs = require('fs');
+    const day = 24 * 60 * 60 * 1000;
+    const nw = (date, value) => ({date, value, liquid:value, netCatKontanter:value, netCatAktier:0, netCatPension:0, netCatFrivaerdi:0, netCatAndet:0, debt:0});
+    const writeFile = (name, exportedAt) => {
+        const path = testInfo.outputPath(name);
+        fs.writeFileSync(path, JSON.stringify({format:'okonomivaerktoejer', version:2, exportedAt, device:'Mac',
+            times:{netWorthHistory: exportedAt - day, budgetItems: exportedAt - day}, settings:{},
+            netWorthHistory:[nw('2026-08-31', 200000), nw('2026-09-30', 210000)],
+            budgetItems:{catBolig:[{label:'Husleje', amount:9500}]}}));
+        return path;
+    };
+    const lastBackup = () => page.evaluate(() => localStorage.getItem('lastBackupAt'));
+
+    // Telefonen har ingen tal af sine egne: filen fra computeren dækker alt.
+    await page.goto('/index.html');
+    const savedAt = Date.now() - 2 * day;
+    await page.locator('#settingsBtn').click();
+    await page.locator('#allDataUpload').setInputFiles(writeFile('fra-computeren.json', savedAt));
+    await page.getByRole('dialog', { name: 'Hent data fra fil' }).getByRole('button', { name: 'Hent og flet' }).click();
+    await expect(page.locator('.toast')).toContainText('hentet og flettet');
+    expect(await lastBackup()).toBe(String(savedAt));
+
+    // En nyere fil med de samme tal: intet at hente, men den tæller - og vises med det samme.
+    const newerAt = Date.now() - day;
+    await page.locator('#settingsBtn').click();
+    await page.locator('#allDataUpload').setInputFiles(writeFile('nyere.json', newerAt));
+    const already = page.getByRole('dialog', { name: 'Allerede opdateret' });
+    await expect(already).toBeVisible();
+    expect(await lastBackup()).toBe(String(newerAt));
+    await expect(page.locator('#backupStatus')).toContainText('(i går)');
+    await already.getByRole('button', { name: 'Luk' }).click();
+
+    // Har telefonen noget, filen ikke har (her et mål), er det ikke sikret - "seneste backup" står stille.
+    await page.evaluate(() => localStorage.setItem('netWorthGoals', JSON.stringify([{id:'g1', name:'Kun på telefonen', metric:'value', target:1000000, deadline:null}])));
+    await page.locator('#allDataUpload').setInputFiles(writeFile('nyest.json', Date.now() - 60 * 60 * 1000));
+    await expect(page.getByRole('dialog', { name: 'Allerede opdateret' })).toBeVisible();
+    expect(await lastBackup()).toBe(String(newerAt));
+});
+
+test('Fordeling: procenterne passer til søjlen, også når et ældre datapunkts formue ikke er summen af kategorierne', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => localStorage.setItem('netWorthHistory', JSON.stringify([
+        {date:'2026-08-31', value:500000, liquid:400000, netCatKontanter:100000, netCatAktier:300000, netCatPension:0, netCatFrivaerdi:0, netCatAndet:0, debt:0}
+    ])));
+    await page.reload();
+    await expect(page.locator('#ovSplit .ov-split-item strong')).toHaveText(['75 %', '25 %']);
 });
 
 test('bundmenu på telefoner: Oversigt, Trackers, + Status, Værktøjer og Mere @mobil', async ({ page }) => {
