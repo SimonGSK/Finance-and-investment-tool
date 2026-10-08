@@ -1631,6 +1631,35 @@ test('Fordeling: procenterne passer til søjlen, også når et ældre datapunkts
     await expect(page.locator('#ovSplit .ov-split-item strong')).toHaveText(['75 %', '25 %']);
 });
 
+test('bundmenu: et tryk åbner arket uden fokus på et punkt (ingen grøn ramme), mens tastaturet flytter fokus som før @mobil', async ({ page }) => {
+    await page.goto('/index.html');
+    const phone = await page.evaluate(() => window.innerWidth <= 640);
+    test.skip(!phone, 'bundmenuen findes kun på telefoner');
+    const tools = page.getByRole('navigation', { name: 'Bundmenu' }).getByRole('button', { name: 'Værktøjer', exact: true });
+    const sheet = page.getByRole('dialog', { name: 'Værktøjer' });
+    const focused = () => page.evaluate(() => {
+        const a = document.activeElement;
+        return a.id || a.dataset?.tab || (a.classList.contains('nav-sheet-item') ? 'item' : a.tagName);
+    });
+
+    // Et tryk: fokus på selve arket, ikke på et punkt - og ikke tilbage på fanen bagefter.
+    await tools.click();
+    await expect(sheet).toBeVisible();
+    expect(await focused()).toBe('navSheet');
+    await sheet.getByRole('button', { name: 'Luk' }).click();
+    await expect(sheet).toBeHidden();
+    expect(await focused()).not.toBe('tools');
+
+    // Tastaturet: fokus på et punkt i arket og tilbage på fanen, når det lukkes.
+    await tools.focus();
+    await page.keyboard.press('Enter');
+    await expect(sheet).toBeVisible();
+    expect(await focused()).toBe('item');
+    await page.keyboard.press('Escape');
+    await expect(sheet).toBeHidden();
+    expect(await focused()).toBe('tools');
+});
+
 test('bundmenu på telefoner: Oversigt, Trackers, + Status, Værktøjer og Mere @mobil', async ({ page }) => {
     await page.goto('/index.html');
     const phone = await page.evaluate(() => window.innerWidth <= 640);

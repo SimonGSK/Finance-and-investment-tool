@@ -1949,6 +1949,8 @@ html.is-locked .page-shell, html.is-locked #printReport, html.is-locked .toast-r
     padding-bottom:env(safe-area-inset-bottom);
 }
 .nav-sheet[open]{ animation:sheet-in 0.22s var(--ease); }
+/* Arket selv får fokus, når det åbnes med et tryk - uden ramme om det hele. */
+.nav-sheet:focus, .nav-sheet:focus-visible{ outline:none; }
 @keyframes sheet-in{ from{ transform:translateY(40px); opacity:0; } to{ transform:none; opacity:1; } }
 .nav-sheet::backdrop{ background:rgba(0,0,0,0.5); }
 .nav-sheet-grip{ width:36px; height:4px; margin:var(--s2) auto 0; border-radius:2px; background:var(--border-strong); }
