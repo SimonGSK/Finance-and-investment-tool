@@ -186,20 +186,20 @@ async function forgotLockCode(){
  * @returns {Promise<string|null>} koden, eller null hvis man fortrød
  */
 function askNewLockCode(){
-    const first = el('input', {type: 'password', className: 'number-input', attrs: {inputmode: 'numeric', autocomplete: 'off', maxlength: '6'}});
-    const second = el('input', {type: 'password', className: 'number-input', attrs: {inputmode: 'numeric', autocomplete: 'off', maxlength: '6'}});
+    const first = el('input', {type: 'password', className: 'number-input', attrs: {inputmode: 'numeric', autocomplete: 'off', maxlength: '4'}});
+    const second = el('input', {type: 'password', className: 'number-input', attrs: {inputmode: 'numeric', autocomplete: 'off', maxlength: '4'}});
     const error = el('div', {className: 'field-error', attrs: {role: 'alert'}});
     let code = null;
     const handle = openDialog({
         title: 'Vælg en kode',
         content: el('div', {}, [
-            el('p', {className: 'dialog-hint', textContent: 'Vælg 4-6 cifre. Glemmer du koden, kan du kun komme ind ved at slette dine tal på denne enhed – så tag gerne en backup først.'}),
+            el('p', {className: 'dialog-hint', textContent: 'Vælg 4 cifre. Glemmer du koden, kan du kun komme ind ved at slette dine tal på denne enhed – så tag gerne en backup først.'}),
             fieldEl('Kode', first), fieldEl('Gentag koden', second, [error])
         ]),
         actions: [
             {label: 'Annullér', variant: 'secondary'},
             {label: 'Gem kode', variant: 'primary', onClick: () => {
-                if(!/^\d{4,6}$/.test(first.value)){ error.textContent = 'Koden skal være 4-6 cifre.'; first.focus(); return false; }
+                if(!/^\d{4}$/.test(first.value)){ error.textContent = 'Koden skal være 4 cifre.'; first.focus(); return false; }
                 if(first.value !== second.value){ error.textContent = 'De to koder er ikke ens.'; second.value = ''; second.focus(); return false; }
                 code = first.value;
             }}

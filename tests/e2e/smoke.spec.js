@@ -1484,7 +1484,7 @@ test('kodelås: slås til med en kode, låser ved åbning og efter 5 minutter v�
     await codeDialog.getByLabel('Kode', { exact: true }).fill('12');
     await codeDialog.getByLabel('Gentag koden').fill('12');
     await codeDialog.getByRole('button', { name: 'Gem kode' }).click();
-    await expect(codeDialog).toContainText('Koden skal være 4-6 cifre.');
+    await expect(codeDialog).toContainText('Koden skal være 4 cifre.');
     await codeDialog.getByLabel('Kode', { exact: true }).fill('1234');
     await codeDialog.getByLabel('Gentag koden').fill('1234');
     await codeDialog.getByRole('button', { name: 'Gem kode' }).click();
