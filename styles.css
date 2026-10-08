@@ -1913,7 +1913,7 @@ html.is-locked .page-shell, html.is-locked #printReport, html.is-locked .toast-r
 @keyframes lock-shake{ 20%, 60%{ transform:translateX(-8px); } 40%, 80%{ transform:translateX(8px); } }
 @media (prefers-reduced-motion: reduce){ .lock-pin.is-wrong{ animation:none; } }
 .lock-error{ margin:0; min-height:1.2em; }
-.lock-biometric{ width:100%; }
+.lock-biometric{ width:100%; justify-content:center; text-align:center; }
 .lock-status{ margin:0 0 var(--s3); font-size:13.5px; color:var(--pos); font-weight:600; }
 .lock-actions{ display:flex; gap:var(--s2); flex-wrap:wrap; margin-top:var(--s3); }
 .lock-actions .btn + .btn{ margin-left:0; }
