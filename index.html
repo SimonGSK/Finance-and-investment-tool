@@ -19,6 +19,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
     <!-- Kodelås: skjuler siden med det samme, før den tegnes (se js/app-lock.js). -->
     <script>try{ if(localStorage.getItem('appLock')) document.documentElement.classList.add('is-locked'); }catch(e){}</script>
+    <!-- Skjul beløb: sløres med det samme, før siden tegnes (se js/hide-amounts.js). -->
+    <script>try{ if(localStorage.getItem('hideAmounts')) document.documentElement.classList.add('amounts-hidden'); }catch(e){}</script>
 
     <!-- Slået fra indtil der er rigtige ID'er: pladsholderne giver 403-fejl i konsollen.
          TODO: Erstat "mitsite" med mit eget goatcounter brugernavn, og fjern kommentaren.
@@ -29,7 +31,7 @@
          TODO: Erstat ca-pub-XXXXXXXXXXXXXXXX med mit eget AdSense-udgiver-ID, og fjern kommentaren.
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
     -->
-    <link rel="stylesheet" href="styles.css?v=3e11a746">
+    <link rel="stylesheet" href="styles.css?v=30ab4ac1">
 </head>
 <body>
 
@@ -89,6 +91,7 @@
                     <span class="brand-sub">Privat økonomi</span>
                 </div>
                 <div class="app-header-actions">
+                    <button class="icon-btn hide-amounts-btn" id="hideAmountsBtn" type="button" onclick="toggleAmountsHidden()" aria-pressed="false" aria-label="Skjul beløb" title="Skjul beløb"><svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 5.6A9.7 9.7 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a16 16 0 0 1-2.9 3.6M6.6 6.7C4 8.4 2.5 12 2.5 12S6 18.5 12 18.5a9.4 9.4 0 0 0 4.4-1.1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button>
                     <button class="btn btn-dark monthly-status-btn" type="button" onclick="openMonthlyStatus()" aria-label="+ Månedsstatus" title="Gem dine tal i både Formue og Porteføljetracker på én gang"><span class="label-long">+ Månedsstatus</span><span class="label-short" aria-hidden="true">+ Status</span></button>
                 </div>
             </header>
@@ -1868,12 +1871,13 @@
             </details>
         </div>
     </template>
-    <script src="js/calc.js?v=4c9727e0"></script>
+    <script src="js/calc.js?v=c0b574f7"></script>
     <script src="js/sync.js?v=614e4051"></script>
     <script src="js/shared.js?v=4c50757b"></script>
     <script src="js/ui.js?v=9e2dff05"></script>
     <script src="js/field-help.js?v=6a83e008"></script>
     <script src="js/number-fields.js?v=5deecf1d"></script>
+    <script src="js/hide-amounts.js?v=8c823b8d"></script>
     <script src="js/fold.js?v=cad5b3ff"></script>
     <script src="js/tool1-ask-akt.js?v=3608c8e7"></script>
     <script src="js/tool2-monthly.js?v=c215de07"></script>
@@ -1893,7 +1897,7 @@
     <script src="js/report.js?v=d2fb079b"></script>
     <script src="js/overview-cards.js?v=a4804772"></script>
     <script src="js/overview.js?v=699864d9"></script>
-    <script src="js/budget.js?v=e88109ad"></script>
+    <script src="js/budget.js?v=9c9e0798"></script>
     <script src="js/net-worth.js?v=78cff884"></script>
     <script src="js/month-overview.js?v=b3f42713"></script>
     <script src="js/monthly-status.js?v=bf3edd7b"></script>

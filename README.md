@@ -60,6 +60,8 @@ Every field has a small **?** that explains it, and each tool has a foldable *Hv
 
 **Kalender:** *Tilføj påmindelse til din kalender* downloads an .ics file with a repeating event on the last day of every month at 19:00, so the monthly-status reminder arrives even when the site isn't open.
 
+**Skjul beløb:** the eye button in the top bar blurs every amount on the page — key figures, tables, sentences with an amount in them and amount fields — so you can show the app to someone or use it in public. Percentages, dates and the shape of the charts stay visible; the charts lose their amount axis and tooltips. A field shows its number again while you type in it. The choice is remembered on the device (not in the backup file), and `containsAmount` in `calc.js` decides what counts as an amount.
+
 **Kodelås:** an optional 4–6 digit code that hides the site when it's opened and after more than 5 minutes away, with Face ID or fingerprint where the device supports it (WebAuthn, no server). It's a screen lock, not encryption: the numbers stay readable in the browser, and only a salted PBKDF2 hash of the code is stored. A forgotten code can only be cleared by erasing the data on the device and restoring a backup. The lock stays on the device and isn't part of the backup file.
 
 ## Design
@@ -143,6 +145,7 @@ js/navigation.js        Menu, sections and tools, page header, settings dialog, 
 js/bottom-nav.js        Bottom bar and sheets on phones
 js/sync.js              Backup file and syncing between devices (merge, not overwrite)
 js/app-lock.js          Kodelås: lock screen, code and Face ID / fingerprint
+js/hide-amounts.js      Skjul beløb: blurs amounts, chart axes and tooltips
 js/feedback.js          Feedback button and form (sent via Formspree)
 js/pwa.js               "Install as app" button; registers the service worker
 js/report.js            Printable one-page overview (Udskriv overblik)

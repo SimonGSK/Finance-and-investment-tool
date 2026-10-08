@@ -1967,3 +1967,24 @@ html.is-locked .page-shell, html.is-locked #printReport, html.is-locked .toast-r
 .nav-sheet-group .nav-sheet-item:last-child, .dialog-body > .nav-sheet-item:last-child{ border-bottom:0; }
 .nav-sheet-item .ov-tool-icon{ width:34px; height:34px; border-radius:10px; }
 .nav-sheet-item.active{ color:var(--akt); font-weight:700; }
+
+/* ---- Skjul beløb (hide-amounts.js) ----
+   Øjet i topbjælken slører alle beløb; procenter, datoer og graferne form kan stadig ses. */
+.hide-amounts-btn{
+    display:grid; place-items:center; width:44px; height:44px; flex-shrink:0; padding:0;
+    border-radius:var(--r-pill); border:1px solid var(--border-strong); background:var(--panel); color:var(--text); cursor:pointer;
+}
+.hide-amounts-btn:hover{ background:var(--panel-hover); }
+.hide-amounts-btn svg{ width:21px; height:21px; }
+.hide-amounts-btn .eye-closed, html.amounts-hidden .hide-amounts-btn .eye-open{ display:none; }
+html.amounts-hidden .hide-amounts-btn .eye-closed{ display:block; }
+html.amounts-hidden .hide-amounts-btn{ background:var(--akt-soft); border-color:var(--akt); color:var(--akt); }
+@media screen{
+    /* Sløret efter tekstens størrelse, så både store nøgletal og små undertekster ikke kan læses. */
+    html.amounts-hidden .has-amount{ filter:blur(0.4em); }
+    /* I talfelterne sløres kun tallet, ikke selve feltet. Når man trykker i feltet, kan man se, hvad man skriver. */
+    html.amounts-hidden input[data-amount]:not(:focus){ color:transparent; text-shadow:0 0 9px var(--text); }
+}
+@media (max-width:640px){
+    .hide-amounts-btn{ width:40px; height:40px; }
+}
