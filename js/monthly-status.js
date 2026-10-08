@@ -192,8 +192,12 @@ function openMonthlyStatus(initialDate){
     const sections = MONTHLY_STATUS_SECTIONS.map(section => el('fieldset', {className:'status-section'}, [
         el('legend', {className:'eyebrow', textContent:section.title}),
         el('div', {className:'status-grid'}, section.fields.map(f => {
+            const update = v => { values[f.key] = v; refreshSummary(); refreshDiffs(); };
             const input = el('input', {type:'number', className:'number-input', value: values[f.key] || 0, step: f.flow ? 100 : 1000,
-                oninput: e => { values[f.key] = parseFloat(e.target.value) || 0; refreshSummary(); refreshDiffs(); }});
+                oninput: e => update(parseFloat(e.target.value) || 0)});
+            // Mens der står et regnestykke ("12.000 + 5.000"), følger opsummeringen og
+            // "siden sidst" med i resultatet.
+            input.addEventListener('calcpreview', e => update(e.detail.value));
             if(!f.allowNegative) input.min = 0;
             inputs[f.key] = input;
             const extra = f.hint ? [el('div', {className:'limit-hint', textContent:f.hint})] : [];
@@ -226,10 +230,15 @@ function openMonthlyStatus(initialDate){
         title:'Månedsstatus',
         content,
         wide:true,
+        // Enter i et felt gemmer ikke: skemaet er langt, og Enter bruges til at regne ud.
+        enterSubmits:false,
         actions:[
             {label:'Annullér', variant:'secondary'},
             {label:'Gem i begge', variant:'primary', onClick: () => {
                 if(saving) return false;
+                // Et regnestykke, der ikke kan regnes ud ("12.000 +"), gemmes ikke.
+                const unfinished = Object.values(inputs).find(input => !commitNumberInput(input));
+                if(unfinished){ unfinished.focus(); return false; }
                 const date = normalizeDate(dateInput.value);
                 if(!date){
                     dateError.textContent = 'Vælg en gyldig dato.';

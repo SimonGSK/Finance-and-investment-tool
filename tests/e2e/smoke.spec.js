@@ -1402,6 +1402,47 @@ test('månedsstatus: ændringen siden sidst under hver saldo, og "Hent seneste t
     await expect(dialog.locator('.status-diff:not(:empty)')).toHaveCount(0);
 });
 
+test('månedsstatus: et regnestykke opdaterer "siden sidst" og opsummeringen mens man skriver, og Enter gemmer ikke', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        localStorage.setItem('netWorthHistory', JSON.stringify([{date:'2026-08-31', value:300000, liquid:200000, netCatKontanter:50000, netCatAktier:150000, netCatPension:100000, netCatFrivaerdi:0, netCatAndet:0, debt:20000}]));
+        localStorage.setItem('monthlyStatusLast', JSON.stringify({bank:45000, physical:0, depotCash:5000, stocks:150000, pension:100000, homeEquity:0, other:0, debt:20000}));
+    });
+    await page.reload();
+    await page.evaluate(() => openMonthlyStatus('2026-09-30'));
+    const dialog = page.getByRole('dialog', { name: 'Månedsstatus' });
+    const bank = dialog.getByRole('textbox', { name: 'Bank- og opsparingskonti', exact: true });
+    const summary = dialog.locator('.status-summary');
+    await expect(summary).toContainText('280.000 kr.');
+
+    // Mens der står "30000+10000" (endnu ikke regnet ud), følger tallene med.
+    await bank.fill('');
+    await bank.pressSequentially('30000+10000');
+    await expect(bank).toHaveValue('30000+10000');
+    await expect(dialog.locator('.status-diff').first()).toHaveText('−5.000 kr. siden sidst');
+    await expect(summary).toContainText('275.000 kr.');
+
+    // Enter regner det ud og bliver i skemaet - også ved et almindeligt tal.
+    await bank.press('Enter');
+    await expect(bank).toHaveValue('40000');
+    await expect(dialog).toBeVisible();
+    await bank.press('Enter');
+    await expect(dialog).toBeVisible();
+
+    // Et ufærdigt regnestykke kan ikke gemmes.
+    await bank.fill('');
+    await bank.pressSequentially('40000+');
+    await dialog.getByRole('button', { name: 'Gem i begge' }).click();
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator('.range-hint')).toContainText('Kunne ikke regne det ud');
+
+    await bank.fill('40000');
+    await dialog.getByRole('button', { name: 'Gem i begge' }).click();
+    await expect(dialog).toBeHidden();
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('netWorthHistory')).find(h => h.date === '2026-09-30'));
+    expect(saved).toMatchObject({netCatKontanter: 45000, value: 275000});
+});
+
 test('indstillinger: påmindelsen kan lægges i kalenderen som en .ics-fil', async ({ page }) => {
     await page.goto('/index.html');
     await page.locator('#settingsBtn').click();
