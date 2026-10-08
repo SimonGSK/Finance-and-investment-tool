@@ -1062,3 +1062,14 @@ describe('kalenderpåmindelse', () => {
         assert.match(calc.monthlyReminderIcs({today: '2028-02-10', now: new Date(), url: ''}), /DTSTART:20280229T190000/);   // skudår
     });
 });
+
+describe('containsAmount', () => {
+    test('finder beløb med tusindtalspunktum, "kr." og "mio."', () => {
+        for(const t of ['605.853 kr.', '+6.439 kr. siden 31. aug.', '86 kr. tilbage', '1.250.000', '−40.000', '1,2 mio. kr.', 'Du kan realisere 23.400 kr. mere'])
+            assert.equal(calc.containsAmount(t), true, t);
+    });
+    test('datoer, årstal, procenter og små tal er ikke beløb', () => {
+        for(const t of ['28. sep. 2026', 'Seneste månedsstatus 28. sep. 2026', '2026', '+41,2 %', '45 %', 'Kort 1', '6,5 %', '2 mdr.', 'Din alder 30', '28.09.2026'])
+            assert.equal(calc.containsAmount(t), false, t);
+    });
+});

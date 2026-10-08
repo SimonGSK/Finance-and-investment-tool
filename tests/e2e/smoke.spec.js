@@ -1784,3 +1784,45 @@ test('bundmenuen vises ikke på computer', async ({ page }) => {
     await expect(page.getByRole('navigation', { name: 'Bundmenu' })).toBeHidden();
     await expect(page.locator('.app-header .monthly-status-btn')).toBeVisible();
 });
+
+test('skjul beløb: øjet slører beløb, felter og grafernes beløbsakse, huskes og kan slås fra igen', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        const nw = (date, value) => ({date, value, liquid:value, netCatKontanter:value / 2, netCatAktier:value / 2, netCatPension:0, netCatFrivaerdi:0, netCatAndet:0, debt:0});
+        localStorage.setItem('netWorthHistory', JSON.stringify([nw('2026-07-31', 500000), nw('2026-08-31', 520000)]));
+    });
+    await page.reload();
+    const btn = page.getByRole('button', { name: 'Skjul beløb' });
+    const blurred = sel => page.locator(sel).evaluate(n => getComputedStyle(n).filter !== 'none');
+    const historyAxis = () => page.evaluate(() => {
+        const chart = Chart.getChart(document.getElementById('netWorthHistoryChart'));
+        return [chart.options.scales.y.ticks.display, chart.options.plugins.tooltip.enabled];
+    });
+    expect(await blurred('#ovNetWorth')).toBe(false);
+
+    await btn.click();
+    await expect(page.getByRole('button', { name: 'Vis beløb' })).toHaveAttribute('aria-pressed', 'true');
+    expect(await blurred('#ovNetWorth')).toBe(true);
+    expect(await blurred('#ovNetWorthSub')).toBe(true);          // "+20.000 kr. siden 31. jul."
+    expect(await blurred('#pageSub')).toBe(false);               // datoen for seneste månedsstatus kan ses
+    await page.evaluate(() => showSection('formue'));
+    expect(await historyAxis()).toEqual([false, false]);
+    // Beløbsfelter sløres (kun tallet), procentfelter ikke.
+    await expect(page.locator('#netCatKontanter')).toHaveAttribute('data-amount', '');
+    await expect(page.locator('#yearlyReturnNumber')).not.toHaveAttribute('data-amount', '');
+    // Indhold, der tegnes, mens beløbene er skjult, sløres også.
+    await page.evaluate(() => { document.getElementById('pageSub').textContent = 'Ny tekst med 12.500 kr.'; });
+    await expect(page.locator('#pageSub')).toHaveClass(/has-amount/);
+
+    // Valget huskes på enheden.
+    await page.reload();
+    await expect(page.getByRole('button', { name: 'Vis beløb' })).toBeVisible();
+    expect(await blurred('#ovNetWorth')).toBe(true);
+    await page.evaluate(() => showSection('formue'));
+    expect(await historyAxis()).toEqual([false, false]);
+
+    await page.getByRole('button', { name: 'Vis beløb' }).click();
+    expect(await blurred('#ovNetWorth')).toBe(false);
+    expect(await historyAxis()).toEqual([true, true]);
+    expect(await page.evaluate(() => localStorage.getItem('hideAmounts'))).toBeNull();
+});

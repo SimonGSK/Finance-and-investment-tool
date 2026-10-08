@@ -1821,10 +1821,21 @@ function goalProgress(g){
     return { pct, remaining, reached, monthsLeft, neededPerMonth, monthsAtTrend, onTrack };
 }
 
+/**
+ * Står der et beløb i teksten? Bruges af "Skjul beløb" til at finde det, der skal sløres.
+ * Et beløb er et tal med tusindtalspunktum (12.500), et tal med "kr." efter (86 kr.)
+ * eller med "mio."/"mia." efter. Datoer (28. sep. 2026), årstal og procenter tæller ikke.
+ * @param {string} text
+ * @returns {boolean}
+ */
+function containsAmount(text){
+    return /(^|[^\d.,])\d{1,3}(\.\d{3})+(?![\d.])|\d(,\d+)?\s?(kr\.|mio\.|mia\.)/.test(text);
+}
+
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
-        addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
+        containsAmount, addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
         periodChanges, bestPeriods,
         planSync, applySync,
         CAPITAL_INCOME_LIMIT,

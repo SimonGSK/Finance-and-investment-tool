@@ -96,7 +96,7 @@ const budgetCenterText = {
         if(sum <= 0) return;
         const {ctx, chartArea:{left, right, top, bottom}} = chart;
         const x = (left + right) / 2, y = (top + bottom) / 2;
-        const label = DK.format(sum) + ' kr.';
+        const label = amountsHidden() ? '•••• kr.' : DK.format(sum) + ' kr.';   // "Skjul beløb" (hide-amounts.js)
         // Teksten skal kunne være inde i hullet - på en telefon er det smalt, så den gøres mindre.
         const hole = (chart.getDatasetMeta(0).data[0]?.innerRadius || (right - left) / 3) * 2 * 0.82;
         let size = Math.max(16, Math.min(34, Math.min(right - left, bottom - top) / 9));
