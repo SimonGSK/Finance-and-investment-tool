@@ -158,6 +158,8 @@ function initSheetSwipe(sheet){
     });
     sheet.addEventListener('pointermove', e => {
         if(!start || e.pointerId !== start.id) return;
+        // En mus, der bevæger sig uden knappen nede, er sluppet - også hvis "slip" aldrig nåede frem.
+        if(e.pointerType !== 'touch' && e.buttons === 0){ end(e, true); return; }
         dy = e.clientY - start.y;
         if(!dragging){
             if(dy < 6) return;
@@ -168,7 +170,12 @@ function initSheetSwipe(sheet){
         // Opad giver arket kun lidt efter.
         sheet.style.transform = `translateY(${dy > 0 ? dy : dy / 4}px)`;
     });
-    const end = e => {
+    /**
+     * Slutter et træk: lukker arket eller lader det glide tilbage.
+     * @param {PointerEvent} e
+     * @param {boolean} [released] fingeren eller knappen blev sluppet (ikke afbrudt af browseren)
+     */
+    function end(e, released = e.type === 'pointerup'){
         if(!start || e.pointerId !== start.id) return;
         const velocity = dy / Math.max(1, e.timeStamp - start.t);   // px pr. ms
         start = null;
@@ -176,12 +183,15 @@ function initSheetSwipe(sheet){
         dragging = false;
         swallowClick = true;
         setTimeout(() => { swallowClick = false; }, 0);
-        if(e.type === 'pointerup' && (dy > sheet.offsetHeight / 3 || (dy > 40 && velocity > 0.6))){
+        try{ sheet.releasePointerCapture(e.pointerId); } catch(err){}
+        if(released && (dy > sheet.offsetHeight / 3 || (dy > 40 && velocity > 0.6))){
             settle('translateY(100%)', () => sheet.close());
         } else settle('');
-    };
-    sheet.addEventListener('pointerup', end);
-    sheet.addEventListener('pointercancel', end);
+    }
+    // Slip lyttes efter på hele vinduet, så et træk aldrig hænger fast, hvis slip sker et andet sted end på arket.
+    window.addEventListener('pointerup', e => end(e), true);
+    window.addEventListener('pointercancel', e => end(e), true);
+    sheet.addEventListener('lostpointercapture', e => end(e, true));
     // Klikket, der kommer efter et træk, må ikke åbne det punkt, man startede på.
     sheet.addEventListener('click', e => { if(swallowClick){ e.stopPropagation(); e.preventDefault(); swallowClick = false; } }, true);
     sheet.addEventListener('close', reset);

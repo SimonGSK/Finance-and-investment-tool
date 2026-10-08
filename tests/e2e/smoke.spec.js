@@ -1859,6 +1859,26 @@ test('arkene i bundmenuen kan trækkes ned for at lukke, og et kort træk glider
     await sheet.getByRole('button', { name: 'Porteføljetracker' }).click();
     await expect(page.locator('#pageTitle')).toHaveText('Porteføljetracker');
 
+    // Når musen slippes et sted, hvor arket ikke hører det, hænger trækket ikke fast:
+    // næste bevægelse uden knappen nede slutter det, og arket følger ikke længere musen.
+    await bar.getByRole('button', { name: 'Trackers', exact: true }).click();
+    const stuck = await sheet.evaluate(s => {
+        const item = s.querySelector('.nav-sheet-item');
+        const r = item.getBoundingClientRect();
+        const ev = (type, y, buttons) => item.dispatchEvent(new PointerEvent(type, {bubbles: true, isPrimary: true, pointerId: 7, pointerType: 'mouse', button: 0, buttons, clientX: r.x + 20, clientY: y}));
+        ev('pointerdown', r.y + 10, 1);
+        ev('pointermove', r.y + 40, 1);
+        const during = s.style.transform;
+        ev('pointermove', r.y + 60, 0);     // sluppet, men pointerup kom aldrig
+        ev('pointermove', r.y + 200, 0);    // musen flyttes videre
+        return {during, after: s.style.transform, dragging: s.classList.contains('is-dragging')};
+    });
+    expect(stuck.during).toBe('translateY(30px)');
+    expect(stuck.dragging).toBe(false);
+    expect(stuck.after).not.toBe('translateY(190px)');
+    await expect.poll(() => sheet.evaluate(s => s.style.transform)).toBe('');
+    await page.keyboard.press('Escape');
+
     // Værktøjer: håndtaget i toppen kan altid trækkes, også når listen skal rulle.
     await bar.getByRole('button', { name: 'Værktøjer', exact: true }).click();
     const grip = await sheet.locator('.nav-sheet-grip').boundingBox();
