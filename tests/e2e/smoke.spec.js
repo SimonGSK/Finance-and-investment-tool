@@ -1491,16 +1491,20 @@ test('kodelås: slås til med en kode, låser ved åbning og efter 5 minutter v�
     await expect(page.locator('#lockSettings')).toContainText('Kodelåsen er slået til.');
     expect(await page.evaluate(() => localStorage.getItem('appLock'))).not.toContain('1234');   // kun et hash gemmes
 
-    // Låst ved åbning: siden er skjult, og forkert kode afvises.
+    // Låst ved åbning: siden er skjult, og koden skrives som fire prikker, der tjekkes, så snart de er fyldt.
     await page.reload();
     const lock = page.locator('#lockScreen');
     await expect(lock).toBeVisible();
     await expect(page.locator('.page-shell')).toBeHidden();
-    await page.locator('#lockCode').fill('0000');
-    await page.getByRole('button', { name: 'Lås op' }).click();
+    const dots = page.locator('#lockDots .lock-dot');
+    await expect(dots).toHaveCount(4);
+    await expect(page.getByRole('button', { name: 'Lås op' })).toBeHidden();
+    await page.locator('#lockCode').pressSequentially('12');
+    await expect(page.locator('#lockDots .lock-dot.is-filled')).toHaveCount(2);
+    await page.locator('#lockCode').pressSequentially('00');
     await expect(page.locator('#lockError')).toHaveText('Forkert kode. Prøv igen.');
-    await page.locator('#lockCode').fill('1234');
-    await page.getByRole('button', { name: 'Lås op' }).click();
+    await expect(page.locator('#lockDots .lock-dot.is-filled')).toHaveCount(0);
+    await page.locator('#lockCode').pressSequentially('1234');
     await expect(lock).toBeHidden();
     await expect(page.locator('#ovNetWorth')).toHaveText('123.456 kr.');
 
@@ -1518,7 +1522,6 @@ test('kodelås: slås til med en kode, låser ved åbning og efter 5 minutter v�
     await setVisibility('visible');
     await expect(lock).toBeVisible();
     await page.locator('#lockCode').fill('1234');
-    await page.getByRole('button', { name: 'Lås op' }).click();
     await expect(lock).toBeHidden();
 
     // Slå fra kræver koden.
@@ -1533,6 +1536,31 @@ test('kodelås: slås til med en kode, låser ved åbning og efter 5 minutter v�
     await expect(page.getByRole('button', { name: 'Slå kodelås til' })).toBeVisible();
     await page.reload();
     await expect(lock).toBeHidden();
+});
+
+test('kodelås: en kode fra før prikkerne bruger "Lås op" én gang, og derefter kendes længden', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(async () => {
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        localStorage.setItem('appLock', JSON.stringify({hash: await hashLockCode('56789', salt), salt: btoa(String.fromCharCode(...salt))}));
+    });
+    await page.reload();
+    const dots = page.locator('#lockDots .lock-dot');
+    await expect(dots).toHaveCount(4);
+    await page.locator('#lockCode').pressSequentially('5678');
+    await expect(page.locator('#lockScreen')).toBeVisible();        // længden kendes ikke: intet automatisk tjek
+    await page.locator('#lockCode').pressSequentially('9');
+    await expect(dots).toHaveCount(5);
+    await page.getByRole('button', { name: 'Lås op' }).click();
+    await expect(page.locator('#lockScreen')).toBeHidden();
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('appLock')).digits)).toBe(5);
+
+    // Næste gang: fem prikker, ingen knap, og koden tjekkes, når de er fyldt.
+    await page.reload();
+    await expect(dots).toHaveCount(5);
+    await expect(page.getByRole('button', { name: 'Lås op' })).toBeHidden();
+    await page.locator('#lockCode').pressSequentially('56789');
+    await expect(page.locator('#lockScreen')).toBeHidden();
 });
 
 test('kodelås: "Glemt koden?" sletter dataene på enheden og fjerner låsen', async ({ page }) => {

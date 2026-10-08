@@ -9,6 +9,8 @@
  * Koden gemmes aldrig, kun et saltet PBKDF2-hash af den. Glemmer man koden, kan man
  * kun komme ind ved at slette dataene på enheden (og hente en backup bagefter).
  *
+ * Koden skrives som prikker, én pr. ciffer, og tjekkes, så snart alle prikker er fyldt.
+ *
  * Låsen gælder kun den enhed, den er slået til på, og kommer ikke med i backupfilen.
  * Et lille script i <head> skjuler siden, før noget vises, når låsen er slået til.
  */
@@ -21,7 +23,8 @@ let lockFailures = 0;
 const toB64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
 const fromB64 = str => Uint8Array.from(atob(str), c => c.charCodeAt(0));
 
-/** @returns {{hash:string, salt:string, credentialId?:string}|null} låsens indstillinger, eller null når den er slået fra */
+/** @returns {{hash:string, salt:string, digits?:number, credentialId?:string}|null} låsens indstillinger, eller null når den er slået fra.
+ *   digits = kodens længde (4-6), så låseskærmen kan vise én prik pr. ciffer; mangler i låse fra før prikkerne. */
 function readAppLock(){
     try{ return JSON.parse(localStorage.getItem(APP_LOCK_KEY) || 'null'); } catch(e){ return null; }
 }
@@ -63,6 +66,7 @@ function lockApp(){
     const input = document.getElementById('lockCode');
     input.value = '';
     document.getElementById('lockError').textContent = '';
+    renderLockDots();
     const biometric = !!readAppLock()?.credentialId;
     document.getElementById('lockBiometric').hidden = !biometric;
     // Ikke fokus i kodefeltet først: på en telefon ville tastaturet komme frem bag Face ID.
@@ -78,18 +82,63 @@ function unlockApp(){
     window.dispatchEvent(new Event('resize'));
 }
 
-/** "Lås op": tjekker koden. Efter flere forkerte forsøg venter man lidt længere hver gang. */
+/**
+ * Prikkerne på låseskærmen: én pr. ciffer i koden, fyldt efterhånden som man skriver.
+ * Kendes kodens længde ikke (en lås fra før prikkerne), vises fire, og der kommer flere
+ * til, hvis man skriver mere - og "Lås op"-knappen bruges, indtil længden er kendt.
+ */
+function renderLockDots(){
+    const input = document.getElementById('lockCode');
+    const digits = readAppLock()?.digits || null;
+    const count = digits || Math.max(4, input.value.length);
+    input.maxLength = digits || 6;
+    document.getElementById('lockDots').replaceChildren(...Array.from({length: count}, (_, i) =>
+        el('span', {className: 'lock-dot' + (i < input.value.length ? ' is-filled' : '')})));
+    document.getElementById('lockDigitsHint').textContent = digits ? `Koden har ${digits} cifre.` : 'Koden har 4-6 cifre.';
+    document.getElementById('lockSubmit').hidden = !!digits;
+}
+
+/** Mens man skriver: kun cifre, prikkerne følger med, og koden tjekkes, så snart den er skrevet helt. */
+function onLockCodeInput(){
+    const input = document.getElementById('lockCode');
+    const digits = readAppLock()?.digits || null;
+    input.value = input.value.replace(/\D/g, '').slice(0, digits || 6);
+    if(input.value) document.getElementById('lockError').textContent = '';
+    renderLockDots();
+    if(digits && input.value.length === digits) submitLockCode();
+}
+
+let lockChecking = false;
+
+/** Tjekker koden (fyldte prikker eller "Lås op"). Efter flere forkerte forsøg venter man lidt længere hver gang. */
 async function submitLockCode(event){
-    event.preventDefault();
+    event?.preventDefault();
     const input = document.getElementById('lockCode'), error = document.getElementById('lockError');
-    if(await checkLockCode(input.value)){ unlockApp(); return; }
+    if(lockChecking || !input.value) return;
+    lockChecking = true;
+    const code = input.value;
+    const right = await checkLockCode(code);
+    lockChecking = false;
+    if(right){
+        // En lås fra før prikkerne lærer nu kodens længde.
+        const lock = readAppLock();
+        if(lock && !lock.digits){ lock.digits = code.length; localStorage.setItem(APP_LOCK_KEY, JSON.stringify(lock)); }
+        unlockApp();
+        return;
+    }
     lockFailures++;
     input.value = '';
+    renderLockDots();
+    const pin = document.getElementById('lockPin');
+    pin.classList.remove('is-wrong');
+    void pin.offsetWidth;   // start rystelsen forfra, også ved flere forkerte forsøg i træk
+    pin.classList.add('is-wrong');
     const wait = lockFailures >= 5 ? Math.min(60, (lockFailures - 4) * 10) : 0;
     error.textContent = wait ? `Forkert kode. Prøv igen om ${wait} sekunder.` : 'Forkert kode. Prøv igen.';
     if(wait){
         input.disabled = true;
-        setTimeout(() => { input.disabled = false; error.textContent = ''; input.focus(); }, wait * 1000);
+        pin.classList.add('is-waiting');
+        setTimeout(() => { input.disabled = false; pin.classList.remove('is-waiting'); error.textContent = ''; input.focus(); }, wait * 1000);
     } else input.focus();
 }
 
@@ -166,7 +215,7 @@ async function setAppLockCode(){
     if(!code) return;
     const salt = crypto.getRandomValues(new Uint8Array(16));
     const existing = readAppLock();
-    localStorage.setItem(APP_LOCK_KEY, JSON.stringify({hash: await hashLockCode(code, salt), salt: toB64(salt), credentialId: existing?.credentialId}));
+    localStorage.setItem(APP_LOCK_KEY, JSON.stringify({hash: await hashLockCode(code, salt), salt: toB64(salt), digits: code.length, credentialId: existing?.credentialId}));
     notify(existing ? 'Koden er skiftet.' : 'Kodelåsen er slået til. Siden låses, når den åbnes, og når du har været væk i mere end 5 minutter.');
     renderLockSettings();
 }
@@ -255,6 +304,8 @@ async function renderLockSettings(){
 
 // Låst fra start (scriptet i <head> har allerede skjult siden), og igen efter 5 minutter væk.
 document.getElementById('lockForm').addEventListener('submit', submitLockCode);
+document.getElementById('lockCode').addEventListener('input', onLockCodeInput);
+document.getElementById('lockPin').addEventListener('animationend', e => e.currentTarget.classList.remove('is-wrong'));
 document.addEventListener('visibilitychange', () => {
     if(document.visibilityState === 'hidden'){ lockHiddenAt = Date.now(); return; }
     if(lockHiddenAt !== null && Date.now() - lockHiddenAt > RELOCK_AFTER_MS) lockApp();
