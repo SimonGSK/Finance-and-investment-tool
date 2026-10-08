@@ -1542,6 +1542,38 @@ test('kodelås: "Glemt koden?" sletter dataene på enheden og fjerner låsen', a
     expect(await page.evaluate(() => [localStorage.getItem('appLock'), localStorage.getItem('budgetItems')])).toEqual([null, null]);
 });
 
+test('kodelås: Face ID eller fingeraftryk spørges automatisk, og ellers står koden klar', async ({ page, browserName }) => {
+    test.skip(browserName !== 'chromium', 'en virtuel Face ID/fingeraftryk-læser findes kun i Chromium');
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('WebAuthn.enable');
+    const {authenticatorId} = await cdp.send('WebAuthn.addVirtualAuthenticator', {options: {
+        protocol: 'ctap2', transport: 'internal', hasResidentKey: true, hasUserVerification: true,
+        isUserVerified: true, automaticPresenceSimulation: true
+    }});
+    await page.goto('/index.html');
+    await page.evaluate(async () => {
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        localStorage.setItem('appLock', JSON.stringify({hash: await hashLockCode('4321', salt), salt: btoa(String.fromCharCode(...salt))}));
+        await toggleBiometric(true);
+    });
+    expect(await page.evaluate(() => !!JSON.parse(localStorage.getItem('appLock')).credentialId)).toBe(true);
+
+    // Ved åbning låses der op med det samme - uden at trykke på noget.
+    await page.reload();
+    await expect(page.locator('#lockScreen')).toBeHidden();
+
+    // Lykkes det ikke, bliver siden låst med koden klar og knappen til at prøve igen - uden fejlbesked.
+    await cdp.send('WebAuthn.setUserVerified', {authenticatorId, isUserVerified: false});
+    await page.reload();
+    await expect(page.locator('#lockScreen')).toBeVisible();
+    await expect(page.locator('#lockCode')).toBeFocused();
+    await expect(page.locator('#lockError')).toHaveText('');
+    await expect(page.getByRole('button', { name: 'Brug Face ID eller fingeraftryk' })).toBeVisible();
+    await page.locator('#lockCode').fill('4321');
+    await page.getByRole('button', { name: 'Lås op' }).click();
+    await expect(page.locator('#lockScreen')).toBeHidden();
+});
+
 test('backup: en hentet fil med alle enhedens tal tæller som backup, men ikke hvis enheden har mere', async ({ page }, testInfo) => {
     const fs = require('fs');
     const day = 24 * 60 * 60 * 1000;

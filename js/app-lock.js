@@ -1,7 +1,8 @@
 /**
  * @file Kodelås: skjuler siden bag en kode (4-6 cifre), når den åbnes, og når man
  * kommer tilbage efter mere end 5 minutter i en anden app eller fane. Hvor enheden
- * understøtter det, kan man i stedet låse op med Face ID eller fingeraftryk (WebAuthn).
+ * understøtter det, kan man i stedet låse op med Face ID eller fingeraftryk (WebAuthn);
+ * er det slået til, spørges der automatisk, når låseskærmen vises.
  *
  * Det er en skærmlås, ikke kryptering: tallene ligger stadig i browseren, så låsen
  * beskytter mod nysgerrige blikke, ikke mod en med teknisk adgang til enheden.
@@ -50,7 +51,11 @@ async function biometricAvailable(){
     } catch(e){ return false; }
 }
 
-/** Låser: skjuler siden, lukker åbne dialoger og viser låseskærmen. */
+/**
+ * Låser: skjuler siden, lukker åbne dialoger og viser låseskærmen. Er Face ID eller
+ * fingeraftryk slået til, spørges der med det samme; ellers (eller hvis det ikke
+ * lykkes) står markøren klar i kodefeltet.
+ */
 function lockApp(){
     if(!readAppLock()) return;
     document.querySelectorAll('dialog[open]').forEach(d => d.close());
@@ -58,8 +63,11 @@ function lockApp(){
     const input = document.getElementById('lockCode');
     input.value = '';
     document.getElementById('lockError').textContent = '';
-    document.getElementById('lockBiometric').hidden = !readAppLock()?.credentialId;
-    setTimeout(() => input.focus(), 50);
+    const biometric = !!readAppLock()?.credentialId;
+    document.getElementById('lockBiometric').hidden = !biometric;
+    // Ikke fokus i kodefeltet først: på en telefon ville tastaturet komme frem bag Face ID.
+    if(biometric) unlockWithBiometric(true);
+    else setTimeout(() => input.focus(), 50);
 }
 
 /** Låser op og viser siden igen. */
@@ -85,10 +93,18 @@ async function submitLockCode(event){
     } else input.focus();
 }
 
-/** "Brug Face ID eller fingeraftryk": beder enheden bekræfte, at det er ejeren. */
-async function unlockWithBiometric(){
+let biometricPending = false;
+
+/**
+ * "Brug Face ID eller fingeraftryk": beder enheden bekræfte, at det er ejeren.
+ * @param {boolean} [auto] true, når låseskærmen selv spørger. Lykkes det ikke
+ *   (annulleret, eller browseren vil have et tryk først), vises ingen fejl -
+ *   kodefeltet og knappen står klar.
+ */
+async function unlockWithBiometric(auto = false){
     const lock = readAppLock();
-    if(!lock?.credentialId) return;
+    if(!lock?.credentialId || biometricPending) return;
+    biometricPending = true;
     try{
         await navigator.credentials.get({publicKey: {
             challenge: crypto.getRandomValues(new Uint8Array(32)),
@@ -97,7 +113,10 @@ async function unlockWithBiometric(){
         }});
         unlockApp();
     } catch(e){
-        document.getElementById('lockError').textContent = 'Det lykkedes ikke. Brug din kode i stedet.';
+        if(!auto) document.getElementById('lockError').textContent = 'Det lykkedes ikke. Brug din kode i stedet.';
+        document.getElementById('lockCode').focus();
+    } finally {
+        biometricPending = false;
     }
 }
 
