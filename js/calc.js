@@ -1688,6 +1688,18 @@ function yearInNumbers(nwHistory, ptHistory, year){
         portfolio: periodReturn(ptHistory, year, null)};
 }
 
+const NOTE_MAX_LENGTH = 60;
+
+/**
+ * En note til en månedsstatus ("Bonus", "Købte bil"): mellemrum ryddet op og højst
+ * NOTE_MAX_LENGTH tegn, så den kan stå ved et punkt på grafen.
+ * @param {*} text
+ * @returns {string} tom, hvis der ingen note er
+ */
+function cleanNote(text){
+    return String(text ?? '').replace(/\s+/g, ' ').trim().slice(0, NOTE_MAX_LENGTH).trim();
+}
+
 /**
  * Den korte opsummering efter en gemt månedsstatus: ændringen i nettoformuen siden forrige
  * status, hvor den ligger blandt årets måneder (rangeret som "bedste måned" i Månedsoverblik:
@@ -1874,7 +1886,7 @@ function appVersionOf(html){
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
-        containsAmount, appVersionOf, monthlyStatusSummary, addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
+        containsAmount, appVersionOf, monthlyStatusSummary, cleanNote, NOTE_MAX_LENGTH, addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
         periodChanges, bestPeriods,
         planSync, applySync,
         CAPITAL_INCOME_LIMIT,

@@ -1109,3 +1109,12 @@ describe('monthlyStatusSummary', () => {
         assert.equal(calc.monthlyStatusSummary(twice, '2026-05-31'), null);
     });
 });
+
+describe('cleanNote', () => {
+    test('rydder mellemrum op, og en lang note kortes til 60 tegn', () => {
+        assert.equal(calc.cleanNote('  Bonus   fra   arbejdet \n'), 'Bonus fra arbejdet');
+        assert.equal(calc.cleanNote(''), '');
+        assert.equal(calc.cleanNote(null), '');
+        assert.equal(calc.cleanNote('x'.repeat(80)).length, calc.NOTE_MAX_LENGTH);
+    });
+});

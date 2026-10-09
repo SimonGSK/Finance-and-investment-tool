@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#0B0B0C">
     <!-- Sidens version (sættes af npm run stamp). Den åbne side tjekker, om der er en nyere (js/update-check.js). -->
-    <meta name="app-version" content="3d1b971e">
+    <meta name="app-version" content="60ea0bc4">
     <meta name="description" content="Budget, formue, investering og lån – danske økonomiværktøjer, hvor dine tal bliver på din egen enhed.">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
@@ -40,7 +40,7 @@
     <script>try{ if(localStorage.getItem('appLock')) document.documentElement.classList.add('is-locked'); }catch(e){}</script>
     <!-- Skjul beløb: sløres med det samme, før siden tegnes (se js/hide-amounts.js). -->
     <script>try{ if(localStorage.getItem('hideAmounts')) document.documentElement.classList.add('amounts-hidden'); }catch(e){}</script>
-    <link rel="stylesheet" href="styles.css?v=3a78ffa0">
+    <link rel="stylesheet" href="styles.css?v=45f2c8d1">
 </head>
 <body>
 
@@ -1332,6 +1332,7 @@
 
     <div id="monthContent" class="month-content" hidden>
         <p class="month-range" id="monthRange"></p>
+        <p class="month-notes" id="monthNotes" hidden></p>
         <div class="panel year-panel" id="yearPanel" hidden></div>
         <div class="stats">
             <div class="stat"><div class="label">Nettoformue</div><div class="value" id="monthNetWorth">–</div><div class="sub" id="monthNetWorthSub"></div></div>
@@ -1663,6 +1664,7 @@
                             <th>Likvid</th>
                             <th>Nettoformue</th>
                             <th>Ændring</th>
+                            <th>Note</th>
                             <th></th>
                         </tr>
                         </thead>
@@ -1870,10 +1872,10 @@
             </details>
         </div>
     </template>
-    <script src="js/calc.js?v=5951d3e5"></script>
+    <script src="js/calc.js?v=9ef34675"></script>
     <script src="js/sync.js?v=27ea91b3"></script>
-    <script src="js/shared.js?v=148f1b88"></script>
-    <script src="js/ui.js?v=871e0b32"></script>
+    <script src="js/shared.js?v=419c326f"></script>
+    <script src="js/ui.js?v=23d479e6"></script>
     <script src="js/field-help.js?v=6a83e008"></script>
     <script src="js/number-fields.js?v=a35de4ce"></script>
     <script src="js/hide-amounts.js?v=8c823b8d"></script>
@@ -1899,9 +1901,9 @@
     <script src="js/overview-cards.js?v=a4804772"></script>
     <script src="js/overview.js?v=5f340b27"></script>
     <script src="js/budget.js?v=9c9e0798"></script>
-    <script src="js/net-worth.js?v=0a36f5f5"></script>
-    <script src="js/month-overview.js?v=fb99e8a3"></script>
-    <script src="js/monthly-status.js?v=4ec6617b"></script>
+    <script src="js/net-worth.js?v=edc13b4c"></script>
+    <script src="js/month-overview.js?v=b8a789c7"></script>
+    <script src="js/monthly-status.js?v=b67129ad"></script>
     <script src="js/goals.js?v=aae96981"></script>
     <script src="js/theme.js?v=f47f37be"></script>
     <script src="js/share.js?v=e0899adf"></script>

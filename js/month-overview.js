@@ -79,6 +79,23 @@ function setMonthYear(year){
 }
 
 /**
+ * Noterne fra månedsstatus i den valgte periode ("Note: Bonus" eller, ved flere,
+ * "Noter: 31. jan. 2026: Bonus · 30. jun. 2026: Købte bil"). Skjult, når der ingen er.
+ * @param {{date:string, note?:string}[]} history
+ * @param {{start:object|null, end:object}} bounds
+ */
+function renderMonthNotes(history, bounds){
+    const box = document.getElementById('monthNotes');
+    const from = bounds.start ? bounds.start.date : '';
+    const notes = history.filter(h => h.note && h.date > from && h.date <= bounds.end.date);
+    box.hidden = !notes.length;
+    if(!notes.length){ box.replaceChildren(); return; }
+    box.replaceChildren(notes.length === 1
+        ? el('span', {}, [el('strong', {textContent: 'Note: '}), notes[0].note])
+        : el('span', {}, [el('strong', {textContent: 'Noter: '}), notes.map(h => `${formatDanishDate(h.date)}: ${h.note}`).join(' · ')]));
+}
+
+/**
  * Åbner Månedsoverblik på en bestemt måned (fx fra beskeden efter en gemt månedsstatus).
  * @param {number} year
  * @param {number} month 1-12
@@ -147,6 +164,8 @@ function renderMonthOverview(){
         : `${title}: din første månedsstatus (${formatDanishDate(bounds.end.date)}), så der er intet at sammenligne med endnu.`,
         ...(spanMonths > 1 ? [' ', el('span', {className:'month-span', textContent:`${spanMonths} mdr.`,
             attrs:{title:`Der er ingen månedsstatus imellem, så ændringen dækker ${spanMonths} måneder.`}})] : []));
+
+    renderMonthNotes(history, bounds);
 
     setMonthKpi('monthNetWorth', byKey.value, false, spanText);
     setMonthKpi('monthPension', byKey.netCatPension, false, spanText);

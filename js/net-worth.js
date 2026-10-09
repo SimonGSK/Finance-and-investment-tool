@@ -375,6 +375,8 @@ function importNetWorthCSV(event){
                 // Filens egne totaler bruges, hvis de findes, så en import ikke ændrer gamle tal.
                 if(col('Likvid') >= 0) entry.liquid = parseDanishAmount(row[col('Likvid')]);
                 if(col('Nettoformue') >= 0) entry.value = parseDanishAmount(row[col('Nettoformue')]);
+                const note = col('Note') >= 0 ? cleanNote(row[col('Note')]) : '';
+                if(note) entry.note = note;
                 entries.push(entry);
             });
         } catch(err){
@@ -406,6 +408,7 @@ async function saveNetWorthSnapshot(){
     const entry = buildNetWorthEntry(date, amounts);
 
     const {history, replaced} = upsertByDate(readNetWorthHistory(), entry);
+    if(replaced?.note) entry.note = replaced.note;     // noten fra månedsstatus bliver
     if(replaced){
         const changes = changedFields(replaced, entry, NET_WORTH_FIELDS);
         if(!changes.length){ notify(`Ingen ændringer – formuen for ${formatDanishDate(date)} var allerede gemt med de samme tal.`); return; }
@@ -446,7 +449,7 @@ function editNetWorthEntry(date){
     editHistoryEntry({
         date, title:'Formue', read: readNetWorthHistory, write: writeNetWorthHistory, render: renderNetWorthHistory,
         inputs: NET_WORTH_CATEGORIES.map(c => [c.id, c.label + ' (kr.)']).concat([['debt', 'Gæld (kr.)']]),
-        build: buildNetWorthEntry, fields: NET_WORTH_FIELDS
+        build: buildNetWorthEntry, fields: NET_WORTH_FIELDS, withNote: true
     });
 }
 
@@ -516,17 +519,24 @@ function renderNetWorthHistory(){
         const n = ctx.dataset.data.length;
         return n > 1 && (ctx.chart.width < 500 || ctx.chart.width / n < 12) ? 0 : 4;
     };
+    // Et punkt med en note (fra månedsstatus) er en lille ruder, der altid vises - også på telefonen.
+    const hasNote = ctx => !!ctx.raw?.note;
+    const notePoint = (normal, noted) => ctx => hasNote(ctx) ? noted(ctx) : normal(ctx);
     const chartData = {
         datasets:[
             {
                 label:'Nettoformue',
-                data: history.map(h => ({x: t(h.date), y: h.value})),
+                data: history.map(h => ({x: t(h.date), y: h.value, note: h.note || ''})),
                 borderColor:CHART_COLOR('--akt'),
                 backgroundColor:CHART_COLOR('--akt'),
                 themeVar:'--akt',
                 tension:0.15,
-                pointRadius,
-                pointHoverRadius:4,
+                pointRadius: notePoint(pointRadius, () => 6),
+                pointHoverRadius: notePoint(() => 4, () => 7),
+                pointStyle: notePoint(() => 'circle', () => 'rectRot'),
+                pointBackgroundColor: notePoint(() => getCSSVar('--akt'), () => getCSSVar('--text')),
+                pointBorderColor: notePoint(() => getCSSVar('--akt'), () => getCSSVar('--panel')),
+                pointBorderWidth: notePoint(() => 1, () => 1.5),
                 pointHitRadius:8,
                 borderWidth:2.5
             },
@@ -599,7 +609,9 @@ function renderNetWorthHistory(){
                                 : formatDanishDate(todayIso(new Date(items[0].parsed.x))),
                             label: c => c.dataset.isForecast
                                 ? `Prognose: ca. ${DK.format(Math.round(c.parsed.y / 1000) * 1000)} kr.`
-                                : `${c.dataset.label}: ${DK.format(c.parsed.y)} kr.`
+                                : `${c.dataset.label}: ${DK.format(c.parsed.y)} kr.`,
+                            // Noten fra månedsstatus under tallene.
+                            footer: items => items.map(i => i.raw?.note).filter(Boolean).map(n => `Note: ${n}`)
                         }
                     }
                 },
@@ -631,6 +643,7 @@ function renderNetWorthHistory(){
             <td>${DK.format(h.liquid ?? 0)} kr.</td>
             <td>${DK.format(h.value)} kr.</td>
             ${changeCellHtml(changeByDate.get(h.date))}
+            <td class="note-cell">${escapeHtml(h.note || '')}</td>
             <td><div class="row-actions">
                 <button class="btn btn-secondary btn-sm" aria-label="Ret datapunktet for ${formatDanishDate(h.date)}" onclick="editNetWorthEntry('${h.date}')">Ret</button>
                 <button class="btn btn-secondary btn-sm" aria-label="Slet datapunktet for ${formatDanishDate(h.date)}" onclick="deleteNetWorthEntry('${h.date}')">Slet</button>
