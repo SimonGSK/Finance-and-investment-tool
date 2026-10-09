@@ -1860,6 +1860,12 @@ body[data-section="overview"] .customize-btn{ display:inline-flex; }
 .status-diff:empty{ display:none; }
 .status-diff.is-up{ color:var(--pos); }
 .status-diff.is-down{ color:var(--cross); }
+/* Ligner tallet en tastefejl (et nul for meget, et tomt felt ...), står det med gult under feltet.
+   I det lyse tema er det gule lidt mørkere end grafernes (--ask), så teksten har kontrast nok. */
+:root{ --warn-text:var(--ask); }
+[data-theme="light"]{ --warn-text:#8A5E25; }
+.status-diff.is-warning{ color:var(--warn-text); }
+.suspicious-why{ margin-top:2px; font-family:var(--font-sans); font-size:13px; color:var(--warn-text); text-align:right; }
 @media (max-width:640px){
     .status-intro{ flex-direction:column; }
 }

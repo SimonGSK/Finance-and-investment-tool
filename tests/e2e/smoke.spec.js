@@ -2159,3 +2159,50 @@ test('månedsstatus uden en tidligere status på enheden starter med de seneste 
     await expect(value('Andet')).toHaveValue('15000');
     await expect(value('Gæld')).toHaveValue('40000');
 });
+
+test('månedsstatus fanger tastefejl: et nul for meget eller et tomt felt advares under feltet og før der gemmes', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        const nw = {date: '2026-09-30', netCatKontanter: 64000, netCatAktier: 290000, netCatPension: 276000, netCatFrivaerdi: 0, netCatAndet: 15000, debt: 40000, liquid: 354000, value: 605000};
+        localStorage.setItem('netWorthHistory', JSON.stringify([nw]));
+        localStorage.setItem('portfolioHistory', JSON.stringify([{date: '2026-09-30', stockValue: 286000, cash: 4000, portfolioValue: 290000, traded: 0, deposit: 0, dividend: 0}]));
+    });
+    await page.reload();
+    await page.locator('.app-header .monthly-status-btn').click();
+    const dialog = page.getByRole('dialog', { name: 'Månedsstatus' });
+    await dialog.getByLabel('Dato').fill('2026-10-31');
+    const field = label => dialog.getByLabel(label, { exact: true });
+    const diff = label => dialog.locator('.status-field', { has: page.getByLabel(label, { exact: true }) }).locator('.status-diff');
+
+    // Under feltet, mens man skriver.
+    await field('Pension').fill('2760000');
+    await expect(diff('Pension')).toHaveText('+2.484.000 kr. siden sidst – et nul for meget?');
+    await expect(diff('Pension')).toHaveClass(/is-warning/);
+    await field('Andet').fill('0');
+    await expect(diff('Andet')).toContainText('feltet er 0. Glemt at udfylde?');
+    // En almindelig ændring advarer ikke.
+    await field('Gæld').fill('38000');
+    await expect(diff('Gæld')).toHaveText('−2.000 kr. siden sidst');
+
+    // Før der gemmes: "Er tallene rigtige?" - Ret tallene går tilbage til det første felt.
+    await dialog.getByRole('button', { name: 'Gem i begge' }).click();
+    const warning = page.getByRole('dialog', { name: 'Er tallene rigtige?' });
+    await expect(warning).toContainText('276.000 kr. → 2.760.000 kr.');
+    await expect(warning).toContainText('Et nul for meget?');
+    await expect(warning).toContainText('15.000 kr. → 0 kr.');
+    await warning.getByRole('button', { name: 'Ret tallene' }).click();
+    await expect(warning).toBeHidden();
+    await expect(field('Pension')).toBeFocused();
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('netWorthHistory')).length)).toBe(1);
+
+    // Rettet pension; "Andet" er faktisk 0 nu - Gem alligevel gemmer.
+    await field('Pension').fill('280000');
+    await dialog.getByRole('button', { name: 'Gem i begge' }).click();
+    const one = page.getByRole('dialog', { name: 'Er tallet rigtigt?' });
+    await expect(one).toContainText('15.000 kr. → 0 kr.');
+    await expect(one).not.toContainText('Pension');
+    await one.getByRole('button', { name: 'Gem alligevel' }).click();
+    await expect(dialog).toBeHidden();
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('netWorthHistory')).at(-1));
+    expect(saved).toMatchObject({date: '2026-10-31', netCatPension: 280000, netCatAndet: 0, debt: 38000});
+});

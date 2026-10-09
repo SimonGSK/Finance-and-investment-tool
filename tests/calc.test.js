@@ -1118,3 +1118,24 @@ describe('cleanNote', () => {
         assert.equal(calc.cleanNote('x'.repeat(80)).length, calc.NOTE_MAX_LENGTH);
     });
 });
+
+describe('suspiciousAmounts', () => {
+    const keys = ['bank', 'pension', 'debt', 'stocks', 'other'];
+    test('et nul for meget eller for lidt, et stort spring, og et felt, der er blevet 0', () => {
+        const before = {bank: 60000, pension: 276000, debt: 40000, stocks: 290000, other: 15000};
+        const after = {bank: 600000, pension: 27600, debt: 400000, stocks: 1800000, other: 0};
+        assert.deepEqual(calc.suspiciousAmounts(before, after, keys), [
+            {key: 'bank', from: 60000, to: 600000, kind: 'zeros', zeros: 1},
+            {key: 'pension', from: 276000, to: 27600, kind: 'zeros', zeros: -1},
+            {key: 'debt', from: 40000, to: 400000, kind: 'zeros', zeros: 1},
+            {key: 'stocks', from: 290000, to: 1800000, kind: 'jump', factor: 1800000 / 290000},
+            {key: 'other', from: 15000, to: 0, kind: 'empty'}
+        ]);
+    });
+    test('almindelige ændringer, en ny konto, små beløb og 100 gange (to nuller) ', () => {
+        const before = {bank: 60000, pension: 0, debt: 40000, stocks: 2000, other: 5000};
+        const after = {bank: 75000, pension: 300000, debt: 38000, stocks: 9000, other: 0};
+        assert.deepEqual(calc.suspiciousAmounts(before, after, keys), []);   // +25 %, ny konto, små beløb, 5.000 → 0 er under 10.000
+        assert.equal(calc.suspiciousAmounts({bank: 6000}, {bank: 600000}, ['bank'])[0].zeros, 2);
+    });
+});

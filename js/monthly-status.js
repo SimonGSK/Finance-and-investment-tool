@@ -178,14 +178,20 @@ function openMonthlyStatus(initialDate){
         showRangeHint(input);
     }
 
-    /** Under hver saldo: hvor meget den er ændret siden de seneste tal (tom, når den er uændret). */
+    /**
+     * Under hver saldo: hvor meget den er ændret siden de seneste tal (tom, når den er uændret).
+     * Ligner ændringen en tastefejl (et nul for meget, et felt, der er blevet 0 ...), står det der.
+     */
     function refreshDiffs(){
+        const suspicious = hasHistory ? new Map(suspiciousAmounts(baseline, values, Object.keys(diffs)).map(x => [x.key, x])) : new Map();
         Object.entries(diffs).forEach(([key, node]) => {
             const change = (values[key] || 0) - (baseline[key] || 0);
             const good = key === 'debt' ? -change : change;
-            node.textContent = hasHistory && change ? `${formatSignedKr(change)} siden sidst` : '';
-            node.classList.toggle('is-up', good > 0);
-            node.classList.toggle('is-down', good < 0);
+            const warning = suspicious.get(key);
+            node.textContent = hasHistory && change ? `${formatSignedKr(change)} siden sidst${warning ? ` – ${suspiciousText(warning)}` : ''}` : '';
+            node.classList.toggle('is-warning', !!warning);
+            node.classList.toggle('is-up', !warning && good > 0);
+            node.classList.toggle('is-down', !warning && good < 0);
         });
     }
 
@@ -267,6 +273,16 @@ function openMonthlyStatus(initialDate){
         });
     }
 
+    /** Ligner et tal en tastefejl i forhold til de seneste tal, spørges der først (se suspiciousAmounts). */
+    function checkThenSave(){
+        const suspicious = hasHistory ? suspiciousAmounts(baseline, values, Object.keys(diffs)) : [];
+        if(!suspicious.length){ save(); return; }
+        warnSuspiciousAmounts(suspicious).then(saveAnyway => {
+            if(saveAnyway) save();
+            else { inputs[suspicious[0].key].focus(); inputs[suspicious[0].key].select(); }
+        });
+    }
+
     let saving = false;
     const handle = openDialog({
         title:'Månedsstatus',
@@ -280,13 +296,13 @@ function openMonthlyStatus(initialDate){
                 if(saving) return false;
                 // Et regnestykke, der ikke kan regnes ud ("12.000 +"), gemmes ikke - advar først.
                 const unfinished = Object.keys(inputs).filter(key => !commitNumberInput(inputs[key]));
-                if(!unfinished.length){ save(); return false; }
+                if(!unfinished.length){ checkThenSave(); return false; }
                 warnUnfinishedSums(unfinished.map(key => ({label: MONTHLY_STATUS_LABELS[key], text: inputs[key].value.trim(), value: values[key] || 0})))
                     .then(saveAnyway => {
                         if(!saveAnyway){ inputs[unfinished[0]].focus(); return; }
                         // Felterne får det tal, der gemmes, så skemaet viser det samme.
                         unfinished.forEach(showValue);
-                        save();
+                        checkThenSave();
                     });
                 return false;
             }}
@@ -294,6 +310,47 @@ function openMonthlyStatus(initialDate){
     });
     inputs.bank.focus();
     inputs.bank.select();
+}
+
+/**
+ * Kort forklaring på et tal, der ligner en tastefejl: "et nul for meget?", "mangler der et nul?",
+ * "6 gange så meget som sidst" eller "0 kr. – glemt at udfylde?".
+ * @param {{kind:string, zeros?:number, factor?:number}} s fra suspiciousAmounts
+ * @returns {string}
+ */
+function suspiciousText(s){
+    const count = n => ['', 'et nul', 'to nuller', 'tre nuller'][n] || `${n} nuller`;
+    if(s.kind === 'empty') return 'feltet er 0. Glemt at udfylde?';
+    if(s.kind === 'zeros') return s.zeros > 0 ? `${count(s.zeros)} for meget?` : `mangler der ${count(-s.zeros)}?`;
+    return s.factor > 1 ? `${Math.round(s.factor)} gange så meget som sidst. Tjek tallet.` : `${Math.round(1 / s.factor)} gange mindre end sidst. Tjek tallet.`;
+}
+
+/**
+ * "Er tallene rigtige?": viser de tal, der ligner en tastefejl, før de gemmes.
+ * @param {{key:string, from:number, to:number}[]} fields fra suspiciousAmounts
+ * @returns {Promise<boolean>} true = gem alligevel, false = ret tallene
+ */
+function warnSuspiciousAmounts(fields){
+    return openDialog({
+        title: fields.length === 1 ? 'Er tallet rigtigt?' : 'Er tallene rigtige?',
+        content: el('div', {}, [
+            el('p', {className:'dialog-text', textContent: fields.length === 1
+                ? 'Tallet herunder er meget anderledes end sidst. Er det en tastefejl, så ret det, før du gemmer.'
+                : 'Tallene herunder er meget anderledes end sidst. Er det tastefejl, så ret dem, før du gemmer.'}),
+            el('dl', {className:'change-list'}, fields.flatMap(f => [
+                el('dt', {textContent: MONTHLY_STATUS_LABELS[f.key]}),
+                el('dd', {}, [
+                    el('span', {textContent: `${DK.format(f.from)} kr. → `}),
+                    el('strong', {textContent: `${DK.format(f.to)} kr.`}),
+                    el('div', {className:'suspicious-why', textContent: suspiciousText(f).replace(/^./, c => c.toUpperCase())})
+                ])
+            ]))
+        ]),
+        actions:[
+            {label:'Gem alligevel', variant:'secondary', value:true},
+            {label: fields.length === 1 ? 'Ret tallet' : 'Ret tallene', variant:'primary', value:false}
+        ]
+    }).result.then(v => v === true);
 }
 
 /** Feltnavnene i skemaet, fx bank -> "Bank- og opsparingskonti". */
