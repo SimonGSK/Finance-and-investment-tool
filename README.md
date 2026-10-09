@@ -72,6 +72,7 @@ The page is **responsive**: one layout that adapts to the space available rather
 - **Stacking by available space.** The tools, Budget and Formue use CSS container queries: when the content area (not the screen) is narrower than about 1150 px, the chart moves under the inputs, so it never gets squeezed next to the menu.
 - **Phones (below 640 px).** Body text is about 14.5 px and small text never under 12 px, in line with Apple's and Material Design's type scales. Form fields stay at 16 px so iPhone doesn't zoom in. Cards are tighter, charts have a landscape shape (roughly 4:3), and long explanations are folded.
 - **Themes.** The light theme is forest green on warm off-white; the dark theme is black and greys with the same green and red.
+- **Keyboard shortcuts (computer).** `1`–`7` open the menu items in their order, `N` a new monthly status, `B` hides or shows amounts and `?` lists them all ([`js/shortcuts.js`](js/shortcuts.js)). They never fire while typing in a field, with a dialog or sheet open, behind the code lock, or together with Cmd/Ctrl/Alt, so a number typed into a field stays in the field and Cmd+1 still switches browser tabs.
 - **Fonts.** Newsreader for headings, key figures and the name, Manrope for text, and IBM Plex Mono for amounts in tables, charts and fields. They're hosted with the site (`@font-face` at the top of `styles.css`, preloaded in `index.html`).
 
 All colours, spacing and radii are variables at the top of [`styles.css`](styles.css). The redesign (top bar, menu card, Oversigt, themes and phone adjustments) is the last part of the file, after the original component styles.
@@ -148,6 +149,7 @@ js/month-overview.js    Månedsoverblik: change per category for a month or a ye
 js/goals.js             Formue goals
 js/navigation.js        Menu, sections and tools, page header, settings dialog, reminders
 js/bottom-nav.js        Bottom bar and sheets on phones
+js/shortcuts.js         Keyboard shortcuts on computers (1-7, N, B, ?)
 js/sync.js              Backup file and syncing between devices (merge, not overwrite)
 js/app-lock.js          Kodelås: lock screen, code and Face ID / fingerprint
 js/hide-amounts.js      Skjul beløb: blurs amounts, chart axes and tooltips

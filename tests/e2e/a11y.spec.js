@@ -37,9 +37,9 @@ for(const theme of ['dark', 'light']){
             await page.waitForTimeout(100);
             found.push(...await violations(page, section + (n || '')));
         }
-        // Dialogerne: indstillinger, månedsstatus, hjælp og feedback.
+        // Dialogerne: indstillinger, månedsstatus, hjælp, feedback og genveje.
         for(const [name, open] of [['indstillinger', () => toggleSettings(true)], ['månedsstatus', () => openMonthlyStatus()],
-            ['hjælp', () => openHelp()], ['feedback', () => openFeedbackDialog()]]){
+            ['hjælp', () => openHelp()], ['feedback', () => openFeedbackDialog()], ['genveje', () => openShortcutsDialog()]]){
             await page.evaluate(open);
             await page.waitForTimeout(150);
             found.push(...await violations(page, name));

@@ -2035,3 +2035,13 @@ a.nav-item{ text-decoration:none; }
     .legal-page h2{ font-size:19px; }
     .legal-page p, .legal-page li{ font-size:15px; }
 }
+
+/* ---- Tastaturgenveje (shortcuts.js) ---- */
+.shortcut-list{ display:grid; grid-template-columns:auto 1fr; gap:var(--s2) var(--s4); align-items:center; margin:0; }
+.shortcut-list dt{ margin:0; text-align:right; }
+.shortcut-list dd{ margin:0; color:var(--text); font-size:14.5px; }
+kbd{
+    display:inline-block; min-width:1.9em; padding:3px 7px; box-sizing:border-box; text-align:center;
+    font:600 13px var(--font-mono); color:var(--text); background:var(--panel-sunken);
+    border:1px solid var(--border-strong); border-bottom-width:2px; border-radius:7px;
+}
