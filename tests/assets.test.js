@@ -53,9 +53,22 @@ test('siden henter ingen scripts, stylesheets eller skrifttyper fra andre server
     const root = path.join(__dirname, '..');
     for(const page of ['index.html', 'privatliv.html']){
         const html = fs.readFileSync(path.join(root, page), 'utf8').replace(/<!--[\s\S]*?-->/g, '');
-        const external = [...html.matchAll(/<(?:script|link)[^>]+(?:src|href)="((?:https?:)?\/\/[^"]+)"/g)].map(m => m[1]);
+        // Filer, browseren henter (scripts, stylesheets, skrifttyper, ikoner) - ikke rel="canonical", som kun er en adresse.
+        const external = [...html.matchAll(/<(?:script|link)(?![^>]*rel="canonical")[^>]+(?:src|href)="((?:https?:)?\/\/[^"]+)"/g)].map(m => m[1]);
         assert.deepEqual(external, [], page);
     }
     const css = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
     assert.doesNotMatch(css, /url\(["']?(https?:)?\/\//);
+});
+
+test('link-forhåndsvisning: begge sider har titel, beskrivelse og billede, og billedet findes i 1200 × 630', () => {
+    const root = path.join(__dirname, '..');
+    for(const page of ['index.html', 'privatliv.html']){
+        const html = fs.readFileSync(path.join(root, page), 'utf8');
+        for(const prop of ['og:title', 'og:description', 'og:url', 'og:image']) assert.match(html, new RegExp(`<meta property="${prop}" content="[^"]+">`), `${page}: ${prop}`);
+        const image = /<meta property="og:image" content="https:\/\/simongsk\.github\.io\/Finance-and-investment-tool\/([^"]+)">/.exec(html);
+        assert.ok(image, `${page}: og:image skal være en fuld adresse på siden`);
+        const png = fs.readFileSync(path.join(root, image[1]));
+        assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [1200, 630]);
+    }
 });
