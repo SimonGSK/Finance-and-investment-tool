@@ -1018,6 +1018,7 @@ table.data-table td.is-negative{ color:var(--ask); }
 }
 .toast-leaving{ opacity:0; transform:translateY(6px); transition:all 0.2s var(--ease); }
 .toast-action{
+    flex-shrink:0; white-space:nowrap;   /* knappen står på én linje, også ved en lang besked */
     background:transparent; border:none; padding:0;
     color:var(--akt); font-family:var(--font-sans); font-size:13.5px; font-weight:600;
     cursor:pointer;

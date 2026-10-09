@@ -1689,6 +1689,36 @@ function yearInNumbers(nwHistory, ptHistory, year){
 }
 
 /**
+ * Den korte opsummering efter en gemt månedsstatus: ændringen i nettoformuen siden forrige
+ * status, hvor den ligger blandt årets måneder (rangeret som "bedste måned" i Månedsoverblik:
+ * efter ændringen i kroner), og hvor mange måneder i træk der er gemt en status.
+ * @param {{date:string, value:number}[]} history nettoformuehistorikken med den gemte status
+ * @param {string} date den gemte dato (ISO)
+ * @returns {{first:boolean, change:number, from:string|null, months:number, rank:number|null, of:number, streak:number}|null}
+ *   first = den første status nogensinde; rank = 1 for årets største stigning (null, hvis first);
+ *   of = antal skridt i året; streak = måneder i træk med en status, til og med denne. null, hvis datoen mangler.
+ */
+function monthlyStatusSummary(history, date){
+    const sorted = history.slice().sort((a, b) => a.date.localeCompare(b.date));
+    const i = sorted.findIndex(h => h.date === date);
+    if(i < 0) return null;
+    // Måneder i træk: gå bagud, så længe der højst er én måned mellem to statusser.
+    let streak = 1;
+    for(let k = i; k > 0; k--){
+        const gap = monthSpan(sorted[k - 1].date, sorted[k].date);
+        if(gap > 1) break;
+        if(gap === 1) streak++;
+    }
+    if(i === 0) return {first: true, change: 0, from: null, months: 0, rank: null, of: 0, streak};
+    const prev = sorted[i - 1];
+    const change = (sorted[i].value || 0) - (prev.value || 0);
+    const year = date.slice(0, 4);
+    const steps = periodChanges(sorted, h => h.value).filter(c => c.to.startsWith(year + '-'));
+    return {first: false, change, from: prev.date, months: Math.max(1, monthSpan(prev.date, date)),
+        rank: 1 + steps.filter(c => c.change > change).length, of: steps.length, streak};
+}
+
+/**
  * De år og måneder, der har mindst ét punkt - til vælgerne i Månedsoverblik.
  * @param {{date:string}[]} history
  * @returns {{years:number[], months:Object<number, number[]>}} nyeste år først, måneder i rækkefølge
@@ -1844,7 +1874,7 @@ function appVersionOf(html){
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
-        containsAmount, appVersionOf, addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
+        containsAmount, appVersionOf, monthlyStatusSummary, addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
         periodChanges, bestPeriods,
         planSync, applySync,
         CAPITAL_INCOME_LIMIT,

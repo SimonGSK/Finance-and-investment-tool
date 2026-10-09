@@ -356,6 +356,37 @@ async function saveMonthlyStatus(date, values){
     renderNetWorthHistory();
     renderPortfolioHistory();
     if(typeof renderMonthOverview === 'function') renderMonthOverview();
-    notify(`Månedsstatus for ${formatDanishDate(date)} er gemt i Formue og Porteføljetracker.`);
+    const summary = monthlyStatusSummary(readNetWorthHistory(), date);
+    notify(statusSummaryText(date, summary), {
+        actionLabel: summary && !summary.first ? 'Se måneden' : undefined,
+        onAction: () => showMonthOverview(Number(date.slice(0, 4)), Number(date.slice(5, 7))),
+        duration: 9000
+    });
     return true;
+}
+
+/**
+ * Beskeden efter en gemt månedsstatus: hvad der skete med formuen siden sidst, og - når
+ * det er værd at nævne - om det er en af årets bedste måneder, og hvor mange måneder i træk
+ * der er gemt en status. Faldet nævnes ærligt, men uden at gøre det større, end det er.
+ * @param {string} date den gemte dato
+ * @param {ReturnType<typeof monthlyStatusSummary>} s
+ * @returns {string}
+ */
+function statusSummaryText(date, s){
+    if(!s) return `Månedsstatus for ${formatDanishDate(date)} er gemt i Formue og Porteføljetracker.`;
+    if(s.first) return 'Din første månedsstatus er gemt. Gem en igen næste måned, så kan du se, hvordan din formue udvikler sig.';
+    const since = `siden ${formatDanishDate(s.from)}${s.months > 1 ? ` (${s.months} mdr.)` : ''}`;
+    const amount = `${DK.format(Math.abs(s.change))} kr.`;
+    let text;
+    if(s.change > 0){
+        text = `Din formue steg ${amount} ${since}`;
+        text += s.of < 2 ? '.' : s.rank === 1 ? ' – årets bedste måned indtil videre!' : s.rank <= 3 ? ` – din ${s.rank}. bedste måned i år.` : '.';
+    } else if(s.change < 0){
+        text = `Din formue faldt ${amount} ${since}. Det sker – det er udviklingen over tid, der tæller.`;
+    } else {
+        text = `Din formue er uændret ${since}.`;
+    }
+    if(s.streak >= 3) text += ` Du har gemt din status ${s.streak} måneder i træk.`;
+    return text;
 }

@@ -1081,3 +1081,31 @@ describe('appVersionOf', () => {
         assert.equal(calc.appVersionOf('<html></html>'), null);
     });
 });
+
+describe('monthlyStatusSummary', () => {
+    const h = (date, value) => ({date, value});
+    const history = [h('2025-11-30', 400000), h('2025-12-31', 410000), h('2026-01-31', 405000),
+        h('2026-02-28', 420000), h('2026-03-31', 428000), h('2026-04-30', 440000)];
+
+    test('ændringen siden forrige status, placering blandt årets måneder og måneder i træk', () => {
+        // 2026: jan −5.000, feb +15.000, mar +8.000, apr +12.000 → april er nr. 2 af 4.
+        assert.deepEqual(calc.monthlyStatusSummary(history, '2026-04-30'),
+            {first: false, change: 12000, from: '2026-03-31', months: 1, rank: 2, of: 4, streak: 6});
+        assert.equal(calc.monthlyStatusSummary(history, '2026-02-28').rank, 1);
+        assert.equal(calc.monthlyStatusSummary(history, '2026-01-31').rank, 4);
+        // Januars skridt fra december tæller med i året (som i Månedsoverblik).
+        assert.equal(calc.monthlyStatusSummary(history, '2026-01-31').from, '2025-12-31');
+    });
+
+    test('den første status, en manglende måned og flere statusser i samme måned', () => {
+        assert.deepEqual(calc.monthlyStatusSummary([h('2026-04-30', 100)], '2026-04-30'),
+            {first: true, change: 0, from: null, months: 0, rank: null, of: 0, streak: 1});
+        const gap = [h('2026-01-31', 100), h('2026-02-28', 200), h('2026-04-30', 260)];
+        const april = calc.monthlyStatusSummary(gap, '2026-04-30');
+        assert.equal(april.months, 2);
+        assert.equal(april.streak, 1);                     // marts mangler, så rækken starter forfra
+        const twice = [h('2026-03-31', 100), h('2026-04-15', 150), h('2026-04-30', 170)];
+        assert.equal(calc.monthlyStatusSummary(twice, '2026-04-30').streak, 2);   // april tæller én gang
+        assert.equal(calc.monthlyStatusSummary(twice, '2026-05-31'), null);
+    });
+});
