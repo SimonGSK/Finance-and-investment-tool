@@ -1,0 +1,7 @@
+# Alle søgemaskiner må læse siden. Bemærk: søgemaskiner læser kun robots.txt i roden af et
+# domæne, så filen virker først, hvis Økonomis får sit eget domæne (fx okonomis.dk). Indtil da
+# kan sitemap.xml indsendes direkte i Google Search Console.
+User-agent: *
+Allow: /
+
+Sitemap: https://simongsk.github.io/Finance-and-investment-tool/sitemap.xml
