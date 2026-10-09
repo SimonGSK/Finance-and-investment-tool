@@ -78,6 +78,16 @@ function setMonthYear(year){
     renderMonthOverview();
 }
 
+/**
+ * Åbner Månedsoverblik på en bestemt måned (fx fra beskeden efter en gemt månedsstatus).
+ * @param {number} year
+ * @param {number} month 1-12
+ */
+function showMonthOverview(year, month){
+    monthSelection = {year, month};
+    showSection('month');
+}
+
 /** Ny periode valgt: en måned (1-12) eller 0 for hele året. */
 function setMonthPeriod(month){
     monthSelection = {...monthSelection, month: month || null};

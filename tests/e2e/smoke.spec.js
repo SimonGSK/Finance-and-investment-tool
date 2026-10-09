@@ -2028,3 +2028,40 @@ test('tastaturgenveje: 1-7 skifter side, N, B og ?, men aldrig når man skriver 
     // Menupunkterne fortæller skærmlæsere om genvejen.
     await expect(page.getByRole('button', { name: 'Formue', exact: true })).toHaveAttribute('aria-keyshortcuts', '5');
 });
+
+test('månedsstatus: en kort opsummering efter gem - stigning, placering i året, fald, måneder i træk og "Se måneden"', async ({ page }) => {
+    await page.goto('/index.html');
+    const toast = page.locator('.toast').last();
+    const save = async (date, bank) => {
+        await page.getByRole('button', { name: '+ Månedsstatus' }).click();
+        const dialog = page.getByRole('dialog', { name: 'Månedsstatus' });
+        await dialog.getByLabel('Dato').fill(date);
+        await dialog.getByLabel('Bank- og opsparingskonti', { exact: true }).fill(String(bank));
+        await dialog.getByRole('button', { name: 'Gem i begge' }).click();
+        await expect(dialog).toBeHidden();
+    };
+
+    await save('2026-01-31', 100000);
+    await expect(toast).toHaveText('Din første månedsstatus er gemt. Gem en igen næste måned, så kan du se, hvordan din formue udvikler sig.');
+    await expect(toast.getByRole('button', { name: 'Se måneden' })).toHaveCount(0);
+
+    // Kun én måned i år indtil nu: ingen "bedste måned" endnu.
+    await save('2026-02-28', 115000);
+    await expect(toast).toHaveText(/^Din formue steg 15\.000 kr\. siden 31\. jan\. 2026\.(Se måneden)?$/);
+
+    await save('2026-03-31', 140000);
+    await expect(toast).toContainText('Din formue steg 25.000 kr. siden 28. feb. 2026 – årets bedste måned indtil videre! Du har gemt din status 3 måneder i træk.');
+
+    await save('2026-04-30', 133000);
+    await expect(toast).toContainText('Din formue faldt 7.000 kr. siden 31. mar. 2026. Det sker – det er udviklingen over tid, der tæller. Du har gemt din status 4 måneder i træk.');
+
+    // En manglende måned står i beskeden, og rækken starter forfra. +3.000 er nr. 3 af årets fire.
+    await save('2026-06-30', 136000);
+    await expect(toast).toContainText('Din formue steg 3.000 kr. siden 30. apr. 2026 (2 mdr.) – din 3. bedste måned i år.');
+    await expect(toast).not.toContainText('i træk');
+
+    await toast.getByRole('button', { name: 'Se måneden' }).click();
+    expect(await page.evaluate(() => document.body.dataset.section)).toBe('month');
+    await expect(page.locator('#monthYear')).toHaveValue('2026');
+    await expect(page.locator('#monthPeriod')).toHaveValue('6');
+});
