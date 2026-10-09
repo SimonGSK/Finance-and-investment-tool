@@ -8,7 +8,7 @@
  * Pythons http.server tabte indimellem forespørgsler, når en side hentede mange
  * filer på én gang (scripts, skrifttyper, ikoner), så en test kunne fejle uden grund.
  * Svarene har "no-cache", så browseren altid spørger, om en fil er ændret - som på
- * GitHub Pages efter en ny version.
+ * GitHub Pages efter en ny version. Findes en adresse ikke, vises 404.html (også som der).
  */
 const http = require('http');
 const fs = require('fs');
@@ -47,7 +47,11 @@ const server = http.createServer((req, res) => {
     }
     fs.stat(file, (err, stat) => {
         if(err || !stat.isFile()){
-            res.writeHead(404, {'Content-Type': 'text/plain; charset=utf-8'}).end('Ikke fundet');
+            // Som GitHub Pages: 404.html, når en adresse ikke findes.
+            fs.readFile(path.join(root, '404.html'), (e, page) => {
+                if(e) res.writeHead(404, {'Content-Type': 'text/plain; charset=utf-8'}).end('Ikke fundet');
+                else res.writeHead(404, {'Content-Type': TYPES['.html']}).end(page);
+            });
             return;
         }
         const modified = stat.mtime.toUTCString();
