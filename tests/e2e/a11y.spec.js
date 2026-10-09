@@ -39,7 +39,8 @@ for(const theme of ['dark', 'light']){
         }
         // Dialogerne: indstillinger, månedsstatus, hjælp, feedback og genveje.
         for(const [name, open] of [['indstillinger', () => toggleSettings(true)], ['månedsstatus', () => openMonthlyStatus()],
-            ['hjælp', () => openHelp()], ['feedback', () => openFeedbackDialog()], ['genveje', () => openShortcutsDialog()]]){
+            ['hjælp', () => openHelp()], ['feedback', () => openFeedbackDialog()], ['genveje', () => openShortcutsDialog()],
+            ['tastefejl', () => { warnSuspiciousAmounts([{key: 'pension', from: 276000, to: 2760000, kind: 'zeros', zeros: 1}]); }]]){
             await page.evaluate(open);
             await page.waitForTimeout(150);
             found.push(...await violations(page, name));

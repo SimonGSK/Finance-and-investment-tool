@@ -1688,6 +1688,37 @@ function yearInNumbers(nwHistory, ptHistory, year){
         portfolio: periodReturn(ptHistory, year, null)};
 }
 
+/**
+ * Tal i en månedsstatus, der ligner en tastefejl: et beløb, der er blevet mindst 5 gange
+ * større eller mindre end sidst (og mindst 10.000 kr. forskelligt), eller som er faldet til
+ * 0 fra mindst 10.000 kr. Ligger forholdet tæt på 10, 100 eller 1.000, er det sandsynligvis
+ * et nul for meget eller for lidt. En ny konto (fra 0) og små beløb tæller ikke.
+ * @param {Object<string, number>} before de seneste tal
+ * @param {Object<string, number>} after de nye tal
+ * @param {string[]} keys felterne, der skal tjekkes
+ * @returns {{key:string, from:number, to:number, kind:'zeros'|'jump'|'empty', zeros?:number, factor?:number}[]}
+ *   zeros: +1 = et nul for meget, −1 = et nul for lidt (osv.); factor: hvor mange gange større (>1) eller mindre (<1)
+ */
+function suspiciousAmounts(before, after, keys){
+    const out = [];
+    keys.forEach(key => {
+        const from = Math.abs(before[key] || 0), to = Math.abs(after[key] || 0);
+        if(from === 0) return;
+        if(to === 0){
+            if(from >= 10000) out.push({key, from, to, kind: 'empty'});
+            return;
+        }
+        if(Math.abs(to - from) < 10000) return;
+        const factor = to / from;
+        if(factor < 5 && factor > 1 / 5) return;
+        const zeros = Math.round(Math.log10(factor));
+        // Tæt på 10, 100 eller 1.000 gange (inden for 15 %): et nul for meget eller for lidt.
+        if(zeros !== 0 && Math.abs(factor / 10 ** zeros - 1) <= 0.15) out.push({key, from, to, kind: 'zeros', zeros});
+        else out.push({key, from, to, kind: 'jump', factor});
+    });
+    return out;
+}
+
 const NOTE_MAX_LENGTH = 60;
 
 /**
@@ -1886,7 +1917,7 @@ function appVersionOf(html){
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
-        containsAmount, appVersionOf, monthlyStatusSummary, cleanNote, NOTE_MAX_LENGTH, addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
+        containsAmount, appVersionOf, monthlyStatusSummary, cleanNote, suspiciousAmounts, NOTE_MAX_LENGTH, addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
         periodChanges, bestPeriods,
         planSync, applySync,
         CAPITAL_INCOME_LIMIT,
