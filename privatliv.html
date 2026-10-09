@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0B0B0C">
+    <meta name="description" content="Sådan behandler Økonomis dine oplysninger: dine tal bliver på din egen enhed.">
+    <title>Privatliv · Økonomis</title>
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <!-- Samme tema som appen (lyst/mørkt), før siden tegnes. -->
+    <script>try{ document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')); }catch(e){}</script>
+    <link rel="stylesheet" href="styles.css?v=28e2d35d">
+</head>
+<body>
+    <main class="legal-page">
+        <a class="legal-back" href="./">
+            <img src="icons/icon.svg" alt="" width="32" height="32">
+            <span>Tilbage til Økonomis</span>
+        </a>
+
+        <h1>Privatliv</h1>
+        <p class="legal-updated">Senest opdateret 9. oktober 2026</p>
+
+        <section class="legal-summary">
+            <h2>Kort fortalt</h2>
+            <ul>
+                <li>Dine tal bliver på din egen enhed. De sendes aldrig til os eller andre.</li>
+                <li>Der er ingen konto, ingen cookies, ingen sporing og ingen reklamer.</li>
+                <li>Det eneste, der sendes til os, er en feedbackbesked, hvis du selv vælger at skrive en.</li>
+            </ul>
+        </section>
+
+        <h2>Dine tal</h2>
+        <p>Alt, hvad du skriver ind – budget, formue, månedsstatus, portefølje, lån, mål og indstillinger – gemmes i din browsers lokale lager (localStorage) på den enhed, du bruger. Det sendes ikke over internettet, og vi kan ikke se det. Derfor kan vi heller ikke gendanne dine tal, hvis de forsvinder: tag en backup under <em>Indstillinger › Gem mine data</em>.</p>
+        <p>Du sletter dine tal ved at slette webstedsdata for Økonomis i din browsers indstillinger. Har du lagt Økonomis på hjemmeskærmen på en iPhone eller iPad, har appen sit eget lager, som slettes, når du fjerner appen.</p>
+
+        <h2>Backupfiler</h2>
+        <p><em>Gem mine data</em> laver en fil med dine tal. Den gemmes eller deles kun dér, hvor du selv vælger (fx i Filer, iCloud eller Google Drive), og den indeholder dine tal i læsbar form – så pas på den, som du ville passe på et kontoudtog.</p>
+
+        <h2>Delte links</h2>
+        <p>Når du deler en beregning fra et af værktøjerne, ligger tallene i linket (efter #-tegnet). Den del sendes ikke til nogen server, men alle, der får linket – og den tjeneste, du sender det med – kan se tallene. Dine trackere (formue, portefølje, budget og lån) kan ikke deles som link.</p>
+
+        <h2>Kodelås, Face ID og fingeraftryk</h2>
+        <p>Slår du kodelåsen til, gemmes selve koden ikke – kun en omregnet udgave af den (et saltet hash), som koden ikke kan regnes tilbage ud fra, og kun på enheden. Låser du op med Face ID eller fingeraftryk, er det din enhed, der genkender dig; Økonomis ser aldrig dit ansigt eller dit fingeraftryk.</p>
+
+        <h2>Feedback</h2>
+        <p>Skriver du en besked under <em>Giv feedback</em>, sendes din besked, den type, du vælger, hvilket værktøj du stod i og – hvis du skriver den – din e-mail via tjenesten <a href="https://formspree.io/legal/privacy-policy/" target="_blank" rel="noopener">Formspree</a> (en amerikansk virksomhed), som sender den videre til os. Som ved al trafik på internettet ser Formspree også din IP-adresse, når beskeden sendes.</p>
+        <p>Beskeden bruges kun til at forbedre siden og til at svare dig, hvis du har skrevet din e-mail. Den deles ikke med andre og slettes senest 12 måneder efter, vi har modtaget den. Du sender den, fordi du selv vælger det, og du kan til enhver tid bede om at se den eller få den slettet – skriv det i en ny besked, gerne med samme e-mail. Skriv ikke personnumre, kontonumre eller andre følsomme oplysninger i en besked.</p>
+
+        <h2>Hvor siden ligger</h2>
+        <p>Økonomis ligger på <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">GitHub Pages</a>. Som ved alle hjemmesider ser serveren din IP-adresse, når siden hentes, og GitHub kan gemme den i en periode af sikkerhedshensyn. Vi får ikke adgang til de oplysninger.</p>
+        <p>Skrifttyper, grafer og alt andet ligger på siden selv, så der hentes intet fra andre servere, mens du bruger Økonomis. Siden virker også uden internet, når den først er hentet.</p>
+
+        <h2>Ændringer og kontakt</h2>
+        <p>Ændrer vi, hvordan oplysninger behandles, opdaterer vi denne side og datoen øverst. Økonomis er lavet af Simon Grynnerup Skouboe. Har du spørgsmål om privatliv, så skriv under <em>Giv feedback</em> i appen.</p>
+    </main>
+</body>
+</html>

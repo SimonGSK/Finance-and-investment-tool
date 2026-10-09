@@ -82,9 +82,9 @@ function trackersSheetContent(){
     });
 }
 
-/** @returns {HTMLElement[]} arket "Mere": indstillinger, hjælp og feedback */
+/** @returns {HTMLElement[]} arket "Mere": indstillinger, hjælp, feedback og privatliv */
 function moreSheetContent(){
-    return ['settingsBtn', 'helpBtn', 'feedbackBtn']
+    return ['settingsBtn', 'helpBtn', 'feedbackBtn', 'privacyLink']
         .map(id => document.getElementById(id))
         .filter(btn => btn && !btn.hidden)
         .map(btn => navSheetItem(btn, btn.querySelector('svg')?.cloneNode(true), false));

@@ -459,7 +459,7 @@ test('app: manifest og ikoner findes, og siden virker offline efter første bes�
     await page.getByLabel('Aktier & værdipapirer', { exact: true }).fill('1000 + 500');
     await page.getByLabel('Aktier & værdipapirer', { exact: true }).press('Enter');
     await expect(page.locator('#netWorthTotal')).toHaveText('1.500 kr.');   // scripts kører offline
-    expect(await page.evaluate(() => typeof Chart)).toBe('function');       // også Chart.js fra CDN'en
+    expect(await page.evaluate(() => typeof Chart)).toBe('function');       // også Chart.js (fra vendor/)
     await context.setOffline(false);
 });
 
@@ -1271,7 +1271,7 @@ test('menuen: Oversigt øverst, så Værktøjer, Trackers og Hjælp, og Portefø
     const items = await page.locator('.side-nav > .nav-label, .side-nav > .nav-item:not([hidden])').evaluateAll(nodes =>
         nodes.map(n => n.classList.contains('nav-label') ? '# ' + n.textContent.trim() : [...n.childNodes].filter(c => c.nodeType === 3).map(c => c.textContent).join('').trim()));
     expect(items).toEqual(['Oversigt', '# Værktøjer', 'Investering', 'Bolig & lån', 'Budget', '# Trackers', 'Formue', 'Månedsoverblik', 'Portefølje',
-        '# Hjælp', 'Indstillinger', 'Hjælp og spørgsmål', 'Giv feedback']);
+        '# Hjælp', 'Indstillinger', 'Hjælp og spørgsmål', 'Giv feedback', 'Privatliv']);
     await expect(page.locator('#navSubTools .nav-subitem')).toHaveText(['ASK vs. Aktiedepot', 'Aktiedepot: fast + månedligt', 'FIRE-beregner (4%-reglen)', 'Pension', 'Skattegrænse', 'Tips & viden']);
 
     await page.getByRole('button', { name: 'Portefølje', exact: true }).click();
@@ -1931,4 +1931,40 @@ test.describe('ny version', () => {
         expect(await page.evaluate(() => checkForNewVersion())).toBe(false);
         await expect(toast).toHaveCount(0);
     });
+});
+
+test('privatliv: siden åbner fra menuen, følger temaet og henter intet fra andre servere', async ({ page }) => {
+    const external = [];
+    page.on('request', r => { if(!r.url().startsWith('http://localhost')) external.push(r.url()); });
+    await page.goto('/index.html');
+    await page.evaluate(() => localStorage.setItem('theme', 'light'));
+    await page.getByRole('link', { name: 'Privatliv' }).click();
+    await expect(page).toHaveURL(/privatliv\.html$/);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Privatliv');
+    await expect(page.locator('.legal-summary')).toContainText('Dine tal bliver på din egen enhed.');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+    expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)');
+    await page.getByRole('link', { name: 'Tilbage til Økonomis' }).click();
+    await expect(page.locator('#pageTitle')).toHaveText('Din økonomi');
+    expect(external).toEqual([]);
+});
+
+test('skrifttyperne og Chart.js hentes fra siden selv, og siden bruger dem', async ({ page }) => {
+    const external = [];
+    page.on('request', r => { if(!r.url().startsWith('http://localhost')) external.push(r.url()); });
+    await page.goto('/index.html');
+    await page.evaluate(() => document.fonts.ready);
+    // Hver skrift og vægt, siden bruger, findes som en fil på siden (og er hentet på forhånd).
+    const fonts = await page.evaluate(async () => {
+        const loads = async spec => (await document.fonts.load(spec)).map(f => f.family + ' ' + f.weight);
+        return {
+            faces: [...await loads('600 20px Newsreader'), ...await loads('500 16px Manrope'),
+                ...await loads('400 13px "IBM Plex Mono"'), ...await loads('500 13px "IBM Plex Mono"'), ...await loads('600 13px "IBM Plex Mono"')],
+            preloaded: performance.getEntriesByType('resource').map(r => r.name).filter(n => n.includes('/fonts/')).length
+        };
+    });
+    expect(fonts.faces).toEqual(['Newsreader 400 600', 'Manrope 400 700', 'IBM Plex Mono 400', 'IBM Plex Mono 500', 'IBM Plex Mono 600']);
+    expect(fonts.preloaded).toBe(5);
+    expect(await page.evaluate(() => typeof Chart)).toBe('function');
+    expect(external).toEqual([]);
 });
