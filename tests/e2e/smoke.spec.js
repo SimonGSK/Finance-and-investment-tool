@@ -2135,3 +2135,27 @@ test('noter på månedsstatus: gemmes, vises i tabellen, på grafen og i Måneds
     await page.locator('#netWorthCsvUpload').setInputFiles(await download.path());
     await expect.poll(async () => (await history()).map(h => h.note)).toEqual([undefined, '<b>Flyttede</b>']);
 });
+
+test('månedsstatus uden en tidligere status på enheden starter med de seneste tal fra historikken, ikke 0', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        // Historik gemt under Formue (eller fra en fil) - men ingen månedsstatus gemt på denne enhed.
+        const nw = (date, kontanter, aktier, pension, frivaerdi, andet, debt) => ({date, netCatKontanter: kontanter, netCatAktier: aktier,
+            netCatPension: pension, netCatFrivaerdi: frivaerdi, netCatAndet: andet, debt, liquid: kontanter + aktier, value: kontanter + aktier + pension + frivaerdi + andet - debt});
+        localStorage.setItem('netWorthHistory', JSON.stringify([nw('2026-09-30', 64000, 290000, 276000, 50000, 15000, 40000), nw('2026-08-31', 60000, 280000, 270000, 50000, 15000, 42000)]));
+        localStorage.setItem('portfolioHistory', JSON.stringify([{date: '2026-09-30', stockValue: 286000, cash: 4000, portfolioValue: 290000, traded: 0, deposit: 0, dividend: 0}]));
+        localStorage.removeItem('monthlyStatusLast');
+    });
+    await page.reload();
+    await page.locator('.app-header .monthly-status-btn').click();
+    const dialog = page.getByRole('dialog', { name: 'Månedsstatus' });
+    await expect(dialog.locator('.status-intro')).toContainText('30. sep. 2026');
+    const value = label => dialog.getByLabel(label, { exact: true });
+    await expect(value('Bank- og opsparingskonti')).toHaveValue('60000');     // 64.000 − 4.000 i depotet
+    await expect(value('Kontanter i aktiedepot')).toHaveValue('4000');
+    await expect(value('Værdi af aktier')).toHaveValue('286000');
+    await expect(value('Pension')).toHaveValue('276000');
+    await expect(value('Friværdi i bolig')).toHaveValue('50000');
+    await expect(value('Andet')).toHaveValue('15000');
+    await expect(value('Gæld')).toHaveValue('40000');
+});
