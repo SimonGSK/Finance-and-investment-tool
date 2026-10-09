@@ -480,3 +480,18 @@ document.querySelectorAll('.collapsible').forEach(panel => {
     try{ collapsed = localStorage.getItem('collapsed:' + panel.id) === '1'; } catch(e){ /* åben */ }
     if(collapsed) togglePanel(panel.querySelector('.panel-toggle'), false);
 });
+
+/**
+ * Tabeller, der kan rulle (.data-table-wrap), kan nås med tastaturet: de får tabindex, så man
+ * kan rulle dem med piletasterne, og et navn, så en skærmlæser siger, hvilken tabel det er.
+ * @param {ParentNode} [root] fx en dialog, der lige er bygget
+ */
+function makeTablesKeyboardScrollable(root = document){
+    root.querySelectorAll('.data-table-wrap:not([tabindex])').forEach(wrap => {
+        wrap.tabIndex = 0;
+        wrap.setAttribute('role', 'region');
+        const name = wrap.closest('.panel, .dialog')?.querySelector('.eyebrow, .panel-title, .dialog-title')?.textContent.trim();
+        wrap.setAttribute('aria-label', name ? `Tabel: ${name}` : 'Tabel');
+    });
+}
+makeTablesKeyboardScrollable();

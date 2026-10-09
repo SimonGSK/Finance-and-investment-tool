@@ -1968,3 +1968,11 @@ test('skrifttyperne og Chart.js hentes fra siden selv, og siden bruger dem', asy
     expect(await page.evaluate(() => typeof Chart)).toBe('function');
     expect(external).toEqual([]);
 });
+
+test('404: en adresse, der ikke findes, viser en side med vej tilbage til appen', async ({ page }) => {
+    const response = await page.goto('/findes/ikke');
+    expect(response.status()).toBe(404);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Siden findes ikke');
+    await page.getByRole('link', { name: 'Gå til Økonomis' }).click();
+    await expect(page.locator('#pageTitle')).toHaveText('Din økonomi');
+});

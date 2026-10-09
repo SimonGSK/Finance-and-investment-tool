@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#0B0B0C">
     <!-- Sidens version (sættes af npm run stamp). Den åbne side tjekker, om der er en nyere (js/update-check.js). -->
-    <meta name="app-version" content="38877101">
+    <meta name="app-version" content="ecb1ddfc">
     <meta name="description" content="Budget, formue, investering og lån – danske økonomiværktøjer, hvor dine tal bliver på din egen enhed.">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
@@ -15,6 +15,19 @@
     <meta name="apple-mobile-web-app-title" content="Økonomis">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Økonomis. Få overblik over din økonomi.</title>
+    <!-- Forhåndsvisning, når et link deles (Facebook, LinkedIn, Messenger, Slack, iMessage ...). Billedet tegnes af scripts/render-share-image.js. -->
+    <link rel="canonical" href="https://simongsk.github.io/Finance-and-investment-tool/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Økonomis">
+    <meta property="og:locale" content="da_DK">
+    <meta property="og:url" content="https://simongsk.github.io/Finance-and-investment-tool/">
+    <meta property="og:title" content="Økonomis – få overblik over din økonomi">
+    <meta property="og:description" content="Budget, formue, investering og lån – danske økonomiværktøjer, hvor dine tal bliver på din egen enhed.">
+    <meta property="og:image" content="https://simongsk.github.io/Finance-and-investment-tool/icons/share-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Økonomis-logoet og teksten: Få overblik over din økonomi">
+    <meta name="twitter:card" content="summary_large_image">
     <!-- Skrifttyperne hentes med det samme (de ligger i fonts/), så teksten ikke skifter skrift, mens siden vises. -->
     <link rel="preload" href="fonts/newsreader-variable.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="fonts/manrope-variable.woff2" as="font" type="font/woff2" crossorigin>
@@ -27,17 +40,7 @@
     <script>try{ if(localStorage.getItem('appLock')) document.documentElement.classList.add('is-locked'); }catch(e){}</script>
     <!-- Skjul beløb: sløres med det samme, før siden tegnes (se js/hide-amounts.js). -->
     <script>try{ if(localStorage.getItem('hideAmounts')) document.documentElement.classList.add('amounts-hidden'); }catch(e){}</script>
-
-    <!-- Slået fra indtil der er rigtige ID'er: pladsholderne giver 403-fejl i konsollen.
-         TODO: Erstat "mitsite" med mit eget goatcounter brugernavn, og fjern kommentaren.
-    <script data-goatcounter="https://mitsite.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
-    -->
-
-    <!-- Slået fra indtil der er rigtige ID'er: pladsholderne giver 403-fejl i konsollen.
-         TODO: Erstat ca-pub-XXXXXXXXXXXXXXXX med mit eget AdSense-udgiver-ID, og fjern kommentaren.
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
-    -->
-    <link rel="stylesheet" href="styles.css?v=28e2d35d">
+    <link rel="stylesheet" href="styles.css?v=c152c197">
 </head>
 <body>
 
@@ -76,22 +79,6 @@
     </div>
 
     <div class="page-shell">
-
-        <!-- TODO: Fjern 'hidden' på begge .ad-slot, når AdSense-koden er sat ind. -->
-        <aside class="ad-slot" hidden>
-            <!-- Google AdSense-annonce (venstre) indsættes her, når I har jeres AdSense-kode -->
-            <!-- TODO: indsæt udgiver-ID i "ca-pub-xxxx..."-->
-            <!-- TODO: indsæt data-ad-slot-nummer i 'data-ad-slot="xxxxx..."' -->
-            <!-- TODO: Samtykke-/cookie-banner der spørger folk om lov. Google har en løsning man kan sætte op fra AdSense-konto-->
-            Annonceplads
-            <!-- Slået fra indtil der er rigtige ID'er. Fjern kommentaren sammen med AdSense-scriptet i <head>.
-            <ins class="adsbygoogle"
-                 style="display:block; width:160px; height:600px;"
-                 data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-                 data-ad-slot="XXXXXXXXXX"></ins>
-            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-            -->
-        </aside>
 
         <div class="app">
             <header class="app-header">
@@ -1790,20 +1777,6 @@
             </div>
         </div>
 
-        <aside class="ad-slot" hidden>
-            <!-- Google AdSense-annonce (højre) indsættes her, når I har jeres AdSense-kode -->
-            <!-- TODO: indsæt udgiver-ID i "ca-pub-xxxx..."-->
-            <!-- TODO: indsæt data-ad-slot-nummer i 'data-ad-slot="xxxxx..."' -->
-            <!-- TODO: Samtykke-/cookie-banner der spørger folk om lov. Google har en løsning man kan sætte op fra AdSense-konto-->
-            Annonceplads
-            <!-- Slået fra indtil der er rigtige ID'er. Fjern kommentaren sammen med AdSense-scriptet i <head>.
-            <ins class="adsbygoogle"
-                 style="display:block; width:160px; height:600px;"
-                 data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-                 data-ad-slot="XXXXXXXXXX"></ins>
-            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-            -->
-        </aside>
     </div>
 
     <!-- Bundmenuen på telefoner (bottom-nav.js). Computer og tablet har menukortet til venstre. -->
@@ -1899,7 +1872,7 @@
     <script src="js/calc.js?v=55bcd953"></script>
     <script src="js/sync.js?v=27ea91b3"></script>
     <script src="js/shared.js?v=148f1b88"></script>
-    <script src="js/ui.js?v=812dc2e6"></script>
+    <script src="js/ui.js?v=871e0b32"></script>
     <script src="js/field-help.js?v=6a83e008"></script>
     <script src="js/number-fields.js?v=a35de4ce"></script>
     <script src="js/hide-amounts.js?v=8c823b8d"></script>
@@ -1924,7 +1897,7 @@
     <script src="js/overview-cards.js?v=a4804772"></script>
     <script src="js/overview.js?v=5f340b27"></script>
     <script src="js/budget.js?v=9c9e0798"></script>
-    <script src="js/net-worth.js?v=78cff884"></script>
+    <script src="js/net-worth.js?v=0a36f5f5"></script>
     <script src="js/month-overview.js?v=b3f42713"></script>
     <script src="js/monthly-status.js?v=47c3e082"></script>
     <script src="js/goals.js?v=aae96981"></script>
