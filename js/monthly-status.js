@@ -56,9 +56,10 @@ function monthlyStatusEntries(date, v){
 }
 
 /**
- * De saldi skemaet starter med: sidst indtastede månedsstatus, ellers det bedste
- * bud ud fra Formue-felterne og porteføljens seneste punkt. Periodetal (handler,
- * indskud, udbytte) starter altid på 0.
+ * De saldi skemaet starter med: sidst indtastede månedsstatus; ellers det seneste
+ * punkt i formuehistorikken (fx gemt under Formue eller hentet fra en fil); og uden
+ * historik Formue-felterne. Kontanter i depotet og aktierne tages fra porteføljens
+ * seneste punkt. Periodetal (handler, indskud, udbytte) starter altid på 0.
  * @returns {Object<string, number>}
  */
 function monthlyStatusPrefill(){
@@ -68,18 +69,22 @@ function monthlyStatusPrefill(){
         if(last) return {...last, ...zero};
     } catch(e){ /* falder tilbage herunder */ }
 
+    // Formue-felterne kan være tomme (de viser så den seneste status), så historikken går forud.
+    const byDate = list => list.slice().sort((x, y) => x.date.localeCompare(y.date));
+    const latest = byDate(readNetWorthHistory()).at(-1);
     const field = id => parseFloat(document.getElementById(id).value) || 0;
-    const latestPortfolio = readPortfolioHistory().at(-1);
+    const value = (key, id) => latest ? latest[key] || 0 : field(id);
+    const latestPortfolio = byDate(readPortfolioHistory()).at(-1);
     const depotCash = latestPortfolio ? latestPortfolio.cash || 0 : 0;
     return {
-        bank: Math.max(0, field('netCatKontanter') - depotCash),
+        bank: Math.max(0, value('netCatKontanter', 'netCatKontanter') - depotCash),
         physical: 0,
         depotCash,
-        stocks: latestPortfolio ? latestPortfolio.stockValue || 0 : field('netCatAktier'),
-        pension: field('netCatPension'),
-        homeEquity: field('netCatFrivaerdi'),
-        other: field('netCatAndet'),
-        debt: field('netDebt'),
+        stocks: latestPortfolio ? latestPortfolio.stockValue || 0 : value('netCatAktier', 'netCatAktier'),
+        pension: value('netCatPension', 'netCatPension'),
+        homeEquity: value('netCatFrivaerdi', 'netCatFrivaerdi'),
+        other: value('netCatAndet', 'netCatAndet'),
+        debt: value('debt', 'netDebt'),
         ...zero
     };
 }
