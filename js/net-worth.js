@@ -207,6 +207,7 @@ function openWealthTable(){
     ]);
     const {dialog} = openDialog({title:'Formue efter alder', content, wide:true});
     dialog.classList.add('dialog-table');   // bred nok til hele tabellen uden vandret scroll
+    makeTablesKeyboardScrollable(dialog);
     dialog.querySelector('tr.is-highlight')?.scrollIntoView({block:'center'});
 }
 
