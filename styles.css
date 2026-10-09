@@ -102,28 +102,6 @@ body{
     min-width:0;
     padding:var(--s7) var(--s6);
 }
-.ad-slot{
-    flex-shrink:0;
-    width:160px;
-    position:sticky;
-    top:var(--s5);
-    align-self:flex-start;
-    min-height:600px;
-    border:1px dashed var(--border);
-    border-radius:var(--r-md);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:var(--subtle);
-    font-size:11px;
-    font-family:var(--font-mono);
-    text-align:center;
-    padding:var(--s3);
-}
-.ad-slot[hidden]{ display:none; }
-@media (max-width:1400px){
-    .ad-slot{ display:none; }
-}
 
 /* ---- Type ---- */
 h1{
@@ -1091,13 +1069,6 @@ table.data-table td.is-negative{ color:var(--ask); }
     /* Efter grundreglerne ovenfor, så de ikke overskriver mobilplaceringen. */
     .help-btn{ right:calc(var(--s4) + 52px); }
     .feedback-btn{ top:calc(var(--s4) + 54px); right:calc(var(--s4) + 4px); }
-}
-/* Plads til annoncesøjlen, når den er slået til */
-@media (min-width:1401px){
-    body:has(.ad-slot:not([hidden])) .settings-btn{ right:200px; }
-    body:has(.ad-slot:not([hidden])) .help-btn{ right:252px; }
-    body:has(.ad-slot:not([hidden])) .feedback-btn{ right:204px; }
-    body:has(.ad-slot:not([hidden])) .settings-panel{ right:200px; }
 }
 .faq details{ border-bottom:1px solid var(--border); padding:var(--s3) 0; }
 .faq details:last-child{ border-bottom:none; }

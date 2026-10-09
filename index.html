@@ -27,17 +27,7 @@
     <script>try{ if(localStorage.getItem('appLock')) document.documentElement.classList.add('is-locked'); }catch(e){}</script>
     <!-- Skjul beløb: sløres med det samme, før siden tegnes (se js/hide-amounts.js). -->
     <script>try{ if(localStorage.getItem('hideAmounts')) document.documentElement.classList.add('amounts-hidden'); }catch(e){}</script>
-
-    <!-- Slået fra indtil der er rigtige ID'er: pladsholderne giver 403-fejl i konsollen.
-         TODO: Erstat "mitsite" med mit eget goatcounter brugernavn, og fjern kommentaren.
-    <script data-goatcounter="https://mitsite.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
-    -->
-
-    <!-- Slået fra indtil der er rigtige ID'er: pladsholderne giver 403-fejl i konsollen.
-         TODO: Erstat ca-pub-XXXXXXXXXXXXXXXX med mit eget AdSense-udgiver-ID, og fjern kommentaren.
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
-    -->
-    <link rel="stylesheet" href="styles.css?v=28e2d35d">
+    <link rel="stylesheet" href="styles.css?v=c152c197">
 </head>
 <body>
 
@@ -76,22 +66,6 @@
     </div>
 
     <div class="page-shell">
-
-        <!-- TODO: Fjern 'hidden' på begge .ad-slot, når AdSense-koden er sat ind. -->
-        <aside class="ad-slot" hidden>
-            <!-- Google AdSense-annonce (venstre) indsættes her, når I har jeres AdSense-kode -->
-            <!-- TODO: indsæt udgiver-ID i "ca-pub-xxxx..."-->
-            <!-- TODO: indsæt data-ad-slot-nummer i 'data-ad-slot="xxxxx..."' -->
-            <!-- TODO: Samtykke-/cookie-banner der spørger folk om lov. Google har en løsning man kan sætte op fra AdSense-konto-->
-            Annonceplads
-            <!-- Slået fra indtil der er rigtige ID'er. Fjern kommentaren sammen med AdSense-scriptet i <head>.
-            <ins class="adsbygoogle"
-                 style="display:block; width:160px; height:600px;"
-                 data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-                 data-ad-slot="XXXXXXXXXX"></ins>
-            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-            -->
-        </aside>
 
         <div class="app">
             <header class="app-header">
@@ -1790,20 +1764,6 @@
             </div>
         </div>
 
-        <aside class="ad-slot" hidden>
-            <!-- Google AdSense-annonce (højre) indsættes her, når I har jeres AdSense-kode -->
-            <!-- TODO: indsæt udgiver-ID i "ca-pub-xxxx..."-->
-            <!-- TODO: indsæt data-ad-slot-nummer i 'data-ad-slot="xxxxx..."' -->
-            <!-- TODO: Samtykke-/cookie-banner der spørger folk om lov. Google har en løsning man kan sætte op fra AdSense-konto-->
-            Annonceplads
-            <!-- Slået fra indtil der er rigtige ID'er. Fjern kommentaren sammen med AdSense-scriptet i <head>.
-            <ins class="adsbygoogle"
-                 style="display:block; width:160px; height:600px;"
-                 data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-                 data-ad-slot="XXXXXXXXXX"></ins>
-            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-            -->
-        </aside>
     </div>
 
     <!-- Bundmenuen på telefoner (bottom-nav.js). Computer og tablet har menukortet til venstre. -->
