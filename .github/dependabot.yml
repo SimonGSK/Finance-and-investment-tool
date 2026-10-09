@@ -1,0 +1,24 @@
+# Dependabot åbner selv en pull request, når Playwright (testværktøjet) eller
+# GitHub Actions i .github/workflows har en ny version. Testene kører på den som
+# på alle andre pull requests. Commit-beskederne følger Conventional Commits.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: build
+    groups:
+      playwright:
+        patterns: ["@playwright/*"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: ci
+    groups:
+      actions:
+        patterns: ["*"]
