@@ -31,12 +31,18 @@ function stamp(html){
     return stamped.replace(APP_VERSION_RE, `$1${version}$2`);
 }
 
+// Sider, der henviser til styles.css eller js/-filer.
+const PAGES = ['index.html', 'privatliv.html'];
+
 if(require.main === module){
-    const file = path.join(root, 'index.html');
-    const before = fs.readFileSync(file, 'utf8');
-    const after = stamp(before);
-    fs.writeFileSync(file, after);
-    console.log(before === after ? 'Stemplerne passer allerede.' : 'index.html er opdateret med nye versionsstempler.');
+    const changed = PAGES.filter(page => {
+        const file = path.join(root, page);
+        const before = fs.readFileSync(file, 'utf8');
+        const after = stamp(before);
+        fs.writeFileSync(file, after);
+        return before !== after;
+    });
+    console.log(changed.length ? `${changed.join(' og ')} er opdateret med nye versionsstempler.` : 'Stemplerne passer allerede.');
 }
 
-module.exports = { stamp, hashOf };
+module.exports = { stamp, hashOf, PAGES };

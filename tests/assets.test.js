@@ -4,11 +4,14 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
-const { stamp } = require('../scripts/stamp-assets.js');
+const { stamp, PAGES } = require('../scripts/stamp-assets.js');
 
 test('index.html har opdaterede versionsstempler på CSS og JS (kør "npm run stamp")', () => {
+    for(const page of PAGES){
+        const text = fs.readFileSync(path.join(__dirname, '..', page), 'utf8');
+        assert.equal(text, stamp(text), page);
+    }
     const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-    assert.equal(html, stamp(html));
     assert.match(html, /href="styles\.css\?v=[0-9a-f]{8}"/);
     assert.equal((html.match(/src="js\/[\w.-]+\.js\?v=[0-9a-f]{8}"/g) || []).length, (html.match(/src="js\//g) || []).length);
     assert.match(html, /<meta name="app-version" content="[0-9a-f]{8}">/);
@@ -35,4 +38,24 @@ test('app-ikonet i tre farver: hvert manifest peger på sine egne ikoner, og de 
         }
         assert.ok(fs.existsSync(path.join(root, dir, 'apple-touch-icon.png')), `${dir}apple-touch-icon.png findes ikke`);
     }
+});
+
+test('Chart.js ligger på siden selv og er den uændrede fil fra cdnjs (se vendor/README.md)', () => {
+    const root = path.join(__dirname, '..');
+    const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+    assert.match(html, /<script src="vendor\/chart-4\.4\.0\.umd\.min\.js"><\/script>/);
+    const file = fs.readFileSync(path.join(root, 'vendor', 'chart-4.4.0.umd.min.js'));
+    const sri = 'sha512-' + require('crypto').createHash('sha512').update(file).digest('base64');
+    assert.equal(sri, 'sha512-SIMGYRUjwY8+gKg7nn9EItdD8LCADSDfJNutF9TPrvEo86sQmFMh6MyralfIyhADlajSxqc7G0gs7+MwWF/ogQ==');
+});
+
+test('siden henter ingen scripts, stylesheets eller skrifttyper fra andre servere', () => {
+    const root = path.join(__dirname, '..');
+    for(const page of ['index.html', 'privatliv.html']){
+        const html = fs.readFileSync(path.join(root, page), 'utf8').replace(/<!--[\s\S]*?-->/g, '');
+        const external = [...html.matchAll(/<(?:script|link)[^>]+(?:src|href)="((?:https?:)?\/\/[^"]+)"/g)].map(m => m[1]);
+        assert.deepEqual(external, [], page);
+    }
+    const css = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
+    assert.doesNotMatch(css, /url\(["']?(https?:)?\/\//);
 });

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#0B0B0C">
     <!-- Sidens version (sættes af npm run stamp). Den åbne side tjekker, om der er en nyere (js/update-check.js). -->
-    <meta name="app-version" content="a30eaffd">
+    <meta name="app-version" content="38877101">
     <meta name="description" content="Budget, formue, investering og lån – danske økonomiværktøjer, hvor dine tal bliver på din egen enhed.">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
@@ -15,10 +15,14 @@
     <meta name="apple-mobile-web-app-title" content="Økonomis">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Økonomis. Få overblik over din økonomi.</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;500;600&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <!-- Skrifttyperne hentes med det samme (de ligger i fonts/), så teksten ikke skifter skrift, mens siden vises. -->
+    <link rel="preload" href="fonts/newsreader-variable.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="fonts/manrope-variable.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="fonts/ibm-plex-mono-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="fonts/ibm-plex-mono-500.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="fonts/ibm-plex-mono-600.woff2" as="font" type="font/woff2" crossorigin>
+    <!-- Chart.js 4.4.0 ligger på siden selv (vendor/), så der ikke hentes noget fra andre servere. -->
+    <script src="vendor/chart-4.4.0.umd.min.js"></script>
     <!-- Kodelås: skjuler siden med det samme, før den tegnes (se js/app-lock.js). -->
     <script>try{ if(localStorage.getItem('appLock')) document.documentElement.classList.add('is-locked'); }catch(e){}</script>
     <!-- Skjul beløb: sløres med det samme, før siden tegnes (se js/hide-amounts.js). -->
@@ -33,7 +37,7 @@
          TODO: Erstat ca-pub-XXXXXXXXXXXXXXXX med mit eget AdSense-udgiver-ID, og fjern kommentaren.
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
     -->
-    <link rel="stylesheet" href="styles.css?v=b21a8a99">
+    <link rel="stylesheet" href="styles.css?v=28e2d35d">
 </head>
 <body>
 
@@ -147,6 +151,7 @@
                 <button class="nav-item" id="settingsBtn" type="button" onclick="toggleSettings()" aria-haspopup="dialog"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Indstillinger</button>
                 <button class="nav-item" id="helpBtn" type="button" onclick="openHelp()" aria-haspopup="dialog"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 2.2-2.4 3.7"/><path d="M12 17h.01"/></svg>Hjælp og spørgsmål</button>
                 <button class="nav-item" id="feedbackBtn" type="button" onclick="openFeedbackDialog()" aria-haspopup="dialog" hidden><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12.5a7.5 7.5 0 0 1-11.1 6.6L4 20l1-4.3A7.5 7.5 0 1 1 20 12.5z"/><path d="M9 11h6M9 14.5h4"/></svg>Giv feedback</button>
+                <a class="nav-item" id="privacyLink" href="privatliv.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.3-7.5 9.5-4.3-1.2-7.5-4.9-7.5-9.5V6z"/><path d="M9 12l2 2 4-4"/></svg>Privatliv</a>
             </nav>
         </aside>
         <div class="nav-backdrop" onclick="closeNav()"></div>
@@ -1893,7 +1898,7 @@
     </template>
     <script src="js/calc.js?v=55bcd953"></script>
     <script src="js/sync.js?v=27ea91b3"></script>
-    <script src="js/shared.js?v=4c50757b"></script>
+    <script src="js/shared.js?v=148f1b88"></script>
     <script src="js/ui.js?v=812dc2e6"></script>
     <script src="js/field-help.js?v=6a83e008"></script>
     <script src="js/number-fields.js?v=a35de4ce"></script>
@@ -1910,9 +1915,9 @@
     <script src="js/buy-vs-rent.js?v=75764a5e"></script>
     <script src="js/debt-payoff.js?v=d92e8193"></script>
     <script src="js/navigation.js?v=7404a2ee"></script>
-    <script src="js/bottom-nav.js?v=f3b8d33d"></script>
+    <script src="js/bottom-nav.js?v=18f0ede4"></script>
     <script src="js/app-lock.js?v=f08bdb28"></script>
-    <script src="js/feedback.js?v=a2a4c48b"></script>
+    <script src="js/feedback.js?v=1b47a367"></script>
     <script src="js/update-check.js?v=4fead684"></script>
     <script src="js/pwa.js?v=70965acb"></script>
     <script src="js/report.js?v=d2fb079b"></script>

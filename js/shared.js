@@ -257,3 +257,7 @@ function fillRuleText(root = document){
     });
 }
 fillRuleText();
+
+// Graferne kan blive tegnet, før skrifttyperne (fonts/) er hentet. Så tegnes de igen, når
+// skrifttyperne er klar, så aksetekster og tal står med den rigtige skrift.
+document.fonts?.ready.then(() => Object.values(Chart.instances).forEach(chart => chart.update('none')));

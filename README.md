@@ -72,6 +72,7 @@ The page is **responsive**: one layout that adapts to the space available rather
 - **Stacking by available space.** The tools, Budget and Formue use CSS container queries: when the content area (not the screen) is narrower than about 1150 px, the chart moves under the inputs, so it never gets squeezed next to the menu.
 - **Phones (below 640 px).** Body text is about 14.5 px and small text never under 12 px, in line with Apple's and Material Design's type scales. Form fields stay at 16 px so iPhone doesn't zoom in. Cards are tighter, charts have a landscape shape (roughly 4:3), and long explanations are folded.
 - **Themes.** The light theme is forest green on warm off-white; the dark theme is black and greys with the same green and red.
+- **Fonts.** Newsreader for headings, key figures and the name, Manrope for text, and IBM Plex Mono for amounts in tables, charts and fields. They're hosted with the site (`@font-face` at the top of `styles.css`, preloaded in `index.html`).
 
 All colours, spacing and radii are variables at the top of [`styles.css`](styles.css). The redesign (top bar, menu card, Oversigt, themes and phone adjustments) is the last part of the file, after the original component styles.
 
@@ -89,7 +90,7 @@ It is plain HTML, CSS and JavaScript with no build step. Serve the folder over H
 npm start
 ```
 
-Then open http://localhost:4173. (`npm start` just runs `python3 -m http.server 4173`; any static server works.) [Chart.js](https://www.chartjs.org/) and the fonts load from CDNs, so an internet connection is needed for those.
+Then open http://localhost:4173. (`npm start` runs a tiny static server in [`scripts/serve.js`](scripts/serve.js) with no dependencies; any static server works.) [Chart.js](https://www.chartjs.org/) and the fonts (Newsreader, Manrope and IBM Plex Mono) are part of the site in [`vendor/`](vendor/) and [`fonts/`](fonts/), so nothing is loaded from other servers and it works offline.
 
 ## Tests
 
@@ -106,7 +107,7 @@ npx playwright install chromium   # once
 npm run test:e2e
 ```
 
-Both suites run automatically on every push and pull request via GitHub Actions; failing browser runs upload a trace you can open with `npx playwright show-trace`.
+Both suites run automatically on every push and pull request via GitHub Actions; failing browser runs upload a trace you can open with `npx playwright show-trace`. [Dependabot](.github/dependabot.yml) opens a pull request once a month when Playwright or the GitHub Actions have a new version, and the tests run on it like on any other.
 
 The browser tests run on desktop Chrome, and the tests tagged `@mobil` also on an iPhone and iPad in WebKit (Safari's engine — it lays out grids differently from Chrome) and a small Android phone. They check for horizontal scroll, content cut off at a panel's edge, form fields under 16 px (iPhone zooms into those), that long explanations are folded on phones, that charts on phones are wider than they are tall, and that the overview puts its chart first on one-column screens — also after visiting another page and coming back. Install the browsers once with `npx playwright install chromium webkit`.
 
@@ -117,6 +118,7 @@ The browser tests run on desktop Chrome, and the tests tagged `@mobil` also on a
 
 ```
 index.html              The whole UI (all tools are sections of one page)
+privatliv.html          Privacy page (Privatliv in the menu)
 styles.css              All styling: tokens (dark + light themes), layout, components, phone and print
 js/calc.js              Pure calculation logic - the only file the tests import
 js/shared.js            DOM helpers: slider/number binding, CSV download, chart colours and options
@@ -157,11 +159,13 @@ manifest.webmanifest    App name, colours and icons
 icons/                  App icons: icon.svg is the source (the Newsreader O traced as outlines, so it needs no font);
                         the PNGs are rendered from it with scripts/render-icons.js
 js/theme.js             Theme switching and re-theming charts
+fonts/                  Newsreader, Manrope and IBM Plex Mono (woff2) with their OFL licences
+vendor/                 Chart.js 4.4.0 with its MIT licence (checked against cdnjs' published hash)
 tests/calc.test.js      Unit tests for calc.js
-tests/assets.test.js    Checks that the version stamps in index.html are up to date
-scripts/stamp-assets.js Version-stamps styles.css and js/ in index.html (npm run stamp)
+tests/assets.test.js    Checks the version stamps, the app icons, the Chart.js file, and that nothing loads from other servers
+scripts/stamp-assets.js Version-stamps styles.css and js/ in index.html and privatliv.html (npm run stamp)
+scripts/serve.js        Local static server for npm start and the browser tests
 tests/e2e/              Browser tests (Playwright)
-src/Main.java           The original console prototype of tools 1 and 2 (Java 21)
 ```
 
 ## Updating for a new tax year
@@ -187,6 +191,10 @@ There's no server, so phone and computer share data through a file. **Gem mine d
 ## Install as an app
 
 The site is a Progressive Web App. In Chrome, Edge or on Android, **Installér som app** in the settings panel installs it; on iPhone/iPad it's Safari's **Share → Add to Home Screen** (the button explains this). The service worker (`sw.js`) fetches from the network first, so a new version is picked up as soon as you're online, and falls back to cached copies offline. On install it caches every file `index.html` refers to, so nothing needs updating when files are added. A page that stays open for a long time (the installed app is often kept alive in the background) checks for a newer version when you come back to it (at most every 10 minutes) and every 30 minutes while it's open: `npm run stamp` writes a version number for the whole page into `<meta name="app-version">`, and if the newest `index.html` has a different one, a message says **En ny version er klar** with a **Genindlæs** button (`js/update-check.js`). Note that on iOS the installed app has its own storage, separate from Safari — move data with *Gem mine data / Hent data fra fil*.
+
+## Privacy
+
+Everything you enter stays in the browser's `localStorage` on your own device; there's no account, no cookies, no tracking and no ads, and the site loads nothing from other servers. The only thing ever sent is a feedback message, if you choose to write one. [`privatliv.html`](privatliv.html) (**Privatliv** in the menu) explains this for visitors, including backup files, shared links, the code lock and hosting on GitHub Pages.
 
 ## Feedback
 

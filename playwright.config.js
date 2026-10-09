@@ -5,8 +5,8 @@ const { defineConfig, devices } = require('@playwright/test');
 
 module.exports = defineConfig({
     testDir: 'tests/e2e',
-    // Pythons udviklingsserver taber indimellem forespørgsler, når flere browsere
-    // henter ~20 filer på én gang - suiten er lille, så den kører én test ad gangen.
+    // Én test ad gangen: testene deler localStorage-opsætning og service worker pr. side,
+    // og suiten er lille nok til, at det går hurtigt.
     workers: 1,
     retries: process.env.CI ? 1 : 0,
     reporter: process.env.CI ? 'github' : 'list',
@@ -23,7 +23,9 @@ module.exports = defineConfig({
         { name: 'ipad', grep: /@mobil/, use: { ...devices['iPad Mini'] } }
     ],
     webServer: {
-        command: 'python3 -m http.server 4174',
+        // Vores egen lille Node-server (scripts/serve.js): Pythons http.server tabte
+        // indimellem forespørgsler, når siden hentede mange filer på én gang.
+        command: 'node scripts/serve.js 4174',
         url: 'http://localhost:4174/index.html',
         reuseExistingServer: !process.env.CI
     }
