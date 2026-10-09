@@ -100,7 +100,7 @@ The financial calculations, the tax and lending rules, the percentile lookup and
 npm test
 ```
 
-Several tests pin exact known outputs (for example, 25 years at 8% from 100.000 kr. gives 496.847 kr. in a depot with harvesting from year 19), so any change to the maths is caught immediately. Browser tests in [`tests/e2e/`](tests/e2e/) run the whole page in Chromium with [Playwright](https://playwright.dev/). They check what unit tests can't see: that every section loads without JavaScript errors, that every chart exactly fills its box, that nothing scrolls sideways on a phone, and flows such as the budget dialog, the monthly-status overwrite warning, share links, syncing from a file, the menu, the settings dialog, the period picker and the foldable panels.
+Several tests pin exact known outputs (for example, 25 years at 8% from 100.000 kr. gives 496.847 kr. in a depot with harvesting from year 19), so any change to the maths is caught immediately. Browser tests in [`tests/e2e/`](tests/e2e/) run the whole page in Chromium with [Playwright](https://playwright.dev/). They check what unit tests can't see: that every section loads without JavaScript errors, that every chart exactly fills its box, that nothing scrolls sideways on a phone, and flows such as the budget dialog, the monthly-status overwrite warning, share links, syncing from a file, the menu, the settings dialog, the period picker and the foldable panels. [`tests/e2e/a11y.spec.js`](tests/e2e/a11y.spec.js) runs [axe-core](https://github.com/dequelabs/axe-core) (the engine behind Lighthouse's accessibility audit) on every page, the dialogs, the privacy page and the phone's bottom menu, in both themes, and fails on any WCAG 2.1 A/AA problem such as low contrast, a missing label or something the keyboard can't reach.
 
 ```bash
 npx playwright install chromium   # once
@@ -119,6 +119,9 @@ The browser tests run on desktop Chrome, and the tests tagged `@mobil` also on a
 ```
 index.html              The whole UI (all tools are sections of one page)
 privatliv.html          Privacy page (Privatliv in the menu)
+404.html                Shown by GitHub Pages for addresses that don't exist (self-contained)
+robots.txt, sitemap.xml For search engines (robots.txt only takes effect on a site's own domain)
+SECURITY.md             How to report a security problem, and what's by design
 styles.css              All styling: tokens (dark + light themes), layout, components, phone and print
 js/calc.js              Pure calculation logic - the only file the tests import
 js/shared.js            DOM helpers: slider/number binding, CSV download, chart colours and options
@@ -164,8 +167,9 @@ vendor/                 Chart.js 4.4.0 with its MIT licence (checked against cdn
 tests/calc.test.js      Unit tests for calc.js
 tests/assets.test.js    Checks the version stamps, the app icons, the Chart.js file, and that nothing loads from other servers
 scripts/stamp-assets.js Version-stamps styles.css and js/ in index.html and privatliv.html (npm run stamp)
-scripts/serve.js        Local static server for npm start and the browser tests
-tests/e2e/              Browser tests (Playwright)
+scripts/serve.js        Local static server for npm start and the browser tests (serves 404.html like GitHub Pages)
+scripts/render-share-image.js  Draws icons/share-image.png, the picture shown when a link is shared
+tests/e2e/              Browser tests (Playwright), including accessibility checks with axe
 ```
 
 ## Updating for a new tax year
@@ -181,6 +185,8 @@ python3 scripts/build-positivliste.py <file.xlsx> <year> <published-date>
 It uses only Python's standard library and keeps the ISIN, name, tax residence and the first year each fund was registered.
 
 ## Sharing a calculation
+
+A link to Økonomis shows a preview in Messenger, iMessage, Slack, LinkedIn and the like: the title, a short description and [`icons/share-image.png`](icons/share-image.png) (Open Graph tags in `index.html` and `privatliv.html`; redraw the image with `node scripts/render-share-image.js`).
 
 Each calculator has a **Del beregning** button that copies a link reopening it with the same inputs. The inputs live after the `#` in the link, which browsers never send to a server. The trackers, budget and debt list can't be shared this way — they're personal data, and a link must never overwrite what someone has saved.
 
