@@ -2091,6 +2091,13 @@ kbd{
 .year-colors-legend{ display:flex; align-items:center; gap:4px; font-size:12px; color:var(--muted); }
 .year-colors-legend span{ margin:0 4px; }
 .ycell-swatch{ display:inline-block; width:14px; height:14px; border-radius:4px; }
+/* Telefon: alle tolv måneder på én række, så panelet fylder lidt. */
 @media (max-width:640px){
-    .year-colors{ grid-template-columns:repeat(6, minmax(0, 1fr)); gap:10px 8px; }
+    .year-colors{ gap:3px; margin-top:var(--s2); }
+    .ycell{ gap:3px; }
+    .ycell-box{ border-radius:5px; }
+    .ycell-name{ font-size:10px; }
+    .ycell.is-selected .ycell-box{ outline-width:1.5px; outline-offset:1px; }
+    .year-colors-foot{ margin-top:var(--s2); gap:var(--s2); }
+    .year-colors-detail{ font-size:13px; }
 }
