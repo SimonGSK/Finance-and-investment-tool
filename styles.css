@@ -2062,3 +2062,42 @@ kbd{
 @media (max-width:640px){
     .month-notes{ font-size:13px; }
 }
+
+/* ---- Dit år i farver (month-overview.js) ---- */
+.year-colors{ display:grid; grid-template-columns:repeat(12, minmax(0, 1fr)); gap:8px; margin-top:var(--s3); }
+.ycell{ display:flex; flex-direction:column; align-items:center; gap:5px; padding:0; border:0; background:none; cursor:pointer; font:inherit; color:inherit; }
+.ycell:disabled{ cursor:default; }
+.ycell-box{ display:block; width:100%; aspect-ratio:1; max-width:56px; border-radius:8px; background:var(--panel-sunken); border:1px solid var(--border); transition:transform 0.15s var(--ease); }
+.ycell:not(:disabled):hover .ycell-box{ transform:scale(1.06); }
+.ycell-name{ font-size:12px; color:var(--muted); }
+.ycell.is-selected .ycell-name{ color:var(--text); font-weight:700; }
+.ycell.is-selected .ycell-box{ outline:2px solid var(--text); outline-offset:2px; }
+/* Fire styrker af grøn og rød (1 = lille ændring, 4 = årets største). */
+.ycell.is-up.l1 .ycell-box, .ycell-swatch.is-up.l1{ background:color-mix(in srgb, var(--pos) 35%, var(--panel-sunken)); }
+.ycell.is-up.l2 .ycell-box, .ycell-swatch.is-up.l2{ background:color-mix(in srgb, var(--pos) 55%, var(--panel-sunken)); }
+.ycell.is-up.l3 .ycell-box, .ycell-swatch.is-up.l3{ background:color-mix(in srgb, var(--pos) 78%, var(--panel-sunken)); }
+.ycell.is-up.l4 .ycell-box, .ycell-swatch.is-up.l4{ background:var(--pos); }
+.ycell.is-down.l1 .ycell-box, .ycell-swatch.is-down.l1{ background:color-mix(in srgb, var(--cross) 35%, var(--panel-sunken)); }
+.ycell.is-down.l2 .ycell-box, .ycell-swatch.is-down.l2{ background:color-mix(in srgb, var(--cross) 55%, var(--panel-sunken)); }
+.ycell.is-down.l3 .ycell-box, .ycell-swatch.is-down.l3{ background:color-mix(in srgb, var(--cross) 78%, var(--panel-sunken)); }
+.ycell.is-down.l4 .ycell-box, .ycell-swatch.is-down.l4{ background:var(--cross); }
+.ycell.is-up .ycell-box, .ycell.is-down .ycell-box{ border-color:transparent; }
+.ycell.is-flat .ycell-box, .ycell-swatch.is-flat{ background:var(--border-strong); }
+.ycell.is-first .ycell-box{ background:var(--border); }
+.ycell.is-none .ycell-box{ background:transparent; border-style:dashed; }
+.ycell.is-future .ycell-box{ background:transparent; opacity:0.45; }
+.year-colors-foot{ display:flex; justify-content:space-between; align-items:center; gap:var(--s3); flex-wrap:wrap; margin-top:var(--s3); }
+.year-colors-detail{ margin:0; font-size:14px; color:var(--text); min-height:1.4em; }
+.year-colors-legend{ display:flex; align-items:center; gap:4px; font-size:12px; color:var(--muted); }
+.year-colors-legend span{ margin:0 4px; }
+.ycell-swatch{ display:inline-block; width:14px; height:14px; border-radius:4px; }
+/* Telefon: alle tolv måneder på én række, så panelet fylder lidt. */
+@media (max-width:640px){
+    .year-colors{ gap:3px; margin-top:var(--s2); }
+    .ycell{ gap:3px; }
+    .ycell-box{ border-radius:5px; }
+    .ycell-name{ font-size:10px; }
+    .ycell.is-selected .ycell-box{ outline-width:1.5px; outline-offset:1px; }
+    .year-colors-foot{ margin-top:var(--s2); gap:var(--s2); }
+    .year-colors-detail{ font-size:13px; }
+}

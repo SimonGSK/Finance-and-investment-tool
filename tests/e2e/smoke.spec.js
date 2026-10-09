@@ -2206,3 +2206,29 @@ test('månedsstatus fanger tastefejl: et nul for meget eller et tomt felt advare
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('netWorthHistory')).at(-1));
     expect(saved).toMatchObject({date: '2026-10-31', netCatPension: 280000, netCatAndet: 0, debt: 38000});
 });
+
+test('Dit år i farver: tolv måneder i grøn og rød, manglende og kommende måneder, og et klik åbner måneden', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        const nw = (date, value) => ({date, value, liquid: value, netCatKontanter: value, netCatAktier: 0, netCatPension: 0, netCatFrivaerdi: 0, netCatAndet: 0, debt: 0});
+        localStorage.setItem('netWorthHistory', JSON.stringify([nw('2025-12-31', 100000), nw('2026-01-31', 140000), nw('2026-02-28', 130000), nw('2026-04-30', 150000)]));
+    });
+    await page.reload();
+    await page.evaluate(() => showMonthOverview(2026, 4));
+    const cells = page.locator('#yearColorsGrid .ycell');
+    await expect(cells).toHaveCount(12);
+    await expect(page.locator('#yearColorsTitle')).toHaveText('Dit år i farver – 2026');
+    await expect(cells.nth(0)).toHaveClass(/is-up l4/);            // +40.000 = årets største
+    await expect(cells.nth(1)).toHaveClass(/is-down l1/);          // −10.000
+    await expect(cells.nth(2)).toHaveClass(/is-none/);             // ingen status i marts
+    await expect(cells.nth(2)).toBeDisabled();
+    await expect(cells.nth(3)).toHaveClass(/is-up l2 is-selected/); // +20.000 over 2 måneder, valgt
+    await expect(page.locator('#yearColorsDetail')).toHaveText('April: +20.000 kr. (2 mdr.)');
+
+    await cells.nth(1).hover();
+    await expect(page.locator('#yearColorsDetail')).toHaveText('Februar: −10.000 kr.');
+    await cells.nth(0).click();
+    await expect(page.locator('#monthPeriod')).toHaveValue('1');
+    await expect(cells.nth(0)).toHaveAttribute('aria-pressed', 'true');
+    await expect(cells.nth(0)).toHaveAttribute('aria-label', 'Januar: +40.000 kr.');
+});
