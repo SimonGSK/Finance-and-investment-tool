@@ -105,6 +105,15 @@ function bindSliderAndNumber(sliderId, numberId, onChange){
 }
 
 /**
+ * Gør tekst, som brugeren selv har skrevet (fx en note), sikker at sætte ind i HTML.
+ * @param {string} text
+ * @returns {string}
+ */
+function escapeHtml(text){
+    return String(text ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+}
+
+/**
  * Downloader en HTML-tabel som CSV i dansk Excel-venligt format: semikolon som
  * separator, alle felter i anførselstegn, og en BOM så æøå vises rigtigt.
  * @param {string} tbodyId id på tabellens <tbody>; overskrifterne tages fra <thead>

@@ -133,10 +133,20 @@ function openMonthlyStatus(initialDate){
     const dateInput = el('input', {type:'date', className:'number-input', value: (typeof initialDate === 'string' && initialDate) || todayIso(), attrs:{'aria-describedby':'msDateError'}});
     const dateError = el('div', {className:'field-error', id:'msDateError', attrs:{role:'alert'}});
     const existingNote = el('div', {className:'existing-note', attrs:{role:'status'}});
+    // Noten til måneden ("Bonus", "Købte bil"). Har datoen allerede en note, står den i feltet,
+    // så den ikke forsvinder, hvis man gemmer datoen igen - medmindre man selv har skrevet noget.
+    const noteInput = el('input', {type:'text', className:'number-input note-input', maxLength: NOTE_MAX_LENGTH, autocomplete:'off',
+        placeholder:'Fx bonus, købte bil, flyttede'});
+    let noteTouched = false, noteFromSaved = false;
+    noteInput.addEventListener('input', () => { noteTouched = true; });
 
     function checkExistingDate(){
         const date = normalizeDate(dateInput.value);
         const saved = date && monthlyStatusFromSaved(date);
+        if(!noteTouched){
+            const savedNote = (date && readNetWorthHistory().find(h => h.date === date)?.note) || '';
+            if(savedNote || noteFromSaved){ noteInput.value = savedNote; noteFromSaved = !!savedNote; }
+        }
         if(!saved){ existingNote.replaceChildren(); return; }
         existingNote.replaceChildren(
             el('span', {textContent:`Der er allerede gemt data for ${formatDanishDate(date)}. Gemmer du, bliver de erstattet.`}),
@@ -228,6 +238,7 @@ function openMonthlyStatus(initialDate){
         fieldEl('Dato', dateInput, [dateError], 'status-date'),
         existingNote,
         ...sections,
+        fieldEl('Note (valgfri)', noteInput, [el('div', {className:'limit-hint', textContent:'Vises ved punktet på formuegrafen og i Månedsoverblik.'})], 'status-note'),
         el('div', {className:'status-summary-box'}, [el('div', {className:'eyebrow', textContent:'Opsummering'}), summary])
     ]);
     refreshSummary();
@@ -242,7 +253,7 @@ function openMonthlyStatus(initialDate){
             return;
         }
         saving = true;
-        saveMonthlyStatus(date, values).then(saved => {
+        saveMonthlyStatus(date, values, cleanNote(noteInput.value)).then(saved => {
             saving = false;
             if(saved){
                 handle.close(true);
@@ -316,20 +327,23 @@ function warnUnfinishedSums(fields){
 
 /**
  * Gemmer i begge historikker. Findes datoen i en af dem, vises alle ændringer
- * samlet i én bekræftelse først.
+ * samlet i én bekræftelse først. Ændres kun noten, gemmes den uden at spørge.
  * @param {string} date
  * @param {Object<string, number>} values
+ * @param {string} [note] noten til måneden (gemmes i formuehistorikken)
  * @returns {Promise<boolean>} true hvis der blev gemt
  */
-async function saveMonthlyStatus(date, values){
+async function saveMonthlyStatus(date, values, note = ''){
     const {netWorth, portfolio} = monthlyStatusEntries(date, values);
+    if(note) netWorth.note = note;
     const nw = upsertByDate(readNetWorthHistory(), netWorth);
     const pt = upsertByDate(readPortfolioHistory(), portfolio);
 
     if(nw.replaced || pt.replaced){
         const nwChanges = nw.replaced ? changedFields(nw.replaced, netWorth, NET_WORTH_FIELDS) : [];
         const ptChanges = pt.replaced ? changedFields(pt.replaced, portfolio, PORTFOLIO_FIELDS) : [];
-        if(nw.replaced && pt.replaced && !nwChanges.length && !ptChanges.length){
+        const noteChanged = (nw.replaced?.note || '') !== note;
+        if(nw.replaced && pt.replaced && !nwChanges.length && !ptChanges.length && !noteChanged){
             notify(`Ingen ændringer – status for ${formatDanishDate(date)} var allerede gemt med de samme tal.`);
             return true;
         }

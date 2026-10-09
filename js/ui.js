@@ -323,11 +323,13 @@ function markSaved(id){
  * @param {[string, string][]} p.inputs de felter, der kan rettes: [nøgle, etiket]
  * @param {(date:string, values:Object<string, number>) => Object} p.build bygger datapunktet
  * @param {[string, string][]} p.fields felterne, der vises i en overskrivnings-advarsel
+ * @param {boolean} [p.withNote] datapunktet kan have en note (formuehistorikken)
  */
-function editHistoryEntry({date, title, read, write, render, inputs, build, fields}){
+function editHistoryEntry({date, title, read, write, render, inputs, build, fields, withNote = false}){
     const entry = read().find(h => h.date === date);
     if(!entry) return;
     const dateInput = el('input', {type:'date', className:'number-input', value: date});
+    const noteInput = withNote ? el('input', {type:'text', className:'number-input note-input', value: entry.note || '', maxLength: NOTE_MAX_LENGTH, autocomplete:'off', placeholder:'Fx bonus, købte bil, flyttede'}) : null;
     const numberInputs = inputs.map(([key]) => el('input', {type:'number', className:'number-input', value: entry[key] || 0, step: 100}));
     const error = el('div', {className:'field-error', attrs:{role:'alert'}});
     dateInput.addEventListener('input', () => { error.textContent = ''; dateInput.removeAttribute('aria-invalid'); });
@@ -342,6 +344,8 @@ function editHistoryEntry({date, title, read, write, render, inputs, build, fiel
         }
         const values = Object.fromEntries(inputs.map(([key], i) => [key, parseFloat(numberInputs[i].value) || 0]));
         const updated = build(newDate, values);
+        const note = noteInput ? cleanNote(noteInput.value) : '';
+        if(note) updated.note = note;
         const previous = read();
         const others = previous.filter(h => h.date !== date);
         const clash = newDate !== date ? others.find(h => h.date === newDate) : null;
@@ -362,6 +366,7 @@ function editHistoryEntry({date, title, read, write, render, inputs, build, fiel
         content: el('div', {}, [
             fieldEl('Dato', dateInput),
             ...inputs.map(([, label], i) => fieldEl(label, numberInputs[i])),
+            ...(noteInput ? [fieldEl('Note (valgfri)', noteInput)] : []),
             error
         ]),
         actions: [{label:'Annullér', variant:'secondary'}, {label:'Gem ændringer', variant:'primary', onClick: save}]

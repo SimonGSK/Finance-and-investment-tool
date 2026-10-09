@@ -2065,3 +2065,73 @@ test('månedsstatus: en kort opsummering efter gem - stigning, placering i året
     await expect(page.locator('#monthYear')).toHaveValue('2026');
     await expect(page.locator('#monthPeriod')).toHaveValue('6');
 });
+
+test('noter på månedsstatus: gemmes, vises i tabellen, på grafen og i Månedsoverblik, bliver ved og kan rettes', async ({ page }) => {
+    await page.goto('/index.html');
+    const save = async (date, bank, note) => {
+        await page.locator('.app-header .monthly-status-btn').click();
+        const dialog = page.getByRole('dialog', { name: 'Månedsstatus' });
+        await dialog.getByLabel('Dato').fill(date);
+        await dialog.getByLabel('Bank- og opsparingskonti', { exact: true }).fill(String(bank));
+        if(note !== undefined) await dialog.getByLabel('Note (valgfri)').fill(note);
+        await dialog.getByRole('button', { name: 'Gem i begge' }).click();
+        await expect(dialog).toBeHidden();
+    };
+    await save('2026-08-31', 100000);
+    await save('2026-09-30', 150000, '  Bonus   fra arbejdet ');
+
+    // Gemt (ryddet op) i formuehistorikken, og vist i tabellen og ved punktet på grafen.
+    const history = () => page.evaluate(() => JSON.parse(localStorage.getItem('netWorthHistory')));
+    expect((await history()).map(h => h.note)).toEqual([undefined, 'Bonus fra arbejdet']);
+    await page.evaluate(() => showSection('formue'));
+    await expect(page.locator('#netWorthHistoryTableBody tr').nth(1).locator('.note-cell')).toHaveText('Bonus fra arbejdet');
+    const point = await page.evaluate(() => {
+        const ds = netWorthHistoryChart.data.datasets[0];
+        const meta = netWorthHistoryChart.getDatasetMeta(0).data;
+        return {notes: ds.data.map(d => d.note), style: meta[1].options.pointStyle, plain: meta[0].options.pointStyle,
+            footer: netWorthHistoryChart.options.plugins.tooltip.callbacks.footer([{raw: ds.data[1]}])};
+    });
+    expect(point).toEqual({notes: ['', 'Bonus fra arbejdet'], style: 'rectRot', plain: 'circle', footer: ['Note: Bonus fra arbejdet']});
+
+    // Månedsoverblik viser noten for måneden.
+    await page.evaluate(() => showMonthOverview(2026, 9));
+    await expect(page.locator('#monthNotes')).toHaveText('Note: Bonus fra arbejdet');
+    await page.evaluate(() => showMonthOverview(2026, 8));
+    await expect(page.locator('#monthNotes')).toBeHidden();
+
+    // Gemmes datoen igen uden at røre noten, bliver den (feltet viser den gemte note).
+    await page.locator('.app-header .monthly-status-btn').click();
+    const dialog = page.getByRole('dialog', { name: 'Månedsstatus' });
+    await dialog.getByLabel('Dato').fill('2026-09-30');
+    await expect(dialog.getByLabel('Note (valgfri)')).toHaveValue('Bonus fra arbejdet');
+    await dialog.getByLabel('Dato').fill('2026-10-31');
+    await expect(dialog.getByLabel('Note (valgfri)')).toHaveValue('');
+    await page.keyboard.press('Escape');
+
+    // Kun noten ændret: gemmes uden at spørge om at overskrive.
+    await save('2026-09-30', 150000, 'Bonus');
+    await expect(page.getByRole('dialog', { name: 'Overskriv eksisterende data?' })).toHaveCount(0);
+    expect((await history())[1].note).toBe('Bonus');
+
+    // Gem i Formue for samme dato beholder noten; "Ret" kan ændre den. Tekst vises som tekst, ikke HTML.
+    await page.evaluate(() => { showSection('formue'); document.getElementById('snapshotDate').value = '2026-09-30'; return saveNetWorthSnapshot(); });
+    const confirm = page.getByRole('dialog', { name: 'Overskriv eksisterende data?' });
+    if(await confirm.count()) await confirm.getByRole('button', { name: 'Erstat data' }).click();
+    await expect.poll(async () => (await history())[1].note).toBe('Bonus');
+    await page.getByRole('button', { name: 'Ret datapunktet for 30. sep. 2026' }).click();
+    const edit = page.getByRole('dialog', { name: /Ret formue/ });
+    await edit.getByLabel('Note (valgfri)').fill('<b>Flyttede</b>');
+    await edit.getByRole('button', { name: 'Gem ændringer' }).click();
+    await expect(page.locator('#netWorthHistoryTableBody tr').nth(1).locator('.note-cell')).toHaveText('<b>Flyttede</b>');
+    await expect(page.locator('#netWorthHistoryTableBody b')).toHaveCount(0);
+
+    // CSV: noten kommer med i filen og læses ind igen.
+    const [download] = await Promise.all([page.waitForEvent('download'),
+        page.locator('#section-formue').getByRole('button', { name: 'Download som CSV' }).click()]);
+    const csv = require('fs').readFileSync(await download.path(), 'utf8');
+    expect(csv).toContain('"Note"');
+    expect(csv).toContain('"<b>Flyttede</b>"');
+    await page.evaluate(() => { localStorage.setItem('netWorthHistory', '[]'); renderNetWorthHistory(); });
+    await page.locator('#netWorthCsvUpload').setInputFiles(await download.path());
+    await expect.poll(async () => (await history()).map(h => h.note)).toEqual([undefined, '<b>Flyttede</b>']);
+});
