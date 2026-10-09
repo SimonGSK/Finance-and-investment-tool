@@ -1762,6 +1762,36 @@ function monthlyStatusSummary(history, date){
 }
 
 /**
+ * "Dit år i farver": én firkant pr. måned med ændringen i nettoformuen - som i Månedsoverblik,
+ * fra den seneste status før måneden til månedens seneste. Farvens styrke (1-4) er ændringen i
+ * forhold til årets største ændring.
+ * @param {{date:string, value:number}[]} history
+ * @param {number} year
+ * @param {string} today ISO-dato (måneder efter den er "future")
+ * @returns {{month:number, state:'up'|'down'|'flat'|'first'|'none'|'future', change:number|null, level:number, months:number}[]}
+ *   first = årets/historikkens første status (intet at sammenligne med); none = ingen status i måneden;
+ *   months = hvor mange måneder ændringen dækker (2, hvis der mangler en status før)
+ */
+function yearColors(history, year, today){
+    const [ty, tm] = [Number(today.slice(0, 4)), Number(today.slice(5, 7))];
+    const cells = Array.from({length: 12}, (_, i) => {
+        const month = i + 1;
+        const bounds = periodBounds(history, year, month);
+        if(!bounds){
+            const future = year > ty || (year === ty && month > tm);
+            return {month, state: future ? 'future' : 'none', change: null, level: 0, months: 0};
+        }
+        const [row] = periodRows(bounds, ['value']);
+        if(row.change === null) return {month, state: 'first', change: null, level: 0, months: 0};
+        const state = row.change > 0 ? 'up' : row.change < 0 ? 'down' : 'flat';
+        return {month, state, change: row.change, level: 0, months: Math.max(1, monthSpan(bounds.start.date, bounds.end.date))};
+    });
+    const max = Math.max(0, ...cells.map(c => Math.abs(c.change || 0)));
+    cells.forEach(c => { if(c.change) c.level = Math.max(1, Math.ceil(4 * Math.abs(c.change) / max)); });
+    return cells;
+}
+
+/**
  * De år og måneder, der har mindst ét punkt - til vælgerne i Månedsoverblik.
  * @param {{date:string}[]} history
  * @returns {{years:number[], months:Object<number, number[]>}} nyeste år først, måneder i rækkefølge
@@ -1917,7 +1947,7 @@ function appVersionOf(html){
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
-        containsAmount, appVersionOf, monthlyStatusSummary, cleanNote, suspiciousAmounts, NOTE_MAX_LENGTH, addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
+        containsAmount, appVersionOf, yearColors, monthlyStatusSummary, cleanNote, suspiciousAmounts, NOTE_MAX_LENGTH, addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
         periodChanges, bestPeriods,
         planSync, applySync,
         CAPITAL_INCOME_LIMIT,

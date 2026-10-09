@@ -78,6 +78,47 @@ function setMonthYear(year){
     renderMonthOverview();
 }
 
+const MONTH_NAMES = ['januar', 'februar', 'marts', 'april', 'maj', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'december'];
+
+/**
+ * "Dit år i farver": tolv firkanter, én pr. måned, grøn for en stigning og rød for et fald
+ * (stærkere farve = større ændring, se yearColors i calc.js). Peger man på eller vælger en
+ * måned, står ændringen under firkanterne, og et klik åbner måneden.
+ * @param {{date:string, value:number}[]} history
+ * @param {number} year
+ * @param {number|null} selected den valgte måned (null = hele året)
+ */
+function renderYearColors(history, year, selected){
+    const cells = yearColors(history, year, todayIso());
+    const detail = document.getElementById('yearColorsDetail');
+    document.getElementById('yearColorsTitle').textContent = `Dit år i farver – ${year}`;
+    const describe = c => {
+        const name = MONTH_NAMES[c.month - 1].replace(/^./, ch => ch.toUpperCase());
+        if(c.state === 'future') return `${name}: endnu ikke`;
+        if(c.state === 'none') return `${name}: ingen månedsstatus`;
+        if(c.state === 'first') return `${name}: din første månedsstatus – intet at sammenligne med`;
+        return `${name}: ${formatSignedKr(c.change)}${c.months > 1 ? ` (${c.months} mdr.)` : ''}`;
+    };
+    const resting = () => {
+        const chosen = selected && cells[selected - 1];
+        detail.textContent = chosen ? describe(chosen) : 'Peg på en måned for at se ændringen.';
+    };
+    document.getElementById('yearColorsGrid').replaceChildren(...cells.map(c => {
+        const active = !['none', 'future'].includes(c.state);
+        const tone = c.state === 'up' ? 'is-up' : c.state === 'down' ? 'is-down' : c.state === 'flat' ? 'is-flat' : `is-${c.state}`;
+        const cell = el('button', {type: 'button', className: `ycell ${tone}${c.level ? ' l' + c.level : ''}${c.month === selected ? ' is-selected' : ''}`,
+            disabled: !active, attrs: {'aria-label': describe(c), 'aria-pressed': String(c.month === selected)}}, [
+            el('span', {className: 'ycell-box', attrs: {'aria-hidden': 'true'}}),
+            el('span', {className: 'ycell-name', textContent: MONTH_NAMES[c.month - 1].slice(0, 3), attrs: {'aria-hidden': 'true'}})
+        ]);
+        if(active) cell.addEventListener('click', () => setMonthPeriod(c.month));
+        ['mouseenter', 'focus'].forEach(ev => cell.addEventListener(ev, () => { detail.textContent = describe(c); }));
+        ['mouseleave', 'blur'].forEach(ev => cell.addEventListener(ev, resting));
+        return cell;
+    }));
+    resting();
+}
+
 /**
  * Noterne fra månedsstatus i den valgte periode ("Note: Bonus" eller, ved flere,
  * "Noter: 31. jan. 2026: Bonus · 30. jun. 2026: Købte bil"). Skjult, når der ingen er.
@@ -166,6 +207,7 @@ function renderMonthOverview(){
             attrs:{title:`Der er ingen månedsstatus imellem, så ændringen dækker ${spanMonths} måneder.`}})] : []));
 
     renderMonthNotes(history, bounds);
+    renderYearColors(history, year, month);
 
     setMonthKpi('monthNetWorth', byKey.value, false, spanText);
     setMonthKpi('monthPension', byKey.netCatPension, false, spanText);

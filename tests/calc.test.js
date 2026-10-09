@@ -1139,3 +1139,28 @@ describe('suspiciousAmounts', () => {
         assert.equal(calc.suspiciousAmounts({bank: 6000}, {bank: 600000}, ['bank'])[0].zeros, 2);
     });
 });
+
+describe('yearColors', () => {
+    const h = (date, value) => ({date, value});
+    test('én firkant pr. måned: stigning og fald i fire styrker, manglende måneder og fremtiden', () => {
+        const history = [h('2025-12-31', 100000), h('2026-01-31', 140000), h('2026-02-28', 130000), h('2026-03-31', 130000),
+            h('2026-05-31', 150000), h('2026-06-15', 151000), h('2026-06-30', 155000)];
+        const cells = calc.yearColors(history, 2026, '2026-07-10');
+        assert.equal(cells.length, 12);
+        const pick = m => { const c = cells[m - 1]; return [c.state, c.change, c.level, c.months]; };
+        assert.deepEqual(pick(1), ['up', 40000, 4, 1]);     // årets største ændring = styrke 4
+        assert.deepEqual(pick(2), ['down', -10000, 1, 1]);  // 10.000 af 40.000 = styrke 1
+        assert.deepEqual(pick(3), ['flat', 0, 0, 1]);
+        assert.deepEqual(pick(4), ['none', null, 0, 0]);    // ingen status i april
+        assert.deepEqual(pick(5), ['up', 20000, 2, 2]);     // dækker april og maj
+        assert.deepEqual(pick(6), ['up', 5000, 1, 1]);      // fra 31. maj til månedens seneste (30. juni)
+        assert.deepEqual(pick(7), ['none', null, 0, 0]);    // juli er i gang, men har ingen status endnu
+        assert.deepEqual(pick(8), ['future', null, 0, 0]);
+    });
+    test('den allerførste status har intet at sammenligne med, og et tidligere år har ingen fremtid', () => {
+        const cells = calc.yearColors([h('2025-03-31', 1000), h('2025-04-30', 2000)], 2025, '2026-01-15');
+        assert.equal(cells[2].state, 'first');
+        assert.equal(cells[3].state, 'up');
+        assert.equal(cells[11].state, 'none');
+    });
+});
