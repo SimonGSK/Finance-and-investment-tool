@@ -1976,3 +1976,55 @@ test('404: en adresse, der ikke findes, viser en side med vej tilbage til appen'
     await page.getByRole('link', { name: 'Gå til Økonomis' }).click();
     await expect(page.locator('#pageTitle')).toHaveText('Din økonomi');
 });
+
+test('tastaturgenveje: 1-7 skifter side, N, B og ?, men aldrig når man skriver i et felt, i en dialog eller med Cmd/Ctrl', async ({ page }) => {
+    await page.goto('/index.html');
+    const title = page.locator('#pageTitle');
+    const section = () => page.evaluate(() => document.body.dataset.section);
+
+    for(const [key, expected] of [['5', 'formue'], ['2', 'tools'], ['3', 'housing'], ['4', 'budget'], ['6', 'month'], ['7', 'portfolio'], ['1', 'overview']]){
+        await page.keyboard.press(key);
+        expect(await section(), `tast ${key}`).toBe(expected);
+    }
+
+    // Et tal i et felt bliver skrevet i feltet - siden skifter ikke.
+    await page.keyboard.press('5');
+    const field = page.getByLabel('Kontanter & opsparingskonti', { exact: true });
+    await field.fill('');
+    await field.pressSequentially('1234');
+    await expect(field).toHaveValue('1234');
+    expect(await section()).toBe('formue');
+    await field.press('n');
+    await expect(page.getByRole('dialog', { name: 'Månedsstatus' })).toHaveCount(0);
+    await field.blur();
+
+    // Cmd/Ctrl + tal er browserens egen genvej (skift fane) og røres ikke.
+    await page.keyboard.press('ControlOrMeta+1');
+    expect(await section()).toBe('formue');
+
+    // N åbner månedsstatus; i dialogen skifter tal ikke side bag den.
+    await page.keyboard.press('n');
+    const dialog = page.getByRole('dialog', { name: 'Månedsstatus' });
+    await expect(dialog).toBeVisible();
+    await page.evaluate(() => document.activeElement.blur());
+    await page.keyboard.press('1');
+    expect(await section()).toBe('formue');
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+
+    // B skjuler og viser beløbene.
+    await page.keyboard.press('b');
+    await expect(page.locator('html')).toHaveClass(/amounts-hidden/);
+    await page.keyboard.press('b');
+    await expect(page.locator('html')).not.toHaveClass(/amounts-hidden/);
+
+    // ? viser oversigten.
+    await page.keyboard.press('?');
+    const help = page.getByRole('dialog', { name: 'Tastaturgenveje' });
+    await expect(help).toBeVisible();
+    await expect(help.locator('kbd')).toHaveText(['1', '2', '3', '4', '5', '6', '7', 'N', 'B', '?']);
+    await page.keyboard.press('Escape');
+
+    // Menupunkterne fortæller skærmlæsere om genvejen.
+    await expect(page.getByRole('button', { name: 'Formue', exact: true })).toHaveAttribute('aria-keyshortcuts', '5');
+});
