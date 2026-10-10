@@ -114,8 +114,8 @@ function renderNetWorthSourceNote(figures){
     if(note.hidden) return;
     note.replaceChildren(
         el('span', {}, [
-            `Felterne er tomme, så tallene er fra din seneste månedsstatus (${formatDanishDate(figures.date)}). Udfyld felterne for at se dagens tal. `,
-            el('button', {className:'link-btn', type:'button', textContent:'Hent tallene ind i felterne', onclick: () => {
+            `Tallene er fra din seneste status (${formatDanishDate(figures.date)}). `,
+            el('button', {className:'link-btn', type:'button', textContent:'Hent dem ind i felterne', onclick: () => {
                 NET_WORTH_CATEGORIES.forEach(cat => { document.getElementById(cat.id).value = figures[cat.id]; });
                 document.getElementById('netDebt').value = figures.debt;
                 updateNetWorth();
@@ -232,8 +232,13 @@ function updateEmergencyFund(){
     }
     monthsEl.textContent = `${months.toFixed(1).replace('.', ',')} ${months >= 0.95 && months < 1.05 ? 'måned' : 'måneder'}`;
     monthsEl.classList.toggle('negative', months < 3);
-    const verdict = months >= 6 ? 'Du har en solid buffer.' : months >= 3 ? 'Du er inden for anbefalingen.' : 'Under anbefalingen på 3 måneder.';
-    text.textContent = `Dine kontanter på ${DK.format(cash)} kr. dækker dine udgifter på ${DK.format(expenses)} kr. om måneden (behov og ønsker fra dit budget). ${verdict}`;
+    const verdict = months >= 6 ? 'Solid buffer' : months >= 3 ? 'Inden for anbefalingen' : 'Under anbefalingen';
+    // Kort: de to tal, beregningen bygger på, og vurderingen. Forklaringen står under "Hvorfor 3–6 måneder?".
+    text.replaceChildren(
+        el('span', {className:'buffer-fact'}, ['Kontanter: ', el('strong', {textContent: `${DK.format(cash)} kr.`})]),
+        el('span', {className:'buffer-fact'}, ['Udgifter: ', el('strong', {textContent: `${DK.format(expenses)} kr./md.`})]),
+        el('span', {className:`buffer-verdict ${months >= 3 ? 'is-ok' : 'is-low'}`, textContent: verdict})
+    );
     // Skalaen går til 9 mdr., så den anbefalede zone (3-6) står i midten, og man kan se, når man er over.
     fill.style.width = Math.min(100, months / 9 * 100) + '%';
 }
@@ -469,13 +474,12 @@ function renderForecastNote(projection){
     const note = document.getElementById('nwForecastNote');
     if(!note) return;
     if(!projection){ note.textContent = ''; return; }
-    const pace = `${projection.trend >= 0 ? '+' : '−'}${DK.format(Math.abs(projection.trend))} kr. om måneden`;
-    const parts = [`Den stiplede linje fortsætter dit tempo fra det seneste år (${pace}): så er din nettoformue ca. ${DK.format(projection.to.value)} kr. i ${formatMonthYear(projection.to.date)}.`];
+    const pace = `${projection.trend >= 0 ? '+' : '−'}${DK.format(Math.abs(projection.trend))} kr./md.`;
+    const parts = [`Prognose med det seneste års tempo (${pace}): ca. ${DK.format(projection.to.value)} kr. i ${formatMonthYear(projection.to.date)}.`];
     const next = MILESTONES.find(m => m > projection.from.value);
     const when = next && projectionReaches(projection, next);
-    if(when) parts.push(`Næste milepæl, ${DK.format(next)} kr., nås omkring ${formatMonthYear(when)}.`);
-    if(projection.trend < 0) parts.push('Formuen er faldet det seneste år – prognosen viser, hvor den ender, hvis det fortsætter.');
-    parts.push('Det er en ret linje, ikke et løfte – afkast og opsparing svinger.');
+    if(when) parts.push(`${DK.format(next)} kr. omkring ${formatMonthYear(when)}.`);
+    parts.push('En ret linje, ikke et løfte.');
     note.textContent = parts.join(' ');
 }
 

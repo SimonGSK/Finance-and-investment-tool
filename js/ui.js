@@ -471,19 +471,23 @@ function renderYearSummary(tbodyId, years, withFlows, emptyText){
  * Folder et panel (.collapsible) sammen eller ud. Valget huskes pr. panel.
  * @param {HTMLButtonElement} btn panelets .panel-toggle
  * @param {boolean} [open] tving åben/lukket
+ * @param {boolean} [remember] false = gem ikke valget (fx når panelet foldes sammen af sig selv på en telefon)
  */
-function togglePanel(btn, open){
+function togglePanel(btn, open, remember = true){
     const panel = btn.closest('.collapsible');
     const show = open ?? btn.getAttribute('aria-expanded') !== 'true';
     btn.setAttribute('aria-expanded', String(show));
     panel.classList.toggle('is-collapsed', !show);
-    try{ localStorage.setItem('collapsed:' + panel.id, show ? '0' : '1'); } catch(e){ /* kun en bekvemmelighed */ }
+    if(remember) try{ localStorage.setItem('collapsed:' + panel.id, show ? '0' : '1'); } catch(e){ /* kun en bekvemmelighed */ }
 }
 
+// Foldbare paneler ("Tilføj datapunkt") husker, om man har foldet dem. Har man ikke valgt,
+// er de foldet sammen på telefoner, så siden ikke starter med en lang formular.
 document.querySelectorAll('.collapsible').forEach(panel => {
-    let collapsed = false;
-    try{ collapsed = localStorage.getItem('collapsed:' + panel.id) === '1'; } catch(e){ /* åben */ }
-    if(collapsed) togglePanel(panel.querySelector('.panel-toggle'), false);
+    let stored = null;
+    try{ stored = localStorage.getItem('collapsed:' + panel.id); } catch(e){ /* intet valg */ }
+    const collapsed = stored === null ? window.matchMedia('(max-width: 640px)').matches : stored === '1';
+    if(collapsed) togglePanel(panel.querySelector('.panel-toggle'), false, false);
 });
 
 /**

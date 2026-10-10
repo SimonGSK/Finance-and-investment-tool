@@ -1762,7 +1762,6 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
 /* ---- Månedsoverblik ---- */
 .month-controls{ display:flex; flex-wrap:wrap; gap:var(--s4); align-items:flex-end; max-width:1600px; margin-bottom:var(--s5); }
 .month-controls .field{ margin:0; flex:1 1 180px; max-width:260px; }
-.month-status-btn{ margin-left:auto; }
 .month-content{ display:flex; flex-direction:column; gap:var(--s5); max-width:1600px; }
 .month-content .stats{ margin:0; }
 .month-range{ margin:0; font-size:15px; color:var(--muted); }
@@ -1779,7 +1778,6 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
 @media (max-width:640px){
     .month-controls{ gap:var(--s3); margin-bottom:var(--s3); }
     .month-controls .field{ flex-basis:120px; }
-    .month-status-btn{ flex:1 1 100%; justify-content:center; }
     .month-content{ gap:var(--s3); }
     .month-range{ font-size:13.5px; }
     /* Kategori, ændring og procent; start og slut står under navnet. */
@@ -2100,4 +2098,26 @@ kbd{
     .ycell.is-selected .ycell-box{ outline-width:1.5px; outline-offset:1px; }
     .year-colors-foot{ margin-top:var(--s2); gap:var(--s2); }
     .year-colors-detail{ font-size:13px; }
+}
+
+/* ---- Nødopsparing: de to tal og vurderingen, kort ---- */
+#bufferText{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 14px; }
+.buffer-fact strong{ color:var(--text); font-weight:600; }
+.buffer-verdict{ padding:2px 10px; border-radius:var(--r-pill); font-size:12.5px; font-weight:600; }
+.buffer-verdict.is-ok{ background:var(--akt-soft); color:var(--pos); }
+.buffer-verdict.is-low{ background:color-mix(in srgb, var(--cross) 14%, transparent); color:var(--cross); }
+
+/* ---- Kompakt på telefoner: mindre luft mellem kortene og lidt mindre overskrifter ----
+   Ingen tekst under 12 px, og felter beholder 16 px, så iPhone ikke zoomer ind. */
+@media (max-width:640px){
+    .panel{ padding:12px 14px; margin-bottom:var(--s2); }
+    /* Kortene har selv 8 px luft under sig, så kolonnerne har ingen ekstra afstand. */
+    .layout, .layout-wide, .layout-net-worth, .full-width-below{ gap:0; }
+    .stats, .overview-kpis, .compact-stats{ margin-bottom:var(--s2); }
+    .overview-grid, .ov-side{ gap:var(--s2); margin-bottom:var(--s2); }
+    .page-header h1{ font-size:20px; }
+    .panel-title{ font-size:16px; }
+    .tool-intro{ font-size:14px; }
+    .explainer, .notice, .result-sub, .dialog-hint, .month-range, .forecast-note{ font-size:13px; }
+    .result-value{ font-size:22px; }
 }
