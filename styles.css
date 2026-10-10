@@ -1249,7 +1249,6 @@ table.data-table .row-actions .btn{ padding-left:12px; padding-right:12px; }
 table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space:normal; }
 
 /* Lille til/fra-knap over en graf (fx prognosen) */
-.chart-toolbar{ display:flex; justify-content:flex-end; margin:var(--s4) 0 calc(-1 * var(--s2)); }
 .chip-toggle{
     display:inline-flex; align-items:center; gap:var(--s2);
     font:600 12.5px var(--font-sans); color:var(--muted);
@@ -1788,14 +1787,7 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
 
 /* ---- Tilpas nøgletal: knappen står i sidehovedet på Oversigt ---- */
 .customize-btn{ display:none; }
-body[data-section="overview"] .customize-btn{ display:inline-flex; }
-.customize-btn .btn-icon, .ov-kpi-tools .btn-icon{ width:15px; height:15px; }
-.ov-kpi-tools{ display:none; }
-@media (max-width:1250px){
-    /* I én kolonne står grafen øverst, så knappen flyttes ned lige over kortene. */
-    body[data-section="overview"] .customize-btn{ display:none; }
-    #section-overview .ov-kpi-tools{ display:flex; justify-content:flex-end; order:1; margin:0 0 calc(-1 * var(--s2)); }
-}
+body[data-section="overview"] .customize-btn{ display:inline-grid; }
 .cards-chooser .field{ margin-bottom:var(--s3); }
 
 /* ---- Ændringen i den valgte periode på Oversigtens graf ---- */
@@ -2124,7 +2116,9 @@ kbd{
 .panel.has-card-help{ position:relative; }
 .card-help-btn{ position:absolute; top:22px; right:22px; width:24px; height:24px; font-size:13px; z-index:1; }
 /* Overskriften må ikke løbe ind under "?". */
-.has-card-help > .eyebrow, .has-card-help > .panel-title-row, .has-card-help > .panel-head{ padding-right:32px; }
+.has-card-help > .eyebrow, .has-card-help > .panel-title-row{ padding-right:32px; }
+/* I en overskrift med knapper står "?" i knappernes række (ikke i hjørnet). */
+.panel-head-actions .card-help-btn{ position:static; }
 .card-help-pop{ margin:var(--s2) 0 var(--s3); }
 .card-help-pop > :first-child{ margin-top:0; }
 .card-help-pop > :last-child{ margin-bottom:0; }
@@ -2140,4 +2134,26 @@ kbd{
 /* Kortets overskrift med en lille handling ved siden af (fx "Ryd historik" i Formuehistorik). */
 .panel-head{ display:flex; align-items:center; justify-content:space-between; gap:var(--s3); margin-bottom:var(--s3); }
 .panel-head .eyebrow{ margin:0; }
-.btn-xs{ padding:4px 11px; font-size:12px; font-weight:600; }
+
+/* Små knapper med kun et symbol (Tilpas oversigt, Ryd historik). Navnet står i aria-label og title. */
+.icon-btn{
+    display:inline-grid; place-items:center; width:32px; height:32px; padding:0; flex-shrink:0;
+    border-radius:var(--r-pill); border:1px solid var(--border-strong); background:var(--panel); color:var(--muted); cursor:pointer;
+}
+.icon-btn svg{ width:16px; height:16px; }
+.icon-btn:hover{ color:var(--text); border-color:var(--akt); }
+.icon-btn-danger:hover{ color:var(--cross); border-color:var(--cross); }
+.panel-head-actions{ display:flex; align-items:center; gap:var(--s2); }
+.panel-head-actions .icon-btn{ width:28px; height:28px; }
+.panel-head-actions .icon-btn svg{ width:15px; height:15px; }
+.panel-head-actions .chip-toggle{ padding:3px 10px; font-size:12px; gap:6px; }
+.panel-head-actions .chip-toggle[hidden]{ display:none; }
+/* "Tilpas oversigt" står i sidehovedet på alle skærme, til højre på højde med titlen. Den ligger
+   oven på overskriften, så underteksten kan bruge hele bredden. */
+.page-header{ position:relative; }
+.page-header .customize-btn{ position:absolute; right:0; top:var(--customize-top, 34px); }
+/* Kun på Oversigt (.icon-btn sætter ellers display). */
+body:not([data-section="overview"]) .page-header .customize-btn{ display:none; }
+body[data-section="overview"] #pageTitle{ padding-right:44px; }
+@media (max-width:900px){ .page-header .customize-btn{ --customize-top:31px; } }
+@media (max-width:640px){ .page-header .customize-btn{ --customize-top:15px; } }

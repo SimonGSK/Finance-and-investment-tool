@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#0B0B0C">
     <!-- Sidens version (sættes af npm run stamp). Den åbne side tjekker, om der er en nyere (js/update-check.js). -->
-    <meta name="app-version" content="f05e3e6a">
+    <meta name="app-version" content="2950f556">
     <meta name="description" content="Budget, formue, investering og lån – danske økonomiværktøjer, hvor dine tal bliver på din egen enhed.">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
@@ -40,7 +40,7 @@
     <script>try{ if(localStorage.getItem('appLock')) document.documentElement.classList.add('is-locked'); }catch(e){}</script>
     <!-- Skjul beløb: sløres med det samme, før siden tegnes (se js/hide-amounts.js). -->
     <script>try{ if(localStorage.getItem('hideAmounts')) document.documentElement.classList.add('amounts-hidden'); }catch(e){}</script>
-    <link rel="stylesheet" href="styles.css?v=07829513">
+    <link rel="stylesheet" href="styles.css?v=9789590b">
 </head>
 <body>
 
@@ -151,7 +151,7 @@
                     <h1 id="pageTitle">Din økonomi</h1>
                     <p class="page-sub" id="pageSub"></p>
                 </div>
-                <button class="btn btn-secondary btn-sm customize-btn" id="customizeCardsBtn" type="button" onclick="openOverviewCardsDialog()" aria-haspopup="dialog"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Tilpas oversigt</button>
+                <button class="icon-btn customize-btn" id="customizeCardsBtn" type="button" onclick="openOverviewCardsDialog()" aria-haspopup="dialog" aria-label="Tilpas oversigt" title="Tilpas oversigt"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button>
             </header>
             <!-- Indstillinger åbner som en dialog (som Hjælp og Feedback), med sløret baggrund. -->
             <dialog class="dialog settings-dialog" id="settingsPanel" aria-labelledby="settingsTitle">
@@ -225,7 +225,6 @@
 
 <div id="section-overview">
     <!-- På telefon og tablet står "Tilpas oversigt" lige over kortene; på computer i sidehovedet. -->
-    <div class="ov-kpi-tools"><button class="btn btn-secondary btn-sm" type="button" onclick="openOverviewCardsDialog()" aria-haspopup="dialog"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Tilpas oversigt</button></div>
     <div class="stats overview-kpis" id="ovKpis"></div>
 
     <div class="overview-grid">
@@ -1644,15 +1643,15 @@
         <div class="panel">
             <div class="panel-head">
                 <div class="eyebrow">Formuehistorik</div>
-                <button class="btn btn-secondary btn-xs" type="button" onclick="clearNetWorthHistory()" aria-label="Ryd hele historikken">Ryd historik</button>
+                <div class="panel-head-actions">
+                    <button type="button" class="chip-toggle" id="forecastToggle" aria-pressed="true" onclick="toggleForecast()">Prognose</button>
+                    <button class="icon-btn icon-btn-danger" type="button" onclick="clearNetWorthHistory()" aria-label="Ryd hele historikken" title="Ryd hele historikken"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V4.5h6V7"/><path d="M6.5 7l1 12.5h9l1-12.5"/><path d="M10 11v5M14 11v5"/></svg></button>
+                </div>
             </div>
             <p class="explainer explainer-lead" data-card-help>
                 Gem din formue for en dato – helst med <strong>Månedsstatus</strong> ved hver måneds udgang – for at følge udviklingen over tid. Vælg en tidligere dato, hvis du vil eftertilføje historiske tal. Data gemmes kun lokalt i din browser – ikke på en server, og er derfor ikke tilgængelig fra andre enheder eller browsere.
             </p>
 
-            <div class="chart-toolbar">
-                <button type="button" class="chip-toggle" id="forecastToggle" aria-pressed="true" onclick="toggleForecast()">Prognose</button>
-            </div>
             <div class="chart-wrap chart-wrap-standalone">
                 <canvas id="netWorthHistoryChart"></canvas>
                 <div class="chart-empty-state" id="netWorthHistoryChartEmpty">Ingen data endnu – gem en månedsstatus for at se udviklingen her.</div>
@@ -1887,7 +1886,7 @@
     <script src="js/field-help.js?v=6a83e008"></script>
     <script src="js/number-fields.js?v=a35de4ce"></script>
     <script src="js/hide-amounts.js?v=8c823b8d"></script>
-    <script src="js/card-help.js?v=10778684"></script>
+    <script src="js/card-help.js?v=e8be5e20"></script>
     <script src="js/fold.js?v=75a96a6e"></script>
     <script src="js/tool1-ask-akt.js?v=3608c8e7"></script>
     <script src="js/tool2-monthly.js?v=c215de07"></script>

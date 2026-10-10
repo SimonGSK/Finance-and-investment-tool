@@ -43,11 +43,14 @@ function attachCardHelp(panel){
             btn.setAttribute('aria-expanded', 'true');
             openHelpButton = btn;
         }});
-    // Boksen står lige under kortets overskrift; "?" i hjørnet.
+    // Boksen står lige under kortets overskrift. "?" står i hjørnet - eller, har overskriften
+    // selv knapper (.panel-head), sidst i deres række, så de står på linje.
     const head = panel.querySelector(':scope > .eyebrow, :scope > .panel-title-row, :scope > .panel-head');
     if(head) head.insertAdjacentElement('afterend', pop);
     else panel.prepend(pop);
-    panel.prepend(btn);
+    const actions = panel.querySelector(':scope > .panel-head > .panel-head-actions');
+    if(actions) actions.append(btn);
+    else panel.prepend(btn);
     panel.classList.add('has-card-help');
 }
 

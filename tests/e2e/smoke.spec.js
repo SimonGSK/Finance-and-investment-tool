@@ -2317,10 +2317,43 @@ test('bundmenuen bliver, når man vælger år og periode i Månedsoverblik (kun 
     await expect(bar).toBeHidden();
 });
 
-test('Formuehistorik: "Ryd historik" er en lille knap i kortets overskrift, og prognoseteksten under grafen er væk', async ({ page }) => {
+test('Formuehistorik: Ryd (skraldespand) og Prognose står små i kortets overskrift, og prognoseteksten under grafen er væk', async ({ page }) => {
     await page.goto('/index.html');
+    // Et års historik, så der er en prognose (og dermed en Prognose-knap).
+    await page.evaluate(() => localStorage.setItem('netWorthHistory', JSON.stringify(Array.from({length: 13}, (_, i) => {
+        const d = new Date(Date.UTC(2025, 9 + i, 0)).toISOString().slice(0, 10);
+        return {date: d, value: 500000 + i * 10000, liquid: 300000};
+    }))));
+    await page.reload();
     await page.evaluate(() => showSection('formue'));
     const head = page.locator('.panel-head', { hasText: 'Formuehistorik' });
-    await expect(head.getByRole('button', { name: 'Ryd hele historikken' })).toHaveText('Ryd historik');
+    await expect(head.getByRole('button', { name: 'Ryd hele historikken' })).toBeVisible();
+    await expect(head.getByRole('button', { name: 'Prognose' })).toBeVisible();
     await expect(page.locator('#nwForecastNote')).toHaveCount(0);
+});
+
+test('Tilpas oversigt er et lille symbol på højde med titlen, og "?", Prognose og Ryd står på linje i Formuehistorik @mobil', async ({ page }) => {
+    await page.goto('/index.html');
+    // Et års historik, så der er en prognose (og dermed en Prognose-knap).
+    await page.evaluate(() => localStorage.setItem('netWorthHistory', JSON.stringify(Array.from({length: 13}, (_, i) => {
+        const d = new Date(Date.UTC(2025, 9 + i, 0)).toISOString().slice(0, 10);
+        return {date: d, value: 500000 + i * 10000, liquid: 300000};
+    }))));
+    await page.reload();
+    const center = sel => page.locator(sel).evaluate(e => { const r = e.getBoundingClientRect(); return r.top + r.height / 2; });
+    const btn = page.getByRole('button', { name: 'Tilpas oversigt' });
+    await expect(btn).toBeVisible();
+    await expect(btn).toHaveText('');
+    expect(Math.abs(await center('#customizeCardsBtn') - await center('#pageTitle'))).toBeLessThanOrEqual(4);
+    // Knappen ligger ikke oven i underteksten (som derfor kan bruge hele bredden).
+    await page.evaluate(() => { document.getElementById('pageSub').textContent = 'Seneste månedsstatus 28. sep. 2026 · alle beløb i DKK'; });
+    const [b, sub] = [await btn.boundingBox(), await page.locator('#pageSub').boundingBox()];
+    expect(b.y + b.height).toBeLessThanOrEqual(sub.y + 1);
+    // Kun på Oversigt.
+    await page.evaluate(() => showSection('budget'));
+    await expect(btn).toBeHidden();
+
+    await page.evaluate(() => showSection('formue'));
+    const centers = await Promise.all(['.panel-head .eyebrow', '#forecastToggle', '.panel-head .icon-btn', '.panel-head .card-help-btn'].map(center));
+    expect(Math.max(...centers) - Math.min(...centers)).toBeLessThanOrEqual(2);
 });
