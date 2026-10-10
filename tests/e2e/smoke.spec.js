@@ -770,8 +770,6 @@ test('år for år og prognose: tabellerne regner rigtigt, og prognosen står und
     await expect(nwYear.nth(0)).toContainText('2026 (til nu)');
     await expect(nwYear.nth(0)).toContainText('+90.000 kr.');
     await expect(nwYear.nth(1)).toContainText('2025 (fra 30. sep.)');
-    await expect(page.locator('#nwForecastNote')).toContainText('+10.008 kr./md.');
-    await expect(page.locator('#nwForecastNote')).toContainText('1.000.000 kr. omkring');
     expect(await page.evaluate(() => netWorthHistoryChart.data.datasets[2].data.length)).toBe(25);   // ét punkt pr. måned i 2 år
 
     await page.getByRole('button', { name: 'Investering', exact: true }).click();
@@ -844,7 +842,6 @@ test('prognosen kan slås fra og til, og valget huskes', async ({ page }) => {
     await toggle.click();
     await expect(toggle).toHaveAttribute('aria-pressed', 'false');
     expect(await page.evaluate(() => netWorthHistoryChart.data.datasets[2].data.length)).toBe(0);
-    await expect(page.locator('#nwForecastNote')).toBeHidden();
     await page.reload();
     await page.getByRole('button', { name: 'Formue', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Prognose' })).toHaveAttribute('aria-pressed', 'false');
@@ -1326,8 +1323,7 @@ test('Månedsoverblik: Dit år i tal, årets bedste og værste måned, kurver og
 
     // En måned: årets bedste og værste måned under nøgletallene, og mærket på den valgte måned.
     await expect(page.locator('#monthPeriod')).toHaveValue('4');
-    await expect(page.locator('#monthBest')).toContainText('bedste måned mar.–apr. (2 mdr.) +30.000 kr.');
-    await expect(page.locator('#monthBest')).toContainText('værste måned februar −5.000 kr.');
+    await expect(page.locator('.year-colors-panel #monthBest .month-best-row')).toHaveText(['Bedste måned mar.–apr. (2 mdr.) +30.000 kr.', 'Værste måned februar −5.000 kr.']);
     await expect(page.locator('#monthRange')).toContainText('Årets bedste måned');
     await expect(page.locator('#yearPanel')).toBeHidden();
     // Hver kategori har en lille kurve.
@@ -2299,4 +2295,32 @@ test('forklaringer bag "?" i kortets hjørne: skjult fra start, åbnes og lukkes
     await strategy.getByRole('button', { name: 'Forklaring: Optimal realiseringsstrategi' }).click();
     await expect(strategy.locator('.card-help-pop')).toContainText('Forklaring');
     await expect(strategy.locator('.card-help-pop')).toContainText('Eksempel');
+});
+
+test('bundmenuen bliver, når man vælger år og periode i Månedsoverblik (kun tastaturfelter skjuler den) @mobil', async ({ page }) => {
+    await page.goto('/index.html');
+    const phone = await page.evaluate(() => window.innerWidth <= 640);
+    test.skip(!phone, 'bundmenuen findes kun på telefoner');
+    await page.evaluate(() => {
+        localStorage.setItem('netWorthHistory', JSON.stringify([{date: '2026-08-31', value: 100000}, {date: '2026-09-30', value: 110000}]));
+    });
+    await page.reload();
+    await page.evaluate(() => showSection('month'));
+    const bar = page.getByRole('navigation', { name: 'Bundmenu' });
+    await page.locator('#monthPeriod').focus();
+    await page.locator('#monthPeriod').selectOption('8');
+    await expect(page.locator('#monthPeriod')).toBeFocused();
+    await expect(bar).toBeVisible();
+    // Et felt med tastatur skjuler den stadig.
+    await page.evaluate(() => showSection('formue'));
+    await page.locator('#wealthAge').focus();
+    await expect(bar).toBeHidden();
+});
+
+test('Formuehistorik: "Ryd historik" er en lille knap i kortets overskrift, og prognoseteksten under grafen er væk', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => showSection('formue'));
+    const head = page.locator('.panel-head', { hasText: 'Formuehistorik' });
+    await expect(head.getByRole('button', { name: 'Ryd hele historikken' })).toHaveText('Ryd historik');
+    await expect(page.locator('#nwForecastNote')).toHaveCount(0);
 });

@@ -1247,8 +1247,6 @@ table.data-table .row-actions .btn{ padding-left:12px; padding-right:12px; }
 .year-note{ color:var(--subtle); font-size:0.9em; margin-left:4px; }
 .year-hint{ margin:var(--s3) 0 0; font-size:12.5px; }
 table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space:normal; }
-.forecast-note{ margin:var(--s3) 0 var(--s4); font-size:13px; line-height:1.6; color:var(--muted); }
-.forecast-note:empty{ display:none; }
 
 /* Lille til/fra-knap over en graf (fx prognosen) */
 .chart-toolbar{ display:flex; justify-content:flex-end; margin:var(--s4) 0 calc(-1 * var(--s2)); }
@@ -1820,7 +1818,7 @@ body[data-section="overview"] .customize-btn{ display:inline-flex; }
 }
 .month-badge.is-up{ border-color:var(--pos); color:var(--pos); }
 .month-badge.is-down{ border-color:var(--cross); color:var(--cross); }
-.month-best{ margin:0; font-size:14px; color:var(--muted); }
+.month-best{ margin:var(--s3) 0 0; padding-top:var(--s3); border-top:1px solid var(--border); font-size:14px; color:var(--muted); display:grid; gap:4px; }
 .month-best strong{ color:var(--text); font-weight:600; }
 .month-best .is-up{ color:var(--pos); font-weight:600; }
 .month-best .is-down{ color:var(--cross); font-weight:600; }
@@ -2118,15 +2116,15 @@ kbd{
     .page-header h1{ font-size:20px; }
     .panel-title{ font-size:16px; }
     .tool-intro{ font-size:14px; }
-    .explainer, .notice, .result-sub, .dialog-hint, .month-range, .forecast-note{ font-size:13px; }
+    .explainer, .notice, .result-sub, .dialog-hint, .month-range{ font-size:13px; }
     .result-value{ font-size:22px; }
 }
 
 /* ---- Forklaringer bag "?" i kortets hjørne (card-help.js) ---- */
 .panel.has-card-help{ position:relative; }
-.card-help-btn{ position:absolute; top:16px; right:16px; width:24px; height:24px; font-size:13px; z-index:1; }
+.card-help-btn{ position:absolute; top:22px; right:22px; width:24px; height:24px; font-size:13px; z-index:1; }
 /* Overskriften må ikke løbe ind under "?". */
-.has-card-help > .eyebrow, .has-card-help > .panel-title-row{ padding-right:32px; }
+.has-card-help > .eyebrow, .has-card-help > .panel-title-row, .has-card-help > .panel-head{ padding-right:32px; }
 .card-help-pop{ margin:var(--s2) 0 var(--s3); }
 .card-help-pop > :first-child{ margin-top:0; }
 .card-help-pop > :last-child{ margin-bottom:0; }
@@ -2138,3 +2136,8 @@ kbd{
 @media (max-width:640px){
     .card-help-btn{ top:10px; right:10px; }
 }
+
+/* Kortets overskrift med en lille handling ved siden af (fx "Ryd historik" i Formuehistorik). */
+.panel-head{ display:flex; align-items:center; justify-content:space-between; gap:var(--s3); margin-bottom:var(--s3); }
+.panel-head .eyebrow{ margin:0; }
+.btn-xs{ padding:4px 11px; font-size:12px; font-weight:600; }

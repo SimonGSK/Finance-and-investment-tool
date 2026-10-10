@@ -466,24 +466,6 @@ function toggleForecast(){
 }
 
 /**
- * Teksten under grafen: hvad den stiplede prognose betyder, hvor den ender,
- * og hvornår næste milepæl nås i samme tempo.
- * @param {ReturnType<typeof projectTrend>} projection
- */
-function renderForecastNote(projection){
-    const note = document.getElementById('nwForecastNote');
-    if(!note) return;
-    if(!projection){ note.textContent = ''; return; }
-    const pace = `${projection.trend >= 0 ? '+' : '−'}${DK.format(Math.abs(projection.trend))} kr./md.`;
-    const parts = [`Prognose med det seneste års tempo (${pace}): ca. ${DK.format(projection.to.value)} kr. i ${formatMonthYear(projection.to.date)}.`];
-    const next = MILESTONES.find(m => m > projection.from.value);
-    const when = next && projectionReaches(projection, next);
-    if(when) parts.push(`${DK.format(next)} kr. omkring ${formatMonthYear(when)}.`);
-    parts.push('En ret linje, ikke et løfte.');
-    note.textContent = parts.join(' ');
-}
-
-/**
  * Sletter hele formuehistorikken efter bekræftelse - med fortryd.
  */
 async function clearNetWorthHistory(){
@@ -573,7 +555,6 @@ function renderNetWorthHistory(){
             }
         ]
     };
-    renderForecastNote(projection);
 
     // Aksen går fra første datapunkt til prognosens slutning - ingen tom plads før den første dato.
     const xMin = history.length ? t(history[0].date) : undefined;

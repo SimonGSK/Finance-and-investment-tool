@@ -211,7 +211,9 @@ function initSheetSwipe(sheet){
     });
 
     // Mens man skriver i et felt, skjules bundmenuen, så den ikke ligger oven på tastaturet.
-    const typing = t => t.matches?.('input:not([type=checkbox]):not([type=radio]):not([type=range]), textarea, select');
+    // Kun felter med tastatur: vælgere (år, periode, dato) åbner ikke tastaturet, og fokus
+    // bliver på dem efter valget - så ville bundmenuen forsvinde, til man trykkede et andet sted.
+    const typing = t => t.matches?.('textarea, input:not([type]), input[type=text], input[type=number], input[type=email], input[type=search], input[type=tel], input[type=url], input[type=password]');
     document.addEventListener('focusin', e => { if(typing(e.target)) document.body.classList.add('is-typing'); });
     document.addEventListener('focusout', e => { if(typing(e.target)) document.body.classList.remove('is-typing'); });
 

@@ -255,11 +255,11 @@ function renderMonthBest(info, bounds){
     const box = document.getElementById('monthBest');
     box.hidden = !info || !info.best;
     if(box.hidden) return;
-    const part = (label, step) => step ? [el('span', {className:'month-best-label', textContent: label}),
+    // To linjer i "Dit år i farver" (året står allerede i kortets titel).
+    const line = (label, step) => el('div', {className:'month-best-row'}, [el('span', {className:'month-best-label', textContent: label + ' '}),
         el('strong', {textContent: stepLabel(step)}), ' ',
-        el('span', {className: step.change > 0 ? 'is-up' : step.change < 0 ? 'is-down' : '', textContent: formatSignedKr(step.change)})] : [];
-    box.replaceChildren(el('span', {textContent: `I ${info.year}: `}), ...part('bedste måned ', info.best),
-        ...(info.worst ? [el('span', {className:'month-best-sep', textContent:' · '}), ...part('værste måned ', info.worst)] : []));
+        el('span', {className: step.change > 0 ? 'is-up' : step.change < 0 ? 'is-down' : '', textContent: formatSignedKr(step.change)})]);
+    box.replaceChildren(line('Bedste måned', info.best), ...(info.worst ? [line('Værste måned', info.worst)] : []));
     const isStep = step => step && bounds.start && step.from === bounds.start.date && step.to === bounds.end.date;
     const badge = isStep(info.best) ? ['Årets bedste måned', 'is-up'] : isStep(info.worst) ? ['Årets værste måned', 'is-down'] : null;
     if(badge) document.getElementById('monthRange').append(' ', el('span', {className:`month-badge ${badge[1]}`, textContent: badge[0]}));

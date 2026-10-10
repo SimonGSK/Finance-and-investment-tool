@@ -44,7 +44,7 @@ function attachCardHelp(panel){
             openHelpButton = btn;
         }});
     // Boksen står lige under kortets overskrift; "?" i hjørnet.
-    const head = panel.querySelector(':scope > .eyebrow, :scope > .panel-title-row');
+    const head = panel.querySelector(':scope > .eyebrow, :scope > .panel-title-row, :scope > .panel-head');
     if(head) head.insertAdjacentElement('afterend', pop);
     else panel.prepend(pop);
     panel.prepend(btn);
