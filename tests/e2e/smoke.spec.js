@@ -410,14 +410,15 @@ test('formue: tomme felter viser det seneste datapunkt overalt, og tallene kan h
     await page.reload();
     await page.getByRole('button', { name: 'Formue', exact: true }).click();
     const note = page.locator('#netWorthSourceNote');
-    await expect(note).toContainText('seneste månedsstatus (31. aug. 2026)');
+    await expect(note).toContainText('seneste status (31. aug. 2026)');
     await expect(page.locator('#netWorthTotal')).toHaveText('520.000 kr.');
     await expect(page.locator('#netLiquidTotal')).toHaveText('320.000 kr.');
     await expect(page.locator('#bufferMonths')).toHaveText('10,0 måneder');
+    await expect(page.locator('#bufferText')).toHaveText('Kontanter: 110.000 kr.Udgifter: 11.000 kr./md.Solid buffer');
     await expect(page.locator('.goal-facts')).toContainText('50 %');
     await expect(page.locator('#wealthCompareSub')).toContainText('520.000 kr. før');
 
-    await note.getByRole('button', { name: 'Hent tallene ind i felterne' }).click();
+    await note.getByRole('button', { name: 'Hent dem ind i felterne' }).click();
     await expect(page.getByLabel('Aktier & værdipapirer', { exact: true })).toHaveValue('210000');
     await expect(note).toBeHidden();
     await expect(page.locator('#netWorthTotal')).toHaveText('520.000 kr.');
@@ -768,8 +769,8 @@ test('år for år og prognose: tabellerne regner rigtigt, og prognosen står und
     await expect(nwYear.nth(0)).toContainText('2026 (til nu)');
     await expect(nwYear.nth(0)).toContainText('+90.000 kr.');
     await expect(nwYear.nth(1)).toContainText('2025 (fra 30. sep.)');
-    await expect(page.locator('#nwForecastNote')).toContainText('+10.008 kr. om måneden');
-    await expect(page.locator('#nwForecastNote')).toContainText('Næste milepæl, 1.000.000 kr.');
+    await expect(page.locator('#nwForecastNote')).toContainText('+10.008 kr./md.');
+    await expect(page.locator('#nwForecastNote')).toContainText('1.000.000 kr. omkring');
     expect(await page.evaluate(() => netWorthHistoryChart.data.datasets[2].data.length)).toBe(25);   // ét punkt pr. måned i 2 år
 
     await page.getByRole('button', { name: 'Investering', exact: true }).click();
@@ -1168,11 +1169,12 @@ test('Månedsoverblik uden data forklarer, hvordan man kommer i gang', async ({ 
     await expect(page.locator('#monthContent')).toBeHidden();
 });
 
-test('Månedsoverblik har sin egen + Månedsstatus-knap, og siden opdateres, når statussen er gemt', async ({ page }) => {
+test('Månedsoverblik uden data har et link til den første månedsstatus (ingen stor knap), og siden opdateres, når den er gemt', async ({ page }) => {
     await page.goto('/index.html');
     await page.evaluate(() => showSection('month'));
     await expect(page.locator('#monthEmpty')).toBeVisible();
-    await page.locator('#section-month').getByRole('button', { name: '+ Månedsstatus' }).click();
+    await expect(page.locator('#section-month').getByRole('button', { name: '+ Månedsstatus' })).toHaveCount(0);
+    await page.locator('#monthEmpty').getByRole('button', { name: 'Gem din første månedsstatus' }).click();
     const dialog = page.getByRole('dialog', { name: 'Månedsstatus' });
     await dialog.getByLabel('Dato').fill('2026-09-30');
     await dialog.getByLabel('Bank- og opsparingskonti', { exact: true }).fill('50000');
@@ -1764,9 +1766,9 @@ test('bundmenu på telefoner: Oversigt, Trackers, + Status, Værktøjer og Mere 
 
     // Mens man skriver i et felt, er bundmenuen væk (tastaturet ligger dér).
     await page.evaluate(() => showSection('formue'));
-    await page.locator('#section-formue input.number-input').first().focus();
+    await page.locator('#wealthAge').focus();
     await expect(bar).toBeHidden();
-    await page.locator('#section-formue input.number-input').first().blur();
+    await page.locator('#wealthAge').blur();
     await expect(bar).toBeVisible();
 
     // Det nederste indhold kan rulles fri af bundmenuen.
@@ -2231,4 +2233,32 @@ test('Dit år i farver: tolv måneder i grøn og rød, manglende og kommende må
     await expect(page.locator('#monthPeriod')).toHaveValue('1');
     await expect(cells.nth(0)).toHaveAttribute('aria-pressed', 'true');
     await expect(cells.nth(0)).toHaveAttribute('aria-label', 'Januar: +40.000 kr.');
+});
+
+test('kompakt på telefon: "Tilføj datapunkt" er foldet sammen fra start, åbnes og huskes, og kortene står tæt @mobil', async ({ page }) => {
+    await page.goto('/index.html');
+    const phone = await page.evaluate(() => window.innerWidth <= 640);
+    test.skip(!phone, 'kun på telefoner');
+    await page.evaluate(() => showSection('formue'));
+    const nwToggle = page.locator('#nwEntryPanel .panel-toggle');
+    await expect(nwToggle).toHaveAttribute('aria-expanded', 'false');
+    await page.evaluate(() => showSection('portfolio'));
+    await expect(page.locator('#ptEntryPanel .panel-toggle')).toHaveAttribute('aria-expanded', 'false');
+    // Et foldet panel, man ikke selv har valgt, gemmer intet valg.
+    expect(await page.evaluate(() => localStorage.getItem('collapsed:nwEntryPanel'))).toBeNull();
+
+    // Åbner man det, er det åbent næste gang.
+    await page.evaluate(() => showSection('formue'));
+    await nwToggle.click();
+    await expect(nwToggle).toHaveAttribute('aria-expanded', 'true');
+    await page.reload();
+    await page.evaluate(() => showSection('formue'));
+    await expect(page.locator('#nwEntryPanel .panel-toggle')).toHaveAttribute('aria-expanded', 'true');
+
+    // 8 px mellem kortene.
+    const gap = await page.evaluate(() => {
+        const panels = [...document.querySelectorAll('#section-formue .full-width-below > .panel')].filter(p => p.offsetParent).map(p => p.getBoundingClientRect());
+        return Math.round(panels[1].top - panels[0].bottom);
+    });
+    expect(gap).toBeLessThanOrEqual(8);
 });

@@ -39,7 +39,7 @@ function renderGoals(){
     const goals = loadGoals();
     const history = readNetWorthHistory();
     if(!goals.length){
-        container.replaceChildren(el('p', {className:'empty-note', textContent:'Sæt et mål, fx "Første million" for din nettoformue, og følg hvor langt du er – og hvad der skal til for at nå det i tide.'}));
+        container.replaceChildren(el('p', {className:'empty-note', textContent:'Sæt et mål, fx "Første million", og følg, hvor langt du er.'}));
         return;
     }
     container.replaceChildren(...goals.map(goal => {
