@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#0B0B0C">
     <!-- Sidens version (sættes af npm run stamp). Den åbne side tjekker, om der er en nyere (js/update-check.js). -->
-    <meta name="app-version" content="f66635a3">
+    <meta name="app-version" content="862c7d47">
     <meta name="description" content="Budget, formue, investering og lån – danske økonomiværktøjer, hvor dine tal bliver på din egen enhed.">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
@@ -40,7 +40,7 @@
     <script>try{ if(localStorage.getItem('appLock')) document.documentElement.classList.add('is-locked'); }catch(e){}</script>
     <!-- Skjul beløb: sløres med det samme, før siden tegnes (se js/hide-amounts.js). -->
     <script>try{ if(localStorage.getItem('hideAmounts')) document.documentElement.classList.add('amounts-hidden'); }catch(e){}</script>
-    <link rel="stylesheet" href="styles.css?v=5c238cd6">
+    <link rel="stylesheet" href="styles.css?v=eb09031b">
 </head>
 <body>
 
@@ -102,6 +102,7 @@
                     <span class="brand-sub">Privat økonomi</span>
                 </div>
                 <div class="app-header-actions">
+                    <button class="top-icon-btn customize-btn" id="customizeCardsBtn" type="button" onclick="openOverviewCardsDialog()" aria-haspopup="dialog" aria-label="Tilpas oversigt" title="Tilpas oversigt"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button>
                     <button class="icon-btn hide-amounts-btn" id="hideAmountsBtn" type="button" onclick="toggleAmountsHidden()" aria-pressed="false" aria-label="Skjul beløb" title="Skjul beløb"><svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 5.6A9.7 9.7 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a16 16 0 0 1-2.9 3.6M6.6 6.7C4 8.4 2.5 12 2.5 12S6 18.5 12 18.5a9.4 9.4 0 0 0 4.4-1.1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button>
                     <button class="btn btn-dark monthly-status-btn" type="button" onclick="openMonthlyStatus()" aria-label="+ Månedsstatus" title="Gem dine tal i både Formue og Porteføljetracker på én gang"><span class="label-long">+ Månedsstatus</span><span class="label-short" aria-hidden="true">+ Status</span></button>
                 </div>
@@ -151,7 +152,6 @@
                     <h1 id="pageTitle">Din økonomi</h1>
                     <p class="page-sub" id="pageSub"></p>
                 </div>
-                <button class="btn btn-secondary btn-sm customize-btn" id="customizeCardsBtn" type="button" onclick="openOverviewCardsDialog()" aria-haspopup="dialog"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Tilpas oversigt</button>
             </header>
             <!-- Indstillinger åbner som en dialog (som Hjælp og Feedback), med sløret baggrund. -->
             <dialog class="dialog settings-dialog" id="settingsPanel" aria-labelledby="settingsTitle">
@@ -225,7 +225,6 @@
 
 <div id="section-overview">
     <!-- På telefon og tablet står "Tilpas oversigt" lige over kortene; på computer i sidehovedet. -->
-    <div class="ov-kpi-tools"><button class="btn btn-secondary btn-sm" type="button" onclick="openOverviewCardsDialog()" aria-haspopup="dialog"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Tilpas oversigt</button></div>
     <div class="stats overview-kpis" id="ovKpis"></div>
 
     <div class="overview-grid">
@@ -374,14 +373,14 @@
             <div class="panel">
                 <div class="eyebrow">Optimal realiseringsstrategi</div>
                 <p id="strategyText" style="margin:0; font-size:14px; line-height:1.5;"></p>
-                <details>
+                <details data-card-help>
                     <summary class="summary-toggle">Forklaring</summary>
                     <p class="explainer">
                         Kilder: <a href="https://skat.dk/borger/aktier-og-andre-vaerdipapirer/aktiesparekonto" target="_blank" rel="noopener">skat.dk: aktiesparekonto</a>, <a href="https://skat.dk/borger/aktier-og-andre-vaerdipapirer/skat-af-aktier" target="_blank" rel="noopener">skat.dk: skat af aktier</a>.<br><br>
                         Det er en afvejning: sælger du for tidligt, mister du renters rente på de kroner, der forlader depotet som skat, før det er nødvendigt. Venter du for længe, risikerer du i stedet, at en stor del af gevinsten bliver beskattet med den høje sats på <span data-rule="AKT_TAX_HIGH">42</span>% i sidste øjeblik. Værktøjet finder det optimale startår for realisering af gevinst, ved simpelthen at afprøve alle mulige år og vælge det, der reelt giver den højeste slutværdi. Jo højere det forventede afkast er, jo dyrere er det at betale skat tidligt (de kroner går glip af mere vækst), så høje afkast trækker det optimale startår tættere på sidste år. Ved lave afkast koster tidlig realisering til gengæld mindre i tabt vækst, så det kan bedre betale sig at sprede realiseringen ud over flere år.
                     </p>
                 </details>
-                <details>
+                <details data-card-help>
                     <summary class="summary-toggle">Eksempel</summary>
                     <p class="explainer">
                         <strong style="color:var(--text);">Et eksempel ved 8% forventet afkast:</strong> af <span data-rule="TAX_LIMIT_27">79.400</span> kr. gevinst betaler man <span data-rule="EXAMPLE_TAX_HIGH">33.348</span> kr. i skat ved <span data-rule="AKT_TAX_HIGH">42</span>%, men kun <span data-rule="EXAMPLE_TAX_LOW">21.438</span> kr. ved <span data-rule="AKT_TAX_LOW">27</span>% – en besparelse på <span data-rule="EXAMPLE_TAX_SAVING">11.910</span> kr. her og nu. Det er dog ikke hele historien: at realisere gevinst tidligt koster renters rente på de kroner, der forlader depotet som skat, men det nulstiller samtidig anskaffelsessummen på det realiserede beløb, når der genkøbes, så en større del af den fremtidige værdi bliver skattefri "tilbagebetaling af anskaffelsessum" i stedet for ny gevinst. Ved 8% afkast betyder det samlet set, at det tidligst er ca. 8 år før slutdatoen, det bliver en fordel at begynde at realisere gevinst og udnytte <span data-rule="AKT_TAX_LOW">27</span>%-grænsen.
@@ -493,13 +492,13 @@
             <div class="panel">
                 <div class="eyebrow">Optimal realiseringsstrategi</div>
                 <p id="strategyText2" style="margin:0; font-size:14px; line-height:1.5;"></p>
-                <details>
+                <details data-card-help>
                     <summary class="summary-toggle">Hvorfor virker det sådan? (uddyb)</summary>
                     <p class="explainer">
                         Det er en afvejning: sælger du for tidligt, mister du renters rente på de kroner, der forlader depotet som skat, før det er nødvendigt. Venter du for længe, risikerer du i stedet, at en stor del af gevinsten bliver beskattet med den høje sats på <span data-rule="AKT_TAX_HIGH">42</span>% i sidste øjeblik. Værktøjet finder det optimale startår for realisering af gevinst, ved simpelthen at afprøve alle mulige år og vælge det, der reelt giver den højeste slutværdi. Jo højere det forventede afkast er, jo dyrere er det at betale skat tidligt (de kroner går glip af mere vækst), så høje afkast trækker det optimale startår tættere på sidste år. Ved lave afkast koster tidlig realisering til gengæld mindre i tabt vækst, så det kan bedre betale sig at sprede realiseringen ud over flere år.
                     </p>
                 </details>
-                <details>
+                <details data-card-help>
                     <summary class="summary-toggle">Eksempel</summary>
                     <p class="explainer">
                         <strong style="color:var(--text);">Et eksempel ved 8% forventet afkast:</strong> af <span data-rule="TAX_LIMIT_27">79.400</span> kr. gevinst betaler man <span data-rule="EXAMPLE_TAX_HIGH">33.348</span> kr. i skat ved <span data-rule="AKT_TAX_HIGH">42</span>%, men kun <span data-rule="EXAMPLE_TAX_LOW">21.438</span> kr. ved <span data-rule="AKT_TAX_LOW">27</span>% – en besparelse på <span data-rule="EXAMPLE_TAX_SAVING">11.910</span> kr. her og nu. Det er dog ikke hele historien: at realisere gevinst tidligt koster renters rente på de kroner, der forlader depotet som skat, men det nulstiller samtidig anskaffelsessummen på det realiserede beløb, når der genkøbes, så en større del af den fremtidige værdi bliver skattefri "tilbagebetaling af anskaffelsessum" i stedet for ny gevinst. Ved 8% afkast betyder det samlet set, at det tidligst er ca. 8 år før slutdatoen, det bliver en fordel at begynde at realisere gevinst og udnytte <span data-rule="AKT_TAX_LOW">27</span>%-grænsen.
@@ -986,7 +985,7 @@
                     <div class="stat"><div class="label">Plads til <span data-rule="AKT_TAX_LOW">27</span> %</div><div class="value" id="taxRoom">–</div><div class="sub">før skatten stiger til <span data-rule="AKT_TAX_HIGH">42</span> %</div></div>
                     <div class="stat"><div class="label">Anslået skat</div><div class="value" id="taxEstimate">–</div><div class="sub" id="taxEstimateSub"></div></div>
                 </div>
-                <p class="explainer">Udbytteskat, som banken allerede har trukket, modregnes i årsopgørelsen. Aktiesparekontoen beskattes for sig med <span data-rule="ASK_TAX">17</span> % af årets afkast og tæller ikke med i aktieindkomsten. Viden, ikke rådgivning: beregningen er forenklet, så tjek altid tallene i din bank og på din årsopgørelse.</p>
+                <p class="explainer" data-card-help>Udbytteskat, som banken allerede har trukket, modregnes i årsopgørelsen. Aktiesparekontoen beskattes for sig med <span data-rule="ASK_TAX">17</span> % af årets afkast og tæller ikke med i aktieindkomsten. Viden, ikke rådgivning: beregningen er forenklet, så tjek altid tallene i din bank og på din årsopgørelse.</p>
             </div>
         </div>
     </div>
@@ -1140,7 +1139,7 @@
                         <tbody id="brTableBody"></tbody>
                     </table>
                 </div>
-                <p class="explainer">
+                <p class="explainer" data-card-help>
                     Gevinst ved salg af din egen bolig er skattefri, og salgsomkostningerne er trukket fra formuen ved køb. Afkastet på investeringer angives efter skat for at holde det enkelt. Rentefradraget (ca. <span data-rule="RENTEFRADRAG_LOW">33</span> % op til <span data-rule="RENTEFRADRAG_THRESHOLD">50.000</span> kr. pr. voksen, ca. <span data-rule="RENTEFRADRAG_HIGH">25</span> % derover) er modregnet i køberens udgifter, ligesom bidrag. Boligskatten følger boligprisen. Ikke rådgivning.
                 </p>
             </div>
@@ -1223,7 +1222,7 @@
                         <tbody id="debtTableBody"></tbody>
                     </table>
                 </div>
-                <p class="explainer">Renten tilskrives månedligt. Minimumsydelserne betales altid på alle lån; ekstrabeløbet og ydelser fra lån, der er betalt ud, går til ét lån ad gangen. Ændrer du dine lån, gemmes de her i browseren. Ikke rådgivning.</p>
+                <p class="explainer" data-card-help>Renten tilskrives månedligt. Minimumsydelserne betales altid på alle lån; ekstrabeløbet og ydelser fra lån, der er betalt ud, går til ét lån ad gangen. Ændrer du dine lån, gemmes de her i browseren. Ikke rådgivning.</p>
             </div>
         </div>
     </div>
@@ -1339,17 +1338,17 @@
             <div class="stat"><div class="label">Likvid formue</div><div class="value" id="monthLiquid">–</div><div class="sub" id="monthLiquidSub"></div></div>
             <div class="stat"><div class="label">Porteføljens afkast</div><div class="value" id="monthReturn">–</div><div class="sub" id="monthReturnSub"></div></div>
         </div>
-        <p class="month-best" id="monthBest" hidden></p>
         <div class="panel year-colors-panel">
-            <div class="panel-title-row"><div><h2 class="panel-title" id="yearColorsTitle">Dit år i farver</h2><p class="panel-sub">Grøn: formuen steg. Rød: den faldt. Vælg en måned for at se den.</p></div></div>
+            <div class="panel-title-row"><div><h2 class="panel-title" id="yearColorsTitle">Dit år i farver</h2><p class="panel-sub" data-card-help>Grøn: formuen steg. Rød: den faldt. Vælg en måned for at se den.</p></div></div>
             <div class="year-colors" id="yearColorsGrid" role="group" aria-labelledby="yearColorsTitle"></div>
             <div class="year-colors-foot">
                 <p class="year-colors-detail" id="yearColorsDetail" aria-live="polite"></p>
                 <div class="year-colors-legend" aria-hidden="true"><span>Fald</span><i class="ycell-swatch is-down l4"></i><i class="ycell-swatch is-down l2"></i><i class="ycell-swatch is-flat"></i><i class="ycell-swatch is-up l2"></i><i class="ycell-swatch is-up l4"></i><span>Stigning</span></div>
             </div>
+            <div class="month-best" id="monthBest" hidden></div>
         </div>
         <div class="panel">
-            <div class="panel-title-row"><div><h2 class="panel-title">Alle kategorier</h2><p class="panel-sub">Fra periodens start til slut. Porteføljens afkast er ændringen minus dine egne indskud.</p></div></div>
+            <div class="panel-title-row"><div><h2 class="panel-title">Alle kategorier</h2><p class="panel-sub" data-card-help>Fra periodens start til slut. Porteføljens afkast er ændringen minus dine egne indskud.</p></div></div>
             <div class="data-table-wrap">
                 <table class="data-table month-table">
                     <thead><tr><th>Kategori</th><th>Start</th><th>Slut</th><th>Ændring</th><th>%</th></tr></thead>
@@ -1487,7 +1486,7 @@
 
         <div class="panel">
             <div class="eyebrow">Bedste perioder</div>
-            <p class="dialog-hint">Dine tre bedste perioder. Afkast = ændring i værdi minus indskud.</p>
+            <p class="dialog-hint" data-card-help>Dine tre bedste perioder. Afkast = ændring i værdi minus indskud.</p>
             <ol class="best-periods" id="ptBestPeriods"></ol>
         </div>
 
@@ -1499,7 +1498,7 @@
                     <tbody id="ptYearBody"></tbody>
                 </table>
             </div>
-            <p class="dialog-hint year-hint">Afkast = ændring i værdi minus indskud. I procenten tæller indskud halvt, da de i snit kun har været investeret det halve år.</p>
+            <p class="dialog-hint year-hint" data-card-help>Afkast = ændring i værdi minus indskud. I procenten tæller indskud halvt, da de i snit kun har været investeret det halve år.</p>
         </div>
 
         <div class="panel">
@@ -1523,7 +1522,7 @@
                     <tbody id="ptTableBody"></tbody>
                 </table>
             </div>
-            <p class="explainer" style="margin:12px 0 12px 0;">Tryk "Download" for at gemme alle dine datapunkter i en CSV-fil, som du fx kan tage med til en anden enhed. Tryk "Upload" for at indlæse punkter fra en CSV-fil igen – dine eksisterende punkter bevares, men punkter med samme dato som i filen bliver overskrevet.</p>
+            <p class="explainer" data-card-help>Tryk "Download" for at gemme alle dine datapunkter i en CSV-fil, som du fx kan tage med til en anden enhed. Tryk "Upload" for at indlæse punkter fra en CSV-fil igen – dine eksisterende punkter bevares, men punkter med samme dato som i filen bliver overskrevet.</p>
             <button class="btn btn-secondary" onclick="downloadTableAsCSV('ptTableBody', 'portefoeljetracker.csv')">Download som CSV</button>
             <button class="btn btn-secondary" onclick="document.getElementById('portfolioCsvUpload').click()">Upload CSV</button>
             <input type="file" id="portfolioCsvUpload" accept=".csv" style="display:none;" onchange="importPortfolioCSV(event)">
@@ -1635,27 +1634,28 @@
                 </div>
                 <div class="buffer-marks"><span style="left:0%">0</span><span style="left:33.333%">3 mdr.</span><span style="left:66.667%">6 mdr.</span><span style="left:100%">9 mdr.</span></div>
             </div>
-            <details class="inline-about">
+            <details class="inline-about" data-card-help>
                 <summary>Hvorfor 3–6 måneder?</summary>
                 <p class="explainer">En tommelfingerregel er at have 3–6 måneders faste udgifter stående i kontanter til uforudsete udgifter som tandlæge, bilreparation eller jobskifte. Kun kontanter tæller med – aktier kan være faldet i værdi, lige når du får brug for pengene. Udgifterne hentes automatisk fra din <strong>Budget</strong>-fane: kun kategorierne under <strong>Behov</strong> og <strong>Ønsker</strong> tæller med – opsparingsposterne gør ikke, for dem kan du holde pause med, hvis det brænder på.</p>
             </details>
         </div>
 
         <div class="panel">
-            <div class="eyebrow">Formuehistorik</div>
-            <p class="explainer explainer-lead">
+            <div class="panel-head">
+                <div class="eyebrow">Formuehistorik</div>
+                <div class="panel-head-actions">
+                    <button type="button" class="chip-toggle" id="forecastToggle" aria-pressed="true" onclick="toggleForecast()">Prognose</button>
+                    <button class="mini-icon-btn mini-icon-btn-danger" type="button" onclick="clearNetWorthHistory()" aria-label="Ryd hele historikken" title="Ryd hele historikken"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V4.5h6V7"/><path d="M6.5 7l1 12.5h9l1-12.5"/><path d="M10 11v5M14 11v5"/></svg></button>
+                </div>
+            </div>
+            <p class="explainer explainer-lead" data-card-help>
                 Gem din formue for en dato – helst med <strong>Månedsstatus</strong> ved hver måneds udgang – for at følge udviklingen over tid. Vælg en tidligere dato, hvis du vil eftertilføje historiske tal. Data gemmes kun lokalt i din browser – ikke på en server, og er derfor ikke tilgængelig fra andre enheder eller browsere.
             </p>
 
-            <button class="btn btn-secondary" type="button" onclick="clearNetWorthHistory()">Ryd hele historikken</button>
-            <div class="chart-toolbar">
-                <button type="button" class="chip-toggle" id="forecastToggle" aria-pressed="true" onclick="toggleForecast()">Prognose</button>
-            </div>
             <div class="chart-wrap chart-wrap-standalone">
                 <canvas id="netWorthHistoryChart"></canvas>
                 <div class="chart-empty-state" id="netWorthHistoryChartEmpty">Ingen data endnu – gem en månedsstatus for at se udviklingen her.</div>
             </div>
-            <p class="forecast-note" id="nwForecastNote"></p>
 
                 <div class="data-table-wrap" style="max-height:280px;">
                     <table class="data-table">
@@ -1678,7 +1678,7 @@
                         <tbody id="netWorthHistoryTableBody"></tbody>
                     </table>
                 </div>
-                <p class="explainer" style="margin:12px 0 12px 0;">Tryk "Download" for at gemme alle dine datapunkter i en CSV-fil, som du fx kan tage med til en anden enhed. Tryk "Upload" for at indlæse punkter fra en CSV-fil igen – dine eksisterende punkter bevares, men punkter med samme dato som i filen bliver overskrevet.</p>
+                <p class="explainer" data-card-help>Tryk "Download" for at gemme alle dine datapunkter i en CSV-fil, som du fx kan tage med til en anden enhed. Tryk "Upload" for at indlæse punkter fra en CSV-fil igen – dine eksisterende punkter bevares, men punkter med samme dato som i filen bliver overskrevet.</p>
                 <button class="btn btn-secondary" onclick="downloadTableAsCSV('netWorthHistoryTableBody', 'formuehistorik.csv')">Download som CSV</button>
                 <button class="btn btn-secondary" onclick="document.getElementById('netWorthCsvUpload').click()">Upload CSV</button>
                 <input type="file" id="netWorthCsvUpload" accept=".csv" style="display:none;" onchange="importNetWorthCSV(event)">
@@ -1718,7 +1718,7 @@
 
             <div class="panel">
                 <div class="eyebrow">Bedste perioder</div>
-                <p class="dialog-hint">De tre perioder mellem to gemte datoer, hvor din nettoformue steg mest.</p>
+                <p class="dialog-hint" data-card-help>De tre perioder mellem to gemte datoer, hvor din nettoformue steg mest.</p>
                 <ol class="best-periods" id="nwBestPeriods"></ol>
             </div>
 
@@ -1730,7 +1730,7 @@
                         <tbody id="nwYearBody"></tbody>
                     </table>
                 </div>
-                <p class="dialog-hint year-hint">Start er din seneste dato året før (eller årets første); slut er årets seneste.</p>
+                <p class="dialog-hint year-hint" data-card-help>Start er din seneste dato året før (eller årets første); slut er årets seneste.</p>
             </div>
 
         <div class="panel">
@@ -1746,7 +1746,7 @@
 
         <div class="panel">
             <div class="eyebrow">Hvor rig er jeg?</div>
-            <details class="inline-about">
+            <details class="inline-about" data-card-help>
                 <summary>Hvordan er det regnet?</summary>
                 <p class="explainer explainer-lead">
                 Sammenlign din nettoformue med andre danskere på præcis din alder. Tallene er CEPOS' beregninger på Danmarks Statistiks registre (2024-data opregnet til 2026-niveau). Som hos CEPOS tæller din pension med efter en beregnet skat på 40 %, så tallet her kan være lavere end din nettoformue ovenfor. Kun til inspiration.
@@ -1886,7 +1886,8 @@
     <script src="js/field-help.js?v=6a83e008"></script>
     <script src="js/number-fields.js?v=a35de4ce"></script>
     <script src="js/hide-amounts.js?v=8c823b8d"></script>
-    <script src="js/fold.js?v=cad5b3ff"></script>
+    <script src="js/card-help.js?v=e8be5e20"></script>
+    <script src="js/fold.js?v=75a96a6e"></script>
     <script src="js/tool1-ask-akt.js?v=3608c8e7"></script>
     <script src="js/tool2-monthly.js?v=c215de07"></script>
     <script src="js/tool3-fire.js?v=b050eef0"></script>
@@ -1898,7 +1899,7 @@
     <script src="js/buy-vs-rent.js?v=75764a5e"></script>
     <script src="js/debt-payoff.js?v=d92e8193"></script>
     <script src="js/navigation.js?v=7404a2ee"></script>
-    <script src="js/bottom-nav.js?v=18f0ede4"></script>
+    <script src="js/bottom-nav.js?v=afbb212a"></script>
     <script src="js/shortcuts.js?v=60808f2b"></script>
     <script src="js/app-lock.js?v=f08bdb28"></script>
     <script src="js/feedback.js?v=1b47a367"></script>
@@ -1908,8 +1909,8 @@
     <script src="js/overview-cards.js?v=a4804772"></script>
     <script src="js/overview.js?v=5f340b27"></script>
     <script src="js/budget.js?v=9c9e0798"></script>
-    <script src="js/net-worth.js?v=373b5fcc"></script>
-    <script src="js/month-overview.js?v=e4247a5b"></script>
+    <script src="js/net-worth.js?v=a226df64"></script>
+    <script src="js/month-overview.js?v=e6fc7b60"></script>
     <script src="js/monthly-status.js?v=ce6d4fe9"></script>
     <script src="js/goals.js?v=8f90f572"></script>
     <script src="js/theme.js?v=f47f37be"></script>

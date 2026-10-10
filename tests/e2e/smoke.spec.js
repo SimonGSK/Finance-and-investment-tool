@@ -85,9 +85,10 @@ test('ingen vandret scroll, ingen zoom-felter og foldede forklaringer på små s
             .filter(i => i.offsetParent && parseFloat(getComputedStyle(i).fontSize) < 16).map(i => i.id || i.name || i.type));
         expect(small).toEqual([]);
     }
-    // Lange forklaringer er foldet sammen på telefoner og åbne på større skærme.
+    // Lange forklaringer er foldet sammen på telefoner og åbne på større skærme (de fleste kortforklaringer
+    // ligger nu bag et "?", så de, der er tilbage, er kort, der selv er en forklaring).
     const folds = await page.evaluate(() => [...document.querySelectorAll('details.fold')].map(d => d.open));
-    expect(folds.length).toBeGreaterThan(5);
+    expect(folds.length).toBeGreaterThanOrEqual(4);
     expect(folds.every(open => open === !phone)).toBe(true);
 });
 
@@ -769,8 +770,6 @@ test('år for år og prognose: tabellerne regner rigtigt, og prognosen står und
     await expect(nwYear.nth(0)).toContainText('2026 (til nu)');
     await expect(nwYear.nth(0)).toContainText('+90.000 kr.');
     await expect(nwYear.nth(1)).toContainText('2025 (fra 30. sep.)');
-    await expect(page.locator('#nwForecastNote')).toContainText('+10.008 kr./md.');
-    await expect(page.locator('#nwForecastNote')).toContainText('1.000.000 kr. omkring');
     expect(await page.evaluate(() => netWorthHistoryChart.data.datasets[2].data.length)).toBe(25);   // ét punkt pr. måned i 2 år
 
     await page.getByRole('button', { name: 'Investering', exact: true }).click();
@@ -843,7 +842,6 @@ test('prognosen kan slås fra og til, og valget huskes', async ({ page }) => {
     await toggle.click();
     await expect(toggle).toHaveAttribute('aria-pressed', 'false');
     expect(await page.evaluate(() => netWorthHistoryChart.data.datasets[2].data.length)).toBe(0);
-    await expect(page.locator('#nwForecastNote')).toBeHidden();
     await page.reload();
     await page.getByRole('button', { name: 'Formue', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Prognose' })).toHaveAttribute('aria-pressed', 'false');
@@ -1325,8 +1323,7 @@ test('Månedsoverblik: Dit år i tal, årets bedste og værste måned, kurver og
 
     // En måned: årets bedste og værste måned under nøgletallene, og mærket på den valgte måned.
     await expect(page.locator('#monthPeriod')).toHaveValue('4');
-    await expect(page.locator('#monthBest')).toContainText('bedste måned mar.–apr. (2 mdr.) +30.000 kr.');
-    await expect(page.locator('#monthBest')).toContainText('værste måned februar −5.000 kr.');
+    await expect(page.locator('.year-colors-panel #monthBest .month-best-row')).toHaveText(['Bedste måned mar.–apr. (2 mdr.) +30.000 kr.', 'Værste måned februar −5.000 kr.']);
     await expect(page.locator('#monthRange')).toContainText('Årets bedste måned');
     await expect(page.locator('#yearPanel')).toBeHidden();
     // Hver kategori har en lille kurve.
@@ -2261,4 +2258,102 @@ test('kompakt på telefon: "Tilføj datapunkt" er foldet sammen fra start, åbne
         return Math.round(panels[1].top - panels[0].bottom);
     });
     expect(gap).toBeLessThanOrEqual(8);
+});
+
+test('forklaringer bag "?" i kortets hjørne: skjult fra start, åbnes og lukkes, én ad gangen', async ({ page }) => {
+    await page.goto('/index.html');
+    // Alle markerede forklaringer er flyttet bag et "?"; ingen står frit i et kort.
+    expect(await page.evaluate(() => [...document.querySelectorAll('[data-card-help]')].every(n => n.closest('.card-help-pop')))).toBe(true);
+
+    await page.evaluate(() => showSection('formue'));
+    const buffer = page.locator('.panel', { has: page.locator('#bufferMonths') });
+    const btn = buffer.getByRole('button', { name: 'Forklaring: Nødopsparing' });
+    const pop = buffer.locator('.card-help-pop');
+    await expect(pop).toBeHidden();
+    await expect(buffer.getByText('Hvorfor 3–6 måneder?')).toBeHidden();
+    await btn.click();
+    await expect(pop).toBeVisible();
+    await expect(pop).toContainText('Hvorfor 3–6 måneder?');
+    await expect(pop).toContainText('En tommelfingerregel');
+    await expect(btn).toHaveAttribute('aria-expanded', 'true');
+    await page.keyboard.press('Escape');
+    await expect(pop).toBeHidden();
+    await expect(btn).toBeFocused();
+
+    // Kun én ad gangen: åbnes "Hvor rig er jeg?", lukkes Nødopsparing.
+    await btn.click();
+    const rich = page.locator('.panel', { hasText: 'Hvor rig er jeg?' });
+    await rich.getByRole('button', { name: 'Forklaring: Hvor rig er jeg?' }).click();
+    await expect(pop).toBeHidden();
+    await expect(rich.locator('.card-help-pop')).toContainText('CEPOS');
+    await page.locator('#pageTitle').click();      // klik udenfor lukker
+    await expect(rich.locator('.card-help-pop')).toBeHidden();
+
+    // Månedsoverblik og ASK vs. Aktiedepot har også et "?".
+    await page.evaluate(() => { showSection('tools'); showTool(1); });
+    const strategy = page.locator('#tool1 .panel', { hasText: 'Optimal realiseringsstrategi' });
+    await strategy.getByRole('button', { name: 'Forklaring: Optimal realiseringsstrategi' }).click();
+    await expect(strategy.locator('.card-help-pop')).toContainText('Forklaring');
+    await expect(strategy.locator('.card-help-pop')).toContainText('Eksempel');
+});
+
+test('bundmenuen bliver, når man vælger år og periode i Månedsoverblik (kun tastaturfelter skjuler den) @mobil', async ({ page }) => {
+    await page.goto('/index.html');
+    const phone = await page.evaluate(() => window.innerWidth <= 640);
+    test.skip(!phone, 'bundmenuen findes kun på telefoner');
+    await page.evaluate(() => {
+        localStorage.setItem('netWorthHistory', JSON.stringify([{date: '2026-08-31', value: 100000}, {date: '2026-09-30', value: 110000}]));
+    });
+    await page.reload();
+    await page.evaluate(() => showSection('month'));
+    const bar = page.getByRole('navigation', { name: 'Bundmenu' });
+    await page.locator('#monthPeriod').focus();
+    await page.locator('#monthPeriod').selectOption('8');
+    await expect(page.locator('#monthPeriod')).toBeFocused();
+    await expect(bar).toBeVisible();
+    // Et felt med tastatur skjuler den stadig.
+    await page.evaluate(() => showSection('formue'));
+    await page.locator('#wealthAge').focus();
+    await expect(bar).toBeHidden();
+});
+
+test('Formuehistorik: Ryd (skraldespand) og Prognose står små i kortets overskrift, og prognoseteksten under grafen er væk', async ({ page }) => {
+    await page.goto('/index.html');
+    // Et års historik, så der er en prognose (og dermed en Prognose-knap).
+    await page.evaluate(() => localStorage.setItem('netWorthHistory', JSON.stringify(Array.from({length: 13}, (_, i) => {
+        const d = new Date(Date.UTC(2025, 9 + i, 0)).toISOString().slice(0, 10);
+        return {date: d, value: 500000 + i * 10000, liquid: 300000};
+    }))));
+    await page.reload();
+    await page.evaluate(() => showSection('formue'));
+    const head = page.locator('.panel-head', { hasText: 'Formuehistorik' });
+    await expect(head.getByRole('button', { name: 'Ryd hele historikken' })).toBeVisible();
+    await expect(head.getByRole('button', { name: 'Prognose' })).toBeVisible();
+    await expect(page.locator('#nwForecastNote')).toHaveCount(0);
+});
+
+test('Tilpas oversigt er et lille symbol i topbjælken ved øjet, og "?", Prognose og Ryd står på linje i Formuehistorik @mobil', async ({ page }) => {
+    await page.goto('/index.html');
+    // Et års historik, så der er en prognose (og dermed en Prognose-knap).
+    await page.evaluate(() => localStorage.setItem('netWorthHistory', JSON.stringify(Array.from({length: 13}, (_, i) => {
+        const d = new Date(Date.UTC(2025, 9 + i, 0)).toISOString().slice(0, 10);
+        return {date: d, value: 500000 + i * 10000, liquid: 300000};
+    }))));
+    await page.reload();
+    const center = sel => page.locator(sel).evaluate(e => { const r = e.getBoundingClientRect(); return r.top + r.height / 2; });
+    const btn = page.getByRole('button', { name: 'Tilpas oversigt' });
+    await expect(btn).toBeVisible();
+    await expect(btn).toHaveText('');
+    // I topbjælken lige før øjet, samme størrelse og på linje.
+    expect(await btn.evaluate(b => b.nextElementSibling?.id)).toBe('hideAmountsBtn');
+    expect(Math.abs(await center('#customizeCardsBtn') - await center('#hideAmountsBtn'))).toBeLessThanOrEqual(1);
+    const [a, eye] = [await btn.boundingBox(), await page.locator('#hideAmountsBtn').boundingBox()];
+    expect(Math.round(a.width)).toBe(Math.round(eye.width));
+    // Kun på Oversigt.
+    await page.evaluate(() => showSection('budget'));
+    await expect(btn).toBeHidden();
+
+    await page.evaluate(() => showSection('formue'));
+    const centers = await Promise.all(['.panel-head .eyebrow', '#forecastToggle', '.panel-head .mini-icon-btn', '.panel-head .card-help-btn'].map(center));
+    expect(Math.max(...centers) - Math.min(...centers)).toBeLessThanOrEqual(2);
 });

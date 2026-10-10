@@ -1247,11 +1247,8 @@ table.data-table .row-actions .btn{ padding-left:12px; padding-right:12px; }
 .year-note{ color:var(--subtle); font-size:0.9em; margin-left:4px; }
 .year-hint{ margin:var(--s3) 0 0; font-size:12.5px; }
 table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space:normal; }
-.forecast-note{ margin:var(--s3) 0 var(--s4); font-size:13px; line-height:1.6; color:var(--muted); }
-.forecast-note:empty{ display:none; }
 
 /* Lille til/fra-knap over en graf (fx prognosen) */
-.chart-toolbar{ display:flex; justify-content:flex-end; margin:var(--s4) 0 calc(-1 * var(--s2)); }
 .chip-toggle{
     display:inline-flex; align-items:center; gap:var(--s2);
     font:600 12.5px var(--font-sans); color:var(--muted);
@@ -1789,15 +1786,7 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
 }
 
 /* ---- Tilpas nøgletal: knappen står i sidehovedet på Oversigt ---- */
-.customize-btn{ display:none; }
-body[data-section="overview"] .customize-btn{ display:inline-flex; }
-.customize-btn .btn-icon, .ov-kpi-tools .btn-icon{ width:15px; height:15px; }
-.ov-kpi-tools{ display:none; }
-@media (max-width:1250px){
-    /* I én kolonne står grafen øverst, så knappen flyttes ned lige over kortene. */
-    body[data-section="overview"] .customize-btn{ display:none; }
-    #section-overview .ov-kpi-tools{ display:flex; justify-content:flex-end; order:1; margin:0 0 calc(-1 * var(--s2)); }
-}
+
 .cards-chooser .field{ margin-bottom:var(--s3); }
 
 /* ---- Ændringen i den valgte periode på Oversigtens graf ---- */
@@ -1820,7 +1809,7 @@ body[data-section="overview"] .customize-btn{ display:inline-flex; }
 }
 .month-badge.is-up{ border-color:var(--pos); color:var(--pos); }
 .month-badge.is-down{ border-color:var(--cross); color:var(--cross); }
-.month-best{ margin:0; font-size:14px; color:var(--muted); }
+.month-best{ margin:var(--s3) 0 0; padding-top:var(--s3); border-top:1px solid var(--border); font-size:14px; color:var(--muted); display:grid; gap:4px; }
 .month-best strong{ color:var(--text); font-weight:600; }
 .month-best .is-up{ color:var(--pos); font-weight:600; }
 .month-best .is-down{ color:var(--cross); font-weight:600; }
@@ -2118,6 +2107,55 @@ kbd{
     .page-header h1{ font-size:20px; }
     .panel-title{ font-size:16px; }
     .tool-intro{ font-size:14px; }
-    .explainer, .notice, .result-sub, .dialog-hint, .month-range, .forecast-note{ font-size:13px; }
+    .explainer, .notice, .result-sub, .dialog-hint, .month-range{ font-size:13px; }
     .result-value{ font-size:22px; }
+}
+
+/* ---- Forklaringer bag "?" i kortets hjørne (card-help.js) ---- */
+.panel.has-card-help{ position:relative; }
+.card-help-btn{ position:absolute; top:22px; right:22px; width:24px; height:24px; font-size:13px; z-index:1; }
+/* Overskriften må ikke løbe ind under "?". */
+.has-card-help > .eyebrow, .has-card-help > .panel-title-row{ padding-right:32px; }
+/* I en overskrift med knapper står "?" i knappernes række (ikke i hjørnet). */
+.panel-head-actions .card-help-btn{ position:static; }
+.card-help-pop{ margin:var(--s2) 0 var(--s3); }
+.card-help-pop > :first-child{ margin-top:0; }
+.card-help-pop > :last-child{ margin-bottom:0; }
+.card-help-pop p, .card-help-pop .panel-sub, .card-help-pop .dialog-hint, .card-help-pop .explainer{
+    margin:0 0 var(--s2); padding:0; border:0; font-size:13px; line-height:1.55; color:var(--muted);
+}
+.card-help-pop .card-help-head{ margin:var(--s3) 0 var(--s1); font-weight:600; color:var(--text); }
+.card-help-pop .card-help-head:first-child{ margin-top:0; }
+@media (max-width:640px){
+    .card-help-btn{ top:10px; right:10px; }
+}
+
+/* Kortets overskrift med en lille handling ved siden af (fx "Ryd historik" i Formuehistorik). */
+.panel-head{ display:flex; align-items:center; justify-content:space-between; gap:var(--s3); margin-bottom:var(--s3); }
+.panel-head .eyebrow{ margin:0; }
+
+/* Små knapper med kun et symbol i et korts overskrift (fx Ryd historik). Navnet står i aria-label og title. */
+.mini-icon-btn{
+    display:inline-grid; place-items:center; width:32px; height:32px; padding:0; flex-shrink:0;
+    border-radius:var(--r-pill); border:1px solid var(--border-strong); background:var(--panel); color:var(--muted); cursor:pointer;
+}
+.mini-icon-btn svg{ width:16px; height:16px; }
+.mini-icon-btn:hover{ color:var(--text); border-color:var(--akt); }
+.mini-icon-btn-danger:hover{ color:var(--cross); border-color:var(--cross); }
+.panel-head-actions{ display:flex; align-items:center; gap:var(--s2); }
+.panel-head-actions .mini-icon-btn{ width:28px; height:28px; }
+.panel-head-actions .mini-icon-btn svg{ width:15px; height:15px; }
+.panel-head-actions .chip-toggle{ padding:3px 10px; font-size:12px; gap:6px; }
+.panel-head-actions .chip-toggle[hidden]{ display:none; }
+/* "Tilpas oversigt" står i topbjælken ved øjet (Skjul beløb), i samme form og størrelse - kun på Oversigt. */
+.top-icon-btn{
+    display:grid; place-items:center; width:44px; height:44px; flex-shrink:0; padding:0;
+    border-radius:var(--r-pill); border:1px solid var(--border-strong); background:var(--panel); color:var(--text); cursor:pointer;
+}
+.top-icon-btn:hover{ background:var(--panel-hover); }
+.top-icon-btn svg{ width:19px; height:19px; }
+.app-header-actions .customize-btn{ display:none; }
+body[data-section="overview"] .app-header-actions .customize-btn{ display:grid; }
+@media (max-width:640px){
+    .top-icon-btn{ width:40px; height:40px; }
 }
