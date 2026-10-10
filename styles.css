@@ -1786,8 +1786,7 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
 }
 
 /* ---- Tilpas nøgletal: knappen står i sidehovedet på Oversigt ---- */
-.customize-btn{ display:none; }
-body[data-section="overview"] .customize-btn{ display:inline-grid; }
+
 .cards-chooser .field{ margin-bottom:var(--s3); }
 
 /* ---- Ændringen i den valgte periode på Oversigtens graf ---- */
@@ -2135,25 +2134,28 @@ kbd{
 .panel-head{ display:flex; align-items:center; justify-content:space-between; gap:var(--s3); margin-bottom:var(--s3); }
 .panel-head .eyebrow{ margin:0; }
 
-/* Små knapper med kun et symbol (Tilpas oversigt, Ryd historik). Navnet står i aria-label og title. */
-.icon-btn{
+/* Små knapper med kun et symbol i et korts overskrift (fx Ryd historik). Navnet står i aria-label og title. */
+.mini-icon-btn{
     display:inline-grid; place-items:center; width:32px; height:32px; padding:0; flex-shrink:0;
     border-radius:var(--r-pill); border:1px solid var(--border-strong); background:var(--panel); color:var(--muted); cursor:pointer;
 }
-.icon-btn svg{ width:16px; height:16px; }
-.icon-btn:hover{ color:var(--text); border-color:var(--akt); }
-.icon-btn-danger:hover{ color:var(--cross); border-color:var(--cross); }
+.mini-icon-btn svg{ width:16px; height:16px; }
+.mini-icon-btn:hover{ color:var(--text); border-color:var(--akt); }
+.mini-icon-btn-danger:hover{ color:var(--cross); border-color:var(--cross); }
 .panel-head-actions{ display:flex; align-items:center; gap:var(--s2); }
-.panel-head-actions .icon-btn{ width:28px; height:28px; }
-.panel-head-actions .icon-btn svg{ width:15px; height:15px; }
+.panel-head-actions .mini-icon-btn{ width:28px; height:28px; }
+.panel-head-actions .mini-icon-btn svg{ width:15px; height:15px; }
 .panel-head-actions .chip-toggle{ padding:3px 10px; font-size:12px; gap:6px; }
 .panel-head-actions .chip-toggle[hidden]{ display:none; }
-/* "Tilpas oversigt" står i sidehovedet på alle skærme, til højre på højde med titlen. Den ligger
-   oven på overskriften, så underteksten kan bruge hele bredden. */
-.page-header{ position:relative; }
-.page-header .customize-btn{ position:absolute; right:0; top:var(--customize-top, 34px); }
-/* Kun på Oversigt (.icon-btn sætter ellers display). */
-body:not([data-section="overview"]) .page-header .customize-btn{ display:none; }
-body[data-section="overview"] #pageTitle{ padding-right:44px; }
-@media (max-width:900px){ .page-header .customize-btn{ --customize-top:31px; } }
-@media (max-width:640px){ .page-header .customize-btn{ --customize-top:15px; } }
+/* "Tilpas oversigt" står i topbjælken ved øjet (Skjul beløb), i samme form og størrelse - kun på Oversigt. */
+.top-icon-btn{
+    display:grid; place-items:center; width:44px; height:44px; flex-shrink:0; padding:0;
+    border-radius:var(--r-pill); border:1px solid var(--border-strong); background:var(--panel); color:var(--text); cursor:pointer;
+}
+.top-icon-btn:hover{ background:var(--panel-hover); }
+.top-icon-btn svg{ width:19px; height:19px; }
+.app-header-actions .customize-btn{ display:none; }
+body[data-section="overview"] .app-header-actions .customize-btn{ display:grid; }
+@media (max-width:640px){
+    .top-icon-btn{ width:40px; height:40px; }
+}

@@ -2332,7 +2332,7 @@ test('Formuehistorik: Ryd (skraldespand) og Prognose står små i kortets oversk
     await expect(page.locator('#nwForecastNote')).toHaveCount(0);
 });
 
-test('Tilpas oversigt er et lille symbol på højde med titlen, og "?", Prognose og Ryd står på linje i Formuehistorik @mobil', async ({ page }) => {
+test('Tilpas oversigt er et lille symbol i topbjælken ved øjet, og "?", Prognose og Ryd står på linje i Formuehistorik @mobil', async ({ page }) => {
     await page.goto('/index.html');
     // Et års historik, så der er en prognose (og dermed en Prognose-knap).
     await page.evaluate(() => localStorage.setItem('netWorthHistory', JSON.stringify(Array.from({length: 13}, (_, i) => {
@@ -2344,16 +2344,16 @@ test('Tilpas oversigt er et lille symbol på højde med titlen, og "?", Prognose
     const btn = page.getByRole('button', { name: 'Tilpas oversigt' });
     await expect(btn).toBeVisible();
     await expect(btn).toHaveText('');
-    expect(Math.abs(await center('#customizeCardsBtn') - await center('#pageTitle'))).toBeLessThanOrEqual(4);
-    // Knappen ligger ikke oven i underteksten (som derfor kan bruge hele bredden).
-    await page.evaluate(() => { document.getElementById('pageSub').textContent = 'Seneste månedsstatus 28. sep. 2026 · alle beløb i DKK'; });
-    const [b, sub] = [await btn.boundingBox(), await page.locator('#pageSub').boundingBox()];
-    expect(b.y + b.height).toBeLessThanOrEqual(sub.y + 1);
+    // I topbjælken lige før øjet, samme størrelse og på linje.
+    expect(await btn.evaluate(b => b.nextElementSibling?.id)).toBe('hideAmountsBtn');
+    expect(Math.abs(await center('#customizeCardsBtn') - await center('#hideAmountsBtn'))).toBeLessThanOrEqual(1);
+    const [a, eye] = [await btn.boundingBox(), await page.locator('#hideAmountsBtn').boundingBox()];
+    expect(Math.round(a.width)).toBe(Math.round(eye.width));
     // Kun på Oversigt.
     await page.evaluate(() => showSection('budget'));
     await expect(btn).toBeHidden();
 
     await page.evaluate(() => showSection('formue'));
-    const centers = await Promise.all(['.panel-head .eyebrow', '#forecastToggle', '.panel-head .icon-btn', '.panel-head .card-help-btn'].map(center));
+    const centers = await Promise.all(['.panel-head .eyebrow', '#forecastToggle', '.panel-head .mini-icon-btn', '.panel-head .card-help-btn'].map(center));
     expect(Math.max(...centers) - Math.min(...centers)).toBeLessThanOrEqual(2);
 });

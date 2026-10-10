@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#0B0B0C">
     <!-- Sidens version (sættes af npm run stamp). Den åbne side tjekker, om der er en nyere (js/update-check.js). -->
-    <meta name="app-version" content="2950f556">
+    <meta name="app-version" content="862c7d47">
     <meta name="description" content="Budget, formue, investering og lån – danske økonomiværktøjer, hvor dine tal bliver på din egen enhed.">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
@@ -40,7 +40,7 @@
     <script>try{ if(localStorage.getItem('appLock')) document.documentElement.classList.add('is-locked'); }catch(e){}</script>
     <!-- Skjul beløb: sløres med det samme, før siden tegnes (se js/hide-amounts.js). -->
     <script>try{ if(localStorage.getItem('hideAmounts')) document.documentElement.classList.add('amounts-hidden'); }catch(e){}</script>
-    <link rel="stylesheet" href="styles.css?v=9789590b">
+    <link rel="stylesheet" href="styles.css?v=eb09031b">
 </head>
 <body>
 
@@ -102,6 +102,7 @@
                     <span class="brand-sub">Privat økonomi</span>
                 </div>
                 <div class="app-header-actions">
+                    <button class="top-icon-btn customize-btn" id="customizeCardsBtn" type="button" onclick="openOverviewCardsDialog()" aria-haspopup="dialog" aria-label="Tilpas oversigt" title="Tilpas oversigt"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button>
                     <button class="icon-btn hide-amounts-btn" id="hideAmountsBtn" type="button" onclick="toggleAmountsHidden()" aria-pressed="false" aria-label="Skjul beløb" title="Skjul beløb"><svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 5.6A9.7 9.7 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a16 16 0 0 1-2.9 3.6M6.6 6.7C4 8.4 2.5 12 2.5 12S6 18.5 12 18.5a9.4 9.4 0 0 0 4.4-1.1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button>
                     <button class="btn btn-dark monthly-status-btn" type="button" onclick="openMonthlyStatus()" aria-label="+ Månedsstatus" title="Gem dine tal i både Formue og Porteføljetracker på én gang"><span class="label-long">+ Månedsstatus</span><span class="label-short" aria-hidden="true">+ Status</span></button>
                 </div>
@@ -151,7 +152,6 @@
                     <h1 id="pageTitle">Din økonomi</h1>
                     <p class="page-sub" id="pageSub"></p>
                 </div>
-                <button class="icon-btn customize-btn" id="customizeCardsBtn" type="button" onclick="openOverviewCardsDialog()" aria-haspopup="dialog" aria-label="Tilpas oversigt" title="Tilpas oversigt"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button>
             </header>
             <!-- Indstillinger åbner som en dialog (som Hjælp og Feedback), med sløret baggrund. -->
             <dialog class="dialog settings-dialog" id="settingsPanel" aria-labelledby="settingsTitle">
@@ -1645,7 +1645,7 @@
                 <div class="eyebrow">Formuehistorik</div>
                 <div class="panel-head-actions">
                     <button type="button" class="chip-toggle" id="forecastToggle" aria-pressed="true" onclick="toggleForecast()">Prognose</button>
-                    <button class="icon-btn icon-btn-danger" type="button" onclick="clearNetWorthHistory()" aria-label="Ryd hele historikken" title="Ryd hele historikken"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V4.5h6V7"/><path d="M6.5 7l1 12.5h9l1-12.5"/><path d="M10 11v5M14 11v5"/></svg></button>
+                    <button class="mini-icon-btn mini-icon-btn-danger" type="button" onclick="clearNetWorthHistory()" aria-label="Ryd hele historikken" title="Ryd hele historikken"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V4.5h6V7"/><path d="M6.5 7l1 12.5h9l1-12.5"/><path d="M10 11v5M14 11v5"/></svg></button>
                 </div>
             </div>
             <p class="explainer explainer-lead" data-card-help>
