@@ -4,7 +4,7 @@
  * skjult i CSS), og skifter skærmbredden, følger de med.
  * Gælder .explainer-tekster over FOLD_MIN_CHARS tegn og elementer med
  * data-fold="Knaptekst". Tekster, der allerede ligger i en <details>, i en
- * dialog eller i indstillingerne, og skjulte noter, røres ikke.
+ * dialog, i indstillingerne eller bag et "?" (card-help.js), og skjulte noter, røres ikke.
  */
 
 const FOLD_MIN_CHARS = 140;
@@ -16,7 +16,7 @@ const phoneQuery = window.matchMedia('(max-width: 640px)');
  */
 function foldLongTexts(){
     const candidates = [...document.querySelectorAll('.explainer, [data-fold]')].filter(node =>
-        !node.closest('details, dialog, template, .settings-panel') &&
+        !node.closest('details, dialog, template, .settings-panel, .help-pop') &&
         node.style.display !== 'none' && !node.hidden &&
         (node.dataset.fold || node.textContent.trim().length >= FOLD_MIN_CHARS));
     candidates.forEach(node => {

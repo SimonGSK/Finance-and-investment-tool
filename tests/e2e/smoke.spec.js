@@ -85,9 +85,10 @@ test('ingen vandret scroll, ingen zoom-felter og foldede forklaringer på små s
             .filter(i => i.offsetParent && parseFloat(getComputedStyle(i).fontSize) < 16).map(i => i.id || i.name || i.type));
         expect(small).toEqual([]);
     }
-    // Lange forklaringer er foldet sammen på telefoner og åbne på større skærme.
+    // Lange forklaringer er foldet sammen på telefoner og åbne på større skærme (de fleste kortforklaringer
+    // ligger nu bag et "?", så de, der er tilbage, er kort, der selv er en forklaring).
     const folds = await page.evaluate(() => [...document.querySelectorAll('details.fold')].map(d => d.open));
-    expect(folds.length).toBeGreaterThan(5);
+    expect(folds.length).toBeGreaterThanOrEqual(4);
     expect(folds.every(open => open === !phone)).toBe(true);
 });
 
@@ -2261,4 +2262,41 @@ test('kompakt på telefon: "Tilføj datapunkt" er foldet sammen fra start, åbne
         return Math.round(panels[1].top - panels[0].bottom);
     });
     expect(gap).toBeLessThanOrEqual(8);
+});
+
+test('forklaringer bag "?" i kortets hjørne: skjult fra start, åbnes og lukkes, én ad gangen', async ({ page }) => {
+    await page.goto('/index.html');
+    // Alle markerede forklaringer er flyttet bag et "?"; ingen står frit i et kort.
+    expect(await page.evaluate(() => [...document.querySelectorAll('[data-card-help]')].every(n => n.closest('.card-help-pop')))).toBe(true);
+
+    await page.evaluate(() => showSection('formue'));
+    const buffer = page.locator('.panel', { has: page.locator('#bufferMonths') });
+    const btn = buffer.getByRole('button', { name: 'Forklaring: Nødopsparing' });
+    const pop = buffer.locator('.card-help-pop');
+    await expect(pop).toBeHidden();
+    await expect(buffer.getByText('Hvorfor 3–6 måneder?')).toBeHidden();
+    await btn.click();
+    await expect(pop).toBeVisible();
+    await expect(pop).toContainText('Hvorfor 3–6 måneder?');
+    await expect(pop).toContainText('En tommelfingerregel');
+    await expect(btn).toHaveAttribute('aria-expanded', 'true');
+    await page.keyboard.press('Escape');
+    await expect(pop).toBeHidden();
+    await expect(btn).toBeFocused();
+
+    // Kun én ad gangen: åbnes "Hvor rig er jeg?", lukkes Nødopsparing.
+    await btn.click();
+    const rich = page.locator('.panel', { hasText: 'Hvor rig er jeg?' });
+    await rich.getByRole('button', { name: 'Forklaring: Hvor rig er jeg?' }).click();
+    await expect(pop).toBeHidden();
+    await expect(rich.locator('.card-help-pop')).toContainText('CEPOS');
+    await page.locator('#pageTitle').click();      // klik udenfor lukker
+    await expect(rich.locator('.card-help-pop')).toBeHidden();
+
+    // Månedsoverblik og ASK vs. Aktiedepot har også et "?".
+    await page.evaluate(() => { showSection('tools'); showTool(1); });
+    const strategy = page.locator('#tool1 .panel', { hasText: 'Optimal realiseringsstrategi' });
+    await strategy.getByRole('button', { name: 'Forklaring: Optimal realiseringsstrategi' }).click();
+    await expect(strategy.locator('.card-help-pop')).toContainText('Forklaring');
+    await expect(strategy.locator('.card-help-pop')).toContainText('Eksempel');
 });

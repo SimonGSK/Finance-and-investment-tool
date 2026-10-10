@@ -74,6 +74,7 @@ The page is **responsive**: one layout that adapts to the space available rather
 - **Stacking by available space.** The tools, Budget and Formue use CSS container queries: when the content area (not the screen) is narrower than about 1150 px, the chart moves under the inputs, so it never gets squeezed next to the menu.
 - **Phones (below 640 px).** Body text is about 14.5 px and small text never under 12 px, in line with Apple's and Material Design's type scales. Form fields stay at 16 px so iPhone doesn't zoom in. Cards are tighter (8 px apart, slightly smaller headings), charts have a landscape shape (roughly 4:3), long explanations are folded, and **Tilføj datapunkt** in Formue and Portefølje starts folded until you open it (then it's remembered).
 - **Themes.** The light theme is forest green on warm off-white; the dark theme is black and greys with the same green and red.
+- **Explanations behind "?".** Cards show their numbers; the text that explains them (a subtitle, a "Hvorfor …?" fold or a help text, marked `data-card-help` in the HTML) sits behind a small "?" in the card's top-right corner and opens at the top of the card, like the "?" next to fields ([`js/card-help.js`](js/card-help.js)). Cards that are themselves an explanation, such as *Om 4%-reglen* and *Regler og antagelser*, stay as they are.
 - **Keyboard shortcuts (computer).** `1`–`7` open the menu items in their order, `N` a new monthly status, `B` hides or shows amounts and `?` lists them all ([`js/shortcuts.js`](js/shortcuts.js)). They never fire while typing in a field, with a dialog or sheet open, behind the code lock, or together with Cmd/Ctrl/Alt, so a number typed into a field stays in the field and Cmd+1 still switches browser tabs.
 - **Fonts.** Newsreader for headings, key figures and the name, Manrope for text, and IBM Plex Mono for amounts in tables, charts and fields. They're hosted with the site (`@font-face` at the top of `styles.css`, preloaded in `index.html`).
 
@@ -152,6 +153,7 @@ js/goals.js             Formue goals
 js/navigation.js        Menu, sections and tools, page header, settings dialog, reminders
 js/bottom-nav.js        Bottom bar and sheets on phones
 js/shortcuts.js         Keyboard shortcuts on computers (1-7, N, B, ?)
+js/card-help.js         Card explanations behind a "?" in the corner
 js/sync.js              Backup file and syncing between devices (merge, not overwrite)
 js/app-lock.js          Kodelås: lock screen, code and Face ID / fingerprint
 js/hide-amounts.js      Skjul beløb: blurs amounts, chart axes and tooltips

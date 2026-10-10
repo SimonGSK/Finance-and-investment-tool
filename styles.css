@@ -2121,3 +2121,20 @@ kbd{
     .explainer, .notice, .result-sub, .dialog-hint, .month-range, .forecast-note{ font-size:13px; }
     .result-value{ font-size:22px; }
 }
+
+/* ---- Forklaringer bag "?" i kortets hjørne (card-help.js) ---- */
+.panel.has-card-help{ position:relative; }
+.card-help-btn{ position:absolute; top:16px; right:16px; width:24px; height:24px; font-size:13px; z-index:1; }
+/* Overskriften må ikke løbe ind under "?". */
+.has-card-help > .eyebrow, .has-card-help > .panel-title-row{ padding-right:32px; }
+.card-help-pop{ margin:var(--s2) 0 var(--s3); }
+.card-help-pop > :first-child{ margin-top:0; }
+.card-help-pop > :last-child{ margin-bottom:0; }
+.card-help-pop p, .card-help-pop .panel-sub, .card-help-pop .dialog-hint, .card-help-pop .explainer{
+    margin:0 0 var(--s2); padding:0; border:0; font-size:13px; line-height:1.55; color:var(--muted);
+}
+.card-help-pop .card-help-head{ margin:var(--s3) 0 var(--s1); font-weight:600; color:var(--text); }
+.card-help-pop .card-help-head:first-child{ margin-top:0; }
+@media (max-width:640px){
+    .card-help-btn{ top:10px; right:10px; }
+}
