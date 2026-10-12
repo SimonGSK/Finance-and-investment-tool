@@ -2373,3 +2373,41 @@ test('Tilpas oversigt er et lille symbol i topbjælken ved øjet, og "?", Progno
     const centers = await Promise.all(['.panel-head .eyebrow', '#forecastToggle', '.panel-head .mini-icon-btn', '.panel-head .card-help-btn'].map(center));
     expect(Math.max(...centers) - Math.min(...centers)).toBeLessThanOrEqual(2);
 });
+
+test('Næste skridt: hvert skridt kan skjules (med fortryd), og uden skridt er kortet væk', async ({ page }) => {
+    await page.goto('/index.html');
+    const panel = page.locator('#ovNextPanel');
+    const steps = panel.locator('#ovNext li');
+    // Ny bruger: formue og budget mangler.
+    await expect(panel).toBeVisible();
+    await expect(steps).toHaveCount(2);
+    await expect(steps.nth(0)).toContainText('Skriv dine aktiver og din gæld ind.');
+
+    // Skjul "Udfyld formue" - og fortryd.
+    await steps.nth(0).getByRole('button', { name: 'Skjul: Skriv dine aktiver og din gæld ind.' }).click();
+    await expect(steps).toHaveCount(1);
+    await page.locator('.toast').getByRole('button', { name: 'Fortryd' }).click();
+    await expect(steps).toHaveCount(2);
+
+    // Skjul begge: kortet forsvinder, og det huskes.
+    await steps.nth(0).getByRole('button', { name: /^Skjul:/ }).click();
+    await steps.nth(0).getByRole('button', { name: /^Skjul:/ }).click();
+    await expect(panel).toBeHidden();
+    await page.reload();
+    await expect(page.locator('#ovNextPanel')).toBeHidden();
+
+    // Backup-skridtet kommer igen efter 30 dage.
+    await page.evaluate(() => {
+        localStorage.setItem('netWorthHistory', JSON.stringify([{date: '2026-09-30', value: 100000, liquid: 100000, netCatKontanter: 100000}]));
+        localStorage.setItem('budgetItems', JSON.stringify({catBolig: [{label: 'Husleje', amount: 5000}]}));
+        localStorage.setItem('netWorthGoals', JSON.stringify([{id: 'g', name: 'Mål', metric: 'value', target: 200000, deadline: null}]));
+        localStorage.setItem('monthlyReminderOff', '1');
+    });
+    await page.reload();
+    await expect(steps).toHaveCount(1);
+    await expect(steps.nth(0)).toContainText('Tag en backup');
+    await steps.nth(0).getByRole('button', { name: /^Skjul:/ }).click();
+    await expect(page.locator('#ovNextPanel')).toBeHidden();
+    const until = await page.evaluate(() => JSON.parse(localStorage.getItem('nextStepsHidden')).backup - Date.now());
+    expect(Math.round(until / 86400000)).toBe(30);
+});
