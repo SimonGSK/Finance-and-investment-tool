@@ -160,23 +160,52 @@ function renderOverviewSplit(figures){
     );
 }
 
-/** Højst fire konkrete ting at gøre nu, vigtigste først. */
+const NEXT_STEPS_HIDDEN_KEY = 'nextStepsHidden';
+
+/** @returns {Object<string, number>} skjulte skridt: nøgle -> skjult indtil (ms) */
+function readHiddenSteps(){
+    try{ return JSON.parse(localStorage.getItem(NEXT_STEPS_HIDDEN_KEY) || '{}') || {}; } catch(e){ return {}; }
+}
+
+/**
+ * "Næste skridt": højst fire konkrete ting at gøre nu, vigtigste først. Skridt forsvinder af
+ * sig selv, når de er gjort, og kan skjules med ×. Hvor længe afhænger af skridtet: månedens
+ * status kommer igen næste måned, backup efter 30 dage, nødopsparingen efter 90 dage, og
+ * "kom i gang"-skridtene (formue, budget, mål) bliver væk. Er der intet tilbage, skjules kortet.
+ */
 function renderOverviewNext({hasNetWorth, budgetSum, months}){
-    const items = [];
-    const add = (text, label, action) => items.push(el('li', {}, [el('span', {textContent: text}), el('button', {className:'btn btn-secondary btn-sm', type:'button', textContent: label, onclick: action})]));
+    const steps = [];
+    const add = (key, hideFor, text, label, action) => steps.push({key, hideFor, text, label, action});
     if(typeof monthlyReminderState !== 'undefined' && (monthlyReminderState?.due || monthlyReminderState?.snoozed)){
         const month = new Date(monthlyReminderState.month + '-15').toLocaleDateString('da-DK', {month:'long'});
-        add(`Gem dine tal for ${month}.`, 'Gem status', () => openMonthlyStatusFromReminder());
+        // Skjules for denne måned: nøglen indeholder måneden, så næste måned er et nyt skridt.
+        add(`status:${monthlyReminderState.month}`, 'forever', `Gem dine tal for ${month}.`, 'Gem status', () => openMonthlyStatusFromReminder());
     }
-    if(!hasNetWorth) add('Skriv dine aktiver og din gæld ind.', 'Udfyld formue', () => showSection('formue'));
-    if(budgetSum <= 0) add('Byg dit budget – så kan resten af siden regne med dine udgifter.', 'Byg budget', () => showSection('budget'));
-    if(months !== null && months < 3) add('Din nødopsparing dækker under 3 måneders udgifter.', 'Se nødopsparing', () => showSection('formue'));
-    if(!loadGoals().length && hasNetWorth) add('Sæt et mål for din formue eller dine aktier.', 'Sæt mål', () => { showSection('formue'); openGoalDialog(); });
+    if(!hasNetWorth) add('formue', 'forever', 'Skriv dine aktiver og din gæld ind.', 'Udfyld formue', () => showSection('formue'));
+    if(budgetSum <= 0) add('budget', 'forever', 'Byg dit budget – så kan resten af siden regne med dine udgifter.', 'Byg budget', () => showSection('budget'));
+    if(months !== null && months < 3) add('buffer', 90, 'Din nødopsparing dækker under 3 måneders udgifter.', 'Se nødopsparing', () => showSection('formue'));
+    if(!loadGoals().length && hasNetWorth) add('goal', 'forever', 'Sæt et mål for din formue eller dine aktier.', 'Sæt mål', () => { showSection('formue'); openGoalDialog(); });
     const lastBackup = parseInt(localStorage.getItem('lastBackupAt'), 10);
-    if(hasUserData() && (isNaN(lastBackup) || Date.now() - lastBackup > 30 * DAY_MS)) add('Tag en backup i indstillingerne, så dine tal ikke går tabt.', 'Åbn indstillinger', () => toggleSettings(true));
-    document.getElementById('ovNext').replaceChildren(...(items.length
-        ? items.slice(0, 4)
-        : [el('li', {className:'ov-done'}, [el('span', {textContent:'Du er helt opdateret. Næste gang: gem din månedsstatus ved månedens udgang.'})])]));
+    if(hasUserData() && (isNaN(lastBackup) || Date.now() - lastBackup > 30 * DAY_MS)) add('backup', 30, 'Tag en backup i indstillingerne, så dine tal ikke går tabt.', 'Åbn indstillinger', () => toggleSettings(true));
+
+    const hidden = readHiddenSteps();
+    const visible = steps.filter(step => !(hidden[step.key] > Date.now())).slice(0, 4);
+    const hide = step => {
+        const before = readHiddenSteps();
+        const next = {...before, [step.key]: step.hideFor === 'forever' ? Number.MAX_SAFE_INTEGER : Date.now() + step.hideFor * DAY_MS};
+        try{ localStorage.setItem(NEXT_STEPS_HIDDEN_KEY, JSON.stringify(next)); } catch(e){}
+        renderOverviewNext({hasNetWorth, budgetSum, months});
+        notify('Skridtet er skjult.', {actionLabel: 'Fortryd', onAction: () => {
+            try{ localStorage.setItem(NEXT_STEPS_HIDDEN_KEY, JSON.stringify(before)); } catch(e){}
+            renderOverviewNext({hasNetWorth, budgetSum, months});
+        }});
+    };
+    document.getElementById('ovNextPanel').hidden = !visible.length;
+    document.getElementById('ovNext').replaceChildren(...visible.map(step => el('li', {attrs: {'data-step': step.key}}, [
+        el('span', {className: 'ov-next-text', textContent: step.text}),
+        el('button', {className: 'btn btn-secondary btn-sm', type: 'button', textContent: step.label, onclick: step.action}),
+        el('button', {className: 'ov-next-hide', type: 'button', textContent: '×', attrs: {'aria-label': `Skjul: ${step.text}`, title: 'Skjul'}, onclick: () => hide(step)})
+    ])));
 }
 
 document.addEventListener('DOMContentLoaded', () => {

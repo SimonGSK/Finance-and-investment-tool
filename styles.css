@@ -1469,7 +1469,6 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
 .ov-next li{ display:flex; justify-content:space-between; align-items:center; gap:var(--s3); padding:var(--s3) 0; border-bottom:1px solid var(--border); font-size:15px; color:var(--muted); }
 .ov-next li:last-child{ border-bottom:none; }
 .ov-next .btn{ flex-shrink:0; margin:0; }
-.ov-next li.ov-done{ color:var(--pos); }
 .ov-side{ display:flex; flex-direction:column; gap:var(--s4); }
 .ov-tools{ display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:var(--s3); }
 .ov-tool{
@@ -2196,3 +2195,18 @@ body[data-section="overview"] .app-header-actions .customize-btn{ display:grid; 
 .card-option.is-used{ color:var(--muted); }
 .card-option.is-used .card-mark{ border-color:color-mix(in srgb, var(--akt) 55%, var(--border-strong)); background:color-mix(in srgb, var(--akt) 18%, transparent); }
 .card-used{ margin-left:auto; padding:1px 8px; border:1px solid var(--border); border-radius:var(--r-pill); font-size:12px; font-weight:600; color:var(--subtle); white-space:nowrap; }
+
+/* ---- Næste skridt: hvert skridt kan skjules med × (overview.js); uden skridt er kortet væk ---- */
+#ovNextPanel[hidden]{ display:none; }
+.ov-next li{ position:relative; padding-right:32px; }
+.ov-next-text{ flex:1 1 auto; min-width:0; }
+.ov-next-hide{
+    position:absolute; top:50%; right:0; transform:translateY(-50%);
+    width:26px; height:26px; padding:0; border:0; border-radius:var(--r-pill); background:transparent;
+    color:var(--subtle); font-size:18px; line-height:1; cursor:pointer;
+}
+.ov-next-hide:hover{ color:var(--text); background:var(--panel-hover); }
+@media (max-width:640px){
+    /* Teksten og knappen står under hinanden: × står øverst ved teksten. */
+    .ov-next li .ov-next-hide{ top:8px; transform:none; }
+}

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#0B0B0C">
     <!-- Sidens version (sættes af npm run stamp). Den åbne side tjekker, om der er en nyere (js/update-check.js). -->
-    <meta name="app-version" content="6fbc467e">
+    <meta name="app-version" content="24795263">
     <meta name="description" content="Budget, formue, investering og lån – danske økonomiværktøjer, hvor dine tal bliver på din egen enhed.">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
@@ -40,7 +40,7 @@
     <script>try{ if(localStorage.getItem('appLock')) document.documentElement.classList.add('is-locked'); }catch(e){}</script>
     <!-- Skjul beløb: sløres med det samme, før siden tegnes (se js/hide-amounts.js). -->
     <script>try{ if(localStorage.getItem('hideAmounts')) document.documentElement.classList.add('amounts-hidden'); }catch(e){}</script>
-    <link rel="stylesheet" href="styles.css?v=5426703f">
+    <link rel="stylesheet" href="styles.css?v=8b32af16">
 </head>
 <body>
 
@@ -258,7 +258,7 @@
                 <div class="panel-title-row"><h2 class="panel-title">Mine mål</h2><button type="button" class="link-btn" onclick="showSection('formue')">Alle mål</button></div>
                 <div id="ovGoals" class="ov-goals"></div>
             </div>
-            <div class="panel">
+            <div class="panel" id="ovNextPanel">
                 <div class="panel-title-row"><h2 class="panel-title">Næste skridt</h2></div>
                 <ul id="ovNext" class="ov-next"></ul>
             </div>
@@ -1907,7 +1907,7 @@
     <script src="js/pwa.js?v=70965acb"></script>
     <script src="js/report.js?v=d2fb079b"></script>
     <script src="js/overview-cards.js?v=bbbd15fc"></script>
-    <script src="js/overview.js?v=5f340b27"></script>
+    <script src="js/overview.js?v=672f94df"></script>
     <script src="js/budget.js?v=9c9e0798"></script>
     <script src="js/net-worth.js?v=a226df64"></script>
     <script src="js/month-overview.js?v=e6fc7b60"></script>
