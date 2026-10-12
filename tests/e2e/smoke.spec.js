@@ -1226,11 +1226,27 @@ test('Oversigt: de fire nøgletal kan vælges, et valgt kort bytter plads, og va
 
     await page.getByRole('button', { name: 'Tilpas oversigt' }).click();
     const dialog = page.getByRole('dialog', { name: 'Tilpas oversigt' });
-    await dialog.getByLabel('Kort 2').selectOption('pension');
-    await dialog.getByLabel('Kort 3').selectOption('totalReturn');
-    await dialog.getByLabel('Kort 4').selectOption('debt');
-    await dialog.getByLabel('Kort 1').selectOption('debt');                 // allerede på kort 4: de bytter
-    await expect(dialog.getByLabel('Kort 4')).toHaveValue('netWorth');
+    const slot = n => dialog.getByRole('button', { name: new RegExp(`^Kort ${n}:`) });
+    /** Åbner en plads' liste og vælger et kort i den. */
+    const pick = async (n, label) => {
+        await slot(n).click();
+        await dialog.getByRole('radiogroup', { name: `Vælg kort ${n}` }).getByRole('radio', { name: new RegExp(`^${label}`) }).click();
+    };
+    // Listen for kort 2: Porteføljeværdi er tydeligt markeret, de tre andre kort svagt med deres plads.
+    await slot(2).click();
+    const list = dialog.getByRole('radiogroup', { name: 'Vælg kort 2' });
+    await expect(list.getByRole('radio', { checked: true })).toHaveText('Porteføljeværdi');
+    await expect(list.locator('.card-option.is-current')).toHaveCount(1);
+    await expect(list.locator('.card-option.is-used')).toHaveText(['NettoformueKort 1', 'Stigning pr. månedKort 4', 'Budget pr. månedKort 3']);
+    await slot(2).click();                                                  // fold sammen igen
+    await expect(list).toBeHidden();
+
+    await pick(2, 'Pension');
+    await expect(slot(2)).toHaveAccessibleName('Kort 2: Pension');
+    await pick(3, 'Totalt afkast');
+    await pick(4, 'Gæld');
+    await pick(1, 'Gæld');                                                  // allerede på kort 4: de bytter
+    await expect(slot(4)).toHaveAccessibleName('Kort 4: Nettoformue');
     await dialog.getByRole('button', { name: 'Gem' }).click();
     expect(await labels()).toEqual(['Gæld', 'Pension', 'Totalt afkast', 'Nettoformue']);
 

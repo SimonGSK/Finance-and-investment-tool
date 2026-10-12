@@ -4,6 +4,12 @@
 const { test, expect } = require('@playwright/test');
 const AxeBuilder = require('@axe-core/playwright').default;
 
+// Uden animationer (som "Reducer bevægelse"): ellers kan axe måle et ark eller en dialog,
+// mens den toner frem, og se for svag kontrast. Hver test gennemgår mange sider og dialoger,
+// så de får mere tid end standarden på 30 sekunder.
+test.use({ reducedMotion: 'reduce' });
+test.setTimeout(90000);
+
 const VIEWS = [['overview'], ['tools', 'showTool', 1], ['tools', 'showTool', 2], ['tools', 'showTool', 3], ['tools', 'showTool', 5],
     ['tools', 'showTool', 6], ['tools', 'showTool', 7], ['housing', 'showHousingTool', 1], ['housing', 'showHousingTool', 2],
     ['housing', 'showHousingTool', 3], ['budget'], ['formue'], ['month'], ['portfolio']];
@@ -40,7 +46,8 @@ for(const theme of ['dark', 'light']){
         // Dialogerne: indstillinger, månedsstatus, hjælp, feedback og genveje.
         for(const [name, open] of [['indstillinger', () => toggleSettings(true)], ['månedsstatus', () => openMonthlyStatus()],
             ['hjælp', () => openHelp()], ['feedback', () => openFeedbackDialog()], ['genveje', () => openShortcutsDialog()],
-            ['tastefejl', () => { warnSuspiciousAmounts([{key: 'pension', from: 276000, to: 2760000, kind: 'zeros', zeros: 1}]); }]]){
+            ['tastefejl', () => { warnSuspiciousAmounts([{key: 'pension', from: 276000, to: 2760000, kind: 'zeros', zeros: 1}]); }],
+            ['tilpas oversigt', () => { openOverviewCardsDialog(); document.querySelector('.card-slot-btn').click(); }]]){
             await page.evaluate(open);
             await page.waitForTimeout(150);
             found.push(...await violations(page, name));
