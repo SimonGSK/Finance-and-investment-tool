@@ -1,6 +1,6 @@
 /**
- * @file De fire nøgletal øverst på Oversigt kan vælges frit: "Tilpas" åbner en dialog
- * med fire vælgere, og hvert kort kan være et af tallene nedenfor, ordnet efter, hvor
+ * @file De fire nøgletal øverst på Oversigt kan vælges frit: "Tilpas oversigt" åbner en dialog
+ * med fire pladser, og hvert kort kan være et af tallene nedenfor, ordnet efter, hvor
  * de kommer fra (Formue, Månedsoverblik, Portefølje, FIRE, Budget). Valget huskes i
  * localStorage ('overviewCards'). Selve tegningen sker i renderOverview (overview.js).
  */
@@ -150,21 +150,56 @@ function renderOverviewCards(ctx){
     }));
 }
 
-/** "Tilpas": fire vælgere, ét pr. kort. Vælger man et kort, der allerede står et andet sted, bytter de plads. */
+/**
+ * "Tilpas oversigt": de fire pladser (Kort 1-4). Et tryk på en plads folder listen over alle
+ * kort ud lige under den. Kortet på pladsen har et tydeligt flueben; de tre andre kort, man
+ * har nu, er mærket svagt med deres plads ("Kort 3") - vælger man et af dem, bytter de plads.
+ * En liste af knapper i stedet for <select>, fordi en vælgers punkter ikke kan mærkes.
+ */
 function openOverviewCardsDialog(){
-    const chosen = readOverviewCards();
-    const selects = chosen.map((id, i) => {
-        const select = el('select', {className: 'number-input', attrs: {'data-slot': String(i)}},
-            OVERVIEW_CARD_GROUPS.map(g => el('optgroup', {label: g.label},
-                g.cards.map(c => el('option', {value: c.id, textContent: c.label, selected: c.id === id})))));
-        select.dataset.previous = id;
-        select.addEventListener('change', () => {
-            const other = selects.find(s => s !== select && s.value === select.value);
-            if(other){ other.value = select.dataset.previous; other.dataset.previous = other.value; }
-            select.dataset.previous = select.value;
-        });
-        return select;
-    });
+    const slots = readOverviewCards();
+    let open = null;                                   // den plads, hvis liste er foldet ud
+    const labelOf = id => OVERVIEW_CARDS[id]?.label || id;
+    const box = el('div', {className: 'cards-chooser-slots'});
+
+    /** Vælger et kort til en plads; har en anden plads det allerede, får den pladsens gamle kort. */
+    const choose = (slot, id) => {
+        const other = slots.indexOf(id);
+        if(other >= 0 && other !== slot) slots[other] = slots[slot];
+        slots[slot] = id;
+        open = null;
+        render();
+        box.querySelector(`[data-slot="${slot}"]`)?.focus();
+    };
+
+    function render(){
+        box.replaceChildren(...slots.map((current, slot) => {
+            const listId = `cards-list-${slot}`;
+            const btn = el('button', {className: 'card-slot-btn', type: 'button', attrs: {'data-slot': String(slot),
+                'aria-expanded': String(open === slot), 'aria-controls': listId, 'aria-label': `Kort ${slot + 1}: ${labelOf(current)}`},
+                onclick: () => { open = open === slot ? null : slot; render(); box.querySelector(`#${listId} [aria-checked="true"]`)?.focus(); }}, [
+                el('span', {className: 'card-slot-name', textContent: `Kort ${slot + 1}`}),
+                el('span', {className: 'card-slot-value', textContent: labelOf(current)})
+            ]);
+            const list = el('div', {className: 'card-slot-list', id: listId, hidden: open !== slot, attrs: {role: 'radiogroup', 'aria-label': `Vælg kort ${slot + 1}`}},
+                OVERVIEW_CARD_GROUPS.flatMap(g => [
+                    el('div', {className: 'card-group-label', textContent: g.label, attrs: {'aria-hidden': 'true'}}),
+                    ...g.cards.map(c => {
+                        const usedAt = slots.indexOf(c.id);
+                        const isCurrent = usedAt === slot, isUsed = usedAt >= 0 && !isCurrent;
+                        return el('button', {className: `card-option${isCurrent ? ' is-current' : isUsed ? ' is-used' : ''}`, type: 'button',
+                            attrs: {role: 'radio', 'aria-checked': String(isCurrent)}, onclick: () => choose(slot, c.id)}, [
+                            el('span', {className: 'card-mark', attrs: {'aria-hidden': 'true'}}),
+                            el('span', {className: 'card-option-label', textContent: c.label}),
+                            isUsed ? el('span', {className: 'card-used', textContent: `Kort ${usedAt + 1}`}) : ''
+                        ]);
+                    })
+                ]));
+            return el('div', {className: `card-slot${open === slot ? ' is-open' : ''}`}, [btn, list]);
+        }));
+    }
+    render();
+
     const save = ids => {
         try{ localStorage.setItem(OVERVIEW_CARDS_KEY, JSON.stringify(ids)); } catch(e){}
         renderOverview();
@@ -172,12 +207,12 @@ function openOverviewCardsDialog(){
     openDialog({
         title: 'Tilpas oversigt',
         content: el('div', {className: 'cards-chooser'}, [
-            el('p', {className: 'dialog-hint', textContent: 'Vælg de fire tal øverst på Oversigt. Tallene hentes fra Formue, Månedsoverblik, Porteføljetrackeren og Budget.'}),
-            ...selects.map((s, i) => fieldEl(`Kort ${i + 1}`, s))
+            el('p', {className: 'dialog-hint', textContent: 'Vælg de fire tal øverst på Oversigt. Tryk på en plads for at skifte kortet.'}),
+            box
         ]),
         actions: [
             {label: 'Standard', variant: 'secondary', onClick: () => { save(DEFAULT_OVERVIEW_CARDS.slice()); }},
-            {label: 'Gem', variant: 'primary', onClick: () => { save(selects.map(s => s.value)); }}
+            {label: 'Gem', variant: 'primary', onClick: () => { save(slots.slice()); }}
         ]
     });
 }

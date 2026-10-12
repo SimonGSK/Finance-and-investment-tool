@@ -1787,7 +1787,6 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
 
 /* ---- Tilpas nøgletal: knappen står i sidehovedet på Oversigt ---- */
 
-.cards-chooser .field{ margin-bottom:var(--s3); }
 
 /* ---- Ændringen i den valgte periode på Oversigtens graf ---- */
 .ov-chart-change{ margin:var(--s1) 0 0; font-size:15px; font-weight:600; font-variant-numeric:tabular-nums; color:var(--muted); }
@@ -2159,3 +2158,41 @@ body[data-section="overview"] .app-header-actions .customize-btn{ display:grid; 
 @media (max-width:640px){
     .top-icon-btn{ width:40px; height:40px; }
 }
+
+/* ---- Tilpas oversigt: fire pladser med hver sin liste (overview-cards.js) ----
+   Kortet på pladsen har et tydeligt flueben; de tre andre kort, man har nu, er mærket svagt. */
+.cards-chooser-slots{ display:flex; flex-direction:column; gap:var(--s2); }
+.card-slot{ border:1px solid var(--border); border-radius:var(--r-md); background:var(--panel-sunken); overflow:hidden; }
+.card-slot.is-open{ border-color:var(--akt); }
+.card-slot-btn{
+    display:flex; align-items:center; gap:var(--s3); width:100%; padding:12px 14px;
+    border:0; background:transparent; color:var(--text); font:inherit; text-align:left; cursor:pointer;
+}
+.card-slot-btn::after{
+    content:''; width:7px; height:7px; margin-left:auto; flex-shrink:0;
+    border-right:1.6px solid currentColor; border-bottom:1.6px solid currentColor;
+    transform:rotate(45deg); opacity:0.55; transition:transform 0.18s var(--ease);
+}
+.card-slot.is-open .card-slot-btn::after{ transform:rotate(-135deg); }
+.card-slot-name{ min-width:4.6em; font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--subtle); }
+.card-slot-value{ font-weight:600; }
+.card-slot-list{ padding:2px 8px 10px; border-top:1px solid var(--border); max-height:50vh; overflow-y:auto; }
+.card-slot-list[hidden]{ display:none; }
+.card-group-label{ margin:10px 6px 2px; font:600 11px var(--font-sans); letter-spacing:0.14em; text-transform:uppercase; color:var(--subtle); }
+.card-option{
+    display:flex; align-items:center; gap:10px; width:100%; min-height:40px; padding:6px 8px;
+    border:0; border-radius:10px; background:transparent; color:var(--text); font:500 14.5px var(--font-sans); text-align:left; cursor:pointer;
+}
+.card-option:hover{ background:var(--panel-hover); }
+.card-mark{ position:relative; width:18px; height:18px; flex-shrink:0; border-radius:50%; border:1.5px solid var(--border-strong); }
+/* Tydeligt: kortet på denne plads. */
+.card-option.is-current{ background:var(--akt-soft); font-weight:700; }
+.card-option.is-current .card-mark{ background:var(--akt); border-color:var(--akt); }
+.card-option.is-current .card-mark::after{
+    content:''; position:absolute; left:5px; top:2px; width:4px; height:8px;
+    border-right:2px solid var(--on-akt); border-bottom:2px solid var(--on-akt); transform:rotate(45deg);
+}
+/* Svagt: de andre kort, man har nu (vælger man et, bytter de plads). */
+.card-option.is-used{ color:var(--muted); }
+.card-option.is-used .card-mark{ border-color:color-mix(in srgb, var(--akt) 55%, var(--border-strong)); background:color-mix(in srgb, var(--akt) 18%, transparent); }
+.card-used{ margin-left:auto; padding:1px 8px; border:1px solid var(--border); border-radius:var(--r-pill); font-size:12px; font-weight:600; color:var(--subtle); white-space:nowrap; }
