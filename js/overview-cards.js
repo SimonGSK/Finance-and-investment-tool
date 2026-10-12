@@ -37,14 +37,14 @@ function formueCard(id, label, key, inverse = false){
  * farver underteksten grøn/rød. Kortene med et fast id bruger de id'er, siden altid har haft.
  */
 const OVERVIEW_CARD_GROUPS = [
-    {label: 'Formue', cards: [
+    {label: 'Formue', opens: ['Formue', () => showSection('formue')], cards: [
         {id: 'netWorth', elId: 'ovNetWorth', label: 'Nettoformue', render: ctx => !ctx.hasNetWorth ? {value: '–', sub: 'Udfyld din formue'}
             : {value: DK.format(ctx.figures.value) + ' kr.', cls: ctx.figures.value < 0 ? 'negative' : '', ...sinceLastStatus(ctx, 'value')}},
         formueCard('liquid', 'Likvid formue', 'liquid'),
         formueCard('pension', 'Pension', 'netCatPension'),
         formueCard('debt', 'Gæld', 'debt', true)
     ]},
-    {label: 'Månedsoverblik', cards: [
+    {label: 'Månedsoverblik', opens: ['Månedsoverblik', () => showSection('month')], cards: [
         {id: 'growth', elId: 'ovGrowth', label: 'Stigning pr. måned', render: ctx => {
             const growth = monthlyTrend(ctx.nwHistory, 'value');
             const recent = recentChange(ctx.nwHistory, 'value');
@@ -65,7 +65,7 @@ const OVERVIEW_CARD_GROUPS = [
                 sub: `nettoformuen siden ${shortDate(year.startDate)}${year.start ? ` (${formatSignedPct(year.change / Math.abs(year.start))})` : ''}`};
         }}
     ]},
-    {label: 'Portefølje', cards: [
+    {label: 'Portefølje', opens: ['Portefølje', () => showSection('portfolio')], cards: [
         {id: 'portfolio', elId: 'ovPortfolio', label: 'Porteføljeværdi', render: ctx => {
             const t = ctx.ptTotals;
             if(!t) return {value: '–', sub: 'Ingen datapunkter endnu'};
@@ -93,7 +93,7 @@ const OVERVIEW_CARD_GROUPS = [
                 sub: days < 365 ? `omregnet til år fra ${Math.round(days / 30)} mdr.` : `pengevægtet siden ${formatDanishDate(h[0].date)}`};
         }}
     ]},
-    {label: 'FIRE', cards: [
+    {label: 'FIRE', opens: ['FIRE-beregneren', () => showTool(3)], cards: [
         // Som i FIRE-beregneren: 25 × årligt forbrug (budgettet uden opsparing), målt mod den likvide formue.
         {id: 'fire', label: 'FIRE-fremskridt', render: ctx => {
             if(!ctx.hasNetWorth) return {value: '–', sub: 'Udfyld din formue'};
@@ -105,17 +105,18 @@ const OVERVIEW_CARD_GROUPS = [
                 subTone: f.reached ? 'up' : ''};
         }}
     ]},
-    {label: 'Budget', cards: [
+    {label: 'Budget', opens: ['Budget', () => showSection('budget')], cards: [
         {id: 'budget', elId: 'ovBudget', label: 'Budget pr. måned', render: ctx => ctx.budgetSum <= 0 ? {value: '–', sub: 'Byg dit budget'}
             : {value: DK.format(ctx.budgetSum) + ' kr.', cls: ctx.budgetTotal > 0 && ctx.budgetTotal - ctx.budgetSum < 0 ? 'negative' : '',
                 sub: ctx.budgetTotal > 0 ? `${DK.format(ctx.budgetTotal - ctx.budgetSum)} kr. tilbage` : `${Math.round(ctx.savings / ctx.budgetSum * 100)} % går til opsparing`}},
-        {id: 'buffer', elId: 'ovBuffer', label: 'Nødopsparing', render: ctx => ctx.bufferMonths === null ? {value: '–', sub: 'Kræver et budget og dine kontanter'}
+        {id: 'buffer', elId: 'ovBuffer', label: 'Nødopsparing', opens: ['Formue', () => showSection('formue')], render: ctx => ctx.bufferMonths === null ? {value: '–', sub: 'Kræver et budget og dine kontanter'}
             : {value: `${ctx.bufferMonths.toFixed(1).replace('.', ',')} mdr.`, cls: ctx.bufferMonths < 3 ? 'negative' : '',
                 sub: ctx.bufferMonths >= 6 ? 'En solid buffer' : ctx.bufferMonths >= 3 ? 'Inden for anbefalingen' : 'Under anbefalingen på 3 mdr.'}}
     ]}
 ];
 
-const OVERVIEW_CARDS = Object.fromEntries(OVERVIEW_CARD_GROUPS.flatMap(g => g.cards).map(c => [c.id, c]));
+// Hvert kort åbner den side, tallet kommer fra (gruppens side, medmindre kortet selv siger andet).
+const OVERVIEW_CARDS = Object.fromEntries(OVERVIEW_CARD_GROUPS.flatMap(g => g.cards.map(c => ({opens: g.opens, ...c}))).map(c => [c.id, c]));
 
 /** Procent med fortegn, fx "+2,4 %". Bruges også af Månedsoverblik. */
 function formatSignedPct(p){
@@ -142,10 +143,14 @@ function renderOverviewCards(ctx){
         const elId = card.elId || 'ov' + id[0].toUpperCase() + id.slice(1);
         const r = card.render(ctx);
         const sub = el('div', {className: 'sub' + (r.subTone === 'up' ? ' is-up' : r.subTone === 'down' ? ' is-down' : ''), id: elId + 'Sub', textContent: r.sub || ''});
-        return el('div', {className: 'stat', attrs: {'data-card': id}}, [
+        // Hele kortet er en knap til siden, tallet kommer fra ("›" i hjørnet viser det).
+        const [page, open] = card.opens;
+        return el('button', {className: 'stat stat-link', type: 'button', attrs: {'data-card': id}, onclick: open}, [
             el('div', {className: 'label', textContent: card.label}),
             el('div', {className: 'value' + (r.cls === 'negative' ? ' negative' : ''), id: elId, textContent: r.value}),
-            sub
+            sub,
+            el('span', {className: 'stat-go', textContent: '›', attrs: {'aria-hidden': 'true'}}),
+            el('span', {className: 'visually-hidden', textContent: ` – åbn ${page}`})
         ]);
     }));
 }

@@ -92,11 +92,13 @@ function renderOverviewChart(history){
     }
 
     const data = {labels, datasets:[{label:'Nettoformue', data: points.map(h => h.value), backgroundColor: colors, borderRadius:8, borderSkipped:false, maxBarThickness:52}]};
+    // En valgt søjle, der ikke længere vises (fx efter et skift af periode), vælges fra.
+    if(ovSelectedDate && !points.some(h => h.date === ovSelectedDate)) ovSelectedDate = null;
     if(overviewChart){
         overviewChart.data = data;
         overviewChart.$points = points;
         overviewChart.options.scales.x.ticks.color = CHART_COLOR('--muted');
-        overviewChart.update();
+        paintOverviewSelection();
         return;
     }
     const options = lineChartOptions(c => `Nettoformue: ${DK.format(c.raw)} kr.`);
@@ -107,8 +109,53 @@ function renderOverviewChart(history){
     options.scales.x.ticks = {color: CHART_COLOR('--muted'), font:{family:getCSSVar('--font-sans'), size:13}, maxRotation:0, autoSkip:true};
     // Søjler skal starte ved 0 - ellers ser stigningerne større ud, end de er.
     options.scales.y = {display:false, beginAtZero:true};
+    // Et klik/tryk på en søjle (den nærmeste) vælger den og viser "Se måneden" under grafen; et klik
+    // mere på samme søjle åbner måneden. Så åbner et tryk for at se tallet på en telefon ikke noget.
+    options.onClick = (event, elements) => {
+        const date = elements.length ? overviewChart.$points[elements[0].index]?.date : null;
+        if(date && date === ovSelectedDate){ openOverviewMonth(date); return; }
+        ovSelectedDate = date;
+        paintOverviewSelection();
+    };
+    options.onHover = (event, elements) => { event.native.target.style.cursor = elements.length ? 'pointer' : ''; };
     overviewChart = new Chart(document.getElementById('ovChart').getContext('2d'), {type:'bar', data, options});
     overviewChart.$points = points;
+    paintOverviewSelection();
+}
+
+let ovSelectedDate = null;
+
+// Grafen vælger den nærmeste søjle, uanset hvor man trykker i den (søjlerne er smalle på en
+// telefon). Et tryk et andet sted på siden fjerner valget igen.
+document.addEventListener('click', e => {
+    if(!ovSelectedDate || e.target.closest('#ovChart, #ovChartPick')) return;
+    ovSelectedDate = null;
+    if(overviewChart) paintOverviewSelection();
+});
+
+/** Åbner en søjles måned i Månedsoverblik. */
+function openOverviewMonth(date){
+    ovSelectedDate = null;
+    showMonthOverview(Number(date.slice(0, 4)), Number(date.slice(5, 7)));
+}
+
+/** Markerer den valgte søjle med en ramme og skriver dens dato, beløb og "Se måneden" under grafen. */
+function paintOverviewSelection(){
+    const points = overviewChart.$points || [];
+    const index = points.findIndex(h => h.date === ovSelectedDate);
+    const ds = overviewChart.data.datasets[0];
+    ds.borderWidth = points.map((_, i) => i === index ? 2 : 0);
+    ds.borderColor = getCSSVar('--text');
+    overviewChart.update();
+    const pick = document.getElementById('ovChartPick');
+    pick.hidden = index < 0;
+    if(index < 0){ pick.replaceChildren(); return; }
+    const h = points[index];
+    const month = new Date(h.date + 'T00:00:00').toLocaleDateString('da-DK', {month: 'long', year: 'numeric'});
+    pick.replaceChildren(
+        el('span', {textContent: `${formatDanishDate(h.date)}: ${DK.format(h.value)} kr.`}),
+        el('button', {className: 'link-btn', type: 'button', textContent: `Se ${month} →`, onclick: () => openOverviewMonth(h.date)})
+    );
 }
 
 /** "Mine mål" på oversigten: de første tre mål med fremskridt, eller en opfordring til at sætte ét. */
