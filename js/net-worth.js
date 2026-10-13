@@ -447,6 +447,28 @@ async function deleteNetWorthEntry(date){
 }
 
 /**
+ * En lille kurve over de seneste 12 måneder i hvert af Formues fire nøgletal (aktiver, likvid
+ * formue, gæld og nettoformue). Den står i kortets overskriftslinje, så kortene ikke bliver højere.
+ * @param {Object[]} history formuehistorikken, sorteret efter dato
+ */
+function renderFormueSparks(history){
+    const from = history.length ? addMonthsIso(history.at(-1).date, -12) : '';
+    const year = history.filter(h => h.date >= from);
+    const assets = h => ['netCatKontanter', 'netCatAktier', 'netCatPension', 'netCatFrivaerdi', 'netCatAndet'].reduce((sum, k) => sum + (h[k] || 0), 0) || (h.value || 0) + (h.debt || 0);
+    [['netAssetsTotal', assets], ['netLiquidTotal', h => h.liquid ?? 0], ['netDebtTotal', h => h.debt || 0, true], ['netWorthTotal', h => h.value || 0]]
+        .forEach(([id, valueOf, inverse]) => {
+            const stat = document.getElementById(id)?.closest('.stat');
+            if(!stat) return;
+            let spark = stat.querySelector('.stat-spark');
+            if(!spark){
+                spark = el('span', {className: 'stat-spark', attrs: {title: 'De seneste 12 måneder'}});
+                (stat.querySelector('.label-row') || stat.querySelector('.label')).append(spark);
+            }
+            spark.innerHTML = sparkline(year.map(valueOf), !!inverse);
+        });
+}
+
+/**
  * Retter ét datapunkt i formuehistorikken (se editHistoryEntry i ui.js).
  * @param {string} date ISO-dato
  */
@@ -609,6 +631,7 @@ function renderNetWorthHistory(){
         });
     }
 
+    renderFormueSparks(history);
     renderYearSummary('nwYearBody', yearSummary(history, h => h.value), false, 'Gem datoer over mindst to måneder for at se udviklingen år for år.');
 
     // Ændringen siden forrige datapunkt beregnes her hver gang - den gemmes ikke (se periodChanges i calc.js).

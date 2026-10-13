@@ -2252,3 +2252,14 @@ button.stat-link:hover .stat-go{ color:var(--akt); }
 .guided-warnings p + p{ margin-top:4px; }
 .guided .status-summary{ margin:var(--s2) 0 0; }
 .guided .status-summary{ display:grid; grid-template-columns:1fr 1fr; gap:var(--s3) var(--s4); }
+
+/* Formues nøgletal: en lille kurve over de seneste 12 måneder i overskriftslinjen. */
+.stat-spark{ margin-left:auto; display:inline-flex; align-items:center; }
+.stat-spark:empty{ display:none; }
+.stat .label-row{ width:100%; }
+@media (max-width:640px){
+    /* På telefoner står kurven i kortets hjørne, så den ikke skubber overskriften ned på to linjer. */
+    .compact-stats .stat{ position:relative; }
+    .compact-stats .stat-spark{ position:absolute; top:12px; right:10px; }
+    .compact-stats .stat-spark .spark{ width:32px; height:14px; }
+}
