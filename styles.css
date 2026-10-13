@@ -2210,3 +2210,16 @@ body[data-section="overview"] .app-header-actions .customize-btn{ display:grid; 
     /* Teksten og knappen står under hinanden: × står øverst ved teksten. */
     .ov-next li .ov-next-hide{ top:8px; transform:none; }
 }
+
+/* ---- Oversigt: kortene åbner deres side, og en søjle i grafen kan vælges (overview*.js) ---- */
+button.stat-link{ display:block; position:relative; width:100%; font:inherit; color:inherit; text-align:left; cursor:pointer; }
+button.stat-link:hover{ border-color:var(--border-strong); background:var(--panel-hover); }
+.stat-go{ position:absolute; top:12px; right:14px; font-size:20px; line-height:1; color:var(--subtle); }
+button.stat-link:hover .stat-go{ color:var(--akt); }
+.ov-chart-pick{ display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:4px 12px; margin:var(--s2) 0 0; font-size:14px; color:var(--text); }
+.ov-chart-pick[hidden]{ display:none; }
+@media (max-width:640px){
+    .stat-go{ top:8px; right:10px; font-size:18px; }
+    .ov-chart-pick{ font-size:13px; }
+}
+.stat-link .label{ padding-right:18px; }

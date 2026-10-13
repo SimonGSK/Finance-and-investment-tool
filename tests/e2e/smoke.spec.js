@@ -2411,3 +2411,66 @@ test('Næste skridt: hvert skridt kan skjules (med fortryd), og uden skridt er k
     const until = await page.evaluate(() => JSON.parse(localStorage.getItem('nextStepsHidden')).backup - Date.now());
     expect(Math.round(until / 86400000)).toBe(30);
 });
+
+test('Oversigt: kortene åbner deres side, og en søjle vælges med ét tryk og åbner måneden med det næste @mobil', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        const nw = (date, value) => ({date, value, liquid: value, netCatKontanter: value, netCatAktier: 0, netCatPension: 0, netCatFrivaerdi: 0, netCatAndet: 0, debt: 0});
+        localStorage.setItem('netWorthHistory', JSON.stringify([nw('2026-06-30', 100000), nw('2026-07-31', 110000), nw('2026-08-31', 120000), nw('2026-09-30', 125000)]));
+        localStorage.setItem('overviewCards', JSON.stringify(['netWorth', 'growth', 'fire', 'buffer']));
+    });
+    await page.reload();
+    const section = () => page.evaluate(() => document.body.dataset.section);
+
+    // Kortene: hele kortet er en knap til tallets side.
+    for(const [card, target] of [['netWorth', 'formue'], ['growth', 'month'], ['buffer', 'formue']]){
+        await page.evaluate(() => showSection('overview'));
+        await page.locator(`#ovKpis [data-card="${card}"]`).click();
+        expect(await section(), card).toBe(target);
+    }
+    await page.evaluate(() => showSection('overview'));
+    await expect(page.locator('#ovKpis [data-card="netWorth"]')).toHaveAccessibleName(/åbn Formue$/);
+    await page.locator('#ovKpis [data-card="fire"]').click();
+    await expect(page.locator('#pageTitle')).toHaveText('FIRE-beregner (4%-reglen)');
+
+    // Grafen: første tryk vælger søjlen og viser "Se måneden", andet tryk på samme søjle åbner måneden.
+    await page.evaluate(() => showSection('overview'));
+    const barPoint = index => page.evaluate(i => {
+        const bar = overviewChart.getDatasetMeta(0).data[i];
+        const r = overviewChart.canvas.getBoundingClientRect();
+        return {x: r.left + bar.x, y: r.top + (bar.y + bar.base) / 2};
+    }, index);
+    // Uden animation, så søjlerne står, hvor de ender.
+    const still = () => page.evaluate(() => { overviewChart.options.animation = false; overviewChart.update('none'); overviewChart.canvas.scrollIntoView({block: 'center'}); });
+    await still();
+    let p = await barPoint(2);
+    await page.mouse.click(p.x, p.y);
+    const pick = page.locator('#ovChartPick');
+    await expect(pick).toBeVisible();
+    await expect(pick).toContainText('31. aug. 2026: 120.000 kr.');
+    await expect(pick.getByRole('button', { name: 'Se august 2026 →' })).toBeVisible();
+    expect(await section()).toBe('overview');                     // ét tryk åbner ikke noget
+
+    // Et tryk på en anden søjle flytter valget; et tryk uden for grafen fjerner det.
+    p = await barPoint(1);
+    await page.mouse.click(p.x, p.y);
+    await expect(pick).toContainText('31. jul. 2026');
+    await page.locator('#pageTitle').click();
+    await expect(pick).toBeHidden();
+
+    // Andet tryk på samme søjle åbner måneden.
+    p = await barPoint(2);
+    await page.mouse.click(p.x, p.y);
+    await expect(pick).toContainText('31. aug. 2026');
+    await page.mouse.click(p.x, p.y);
+    await expect.poll(section).toBe('month');
+    await expect(page.locator('#monthPeriod')).toHaveValue('8');
+
+    // Linket gør det samme.
+    await page.evaluate(() => showSection('overview'));
+    await still();
+    p = await barPoint(3);
+    await page.mouse.click(p.x, p.y);
+    await pick.getByRole('button', { name: 'Se september 2026 →' }).click();
+    await expect(page.locator('#monthPeriod')).toHaveValue('9');
+});
