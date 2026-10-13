@@ -2525,3 +2525,59 @@ test('Månedsoverblik: stryg til siden og ←/→ skifter måned, også på tvæ
     await page.keyboard.press('ArrowLeft');
     expect(await period()).toBe('2025-0');
 });
+
+test('guidet månedsstatus på telefon: ét felt ad gangen, Uændret med ét tryk, note, opsummering og gem @mobil', async ({ page }) => {
+    await page.goto('/index.html');
+    const phone = await page.evaluate(() => window.innerWidth <= 640);
+    test.skip(!phone, 'den guidede status er til telefoner');
+    await page.evaluate(() => {
+        localStorage.setItem('netWorthHistory', JSON.stringify([{date: '2026-09-30', netCatKontanter: 64000, netCatAktier: 290000, netCatPension: 276000, netCatFrivaerdi: 0, netCatAndet: 15000, debt: 40000, liquid: 354000, value: 605000}]));
+        localStorage.setItem('portfolioHistory', JSON.stringify([{date: '2026-09-30', stockValue: 286000, cash: 4000, portfolioValue: 290000, traded: 0, deposit: 0, dividend: 0}]));
+        localStorage.setItem('monthlyStatusLast', JSON.stringify({bank: 60000, physical: 0, depotCash: 4000, stocks: 286000, pension: 276000, homeEquity: 0, other: 15000, debt: 40000}));
+    });
+    await page.reload();
+    await page.getByRole('navigation', { name: 'Bundmenu' }).getByRole('button', { name: /Status/ }).click();
+    const dialog = page.getByRole('dialog', { name: 'Månedsstatus' });
+    const progress = dialog.locator('.guided-progress');
+    await expect(progress).toHaveText('1 af 14');
+    await dialog.getByLabel('Hvilken dato gælder tallene?').fill('2026-10-31');
+    await dialog.getByRole('button', { name: 'Næste' }).click();
+
+    // Bank: et nyt tal med en tastefejl-advarsel, så rettet.
+    await expect(dialog.locator('.guided-label')).toHaveText('Bank- og opsparingskonti');
+    const field = dialog.locator('#guidedInput');
+    await expect(field).toHaveValue('60000');
+    await field.fill('600000');
+    await expect(dialog.locator('.guided-diff')).toContainText('et nul for meget?');
+    await field.fill('62000');
+    await expect(dialog.locator('.guided-diff')).toHaveText('+2.000 kr. siden sidst');
+    await dialog.getByRole('button', { name: 'Næste' }).click();
+
+    // Resten: Uændret / Ingen med ét tryk - Pension får et nyt tal.
+    while(!(await dialog.locator('.guided-label').textContent()).startsWith('Pension')){
+        await dialog.locator('.guided-actions .btn-secondary').click();
+    }
+    await field.fill('280000');
+    await dialog.getByRole('button', { name: 'Næste' }).click();
+    for(let i = 0; i < 3; i++) await dialog.getByRole('button', { name: 'Uændret' }).click();
+    await expect(dialog.locator('.guided-label')).toHaveText('Note til måneden (valgfri)');
+    await field.fill('Bonus');
+    await dialog.getByRole('button', { name: 'Næste' }).click();
+
+    // Opsummering og gem.
+    await expect(progress).toHaveText('14 af 14');
+    await expect(dialog).toContainText('2 tal er ændret siden sidst.');
+    await expect(dialog).toContainText('Note: Bonus');
+    await dialog.getByRole('button', { name: 'Gem i begge' }).click();
+    await expect(dialog).toBeHidden();
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('netWorthHistory')).at(-1));
+    expect(saved).toMatchObject({date: '2026-10-31', netCatKontanter: 66000, netCatPension: 280000, netCatAndet: 15000, debt: 40000, note: 'Bonus'});
+    await expect(page.locator('.toast').last()).toContainText('Din formue steg');
+
+    // "Hele skemaet" skifter til det almindelige skema med det, man har skrevet.
+    await page.getByRole('navigation', { name: 'Bundmenu' }).getByRole('button', { name: /Status/ }).click();
+    await dialog.getByRole('button', { name: 'Næste' }).click();
+    await field.fill('70000');
+    await dialog.getByRole('button', { name: 'Hele skemaet' }).click();
+    await expect(page.getByRole('dialog', { name: 'Månedsstatus' }).getByLabel('Bank- og opsparingskonti', { exact: true })).toHaveValue('70000');
+});

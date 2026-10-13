@@ -2232,3 +2232,23 @@ button.stat-link:hover .stat-go{ color:var(--akt); }
 .shortcut-list dt kbd + kbd{ margin-left:4px; }
 /* Mens indholdet glider ind, må siden ikke kunne rulles vandret. */
 #section-month{ overflow-x:clip; }
+
+/* ---- Guidet månedsstatus på telefoner: ét felt ad gangen (monthly-status.js) ---- */
+.guided{ display:flex; flex-direction:column; gap:var(--s2); }
+.guided-top{ display:flex; align-items:center; justify-content:space-between; gap:var(--s3); margin-bottom:var(--s2); }
+.guided-back{ width:36px; height:36px; padding:0; border:1px solid var(--border-strong); border-radius:var(--r-pill); background:var(--panel); color:var(--text); font-size:22px; line-height:1; cursor:pointer; }
+.guided-progress{ font-size:13px; font-weight:600; color:var(--subtle); }
+.guided-section{ margin:var(--s2) 0 0; }
+.guided-label{ display:block; margin:0; font-family:var(--font-display); font-size:22px; font-weight:600; line-height:1.2; color:var(--text); }
+.guided-help{ margin:0; font-size:13.5px; line-height:1.5; color:var(--muted); }
+.guided-input.number-input{ font-size:24px; padding:12px 14px; margin-top:var(--s2); }
+.guided-last{ font-size:13px; color:var(--subtle); }
+.guided-diff{ min-height:1.2em; }
+.guided-actions{ display:grid; grid-template-columns:1fr 1fr; gap:var(--s2); margin-top:var(--s3); }
+.guided-actions.is-single{ grid-template-columns:1fr; }
+.guided-actions .btn{ justify-content:center; padding:13px 12px; margin:0; }
+.guided-warnings{ padding:var(--s2) var(--s3); border:1px solid var(--border); border-radius:var(--r-sm); background:var(--panel-sunken); }
+.guided-warnings p{ margin:0; font-size:13.5px; color:var(--warn-text); }
+.guided-warnings p + p{ margin-top:4px; }
+.guided .status-summary{ margin:var(--s2) 0 0; }
+.guided .status-summary{ display:grid; grid-template-columns:1fr 1fr; gap:var(--s3) var(--s4); }
