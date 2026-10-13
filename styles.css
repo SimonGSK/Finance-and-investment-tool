@@ -2253,13 +2253,13 @@ button.stat-link:hover .stat-go{ color:var(--akt); }
 .guided .status-summary{ margin:var(--s2) 0 0; }
 .guided .status-summary{ display:grid; grid-template-columns:1fr 1fr; gap:var(--s3) var(--s4); }
 
-/* Formues nøgletal: en lille kurve over de seneste 12 måneder i overskriftslinjen. */
-.stat-spark{ margin-left:auto; display:inline-flex; align-items:center; }
+/* Formues nøgletal: en lille kurve over de seneste 12 måneder i kortets øverste højre hjørne,
+   så den aldrig tager bredde fra overskriften (kortene er smalle, også på en computer). */
+.compact-stats .stat{ position:relative; }
+.stat-spark{ position:absolute; top:18px; right:16px; display:inline-flex; align-items:center; }
+.stat-spark .spark{ width:44px; height:16px; }
 .stat-spark:empty{ display:none; }
-.stat .label-row{ width:100%; }
 @media (max-width:640px){
-    /* På telefoner står kurven i kortets hjørne, så den ikke skubber overskriften ned på to linjer. */
-    .compact-stats .stat{ position:relative; }
-    .compact-stats .stat-spark{ position:absolute; top:12px; right:10px; }
-    .compact-stats .stat-spark .spark{ width:32px; height:14px; }
+    .stat-spark{ top:12px; right:10px; }
+    .stat-spark .spark{ width:32px; height:14px; }
 }
