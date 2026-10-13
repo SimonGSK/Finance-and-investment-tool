@@ -2037,7 +2037,7 @@ test('tastaturgenveje: 1-7 skifter side, N, B og ?, men aldrig når man skriver 
     await page.keyboard.press('?');
     const help = page.getByRole('dialog', { name: 'Tastaturgenveje' });
     await expect(help).toBeVisible();
-    await expect(help.locator('kbd')).toHaveText(['1', '2', '3', '4', '5', '6', '7', 'N', 'B', '?']);
+    await expect(help.locator('kbd')).toHaveText(['1', '2', '3', '4', '5', '6', '7', 'N', 'B', '?', '←', '→']);
     await page.keyboard.press('Escape');
 
     // Menupunkterne fortæller skærmlæsere om genvejen.
@@ -2473,4 +2473,55 @@ test('Oversigt: kortene åbner deres side, og en søjle vælges med ét tryk og 
     await page.mouse.click(p.x, p.y);
     await pick.getByRole('button', { name: 'Se september 2026 →' }).click();
     await expect(page.locator('#monthPeriod')).toHaveValue('9');
+});
+
+test('Månedsoverblik: stryg til siden og ←/→ skifter måned, også på tværs af år og hen over en manglende måned @mobil', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        const nw = (date, value) => ({date, value, liquid: value, netCatKontanter: value});
+        localStorage.setItem('netWorthHistory', JSON.stringify([nw('2025-11-30', 90000), nw('2025-12-31', 100000), nw('2026-01-31', 105000), nw('2026-03-31', 115000)]));
+    });
+    await page.reload();
+    await page.evaluate(() => showMonthOverview(2025, 12));
+    const period = () => page.evaluate(() => `${document.getElementById('monthYear').value}-${document.getElementById('monthPeriod').value}`);
+    expect(await period()).toBe('2025-12');
+
+    {
+        /** Et stryg over indholdet: dx > 0 er mod højre (forrige måned). Touch-hændelser med
+         *  kun de felter, koden læser (Safari tillader ikke new Touch() på en side). */
+        const swipe = (dx, dy = 0) => page.evaluate(([dx, dy]) => {
+            const area = document.querySelector('#monthContent .stats');
+            const r = area.getBoundingClientRect();
+            const x0 = r.left + r.width / 2, y0 = r.top + 20;
+            const fire = (type, touches, changed) => {
+                const e = new Event(type, {bubbles: true});
+                Object.defineProperty(e, 'touches', {value: touches});
+                Object.defineProperty(e, 'changedTouches', {value: changed});
+                area.dispatchEvent(e);
+            };
+            fire('touchstart', [{clientX: x0, clientY: y0}], [{clientX: x0, clientY: y0}]);
+            fire('touchend', [], [{clientX: x0 + dx, clientY: y0 + dy}]);
+        }, [dx, dy]);
+        await swipe(-120);
+        expect(await period()).toBe('2026-1');                       // næste måned, nyt år
+        await swipe(-120);
+        expect(await period()).toBe('2026-3');                       // februar mangler
+        await swipe(-120);
+        expect(await period()).toBe('2026-3');                       // ikke længere
+        await swipe(120);
+        expect(await period()).toBe('2026-1');
+        await swipe(-30, 200);                                       // et lodret træk (rul) skifter ikke
+        expect(await period()).toBe('2026-1');
+    }
+
+    // ←/→ på tastaturet gør det samme (computer).
+    await page.evaluate(() => showMonthOverview(2026, 1));
+    await page.keyboard.press('ArrowLeft');
+    expect(await period()).toBe('2025-12');
+    await page.keyboard.press('ArrowRight');
+    expect(await period()).toBe('2026-1');
+    // Hele året: et år ad gangen.
+    await page.evaluate(() => setMonthPeriod(0));
+    await page.keyboard.press('ArrowLeft');
+    expect(await period()).toBe('2025-0');
 });

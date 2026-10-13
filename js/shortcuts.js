@@ -1,6 +1,7 @@
 /**
  * @file Tastaturgenveje på computeren: 1-7 åbner punkterne i menuen (i menuens rækkefølge),
- * N åbner en ny månedsstatus, B skjuler eller viser beløbene, og ? viser en oversigt.
+ * N åbner en ny månedsstatus, B skjuler eller viser beløbene, ? viser en oversigt, og ←/→
+ * skifter måned i Månedsoverblik.
  *
  * Genvejene virker kun, når man ikke skriver: aldrig i et felt, en dialog eller et ark,
  * ikke mens kodelåsen er vist, og ikke sammen med Cmd, Ctrl eller Alt - så fx Cmd+1 stadig
@@ -19,6 +20,8 @@ const SHORTCUTS = [
     {key: 'b', label: 'Skjul eller vis beløb', run: () => toggleAmountsHidden()},
     {key: '?', label: 'Vis genvejene', run: () => openShortcutsDialog()}
 ];
+// Kun til oversigten: ←/→ håndteres for sig (de virker kun i Månedsoverblik).
+const SHORTCUT_EXTRAS = [{keys: '← →', label: 'Forrige og næste måned i Månedsoverblik'}];
 
 /**
  * Må tasten bruges som genvej lige nu? Nej, hvis man skriver et sted, holder en
@@ -37,10 +40,16 @@ function shortcutAllowed(e){
 
 /** Oversigten over genvejene (? eller Hjælp › Genveje). */
 function openShortcutsDialog(){
-    const list = el('dl', {className: 'shortcut-list'}, SHORTCUTS.flatMap(s => [
-        el('dt', {}, [el('kbd', {textContent: s.key === '?' ? '?' : s.key.toUpperCase()})]),
-        el('dd', {textContent: s.label})
-    ]));
+    const list = el('dl', {className: 'shortcut-list'}, [
+        ...SHORTCUTS.flatMap(s => [
+            el('dt', {}, [el('kbd', {textContent: s.key === '?' ? '?' : s.key.toUpperCase()})]),
+            el('dd', {textContent: s.label})
+        ]),
+        ...SHORTCUT_EXTRAS.flatMap(s => [
+            el('dt', {}, s.keys.split(' ').map(k => el('kbd', {textContent: k}))),
+            el('dd', {textContent: s.label})
+        ])
+    ]);
     openDialog({title: 'Tastaturgenveje', content: el('div', {}, [
         el('p', {className: 'dialog-hint', textContent: 'Virker, når du ikke skriver i et felt. Esc lukker dialoger, og Enter gemmer i dem.'}),
         list
@@ -49,6 +58,13 @@ function openShortcutsDialog(){
 
 document.addEventListener('keydown', e => {
     if(!shortcutAllowed(e)) return;
+    // ←/→ i Månedsoverblik: forrige og næste måned (som at stryge på en telefon).
+    if((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && document.body.dataset.section === 'month'){
+        if(e.shiftKey || e.target.closest?.('.data-table-wrap')) return;
+        e.preventDefault();
+        stepMonth(e.key === 'ArrowRight' ? 1 : -1);
+        return;
+    }
     const shortcut = SHORTCUTS.find(s => s.key === e.key.toLowerCase());
     if(!shortcut) return;
     e.preventDefault();

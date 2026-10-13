@@ -2223,3 +2223,12 @@ button.stat-link:hover .stat-go{ color:var(--akt); }
     .ov-chart-pick{ font-size:13px; }
 }
 .stat-link .label{ padding-right:18px; }
+
+/* ---- Månedsoverblik: indholdet glider ind fra siden, man stryger mod (month-overview.js) ---- */
+.month-content.slide-from-right{ animation:month-slide-right 0.22s var(--ease); }
+.month-content.slide-from-left{ animation:month-slide-left 0.22s var(--ease); }
+@keyframes month-slide-right{ from{ transform:translateX(28px); opacity:0.4; } to{ transform:none; opacity:1; } }
+@keyframes month-slide-left{ from{ transform:translateX(-28px); opacity:0.4; } to{ transform:none; opacity:1; } }
+.shortcut-list dt kbd + kbd{ margin-left:4px; }
+/* Mens indholdet glider ind, må siden ikke kunne rulles vandret. */
+#section-month{ overflow-x:clip; }
