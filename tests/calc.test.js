@@ -1164,3 +1164,19 @@ describe('yearColors', () => {
         assert.equal(cells[11].state, 'none');
     });
 });
+
+describe('adjacentPeriod', () => {
+    const options = calc.periodOptions([{date: '2025-11-30'}, {date: '2025-12-31'}, {date: '2026-01-31'}, {date: '2026-03-31'}]);
+    test('næste og forrige måned med en status, på tværs af år og hen over en manglende måned', () => {
+        assert.deepEqual(calc.adjacentPeriod(options, 2025, 12, 1), {year: 2026, month: 1});
+        assert.deepEqual(calc.adjacentPeriod(options, 2026, 1, -1), {year: 2025, month: 12});
+        assert.deepEqual(calc.adjacentPeriod(options, 2026, 1, 1), {year: 2026, month: 3});   // februar mangler
+        assert.equal(calc.adjacentPeriod(options, 2026, 3, 1), null);                          // den seneste
+        assert.equal(calc.adjacentPeriod(options, 2025, 11, -1), null);                        // den første
+    });
+    test('hele året: næste og forrige år', () => {
+        assert.deepEqual(calc.adjacentPeriod(options, 2025, null, 1), {year: 2026, month: null});
+        assert.deepEqual(calc.adjacentPeriod(options, 2026, null, -1), {year: 2025, month: null});
+        assert.equal(calc.adjacentPeriod(options, 2026, null, 1), null);
+    });
+});

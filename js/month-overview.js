@@ -377,3 +377,52 @@ function openYearShare(info){
     });
     redraw();
 }
+
+// ---- Stryg mellem måneder (telefon) og ←/→ (computer, se shortcuts.js) ----
+
+/**
+ * Går til forrige eller næste måned med en status (eller år, når hele året er valgt).
+ * Indholdet glider ind fra den side, man stryger mod.
+ * @param {1|-1} dir 1 = næste, -1 = forrige
+ * @returns {boolean} false, hvis der ikke er mere i den retning
+ */
+function stepMonth(dir){
+    const next = monthSelection && adjacentPeriod(periodOptions(readNetWorthHistory()), monthSelection.year, monthSelection.month, dir);
+    if(!next) return false;
+    monthSelection = next;
+    renderMonthOverview();
+    const content = document.getElementById('monthContent');
+    content.classList.remove('slide-from-left', 'slide-from-right');
+    void content.offsetWidth;                          // start animationen forfra
+    content.classList.add(dir > 0 ? 'slide-from-right' : 'slide-from-left');
+    return true;
+}
+
+(function initMonthSwipe(){
+    const area = document.getElementById('monthContent');
+    let start = null;
+    area.addEventListener('touchstart', e => {
+        // Ikke i noget, der selv kan rulles vandret, og ikke med to fingre.
+        const scroller = e.target.closest('.data-table-wrap');
+        start = e.touches.length === 1 && !(scroller && scroller.scrollWidth > scroller.clientWidth)
+            ? {x: e.touches[0].clientX, y: e.touches[0].clientY, t: e.timeStamp} : null;
+    }, {passive: true});
+    area.addEventListener('touchend', e => {
+        if(!start) return;
+        const dx = e.changedTouches[0].clientX - start.x, dy = e.changedTouches[0].clientY - start.y;
+        const quick = e.timeStamp - start.t < 800;
+        start = null;
+        // Et tydeligt vandret stryg: mindst 60 px og mest til siden. Til venstre = næste måned.
+        if(quick && Math.abs(dx) >= 60 && Math.abs(dx) > Math.abs(dy) * 1.5) stepMonth(dx < 0 ? 1 : -1);
+    }, {passive: true});
+})();
+
+/** Første gang Månedsoverblik åbnes på en telefon: et tip om, at man kan stryge. */
+function showMonthSwipeTip(){
+    if(!window.matchMedia('(pointer: coarse)').matches || document.getElementById('monthContent').hidden) return;
+    try{
+        if(localStorage.getItem('monthSwipeTipShown')) return;
+        localStorage.setItem('monthSwipeTipShown', '1');
+    } catch(e){ return; }
+    notify('Tip: stryg til siden for at skifte måned.');
+}

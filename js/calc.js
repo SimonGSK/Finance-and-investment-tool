@@ -1806,6 +1806,26 @@ function periodOptions(history){
     return {years, months: Object.fromEntries(years.map(y => [y, [...months[y]].sort((a, b) => a - b)]))};
 }
 
+/**
+ * Forrige eller næste periode i Månedsoverblik (stryg eller ←/→): næste måned med en status -
+ * også på tværs af år - eller, når hele året er valgt, næste år med data.
+ * @param {{years:number[], months:Object<number, number[]>}} options fra periodOptions
+ * @param {number} year
+ * @param {number|null} month 1-12, eller null for hele året
+ * @param {1|-1} dir 1 = næste (senere), -1 = forrige
+ * @returns {{year:number, month:number|null}|null} null, hvis der ikke er mere i den retning
+ */
+function adjacentPeriod(options, year, month, dir){
+    if(!month){
+        const years = options.years.slice().sort((a, b) => a - b);
+        const next = years[years.indexOf(year) + dir];
+        return next === undefined || !years.includes(year) ? null : {year: next, month: null};
+    }
+    const all = options.years.slice().sort((a, b) => a - b).flatMap(y => (options.months[y] || []).map(m => ({year: y, month: m})));
+    const i = all.findIndex(p => p.year === year && p.month === month);
+    return i < 0 ? null : all[i + dir] || null;
+}
+
 // ==== Skattegrænse (aktieindkomst) ====
 
 /**
@@ -1947,7 +1967,7 @@ function appVersionOf(html){
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
-        containsAmount, appVersionOf, yearColors, monthlyStatusSummary, cleanNote, suspiciousAmounts, NOTE_MAX_LENGTH, addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
+        containsAmount, appVersionOf, adjacentPeriod, yearColors, monthlyStatusSummary, cleanNote, suspiciousAmounts, NOTE_MAX_LENGTH, addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
         periodChanges, bestPeriods,
         planSync, applySync,
         CAPITAL_INCOME_LIMIT,

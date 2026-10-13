@@ -91,7 +91,7 @@ function showSection(name){
     if(typeof syncBottomNav === 'function') syncBottomNav(name);    // bundmenuen på telefoner (bottom-nav.js)
     resizeChartsIn(document.getElementById('section-' + name));
     if(name === 'overview' && typeof renderOverview === 'function') renderOverview();
-    if(name === 'month' && typeof renderMonthOverview === 'function') renderMonthOverview();
+    if(name === 'month' && typeof renderMonthOverview === 'function'){ renderMonthOverview(); showMonthSwipeTip(); }
     updatePageHeader();
     closeNav();
     window.scrollTo({top: 0});
