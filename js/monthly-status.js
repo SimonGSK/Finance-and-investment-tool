@@ -126,13 +126,17 @@ function latestStatusDate(){
 
 /**
  * Åbner skemaet. Viser løbende nettoformue, likvid formue og porteføljeværdi,
- * og advarer med præcise ændringer, hvis datoen allerede har data.
+ * og advarer med præcise ændringer, hvis datoen allerede har data. På telefoner åbnes
+ * i stedet den guidede månedsstatus (ét felt ad gangen), medmindre opts.full er sat.
  * @param {string} [initialDate] ISO-dato; ellers i dag (fx månedens sidste dag fra påmindelsen)
+ * @param {{full?:boolean, values?:Object<string, number>, note?:string}} [opts] values/note: tal og note,
+ *   skemaet starter med (fx fra den guidede status, når man skifter til hele skemaet)
  */
-function openMonthlyStatus(initialDate){
-    const values = monthlyStatusPrefill();
+function openMonthlyStatus(initialDate, opts = {}){
+    if(!opts.full && window.matchMedia('(max-width: 640px)').matches){ openGuidedStatus(initialDate); return; }
     // Udgangspunktet: de seneste tal. Bruges til "Hent seneste tal" og til at vise, hvad der er ændret.
-    const baseline = {...values};
+    const baseline = monthlyStatusPrefill();
+    const values = {...baseline, ...(opts.values || {})};
     const hasHistory = !!latestStatusDate();
 
     const dateInput = el('input', {type:'date', className:'number-input', value: (typeof initialDate === 'string' && initialDate) || todayIso(), attrs:{'aria-describedby':'msDateError'}});
@@ -142,7 +146,8 @@ function openMonthlyStatus(initialDate){
     // så den ikke forsvinder, hvis man gemmer datoen igen - medmindre man selv har skrevet noget.
     const noteInput = el('input', {type:'text', className:'number-input note-input', maxLength: NOTE_MAX_LENGTH, autocomplete:'off',
         placeholder:'Fx bonus, købte bil, flyttede'});
-    let noteTouched = false, noteFromSaved = false;
+    let noteTouched = !!opts.note, noteFromSaved = false;
+    if(opts.note) noteInput.value = opts.note;
     noteInput.addEventListener('input', () => { noteTouched = true; });
 
     function checkExistingDate(){
@@ -465,4 +470,163 @@ function statusSummaryText(date, s){
     }
     if(s.streak >= 3) text += ` Du har gemt din status ${s.streak} måneder i træk.`;
     return text;
+}
+
+// ---- Guidet månedsstatus (telefoner) ----
+
+/**
+ * Månedsstatus ét felt ad gangen - til telefoner, hvor det lange skema fylder. Dato → hvert
+ * felt (med sidste tal udfyldt; "Uændret"/"Ingen" er ét tryk) → note → opsummering og gem.
+ * Under hvert felt står ændringen siden sidst og en advarsel, hvis tallet ligner en tastefejl.
+ * "Hele skemaet" skifter til det almindelige skema med det, man har skrevet.
+ * @param {string} [initialDate] ISO-dato; ellers i dag
+ */
+function openGuidedStatus(initialDate){
+    const baseline = monthlyStatusPrefill();
+    const values = {...baseline};
+    const hasHistory = !!latestStatusDate();
+    const fields = MONTHLY_STATUS_SECTIONS.flatMap(sec => sec.fields.map(f => ({...f, section: sec.title})));
+    const balanceKeys = fields.filter(f => !f.flow).map(f => f.key);
+    const NOTE_STEP = fields.length + 1, SUMMARY_STEP = fields.length + 2;
+    let date = (typeof initialDate === 'string' && initialDate) || todayIso();
+    let loadedDate = null;
+    let note = '';
+    let step = 0;
+    let saving = false;
+    const body = el('div', {className: 'guided'});
+
+    /** Har datoen allerede en status, rettes den: dens tal og note hentes ind. */
+    function loadDate(){
+        if(loadedDate === date) return;
+        loadedDate = date;
+        const saved = monthlyStatusFromSaved(date);
+        Object.assign(values, saved || baseline, saved ? {} : {traded: 0, deposit: 0, dividend: 0});
+        note = readNetWorthHistory().find(h => h.date === date)?.note || '';
+    }
+
+    const go = to => { step = to; render(); };
+    const button = (label, variant, onclick) => el('button', {className: `btn btn-${variant}`, type: 'button', textContent: label, onclick});
+
+    function topBar(){
+        return el('div', {className: 'guided-top'}, [
+            step > 0 ? el('button', {className: 'guided-back', type: 'button', textContent: '‹', attrs: {'aria-label': 'Tilbage'}, onclick: () => go(step - 1)}) : el('span'),
+            el('span', {className: 'guided-progress', textContent: `${step + 1} af ${SUMMARY_STEP + 1}`}),
+            el('button', {className: 'link-btn', type: 'button', textContent: 'Hele skemaet', onclick: () => {
+                handle.close();
+                openMonthlyStatus(date, {full: true, values: {...values}, note});
+            }})
+        ]);
+    }
+
+    function dateStep(){
+        const input = el('input', {type: 'date', className: 'number-input guided-input', value: date, id: 'guidedInput'});
+        const error = el('div', {className: 'field-error', attrs: {role: 'alert'}});
+        const existing = el('p', {className: 'guided-help'});
+        const refresh = () => {
+            const d = normalizeDate(input.value);
+            existing.textContent = d && monthlyStatusFromSaved(d) ? `Der er allerede gemt tal for ${formatDanishDate(d)} – du retter dem.` : '';
+        };
+        input.addEventListener('input', () => { error.textContent = ''; refresh(); });
+        refresh();
+        const next = () => {
+            const d = normalizeDate(input.value);
+            if(!d){ error.textContent = 'Vælg en gyldig dato.'; input.focus(); return; }
+            date = d;
+            loadDate();
+            go(1);
+        };
+        return [el('label', {className: 'guided-label', htmlFor: 'guidedInput', textContent: 'Hvilken dato gælder tallene?'}), input, error, existing,
+            el('div', {className: 'guided-actions is-single'}, [button('Næste', 'primary', next)])];
+    }
+
+    function fieldStep(f){
+        const input = el('input', {type: 'number', className: 'number-input guided-input', id: 'guidedInput', value: values[f.key] || 0, step: f.flow ? 100 : 1000});
+        if(!f.allowNegative) input.min = 0;
+        const diff = el('div', {className: 'status-diff guided-diff', attrs: {'aria-live': 'polite'}});
+        const refresh = () => {
+            if(f.flow || !hasHistory){ diff.textContent = ''; return; }
+            const change = (values[f.key] || 0) - (baseline[f.key] || 0);
+            const warning = suspiciousAmounts(baseline, values, [f.key])[0];
+            const good = f.key === 'debt' ? -change : change;
+            diff.textContent = change ? `${formatSignedKr(change)} siden sidst${warning ? ` – ${suspiciousText(warning)}` : ''}` : '';
+            diff.classList.toggle('is-warning', !!warning);
+            diff.classList.toggle('is-up', !warning && good > 0);
+            diff.classList.toggle('is-down', !warning && good < 0);
+        };
+        const update = v => { values[f.key] = v; refresh(); };
+        input.addEventListener('input', () => update(parseFloat(input.value) || 0));
+        input.addEventListener('calcpreview', e => update(e.detail.value));
+        const next = () => {
+            if(!commitNumberInput(input)){ input.focus(); return; }   // et regnestykke, der ikke kan regnes ud
+            update(parseFloat(input.value) || 0);
+            go(step + 1);
+        };
+        // Enter i feltet: regn ud og gå videre (number-fields regner ud på Enter først).
+        input.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); setTimeout(next, 0); } });
+        refresh();
+        return [
+            el('div', {className: 'eyebrow guided-section', textContent: f.section}),
+            el('label', {className: 'guided-label', htmlFor: 'guidedInput', textContent: f.label}),
+            f.help ? el('p', {className: 'guided-help', textContent: typeof f.help === 'string' ? f.help : ''}) : '',
+            input,
+            hasHistory && !f.flow ? el('div', {className: 'guided-last', textContent: `Sidst: ${DK.format(baseline[f.key] || 0)} kr.`}) : '',
+            diff,
+            el('div', {className: 'guided-actions'}, [
+                button(f.flow ? 'Ingen' : 'Uændret', 'secondary', () => { values[f.key] = f.flow ? 0 : (baseline[f.key] || 0); go(step + 1); }),
+                button('Næste', 'primary', next)
+            ])
+        ];
+    }
+
+    function noteStep(){
+        const input = el('input', {type: 'text', className: 'number-input note-input guided-input', id: 'guidedInput', value: note, maxLength: NOTE_MAX_LENGTH,
+            autocomplete: 'off', placeholder: 'Fx bonus, købte bil, flyttede'});
+        input.addEventListener('input', () => { note = input.value; });
+        input.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); go(SUMMARY_STEP); } });
+        return [
+            el('label', {className: 'guided-label', htmlFor: 'guidedInput', textContent: 'Note til måneden (valgfri)'}),
+            el('p', {className: 'guided-help', textContent: 'Vises ved punktet på formuegrafen og i Månedsoverblik.'}),
+            input,
+            el('div', {className: 'guided-actions'}, [button('Spring over', 'secondary', () => { note = ''; go(SUMMARY_STEP); }), button('Næste', 'primary', () => go(SUMMARY_STEP))])
+        ];
+    }
+
+    function summaryStep(){
+        const {netWorth, portfolio} = monthlyStatusEntries(date, values);
+        const item = (label, value, strong) => el('div', {}, [el('dt', {textContent: label}), el('dd', {className: strong ? 'is-strong' : '', textContent: DK.format(value) + ' kr.'})]);
+        const changed = hasHistory ? balanceKeys.filter(k => (values[k] || 0) !== (baseline[k] || 0)).length : null;
+        const warnings = hasHistory ? suspiciousAmounts(baseline, values, balanceKeys) : [];
+        return [
+            el('div', {className: 'guided-label', textContent: `Status for ${formatDanishDate(date)}`}),
+            changed !== null ? el('p', {className: 'guided-help', textContent: changed ? `${changed} tal er ændret siden sidst.` : 'Alle tal er som sidst.'}) : '',
+            el('dl', {className: 'status-summary'}, [
+                item('Kontanter i alt', netWorth.netCatKontanter), item('Likvid formue', netWorth.liquid),
+                item('Porteføljeværdi', portfolio.portfolioValue), item('Nettoformue', netWorth.value, true)
+            ]),
+            warnings.length ? el('div', {className: 'guided-warnings', attrs: {role: 'alert'}}, warnings.map(w => el('p', {},
+                [el('strong', {textContent: `${MONTHLY_STATUS_LABELS[w.key]}: `}), `${DK.format(w.from)} → ${DK.format(w.to)} kr. – ${suspiciousText(w)}`]))) : '',
+            note.trim() ? el('p', {className: 'guided-help', textContent: `Note: ${cleanNote(note)}`}) : '',
+            el('div', {className: 'guided-actions is-single'}, [button('Gem i begge', 'primary', () => {
+                if(saving) return;
+                saving = true;
+                saveMonthlyStatus(date, values, cleanNote(note)).then(saved => {
+                    saving = false;
+                    if(!saved) return;
+                    handle.close(true);
+                    if(typeof checkMonthlyReminder === 'function') checkMonthlyReminder();
+                });
+            })])
+        ];
+    }
+
+    function render(){
+        const content = step === 0 ? dateStep() : step === NOTE_STEP ? noteStep() : step === SUMMARY_STEP ? summaryStep() : fieldStep(fields[step - 1]);
+        body.replaceChildren(topBar(), ...content);
+        const input = body.querySelector('#guidedInput');
+        if(input){ input.focus({preventScroll: true}); if(input.select && input.type !== 'date') input.select(); }
+    }
+
+    const handle = openDialog({title: 'Månedsstatus', content: body, enterSubmits: false});
+    handle.dialog.classList.add('guided-dialog');
+    render();
 }

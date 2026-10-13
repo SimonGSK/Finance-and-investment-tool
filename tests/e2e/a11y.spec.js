@@ -70,5 +70,11 @@ test('tilgængelighed på telefon: bundmenuen og arkene @mobil', async ({ page }
         found.push(...await violations(page, 'ark ' + kind));
         await page.keyboard.press('Escape');
     }
+    // Den guidede månedsstatus: datoen og et felt.
+    await page.evaluate(() => openMonthlyStatus());
+    found.push(...await violations(page, 'guidet status: dato'));
+    await page.locator('.guided .btn-primary').click();
+    found.push(...await violations(page, 'guidet status: felt'));
+    await page.keyboard.press('Escape');
     expect(found).toEqual([]);
 });
