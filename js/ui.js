@@ -18,6 +18,29 @@ function formatDanishDate(isoDate){
 }
 
 /**
+ * Datoen i en historiktabel: "28. sep. 2026", og på telefoner kort ("sep. 26"), så tabellen
+ * fylder mindre. Står der flere datoer i samme måned, får den korte dagen med ("28. sep. 26").
+ * Stilarket viser den ene eller den anden.
+ * @param {string} isoDate
+ * @param {Set<string>} [sharedMonths] måneder ("2026-09") med mere end én dato i tabellen
+ * @returns {string} HTML
+ */
+function tableDateHtml(isoDate, sharedMonths){
+    const d = new Date(isoDate + 'T00:00:00');
+    if(isNaN(d)) return isoDate;
+    const month = d.toLocaleDateString('da-DK', {month: 'short'});
+    const short = `${sharedMonths?.has(isoDate.slice(0, 7)) ? d.getDate() + '. ' : ''}${month} ${String(d.getFullYear()).slice(2)}`;
+    return `<span class="date-long">${DANISH_DATE.format(d)}</span><span class="date-short">${short}</span>`;
+}
+
+/** @returns {Set<string>} de måneder ("2026-09"), der har mere end én dato i listen */
+function sharedMonthsOf(dates){
+    const seen = new Set(), shared = new Set();
+    dates.forEach(date => { const m = date.slice(0, 7); (seen.has(m) ? shared : seen).add(m); });
+    return shared;
+}
+
+/**
  * @param {Date} [d] udeladt = nu
  * @returns {string} datoen som 'YYYY-MM-DD' i lokal tid (ikke UTC, som toISOString ville give)
  */

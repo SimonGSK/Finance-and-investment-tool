@@ -2764,3 +2764,34 @@ test('Oversigt: små kurver i kortene på større skærme, aldrig oven i teksten
     }
     if(!phone) expect(shown).toBeGreaterThan(8);                       // de fleste kort har plads
 });
+
+test('historiktabellerne: korte datoer på telefoner, der bliver stående, når tabellen rulles til siden @mobil', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        const nw = (date, value) => ({date, value, liquid: value, netCatKontanter: value, netCatAktier: 0, netCatPension: 0, netCatFrivaerdi: 0, netCatAndet: 0, debt: 0});
+        localStorage.setItem('netWorthHistory', JSON.stringify([nw('2026-08-31', 100000), nw('2026-09-15', 110000), nw('2026-09-30', 120000)]));
+        localStorage.setItem('portfolioHistory', JSON.stringify([{date: '2026-09-30', portfolioValue: 5000, stockValue: 5000, cash: 0, deposit: 5000, traded: 5000, dividend: 0}]));
+    });
+    await page.reload();
+    const phone = await page.evaluate(() => window.innerWidth <= 640);
+    const dates = sel => page.locator(`${sel} tr td:first-child`).evaluateAll(cells => cells.map(c => c.innerText.trim()));
+
+    await page.evaluate(() => showSection('formue'));
+    // To datoer i september: de korte får dagen med, så de kan skelnes.
+    expect(await dates('#netWorthHistoryTableBody')).toEqual(phone
+        ? ['aug. 26', '15. sep. 26', '30. sep. 26'] : ['31. aug. 2026', '15. sep. 2026', '30. sep. 2026']);
+    // CSV'en har stadig den fulde dato.
+    expect(await page.locator('#netWorthHistoryTableBody td[data-csv]').first().getAttribute('data-csv')).toBe('2026-08-31');
+    await page.evaluate(() => showSection('portfolio'));
+    expect(await dates('#ptTableBody')).toEqual([phone ? 'sep. 26' : '30. sep. 2026']);
+
+    if(phone){
+        await page.evaluate(() => showSection('formue'));
+        const wrap = page.locator('#netWorthHistoryTableBody').locator('xpath=ancestor::div[contains(@class,"data-table-wrap")]');
+        await wrap.scrollIntoViewIfNeeded();
+        const left = () => page.locator('#netWorthHistoryTableBody td').first().evaluate(c => c.getBoundingClientRect().left);
+        const before = await left();
+        await wrap.evaluate(w => { w.scrollLeft = 300; });
+        expect(Math.abs(await left() - before)).toBeLessThanOrEqual(1);
+    }
+});
