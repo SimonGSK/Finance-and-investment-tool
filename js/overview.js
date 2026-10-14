@@ -253,6 +253,7 @@ function renderOverviewNext({hasNetWorth, budgetSum, months}){
         el('button', {className: 'btn btn-secondary btn-sm', type: 'button', textContent: step.label, onclick: step.action}),
         el('button', {className: 'ov-next-hide', type: 'button', textContent: '×', attrs: {'aria-label': `Skjul: ${step.text}`, title: 'Skjul'}, onclick: () => hide(step)})
     ])));
+    applyOverviewLayout();   // et tomt "Næste skridt" kan efterlade en tom kolonne
 }
 
 document.addEventListener('DOMContentLoaded', () => {

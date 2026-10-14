@@ -1,8 +1,8 @@
 /**
- * @file De fire nøgletal øverst på Oversigt kan vælges frit: "Tilpas oversigt" åbner en dialog
- * med fire pladser, og hvert kort kan være et af tallene nedenfor, ordnet efter, hvor
- * de kommer fra (Formue, Månedsoverblik, Portefølje, FIRE, Budget). Valget huskes i
- * localStorage ('overviewCards'). Selve tegningen sker i renderOverview (overview.js).
+ * @file "Tilpas oversigt": hvilke kort Oversigt viser og i hvilken rækkefølge, og hvilke fire
+ * nøgletal der står øverst. Hvert nøgletal kan være et af tallene nedenfor, ordnet efter, hvor
+ * de kommer fra (Formue, Månedsoverblik, Portefølje, FIRE, Budget). Valgene huskes i
+ * localStorage ('overviewLayout' og 'overviewCards'). Selve tegningen sker i renderOverview (overview.js).
  */
 
 const OVERVIEW_CARDS_KEY = 'overviewCards';
@@ -220,6 +220,88 @@ function renderOverviewCards(ctx){
     fitOverviewSparks();
 }
 
+const OVERVIEW_LAYOUT_KEY = 'overviewLayout';
+const OVERVIEW_SECTION_LABELS = {kpis: 'Nøgletal', chart: 'Nettoformue over tid', split: 'Fordeling', goals: 'Mine mål', next: 'Næste skridt', tools: 'Værktøjer'};
+
+/** @returns {{hidden:string[], order:string[]|null}} de skjulte kort og rækkefølgen (null: standard) */
+function readOverviewLayout(){
+    try{ return normalizeOverviewLayout(JSON.parse(localStorage.getItem(OVERVIEW_LAYOUT_KEY))); }
+    catch(e){ return normalizeOverviewLayout(null); }
+}
+
+/** Standardrækkefølgen, som den ses nu: i én kolonne (telefon og tablet) står grafen over nøgletallene. */
+function defaultOverviewOrder(){
+    return matchMedia('(max-width:1250px)').matches ? ['chart', 'kpis', 'split', 'goals', 'next', 'tools'] : OVERVIEW_SECTIONS.slice();
+}
+
+/**
+ * Skjuler og ordner kortene på Oversigt efter valget. I én kolonne følger kortene rækkefølgen
+ * præcist. På en computer står kortene i to kolonner: hver kolonne følger rækkefølgen, og de
+ * to kolonner står dér, hvor deres første kort er. En tom kolonne forsvinder, så den anden
+ * får hele bredden. Kaldes, når siden tegnes (også når "Næste skridt" bliver tomt).
+ */
+function applyOverviewLayout(){
+    const {hidden, order} = readOverviewLayout();
+    const page = document.getElementById('section-overview');
+    const place = id => order ? String(order.indexOf(id)) : '';
+    page.querySelectorAll('[data-ov-section]').forEach(node => {
+        node.classList.toggle('is-off', hidden.includes(node.dataset.ovSection));
+        node.style.order = place(node.dataset.ovSection);
+    });
+    const grid = page.querySelector('.overview-grid');
+    const inGrid = [...grid.querySelectorAll('[data-ov-section]')];
+    grid.style.order = order ? String(Math.min(...inGrid.map(n => order.indexOf(n.dataset.ovSection)))) : '';
+    const shown = node => !node.hidden && !node.classList.contains('is-off');
+    const columns = [...grid.querySelectorAll(':scope > .ov-side')];
+    columns.forEach(col => col.classList.toggle('is-empty', ![...col.children].some(shown)));
+    grid.classList.toggle('is-single', columns.some(col => col.classList.contains('is-empty')));
+    grid.classList.toggle('is-empty', columns.every(col => col.classList.contains('is-empty')));
+}
+
+/**
+ * Kortene på siden i dialogen: hvert kort kan slås fra og flyttes op eller ned med pilene.
+ * @param {{hidden:string[], order:string[]}} state ændres her; moved sættes, når et kort flyttes
+ * @returns {HTMLElement}
+ */
+function overviewSectionsChooser(state){
+    const box = el('div', {className: 'ov-sections-chooser'});
+    const render = focus => {
+        const visible = state.order.filter(id => !state.hidden.includes(id));
+        box.replaceChildren(...state.order.map((id, i) => {
+            const label = OVERVIEW_SECTION_LABELS[id];
+            const on = !state.hidden.includes(id);
+            const arrow = (dir, text, name) => el('button', {className: 'ov-section-move', type: 'button', textContent: text,
+                disabled: i + dir < 0 || i + dir >= state.order.length,
+                attrs: {'aria-label': `Flyt ${label} ${name}`, title: `Flyt ${name}`, 'data-move': `${id}:${dir}`},
+                onclick: () => {
+                    state.order = moveInList(state.order, id, dir);
+                    state.moved = true;
+                    render(`${id}:${dir}`);
+                }});
+            return el('div', {className: 'ov-section-row' + (on ? '' : ' is-off')}, [
+                el('label', {className: 'toggle-row'}, [
+                    el('input', {type: 'checkbox', checked: on, disabled: on && visible.length === 1,
+                        onchange: e => {
+                            state.hidden = e.target.checked ? state.hidden.filter(h => h !== id) : state.hidden.concat(id);
+                            render();
+                            box.querySelectorAll('input')[i].focus();
+                        }}),
+                    el('span', {textContent: label})
+                ]),
+                arrow(-1, '↑', 'op'), arrow(1, '↓', 'ned')
+            ]);
+        }));
+        // Pilen, man trykkede på, beholder fokus - eller den anden, når kortet står yderst.
+        if(focus){
+            const [id, dir] = focus.split(':');
+            const btn = box.querySelector(`[data-move="${focus}"]`);
+            (btn && !btn.disabled ? btn : box.querySelector(`[data-move="${id}:${-dir}"]`))?.focus();
+        }
+    };
+    render();
+    return box;
+}
+
 /**
  * "Tilpas oversigt": de fire pladser (Kort 1-4). Et tryk på en plads folder listen over alle
  * kort ud lige under den. Kortet på pladsen har et tydeligt flueben; de tre andre kort, man
@@ -270,19 +352,30 @@ function openOverviewCardsDialog(){
     }
     render();
 
-    const save = ids => {
-        try{ localStorage.setItem(OVERVIEW_CARDS_KEY, JSON.stringify(ids)); } catch(e){}
+    const layout = readOverviewLayout();
+    const sections = {hidden: layout.hidden.slice(), order: layout.order || defaultOverviewOrder(), moved: !!layout.order};
+
+    const save = (ids, sectionsLayout) => {
+        try{
+            localStorage.setItem(OVERVIEW_CARDS_KEY, JSON.stringify(ids));
+            if(sectionsLayout) localStorage.setItem(OVERVIEW_LAYOUT_KEY, JSON.stringify(sectionsLayout));
+            else localStorage.removeItem(OVERVIEW_LAYOUT_KEY);
+        } catch(e){}
         renderOverview();
     };
     openDialog({
         title: 'Tilpas oversigt',
         content: el('div', {className: 'cards-chooser'}, [
-            el('p', {className: 'dialog-hint', textContent: 'Vælg de fire tal øverst på Oversigt. Tryk på en plads for at skifte kortet.'}),
+            el('h3', {className: 'cards-chooser-head', textContent: 'Kort på siden'}),
+            overviewSectionsChooser(sections),
+            el('h3', {className: 'cards-chooser-head', textContent: 'Nøgletal'}),
+            el('p', {className: 'dialog-hint', textContent: 'Tryk på en plads for at skifte tallet.'}),
             box
         ]),
         actions: [
-            {label: 'Standard', variant: 'secondary', onClick: () => { save(DEFAULT_OVERVIEW_CARDS.slice()); }},
-            {label: 'Gem', variant: 'primary', onClick: () => { save(slots.slice()); }}
+            {label: 'Standard', variant: 'secondary', onClick: () => { save(DEFAULT_OVERVIEW_CARDS.slice(), null); }},
+            // Rækkefølgen gemmes kun, hvis et kort er flyttet - ellers beholder telefon og computer hver sin.
+            {label: 'Gem', variant: 'primary', onClick: () => { save(slots.slice(), {hidden: sections.hidden, order: sections.moved ? sections.order : null}); }}
         ]
     });
 }

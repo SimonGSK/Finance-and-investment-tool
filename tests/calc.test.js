@@ -1063,6 +1063,30 @@ describe('kalenderpåmindelse', () => {
     });
 });
 
+describe('normalizeOverviewLayout', () => {
+    test('giver standardvalget uden gemt valg', () => {
+        assert.deepEqual(calc.normalizeOverviewLayout(null), {hidden: [], order: null});
+        assert.deepEqual(calc.normalizeOverviewLayout({hidden: 'x', order: 7}), {hidden: [], order: null});
+    });
+    test('fjerner ukendte og dobbelte kort og sætter manglende bagest', () => {
+        assert.deepEqual(calc.normalizeOverviewLayout({hidden: ['tools', 'gammel', 'tools'], order: ['goals', 'kpis', 'gammel', 'goals']}),
+            {hidden: ['tools'], order: ['goals', 'kpis', 'chart', 'split', 'next', 'tools']});
+    });
+    test('viser altid mindst ét kort', () => {
+        assert.deepEqual(calc.normalizeOverviewLayout({hidden: calc.OVERVIEW_SECTIONS.slice()}).hidden, []);
+    });
+});
+
+describe('moveInList', () => {
+    test('flytter op og ned og står stille i kanten', () => {
+        assert.deepEqual(calc.moveInList(['a', 'b', 'c'], 'b', -1), ['b', 'a', 'c']);
+        assert.deepEqual(calc.moveInList(['a', 'b', 'c'], 'b', 1), ['a', 'c', 'b']);
+        assert.deepEqual(calc.moveInList(['a', 'b', 'c'], 'a', -1), ['a', 'b', 'c']);
+        assert.deepEqual(calc.moveInList(['a', 'b', 'c'], 'c', 1), ['a', 'b', 'c']);
+        assert.deepEqual(calc.moveInList(['a', 'b'], 'x', 1), ['a', 'b']);
+    });
+});
+
 describe('containsAmount', () => {
     test('finder beløb med tusindtalspunktum, "kr." og "mio."', () => {
         for(const t of ['605.853 kr.', '+6.439 kr. siden 31. aug.', '86 kr. tilbage', '1.250.000', '−40.000', '1,2 mio. kr.', 'Du kan realisere 23.400 kr. mere'])

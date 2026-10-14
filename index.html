@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#0B0B0C">
     <!-- Sidens version (sættes af npm run stamp). Den åbne side tjekker, om der er en nyere (js/update-check.js). -->
-    <meta name="app-version" content="708398c2">
+    <meta name="app-version" content="2b8f20f2">
     <meta name="description" content="Budget, formue, investering og lån – danske økonomiværktøjer, hvor dine tal bliver på din egen enhed.">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
@@ -40,7 +40,7 @@
     <script>try{ if(localStorage.getItem('appLock')) document.documentElement.classList.add('is-locked'); }catch(e){}</script>
     <!-- Skjul beløb: sløres med det samme, før siden tegnes (se js/hide-amounts.js). -->
     <script>try{ if(localStorage.getItem('hideAmounts')) document.documentElement.classList.add('amounts-hidden'); }catch(e){}</script>
-    <link rel="stylesheet" href="styles.css?v=82084a47">
+    <link rel="stylesheet" href="styles.css?v=18787af8">
 </head>
 <body>
 
@@ -224,12 +224,12 @@
 
 
 <div id="section-overview">
-    <!-- På telefon og tablet står "Tilpas oversigt" lige over kortene; på computer i sidehovedet. -->
-    <div class="stats overview-kpis" id="ovKpis"></div>
+    <!-- Kortene kan skjules og flyttes under "Tilpas oversigt" (data-ov-section, overview-cards.js). -->
+    <div class="stats overview-kpis" id="ovKpis" data-ov-section="kpis"></div>
 
     <div class="overview-grid">
         <div class="ov-side ov-main">
-            <div class="panel ov-chart-panel">
+            <div class="panel ov-chart-panel" data-ov-section="chart">
                 <div class="panel-title-row">
                     <div>
                         <h2 class="panel-title">Nettoformue over tid</h2>
@@ -248,25 +248,25 @@
                 <p class="ov-chart-pick" id="ovChartPick" aria-live="polite" hidden></p>
             </div>
 
-            <div class="panel">
+            <div class="panel" data-ov-section="split">
                 <div class="panel-title-row"><h2 class="panel-title">Fordeling</h2><span class="panel-sub" id="ovSplitSub"></span></div>
                 <div id="ovSplit" class="ov-split"></div>
             </div>
         </div>
 
         <div class="ov-side">
-            <div class="panel">
+            <div class="panel" data-ov-section="goals">
                 <div class="panel-title-row"><h2 class="panel-title">Mine mål</h2><button type="button" class="link-btn" onclick="showSection('formue')">Alle mål</button></div>
                 <div id="ovGoals" class="ov-goals"></div>
             </div>
-            <div class="panel" id="ovNextPanel">
+            <div class="panel" id="ovNextPanel" data-ov-section="next">
                 <div class="panel-title-row"><h2 class="panel-title">Næste skridt</h2></div>
                 <ul id="ovNext" class="ov-next"></ul>
             </div>
         </div>
     </div>
 
-    <div class="panel">
+    <div class="panel" data-ov-section="tools">
         <h2 class="panel-title">Værktøjer</h2>
         <div class="ov-tools">
             <button type="button" class="ov-tool" onclick="showTool(1)"><span class="ov-tool-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16M6 20h12M5 8h14"/><path d="M8 8l-3 6a3 3 0 0 0 6 0zM16 8l-3 6a3 3 0 0 0 6 0z"/></svg></span><span class="ov-tool-text"><strong>ASK vs. Aktiedepot</strong><span>Hvor skal pengene stå? Sammenlign skatten.</span></span></button>
@@ -1880,7 +1880,7 @@
             </details>
         </div>
     </template>
-    <script src="js/calc.js?v=dda1960f"></script>
+    <script src="js/calc.js?v=39b02743"></script>
     <script src="js/sync.js?v=27ea91b3"></script>
     <script src="js/shared.js?v=4e5f93df"></script>
     <script src="js/ui.js?v=9520ce7b"></script>
@@ -1907,8 +1907,8 @@
     <script src="js/update-check.js?v=4fead684"></script>
     <script src="js/pwa.js?v=70965acb"></script>
     <script src="js/report.js?v=d2fb079b"></script>
-    <script src="js/overview-cards.js?v=e45968e9"></script>
-    <script src="js/overview.js?v=cf634142"></script>
+    <script src="js/overview-cards.js?v=e8d84d9e"></script>
+    <script src="js/overview.js?v=899e0fa7"></script>
     <script src="js/budget.js?v=9c9e0798"></script>
     <script src="js/net-worth.js?v=b6f76ec8"></script>
     <script src="js/month-overview.js?v=ac57d16a"></script>

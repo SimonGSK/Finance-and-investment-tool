@@ -1269,6 +1269,50 @@ test('Oversigt: de fire nøgletal kan vælges, et valgt kort bytter plads, og va
     expect(await labels()).toEqual(['Nettoformue', 'Porteføljeværdi', 'Budget pr. måned', 'Stigning pr. måned']);
 });
 
+test('Tilpas oversigt: kortene på siden kan skjules og flyttes, og Standard giver den gamle oversigt', async ({ page }) => {
+    await page.goto('/index.html');
+    const top = sel => page.locator(sel).evaluate(n => n.getBoundingClientRect().top);
+    const width = sel => page.locator(sel).evaluate(n => n.getBoundingClientRect().width);
+    const dialog = page.getByRole('dialog', { name: 'Tilpas oversigt' });
+    const rows = () => dialog.locator('.ov-section-row .toggle-row span').allTextContents();
+
+    await page.getByRole('button', { name: 'Tilpas oversigt' }).click();
+    expect(await rows()).toEqual(['Nøgletal', 'Nettoformue over tid', 'Fordeling', 'Mine mål', 'Næste skridt', 'Værktøjer']);
+    await expect(dialog.getByRole('button', { name: 'Flyt Nøgletal op' })).toBeDisabled();
+    await dialog.getByRole('checkbox', { name: 'Mine mål' }).uncheck();
+    await dialog.getByRole('checkbox', { name: 'Næste skridt' }).uncheck();
+    for(let i = 0; i < 5; i++) await dialog.getByRole('button', { name: 'Flyt Værktøjer op' }).click();
+    // Pilen beholder fokus; står kortet øverst, går fokus til pilen ned.
+    await expect(dialog.getByRole('button', { name: 'Flyt Værktøjer ned' })).toBeFocused();
+    expect(await rows()).toEqual(['Værktøjer', 'Nøgletal', 'Nettoformue over tid', 'Fordeling', 'Mine mål', 'Næste skridt']);
+    await dialog.getByRole('button', { name: 'Gem' }).click();
+
+    // Mine mål og Næste skridt er væk, Værktøjer står øverst, og grafen får hele bredden.
+    await expect(page.locator('[data-ov-section="goals"]')).toBeHidden();
+    await expect(page.locator('[data-ov-section="next"]')).toBeHidden();
+    expect(await top('[data-ov-section="tools"]')).toBeLessThan(await top('#ovKpis'));
+    expect(Math.abs(await width('[data-ov-section="chart"]') - await width('#ovKpis'))).toBeLessThanOrEqual(1);
+
+    // Valget huskes, og i én kolonne (telefon) følger kortene rækkefølgen præcist.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.reload();
+    const order = await page.locator('[data-ov-section]:visible').evaluateAll(nodes =>
+        nodes.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top).map(n => n.dataset.ovSection));
+    expect(order).toEqual(['tools', 'kpis', 'chart', 'split']);
+
+    // Det sidste viste kort kan ikke slås fra.
+    await page.getByRole('button', { name: 'Tilpas oversigt' }).click();
+    for(const name of ['Værktøjer', 'Nøgletal', 'Nettoformue over tid']) await dialog.getByRole('checkbox', { name }).uncheck();
+    await expect(dialog.getByRole('checkbox', { name: 'Fordeling' })).toBeDisabled();
+
+    // Standard: alle kort og den gamle rækkefølge (på telefon står grafen over nøgletallene).
+    await dialog.getByRole('button', { name: 'Standard' }).click();
+    await expect(page.locator('[data-ov-section="goals"]')).toBeVisible();
+    expect(await top('[data-ov-section="chart"]')).toBeLessThan(await top('#ovKpis'));
+    expect(await top('#ovKpis')).toBeLessThan(await top('[data-ov-section="tools"]'));
+    expect(await page.evaluate(() => localStorage.getItem('overviewLayout'))).toBeNull();
+});
+
 test('Oversigt: hvert kort i vælgeren kan vises uden fejl, også uden data', async ({ page }) => {
     const errors = collectErrors(page);
     await page.goto('/index.html');

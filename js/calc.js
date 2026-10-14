@@ -1964,10 +1964,45 @@ function appVersionOf(html){
     return /<meta name="app-version" content="([0-9a-f]+)">/.exec(html)?.[1] || null;
 }
 
+/** Kortene på Oversigt i standardrækkefølgen (som på en computer). */
+const OVERVIEW_SECTIONS = ['kpis', 'chart', 'split', 'goals', 'next', 'tools'];
+
+/**
+ * Det gemte valg af kort på Oversigt ("Tilpas oversigt"), renset: ukendte kort fjernes, en
+ * rækkefølge, der mangler et kort (fx et nyt), får det bagest, og mindst ét kort bliver vist.
+ * @param {{hidden?:string[], order?:string[]}|null} saved
+ * @param {string[]} [sections]
+ * @returns {{hidden:string[], order:string[]|null}} order null: standardrækkefølgen
+ */
+function normalizeOverviewLayout(saved, sections = OVERVIEW_SECTIONS){
+    const known = list => Array.isArray(list) ? [...new Set(list.filter(id => sections.includes(id)))] : null;
+    const hidden = known(saved?.hidden) || [];
+    const order = known(saved?.order);
+    return {
+        hidden: hidden.length < sections.length ? hidden : [],
+        order: order ? order.concat(sections.filter(id => !order.includes(id))) : null
+    };
+}
+
+/**
+ * Flytter et punkt én plads op eller ned i en liste.
+ * @param {string[]} list
+ * @param {string} id
+ * @param {-1|1} dir -1 op, 1 ned
+ * @returns {string[]} en ny liste (den samme rækkefølge, hvis punktet står yderst)
+ */
+function moveInList(list, id, dir){
+    const from = list.indexOf(id), to = from + dir;
+    if(from < 0 || to < 0 || to >= list.length) return list.slice();
+    const next = list.slice();
+    [next[from], next[to]] = [next[to], next[from]];
+    return next;
+}
+
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
-        containsAmount, appVersionOf, adjacentPeriod, yearColors, monthlyStatusSummary, cleanNote, suspiciousAmounts, NOTE_MAX_LENGTH, addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
+        normalizeOverviewLayout, moveInList, OVERVIEW_SECTIONS, containsAmount, appVersionOf, adjacentPeriod, yearColors, monthlyStatusSummary, cleanNote, suspiciousAmounts, NOTE_MAX_LENGTH, addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
         periodChanges, bestPeriods,
         planSync, applySync,
         CAPITAL_INCOME_LIMIT,
