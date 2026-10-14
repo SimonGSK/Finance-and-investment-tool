@@ -115,6 +115,68 @@ const OVERVIEW_CARD_GROUPS = [
     ]}
 ];
 
+/**
+ * Værdierne for de seneste 12 måneder i en historik - til et korts lille kurve.
+ * @param {Object[]} history sorteret efter dato
+ * @param {(h:Object, i:number) => number} valueOf
+ * @returns {number[]} tom med under to punkter
+ */
+function lastYearValues(history, valueOf){
+    if(history.length < 2) return [];
+    const from = addMonthsIso(history.at(-1).date, -12);
+    return history.map((h, i) => [h.date, valueOf(h, i)]).filter(([date]) => date >= from).map(([, v]) => v);
+}
+
+/** Den løbende sum af et felt (fx indskud eller udbytte) til hvert punkt i historikken. */
+function runningSum(history, key){
+    let sum = 0;
+    return history.map(h => (sum += h[key] || 0));
+}
+
+/**
+ * Kurven i hvert kort på Oversigt (på større skærme): hvad tallet bygger på over de seneste
+ * 12 måneder. inverse: en stigning er dårlig (gæld). Budget har ingen historik og ingen kurve.
+ */
+const CARD_SPARKS = {
+    netWorth: ctx => ({values: lastYearValues(ctx.nwHistory, h => h.value || 0)}),
+    liquid: ctx => ({values: lastYearValues(ctx.nwHistory, h => h.liquid ?? 0)}),
+    pension: ctx => ({values: lastYearValues(ctx.nwHistory, h => h.netCatPension || 0)}),
+    debt: ctx => ({values: lastYearValues(ctx.nwHistory, h => h.debt || 0), inverse: true}),
+    growth: ctx => CARD_SPARKS.netWorth(ctx),
+    growthPct: ctx => CARD_SPARKS.netWorth(ctx),
+    thisYear: ctx => CARD_SPARKS.netWorth(ctx),
+    portfolio: ctx => ({values: lastYearValues(ctx.ptHistory, h => h.portfolioValue || 0)}),
+    invested: ctx => { const sums = runningSum(ctx.ptHistory, 'traded'); return {values: lastYearValues(ctx.ptHistory, (h, i) => sums[i])}; },
+    totalReturn: ctx => { const sums = runningSum(ctx.ptHistory, 'deposit'); return {values: lastYearValues(ctx.ptHistory, (h, i) => (h.portfolioValue || 0) - sums[i])}; },
+    annualReturn: ctx => CARD_SPARKS.totalReturn(ctx),
+    dividends: ctx => { const sums = runningSum(ctx.ptHistory, 'dividend'); return {values: lastYearValues(ctx.ptHistory, (h, i) => sums[i])}; },
+    fire: ctx => CARD_SPARKS.liquid(ctx),
+    buffer: ctx => ({values: lastYearValues(ctx.nwHistory, h => h.netCatKontanter || 0)})
+};
+
+/**
+ * Skjuler et korts kurve, hvis den ville ramme kortets tekst (fx en lang overskrift eller et
+ * stort tal) - så overlapper intet. Kaldes efter tegning og når vinduet skifter størrelse.
+ */
+function fitOverviewSparks(){
+    document.querySelectorAll('#ovKpis .ov-spark').forEach(spark => {
+        spark.classList.remove('is-cramped');
+        if(!spark.offsetParent) return;
+        const s = spark.getBoundingClientRect();
+        // Selve teksten måles (ikke dens boks, som er lige så bred som kortet).
+        const range = document.createRange();
+        const hits = [...spark.parentElement.children].filter(c => c !== spark && !c.classList.contains('visually-hidden')).some(c => {
+            range.selectNodeContents(c);
+            return [...range.getClientRects()].some(r => r.width && r.left < s.right + 6 && r.right > s.left - 6 && r.top < s.bottom + 2 && r.bottom > s.top - 2);
+        });
+        spark.classList.toggle('is-cramped', hits);
+    });
+}
+let fitSparksFrame = 0;
+window.addEventListener('resize', () => { cancelAnimationFrame(fitSparksFrame); fitSparksFrame = requestAnimationFrame(fitOverviewSparks); });
+// Teksten får sin endelige bredde, når skrifttyperne er hentet.
+document.fonts?.ready.then(fitOverviewSparks);
+
 // Hvert kort åbner den side, tallet kommer fra (gruppens side, medmindre kortet selv siger andet).
 const OVERVIEW_CARDS = Object.fromEntries(OVERVIEW_CARD_GROUPS.flatMap(g => g.cards.map(c => ({opens: g.opens, ...c}))).map(c => [c.id, c]));
 
@@ -149,10 +211,13 @@ function renderOverviewCards(ctx){
             el('div', {className: 'label', textContent: card.label}),
             el('div', {className: 'value' + (r.cls === 'negative' ? ' negative' : ''), id: elId, textContent: r.value}),
             sub,
+            el('span', {className: 'stat-spark ov-spark', attrs: {'aria-hidden': 'true', title: 'De seneste 12 måneder'},
+                innerHTML: CARD_SPARKS[id] ? (({values, inverse}) => sparkline(values, inverse))(CARD_SPARKS[id](ctx)) : ''}),
             el('span', {className: 'stat-go', textContent: '›', attrs: {'aria-hidden': 'true'}}),
             el('span', {className: 'visually-hidden', textContent: ` – åbn ${page}`})
         ]);
     }));
+    fitOverviewSparks();
 }
 
 /**

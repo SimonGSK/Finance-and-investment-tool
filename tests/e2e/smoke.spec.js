@@ -2604,3 +2604,50 @@ test('Formue: små kurver over 12 måneder i nøgletallene, farvet efter udvikli
     }));
     expect(rows.every(r => r.oneLine && r.clear)).toBe(true);
 });
+
+test('Oversigt: små kurver i kortene på større skærme, aldrig oven i teksten, og ikke på telefoner @mobil', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        const nw = [], pt = [];
+        for(let i = 0; i < 14; i++){
+            const date = new Date(Date.UTC(2025, 8 + i, 0)).toISOString().slice(0, 10);
+            nw.push({date, value: 500000 + i * 20000, liquid: 300000 + i * 9000, netCatKontanter: 60000, netCatAktier: 240000, netCatPension: 200000 + i * 4000, netCatFrivaerdi: 0, netCatAndet: 0, debt: 50000 - i * 1000});
+            pt.push({date, portfolioValue: 240000 + i * 8000, stockValue: 240000 + i * 8000, cash: 0, traded: 4000, deposit: 4000, dividend: i % 3 ? 0 : 500});
+        }
+        // Et meget stort tal, så nettoformuen fylder.
+        nw.at(-1).value = 123456789012;
+        localStorage.setItem('netWorthHistory', JSON.stringify(nw));
+        localStorage.setItem('portfolioHistory', JSON.stringify(pt));
+        localStorage.setItem('budgetItems', JSON.stringify({catBolig: [{label: 'Husleje', amount: 9000}]}));
+    });
+    await page.reload();
+    const phone = await page.evaluate(() => window.innerWidth <= 640);
+    const ids = await page.evaluate(() => Object.keys(OVERVIEW_CARDS));
+    let shown = 0;
+    for(let i = 0; i < ids.length; i += 4){
+        const four = ids.slice(i, i + 4);
+        while(four.length < 4) four.push(ids.find(id => !four.includes(id)));
+        const cards = await page.evaluate(four => {
+            localStorage.setItem('overviewCards', JSON.stringify(four));
+            renderOverview();
+            const range = document.createRange();
+            return [...document.querySelectorAll('#ovKpis .stat')].map(stat => {
+                const spark = stat.querySelector('.ov-spark');
+                const visible = !!spark.querySelector('svg') && getComputedStyle(spark).display !== 'none' && getComputedStyle(spark).visibility !== 'hidden';
+                const s = spark.getBoundingClientRect();
+                const overlaps = visible && [...stat.children].filter(c => c !== spark && !c.classList.contains('visually-hidden')).some(c => {
+                    range.selectNodeContents(c);
+                    return [...range.getClientRects()].some(r => r.width && r.left < s.right && r.right > s.left && r.top < s.bottom && r.bottom > s.top);
+                });
+                return {id: stat.dataset.card, visible, overlaps, hasGraph: !!spark.querySelector('svg')};
+            });
+        }, four);
+        for(const c of cards){
+            expect(c.overlaps, c.id).toBe(false);
+            if(c.id === 'budget') expect(c.hasGraph).toBe(false);      // ingen historik
+            if(phone) expect(c.visible, c.id).toBe(false);
+            if(c.visible) shown++;
+        }
+    }
+    if(!phone) expect(shown).toBeGreaterThan(8);                       // de fleste kort har plads
+});
