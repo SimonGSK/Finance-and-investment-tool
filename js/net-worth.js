@@ -640,8 +640,9 @@ function renderNetWorthHistory(){
     renderBestPeriods('nwBestPeriods', bestPeriods(changes), 'Gem mindst to datoer, hvor formuen stiger, for at se dine bedste perioder.');
 
     const historyTableBody = document.getElementById('netWorthHistoryTableBody');
+    const shared = sharedMonthsOf(history.map(h => h.date));
     historyTableBody.innerHTML = history.map(h => `<tr>
-            <td data-csv="${h.date}">${formatDanishDate(h.date)}</td>
+            <td data-csv="${h.date}">${tableDateHtml(h.date, shared)}</td>
             <td>${DK.format(h.netCatKontanter || 0)} kr.</td>
             <td>${DK.format(h.netCatAktier || 0)} kr.</td>
             <td>${DK.format(h.netCatPension || 0)} kr.</td>

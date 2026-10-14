@@ -641,6 +641,19 @@ table.data-table tbody tr:last-child td{ border-bottom:none; }
 table.data-table td:first-child{ text-align:left; color:var(--muted); }
 table.data-table tbody tr{ transition:background 0.12s var(--ease); }
 table.data-table tbody tr:hover{ background:var(--panel-hover); }
+/* Historiktabellerne (Formue og Portefølje): på telefoner en kort dato ("sep. 26"), der bliver
+   stående til venstre, når man ruller tabellen til siden (tableDateHtml i ui.js). */
+.date-short{ display:none; }
+@media (max-width:640px){
+    .history-table .date-long{ display:none; }
+    .history-table .date-short{ display:inline; }
+    .history-table th:first-child, .history-table td:first-child{
+        position:sticky; left:0; z-index:1; background:var(--panel);
+        padding-right:var(--s3); box-shadow:1px 0 0 var(--border);
+    }
+    .history-table thead th:first-child{ z-index:2; background:var(--panel-sunken); }
+    .history-table tbody tr:hover td:first-child{ background:var(--panel-hover); }
+}
 
 /* ---- Budget ---- */
 .category-group-label{

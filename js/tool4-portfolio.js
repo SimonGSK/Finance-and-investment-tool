@@ -311,8 +311,9 @@ function renderPortfolioHistory(){
     renderBestPeriods('ptBestPeriods', bestPeriods(changes), 'Gem mindst to datapunkter med afkast for at se dine bedste perioder.');
 
     const ptTableBody = document.getElementById('ptTableBody');
+    const shared = sharedMonthsOf(enriched.map(h => h.date));
     ptTableBody.innerHTML = enriched.map(h => `<tr>
-            <td data-csv="${h.date}">${formatDanishDate(h.date)}</td>
+            <td data-csv="${h.date}">${tableDateHtml(h.date, shared)}</td>
             <td>${DK.format(h.portfolioValue)} kr.</td>
             ${changeCellHtml(changeByDate.get(h.date), 'change')}
             ${changeCellHtml(changeByDate.get(h.date), 'gain')}
