@@ -1063,6 +1063,19 @@ describe('kalenderpåmindelse', () => {
     });
 });
 
+describe('unseenNews', () => {
+    const news = [{date: '2026-10-14'}, {date: '2026-10-09'}, {date: '2026-10-04'}];
+    test('viser de nyheder, der er kommet siden sidst', () => {
+        assert.deepEqual(calc.unseenNews(news, '2026-10-04', true), news.slice(0, 2));
+        assert.deepEqual(calc.unseenNews(news, '2026-10-14', true), []);
+    });
+    test('en ny bruger får ingen besked; en gammel bruger, der aldrig har set listen, får den nyeste', () => {
+        assert.deepEqual(calc.unseenNews(news, null, false), []);
+        assert.deepEqual(calc.unseenNews(news, null, true), [news[0]]);
+        assert.deepEqual(calc.unseenNews([], null, true), []);
+    });
+});
+
 describe('normalizeOverviewLayout', () => {
     test('giver standardvalget uden gemt valg', () => {
         assert.deepEqual(calc.normalizeOverviewLayout(null), {hidden: [], order: null});
