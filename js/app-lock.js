@@ -296,6 +296,7 @@ async function renderLockSettings(){
     const lock = readAppLock();
     if(!lock){
         box.replaceChildren(el('button', {className: 'btn btn-secondary btn-sm', type: 'button', textContent: 'Slå kodelås til', onclick: setAppLockCode}));
+        if(typeof renderSettingsSummaries === 'function') renderSettingsSummaries();
         return;
     }
     const children = [el('p', {className: 'lock-status', textContent: 'Kodelåsen er slået til.'})];
@@ -308,6 +309,7 @@ async function renderLockSettings(){
         el('button', {className: 'btn btn-secondary btn-sm', type: 'button', textContent: 'Slå kodelås fra', onclick: removeAppLock})
     ]));
     box.replaceChildren(...children);
+    if(typeof renderSettingsSummaries === 'function') renderSettingsSummaries();
 }
 
 // Låst fra start (scriptet i <head> har allerede skjult siden), og igen efter 5 minutter væk.

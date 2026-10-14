@@ -197,12 +197,13 @@ function renderBackupStatus(){
     if(!last){
         node.textContent = hasUserData() ? 'Seneste backup: aldrig' : '';
         node.classList.toggle('is-stale', hasUserData());
-        return;
+    } else {
+        const days = Math.floor((Date.now() - last) / DAY_MS);
+        const ago = days === 0 ? 'i dag' : days === 1 ? 'i går' : `${days} dage siden`;
+        node.textContent = `Seneste backup: ${formatDanishDate(todayIso(new Date(last)))} (${ago})`;
+        node.classList.toggle('is-stale', days >= BACKUP_REMIND_AFTER_DAYS);
     }
-    const days = Math.floor((Date.now() - last) / DAY_MS);
-    const ago = days === 0 ? 'i dag' : days === 1 ? 'i går' : `${days} dage siden`;
-    node.textContent = `Seneste backup: ${formatDanishDate(todayIso(new Date(last)))} (${ago})`;
-    node.classList.toggle('is-stale', days >= BACKUP_REMIND_AFTER_DAYS);
+    renderSettingsSummaries();
 }
 
 /** Viser backup-påmindelsen, hvis den er aktuel. */
@@ -295,23 +296,48 @@ if(!localStorage.getItem('hasSeenIntroBanner')){
  * Åbner eller lukker indstillingspanelet under tandhjulet. Esc eller et klik
  * uden for panelet lukker det også.
  * @param {boolean} [open] tving åben/lukket; udeladt skifter
+ * @param {'look'|'reminders'|'data'|'lock'} [group] åbn panelet med denne gruppe foldet ud
  */
-function toggleSettings(open){
+function toggleSettings(open, group){
     const dialog = document.getElementById('settingsPanel');
     const show = open ?? !dialog.open;
     if(show && !dialog.open){
         closeNav();
         renderBackupStatus();
+        renderSettingsSummaries();
+        dialog.querySelectorAll('.settings-group').forEach(g => { g.open = g.dataset.group === group; });
         dialog.showModal();
     } else if(!show && dialog.open){
         dialog.close();
     }
 }
 
+/**
+ * Det, der står til højre for hver gruppe i indstillingerne, så man kan se, hvordan det er
+ * sat, uden at folde gruppen ud: tema, påmindelse, seneste backup og kodelås.
+ */
+function renderSettingsSummaries(){
+    const set = (id, text, warn = false) => {
+        const node = document.getElementById(id);
+        node.textContent = text;
+        node.classList.toggle('is-warn', warn);
+    };
+    set('settingsLookState', document.getElementById('lightTheme').checked ? 'Lyst tema' : 'Mørkt tema');
+    set('settingsReminderState', document.getElementById('monthlyReminderToggle').checked ? 'Til' : 'Fra');
+    const last = readTimestamp('lastBackupAt');
+    const days = last ? Math.floor((Date.now() - last) / DAY_MS) : null;
+    set('settingsDataState', days === null ? (hasUserData() ? 'Ingen backup' : '')
+        : days === 0 ? 'Backup i dag' : days === 1 ? 'Backup i går' : `Backup for ${days} dage siden`,
+        hasUserData() && (days === null || days >= BACKUP_REMIND_AFTER_DAYS));
+    set('settingsLockState', typeof readAppLock === 'function' && readAppLock() ? 'Til' : 'Fra');
+}
+
 // Esc lukker af sig selv (dialogens "cancel"); et klik på den slørede baggrund lukker også.
 (function initSettingsDialog(){
     const dialog = document.getElementById('settingsPanel');
     dialog.addEventListener('click', e => { if(e.target === dialog) dialog.close(); });
+    // Når noget skiftes i panelet (tema, påmindelse, Face ID ...), følger teksten ved gruppen med.
+    dialog.addEventListener('change', () => renderSettingsSummaries());
     dialog.addEventListener('close', () => document.getElementById('settingsBtn').focus());
 })();
 

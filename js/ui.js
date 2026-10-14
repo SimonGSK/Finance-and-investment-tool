@@ -157,20 +157,23 @@ let toastRegion = null;
 
 /**
  * Kort besked nederst på skærmen, fx "Datapunkt gemt". Kan have en knap som
- * "Fortryd". Meddeles også til skærmlæsere.
+ * "Fortryd" (eller flere med actions). Meddeles også til skærmlæsere.
  * @param {string} message
- * @param {{actionLabel?:string, onAction?:() => void, duration?:number}} [opts] duration i ms; Infinity = bliver stående med et luk-kryds
+ * @param {{actionLabel?:string, onAction?:() => void, actions?:{label:string, onAction:() => void}[], duration?:number}} [opts]
+ *   duration i ms; Infinity = bliver stående med et luk-kryds
  */
-function notify(message, {actionLabel, onAction, duration = 5000} = {}){
+function notify(message, {actionLabel, onAction, actions = [], duration = 5000} = {}){
     if(!toastRegion){
         toastRegion = el('div', {className:'toast-region', attrs:{'aria-live':'polite', 'role':'status'}});
         document.body.append(toastRegion);
     }
     const toast = el('div', {className:'toast'}, [el('span', {textContent: message})]);
     const dismiss = () => { toast.classList.add('toast-leaving'); setTimeout(() => toast.remove(), 200); };
-    if(actionLabel && onAction){
-        toast.append(el('button', {className:'toast-action', type:'button', textContent: actionLabel, onclick: () => { onAction(); dismiss(); }}));
-    }
+    if(actionLabel && onAction) actions = [{label: actionLabel, onAction}, ...actions];
+    const buttons = actions.map(a => el('button', {className:'toast-action', type:'button', textContent: a.label, onclick: () => { a.onAction(); dismiss(); }}));
+    // Flere knapper står under hinanden til højre, så beskeden beholder sin bredde.
+    if(buttons.length > 1) toast.append(el('div', {className:'toast-actions'}, buttons));
+    else toast.append(...buttons);
     // duration: Infinity = bliver stående, til man lukker den med krydset.
     if(duration === Infinity) toast.append(el('button', {className:'toast-close', type:'button', textContent:'×', attrs:{'aria-label':'Luk'}, onclick: dismiss}));
     toastRegion.append(toast);

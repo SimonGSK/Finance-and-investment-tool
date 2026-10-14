@@ -21,6 +21,12 @@ async function openView(page, [section, fn, n]){
 }
 
 /** Samler JavaScript-fejl; eksterne skrifttyper, der ikke kan hentes, ignoreres. */
+/** Åbner indstillingerne med en gruppe foldet ud (grupperne er foldet sammen fra start). */
+async function openSettings(page, group){
+    await page.locator('#settingsBtn').click();
+    await page.getByRole('dialog', { name: 'Indstillinger' }).locator('summary', { hasText: group }).click();
+}
+
 function collectErrors(page){
     const errors = [];
     page.on('pageerror', e => errors.push(e.message));
@@ -531,7 +537,7 @@ test('udskriv overblik: rapporten har formue, budget, lån og mål og er det ene
     });
     await page.reload();
     // Udskriv overblik ligger kun i indstillingerne.
-    await page.locator('#settingsBtn').click();
+    await openSettings(page, 'Data og backup');
     await page.getByRole('dialog', { name: 'Indstillinger' }).getByRole('button', { name: 'Udskriv overblik (PDF)' }).click();
     expect(await page.evaluate(() => window.__printed)).toBe(true);
     const report = page.locator('#printReport');
@@ -628,7 +634,7 @@ test('synkronisering: en fil fra en anden enhed flettes i stedet for at overskri
         localStorage.setItem('budgetItems', JSON.stringify({catBolig:[{label:'Husleje', amount:9500}]}));
     });
     await a.reload();
-    await a.locator('#settingsBtn').click();
+    await openSettings(a, 'Data og backup');
     const [download] = await Promise.all([a.waitForEvent('download'), a.getByRole('button', { name: 'Gem mine data' }).click()]);
     expect(download.suggestedFilename()).toMatch(/^okonomi-data-\d{4}-\d{2}-\d{2}-\d{4}\.json$/);
     const filePath = await download.path();
@@ -677,7 +683,7 @@ test('synkronisering: en ny, tom enhed foreslår filens tal frem for sine egne s
     await a.goto('/index.html');
     await a.getByRole('button', { name: 'Formue', exact: true }).click();
     await a.getByLabel('Aktier & værdipapirer', { exact: true }).fill('300000');
-    await a.locator('#settingsBtn').click();
+    await openSettings(a, 'Data og backup');
     const [download] = await Promise.all([a.waitForEvent('download'), a.getByRole('button', { name: 'Gem mine data' }).click()]);
 
     const b = await (await browser.newContext()).newPage();
@@ -932,7 +938,7 @@ test('indstillinger åbner som en dialog med sløret baggrund og lukker med Esc 
     const dialog = page.getByRole('dialog', { name: 'Indstillinger' });
     await expect(dialog).toBeVisible();
     expect(await dialog.evaluate(d => d.open && d.matches(':modal'))).toBe(true);
-    await expect(dialog.getByRole('button', { name: 'Gem mine data' })).toBeVisible();
+    await expect(dialog.locator('summary', { hasText: 'Data og backup' })).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();
 
@@ -941,10 +947,10 @@ test('indstillinger åbner som en dialog med sløret baggrund og lukker med Esc 
     await expect(dialog).toBeHidden();
 
     // Indstillingerne virker stadig: temaet skifter (fra det, systemet startede med).
-    await page.locator('#settingsBtn').click();
+    await openSettings(page, 'Udseende og app');
     const theme = () => page.evaluate(() => document.documentElement.getAttribute('data-theme'));
     const before = await theme();
-    await dialog.getByText('Lyst tema').click();
+    await dialog.getByLabel('Lyst tema').click();
     expect(await theme()).toBe(before === 'light' ? 'dark' : 'light');
 });
 
@@ -1014,7 +1020,7 @@ test('porteføljetrackeren: "Tilføj datapunkt" foldes sammen og huskes, og back
     await page.goto('/index.html');
     await expect(page.getByRole('button', { name: /Udskriv overblik/ })).toBeHidden();
     await expect(page.getByRole('button', { name: 'Tag backup' })).toHaveCount(0);
-    await page.locator('#settingsBtn').click();
+    await openSettings(page, 'Data og backup');
     const settings = page.getByRole('dialog', { name: 'Indstillinger' });
     await expect(settings.getByRole('button', { name: 'Gem mine data' })).toBeVisible();
     await expect(settings.getByRole('button', { name: 'Udskriv overblik (PDF)' })).toBeVisible();
@@ -1072,7 +1078,7 @@ test('app-ikonet kan vælges i grøn, sort eller hvid, før appen lægges på hj
     expect(await links()).toEqual(['icons/apple-touch-icon.png', 'manifest.webmanifest']);
 
     // Valget står altid under "App" i indstillingerne.
-    await page.locator('#settingsBtn').click();
+    await openSettings(page, 'Udseende og app');
     const dialog = page.getByRole('dialog', { name: 'Indstillinger' });
     await expect(dialog.getByRole('radio', { name: 'Grøn' })).toBeChecked();
     await dialog.getByText('Sort', { exact: true }).click();
@@ -1082,7 +1088,7 @@ test('app-ikonet kan vælges i grøn, sort eller hvid, før appen lægges på hj
     // Valget huskes.
     await page.reload();
     expect(await links()).toEqual(['icons/black/apple-touch-icon.png', 'manifest-black.webmanifest']);
-    await page.locator('#settingsBtn').click();
+    await openSettings(page, 'Udseende og app');
     await expect(dialog.getByRole('radio', { name: 'Sort' })).toBeChecked();
     await dialog.getByText('Hvid', { exact: true }).click();
     expect(await links()).toEqual(['icons/white/apple-touch-icon.png', 'manifest-white.webmanifest']);
@@ -1203,7 +1209,7 @@ test('Månedsoverblik markerer en måned, der dækker flere måneder, når der m
 test('i den installerede app står ikonvalget der stadig, med en forklaring på, hvordan man skifter', async ({ page }) => {
     await page.addInitScript(() => { Object.defineProperty(navigator, 'standalone', { value: true }); });
     await page.goto('/index.html');
-    await page.locator('#settingsBtn').click();
+    await openSettings(page, 'Udseende og app');
     const dialog = page.getByRole('dialog', { name: 'Indstillinger' });
     await expect(dialog.getByRole('radio', { name: 'Grøn' })).toBeVisible();
     await expect(dialog.getByRole('button', { name: 'Installér som app' })).toBeHidden();
@@ -1520,7 +1526,7 @@ test('månedsstatus: et regnestykke opdaterer "siden sidst" og opsummeringen men
 
 test('indstillinger: påmindelsen kan lægges i kalenderen som en .ics-fil', async ({ page }) => {
     await page.goto('/index.html');
-    await page.locator('#settingsBtn').click();
+    await openSettings(page, 'Påmindelser');
     const downloadPromise = page.waitForEvent('download');
     await page.getByRole('button', { name: 'Tilføj påmindelse til din kalender' }).click();
     const download = await downloadPromise;
@@ -1537,7 +1543,7 @@ test('kodelås: slås til med en kode, låser ved åbning og efter 5 minutter v�
     await page.reload();
 
     // Slå til i indstillingerne.
-    await page.locator('#settingsBtn').click();
+    await openSettings(page, 'Kodelås');
     await page.getByRole('button', { name: 'Slå kodelås til' }).click();
     const codeDialog = page.getByRole('dialog', { name: 'Vælg en kode' });
     await codeDialog.getByLabel('Kode', { exact: true }).fill('12');
@@ -1590,7 +1596,7 @@ test('kodelås: slås til med en kode, låser ved åbning og efter 5 minutter v�
     await expect(lock).toBeHidden();
 
     // Slå fra kræver koden.
-    await page.locator('#settingsBtn').click();
+    await openSettings(page, 'Kodelås');
     await page.getByRole('button', { name: 'Slå kodelås fra' }).click();
     const off = page.getByRole('dialog', { name: 'Slå kodelåsen fra' });
     await off.getByLabel('Din nuværende kode').fill('9999');
@@ -2101,12 +2107,12 @@ test('månedsstatus: en kort opsummering efter gem - stigning, placering i året
     };
 
     await save('2026-01-31', 100000);
-    await expect(toast).toHaveText('Din første månedsstatus er gemt. Gem en igen næste måned, så kan du se, hvordan din formue udvikler sig.');
+    await expect(toast).toHaveText('Din første månedsstatus er gemt. Gem en igen næste måned, så kan du se, hvordan din formue udvikler sig.Fortryd');
     await expect(toast.getByRole('button', { name: 'Se måneden' })).toHaveCount(0);
 
     // Kun én måned i år indtil nu: ingen "bedste måned" endnu.
     await save('2026-02-28', 115000);
-    await expect(toast).toHaveText(/^Din formue steg 15\.000 kr\. siden 31\. jan\. 2026\.(Se måneden)?$/);
+    await expect(toast).toHaveText(/^Din formue steg 15\.000 kr\. siden 31\. jan\. 2026\.(Se måneden)?Fortryd$/);
 
     await save('2026-03-31', 140000);
     await expect(toast).toContainText('Din formue steg 25.000 kr. siden 28. feb. 2026 – årets bedste måned indtil videre! Du har gemt din status 3 måneder i træk.');
@@ -2123,6 +2129,69 @@ test('månedsstatus: en kort opsummering efter gem - stigning, placering i året
     expect(await page.evaluate(() => document.body.dataset.section)).toBe('month');
     await expect(page.locator('#monthYear')).toHaveValue('2026');
     await expect(page.locator('#monthPeriod')).toHaveValue('6');
+});
+
+test('månedsstatus kan fortrydes fra beskeden: historikken, Formue-felterne og Oversigt er som før', async ({ page }) => {
+    await page.goto('/index.html');
+    const save = async (date, bank) => {
+        await page.getByRole('button', { name: '+ Månedsstatus' }).click();
+        const dialog = page.getByRole('dialog', { name: 'Månedsstatus' });
+        await dialog.getByLabel('Dato').fill(date);
+        await dialog.getByLabel('Bank- og opsparingskonti', { exact: true }).fill(String(bank));
+        await dialog.getByRole('button', { name: 'Gem i begge' }).click();
+        await expect(dialog).toBeHidden();
+    };
+    const stored = () => page.evaluate(() => ['netWorthHistory', 'portfolioHistory', 'monthlyStatusLast', 'netWorthData'].map(k => localStorage.getItem(k)));
+
+    await save('2026-08-31', 100000);
+    const before = await stored();
+    await save('2026-09-30', 120000);
+    await expect(page.locator('#ovNetWorth')).toHaveText('120.000 kr.');
+    await page.locator('.toast').last().getByRole('button', { name: 'Fortryd' }).click();
+    await expect(page.locator('.toast').last()).toHaveText('Månedsstatus for 30. sep. 2026 er fortrudt.');
+    expect(await stored()).toEqual(before);
+    await expect(page.locator('#ovNetWorth')).toHaveText('100.000 kr.');
+    expect(await page.locator('#netCatKontanter').inputValue()).toBe('100000');
+
+    // Er der gemt noget siden, fortrydes intet - så den nye ændring ikke går tabt.
+    await save('2026-09-30', 130000);
+    const fortryd = page.locator('.toast').last().getByRole('button', { name: 'Fortryd' });
+    await page.evaluate(() => {
+        const h = JSON.parse(localStorage.getItem('netWorthHistory'));
+        h[0].note = 'Rettet bagefter';
+        localStorage.setItem('netWorthHistory', JSON.stringify(h));
+    });
+    await fortryd.click();
+    await expect(page.locator('.toast').last()).toHaveText('Statussen kan ikke fortrydes, fordi der er ændret i dine tal siden.');
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('netWorthHistory')).length)).toBe(2);
+});
+
+test('indstillinger: fire grupper, foldet sammen, med valget til højre, og kun én åben ad gangen', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.locator('#settingsBtn').click();
+    const dialog = page.getByRole('dialog', { name: 'Indstillinger' });
+    const summaries = dialog.locator('summary');
+    await expect(summaries).toHaveText([/^Udseende og app(Mørkt|Lyst) tema$/, 'PåmindelserTil', 'Data og backup', 'KodelåsFra']);
+    await expect(dialog.getByRole('button', { name: 'Gem mine data' })).toBeHidden();
+
+    await summaries.filter({ hasText: 'Påmindelser' }).click();
+    await dialog.getByLabel('Påmind mig om månedsstatus ved hvert månedsskifte').uncheck();
+    await expect(summaries.filter({ hasText: 'Påmindelser' })).toHaveText('PåmindelserFra');
+    await summaries.filter({ hasText: 'Data og backup' }).click();
+    await expect(dialog.getByRole('button', { name: 'Gem mine data' })).toBeVisible();
+    await expect(dialog.getByLabel('Påmind mig om månedsstatus ved hvert månedsskifte')).toBeHidden();
+
+    // Med tal og uden backup står det med rødt ved gruppen; "Næste skridt" åbner gruppen direkte.
+    await page.keyboard.press('Escape');
+    await page.evaluate(() => {
+        localStorage.setItem('netWorthHistory', JSON.stringify([{date: '2026-09-30', value: 1000, liquid: 1000, netCatKontanter: 1000, netCatAktier: 0, netCatPension: 0, netCatFrivaerdi: 0, netCatAndet: 0, debt: 0}]));
+        localStorage.removeItem('lastBackupAt');
+    });
+    await page.reload();
+    await page.getByRole('button', { name: 'Åbn indstillinger' }).click();
+    await expect(dialog.locator('#settingsDataState')).toHaveText('Ingen backup');
+    await expect(dialog.locator('#settingsDataState')).toHaveClass(/is-warn/);
+    await expect(dialog.getByRole('button', { name: 'Gem mine data' })).toBeVisible();
 });
 
 test('noter på månedsstatus: gemmes, vises i tabellen, på grafen og i Månedsoverblik, bliver ved og kan rettes', async ({ page }) => {

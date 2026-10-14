@@ -233,7 +233,7 @@ function renderOverviewNext({hasNetWorth, budgetSum, months}){
     if(months !== null && months < 3) add('buffer', 90, 'Din nødopsparing dækker under 3 måneders udgifter.', 'Se nødopsparing', () => showSection('formue'));
     if(!loadGoals().length && hasNetWorth) add('goal', 'forever', 'Sæt et mål for din formue eller dine aktier.', 'Sæt mål', () => { showSection('formue'); openGoalDialog(); });
     const lastBackup = parseInt(localStorage.getItem('lastBackupAt'), 10);
-    if(hasUserData() && (isNaN(lastBackup) || Date.now() - lastBackup > 30 * DAY_MS)) add('backup', 30, 'Tag en backup i indstillingerne, så dine tal ikke går tabt.', 'Åbn indstillinger', () => toggleSettings(true));
+    if(hasUserData() && (isNaN(lastBackup) || Date.now() - lastBackup > 30 * DAY_MS)) add('backup', 30, 'Tag en backup i indstillingerne, så dine tal ikke går tabt.', 'Åbn indstillinger', () => toggleSettings(true, 'data'));
 
     const hidden = readHiddenSteps();
     const visible = steps.filter(step => !(hidden[step.key] > Date.now())).slice(0, 4);
