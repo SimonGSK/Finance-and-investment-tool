@@ -1999,10 +1999,25 @@ function moveInList(list, id, dir){
     return next;
 }
 
+/**
+ * "Nyt i Økonomis": de nyheder, der skal vises efter en opdatering. Nyhederne står med den
+ * nyeste først og kendes på deres dato. En ny bruger (uden data) får ingen besked - alt er
+ * nyt for dem - mens en, der har brugt siden før, men aldrig har set listen, får den nyeste.
+ * @param {{date:string}[]} entries nyeste først
+ * @param {string|null} lastSeen datoen på den nyeste nyhed, brugeren har set
+ * @param {boolean} hasData har brugeren tal i appen
+ * @returns {{date:string}[]} de nyheder, der er nye for brugeren (nyeste først)
+ */
+function unseenNews(entries, lastSeen, hasData){
+    if(!entries.length) return [];
+    if(!lastSeen) return hasData ? [entries[0]] : [];
+    return entries.filter(e => e.date > lastSeen);
+}
+
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
-        normalizeOverviewLayout, moveInList, OVERVIEW_SECTIONS, containsAmount, appVersionOf, adjacentPeriod, yearColors, monthlyStatusSummary, cleanNote, suspiciousAmounts, NOTE_MAX_LENGTH, addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
+        unseenNews, normalizeOverviewLayout, moveInList, OVERVIEW_SECTIONS, containsAmount, appVersionOf, adjacentPeriod, yearColors, monthlyStatusSummary, cleanNote, suspiciousAmounts, NOTE_MAX_LENGTH, addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
         periodChanges, bestPeriods,
         planSync, applySync,
         CAPITAL_INCOME_LIMIT,

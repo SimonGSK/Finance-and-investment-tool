@@ -20,3 +20,5 @@ Example: `fix: Månedsoverblik shows the whole year when you pick a new year`
 - Run `npm run stamp` after changing any CSS or JS file. `npm test` fails if the
   version stamps in `index.html` are out of date.
 - Run `npm test` (unit tests) and, where possible, `npm run test:e2e` (browser tests).
+- For a new feature users will notice, add a short Danish line at the top of
+  `WHATS_NEW` in `js/whats-new.js` (under today's date). It shows up in "Nyt i Økonomis".

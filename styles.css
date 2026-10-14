@@ -2254,6 +2254,17 @@ body[data-section="overview"] .app-header-actions .customize-btn{ display:grid; 
 .ov-section-move:hover:not(:disabled){ color:var(--text); background:var(--panel-hover); }
 .ov-section-move:disabled{ opacity:0.25; cursor:default; }
 
+/* ---- Nyt i Økonomis (whats-new.js) ---- */
+.whats-new-entry + .whats-new-entry{ margin-top:var(--s4); padding-top:var(--s4); border-top:1px solid var(--border); }
+.whats-new-date{
+    display:flex; align-items:center; gap:var(--s2); margin:0 0 var(--s2);
+    font:600 11.5px var(--font-sans); letter-spacing:0.14em; text-transform:uppercase; color:var(--subtle);
+}
+.whats-new-tag{ padding:1px 8px; border-radius:var(--r-pill); background:var(--akt-soft); color:var(--akt); letter-spacing:0.06em; }
+.whats-new ul{ margin:0; padding-left:1.2em; }
+.whats-new li{ font-size:14px; line-height:1.5; color:var(--text); }
+.whats-new li + li{ margin-top:6px; }
+
 /* ---- Næste skridt: hvert skridt kan skjules med × (overview.js); uden skridt er kortet væk ---- */
 #ovNextPanel[hidden]{ display:none; }
 .ov-next li{ position:relative; padding-right:32px; }

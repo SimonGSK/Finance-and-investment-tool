@@ -1337,7 +1337,7 @@ test('menuen: Oversigt øverst, så Værktøjer, Trackers og Hjælp, og Portefø
     const items = await page.locator('.side-nav > .nav-label, .side-nav > .nav-item:not([hidden])').evaluateAll(nodes =>
         nodes.map(n => n.classList.contains('nav-label') ? '# ' + n.textContent.trim() : [...n.childNodes].filter(c => c.nodeType === 3).map(c => c.textContent).join('').trim()));
     expect(items).toEqual(['Oversigt', '# Værktøjer', 'Investering', 'Bolig & lån', 'Budget', '# Trackers', 'Formue', 'Månedsoverblik', 'Portefølje',
-        '# Hjælp', 'Indstillinger', 'Hjælp og spørgsmål', 'Giv feedback', 'Privatliv']);
+        '# Hjælp', 'Indstillinger', 'Hjælp og spørgsmål', 'Nyt i Økonomis', 'Giv feedback', 'Privatliv']);
     await expect(page.locator('#navSubTools .nav-subitem')).toHaveText(['ASK vs. Aktiedepot', 'Aktiedepot: fast + månedligt', 'FIRE-beregner (4%-reglen)', 'Pension', 'Skattegrænse', 'Tips & viden']);
 
     await page.getByRole('button', { name: 'Portefølje', exact: true }).click();
@@ -2794,4 +2794,42 @@ test('historiktabellerne: korte datoer på telefoner, der bliver stående, når 
         await wrap.evaluate(w => { w.scrollLeft = 300; });
         expect(Math.abs(await left() - before)).toBeLessThanOrEqual(1);
     }
+});
+
+test('Nyt i Økonomis: én besked efter en opdatering, listen med "Ny", og altid i menuen', async ({ page }) => {
+    // En ny bruger uden tal får ingen besked.
+    await page.goto('/index.html');
+    await expect(page.locator('.toast')).toHaveCount(0);
+    const latest = await page.evaluate(() => WHATS_NEW[0].date);
+    expect(await page.evaluate(() => localStorage.getItem('newsSeen'))).toBe(latest);
+
+    // En bruger med tal, der sidst så en ældre nyhed, får én besked - og kun én gang.
+    await page.evaluate(() => {
+        localStorage.setItem('netWorthHistory', JSON.stringify([{date: '2026-09-30', value: 1000, liquid: 1000, netCatKontanter: 1000, netCatAktier: 0, netCatPension: 0, netCatFrivaerdi: 0, netCatAndet: 0, debt: 0}]));
+        localStorage.setItem('newsSeen', WHATS_NEW[2].date);
+    });
+    await page.reload();
+    const count = await page.evaluate(() => WHATS_NEW[0].items.length + WHATS_NEW[1].items.length);
+    const toast = page.locator('.toast', { hasText: 'Økonomis er opdateret' });
+    await expect(toast).toHaveText(`Økonomis er opdateret med ${count} nyheder.Se nyt`);
+    await toast.getByRole('button', { name: 'Se nyt' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Nyt i Økonomis' });
+    await expect(dialog.locator('.whats-new-tag')).toHaveCount(2);
+    await expect(dialog.locator('.whats-new-entry').first()).toContainText('Ny');
+    await dialog.getByRole('button', { name: 'Luk' }).click();
+    await page.reload();
+    await expect(page.locator('.toast', { hasText: 'Økonomis er opdateret' })).toHaveCount(0);
+
+    // Listen kan altid åbnes fra menuen (uden "Ny").
+    await page.locator('#whatsNewBtn').click();
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator('.whats-new-tag')).toHaveCount(0);
+    expect(await dialog.locator('.whats-new-entry').count()).toBe(await page.evaluate(() => WHATS_NEW.length));
+});
+
+test('Nyt i Økonomis: nyhederne står med den nyeste først og har hver sin dato', async ({ page }) => {
+    await page.goto('/index.html');
+    const dates = await page.evaluate(() => WHATS_NEW.map(e => e.date));
+    expect(dates).toEqual([...dates].sort().reverse());
+    expect(new Set(dates).size).toBe(dates.length);
 });
