@@ -2263,3 +2263,11 @@ button.stat-link:hover .stat-go{ color:var(--akt); }
     .stat-spark{ top:12px; right:10px; }
     .stat-spark .spark{ width:32px; height:14px; }
 }
+
+/* Oversigtens kort: en lille kurve i hjørnet ved "›" (ikke på telefoner, og skjult, hvis den
+   ville ramme kortets tekst - se fitOverviewSparks). */
+#ovKpis .ov-spark{ top:16px; right:34px; }
+#ovKpis .ov-spark.is-cramped{ visibility:hidden; }
+@media (max-width:640px){
+    #ovKpis .ov-spark{ display:none; }
+}
