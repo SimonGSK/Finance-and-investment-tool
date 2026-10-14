@@ -1720,8 +1720,9 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
 /* ---- Oversigt i én kolonne (telefon og tablet): grafen øverst, nøgletallene under ----
    Kortene i gitteret løftes ud (display:contents), så rækkefølgen kan styres med order.
    På store skærme står nøgletallene fortsat øverst med grafen og siderne i to kolonner. */
+#section-overview{ display:flex; flex-direction:column; gap:var(--s4); }
+#section-overview > *{ margin:0; }
 @media (max-width:1250px){
-    #section-overview{ display:flex; flex-direction:column; gap:var(--s4); }
     #section-overview .overview-grid, #section-overview .ov-side{ display:contents; }
     #section-overview > *, #section-overview .panel, #section-overview .overview-kpis{ order:2; margin:0; }
     #section-overview .ov-chart-panel{ order:0; }
@@ -2195,6 +2196,30 @@ body[data-section="overview"] .app-header-actions .customize-btn{ display:grid; 
 .card-option.is-used{ color:var(--muted); }
 .card-option.is-used .card-mark{ border-color:color-mix(in srgb, var(--akt) 55%, var(--border-strong)); background:color-mix(in srgb, var(--akt) 18%, transparent); }
 .card-used{ margin-left:auto; padding:1px 8px; border:1px solid var(--border); border-radius:var(--r-pill); font-size:12px; font-weight:600; color:var(--subtle); white-space:nowrap; }
+
+/* ---- Tilpas oversigt: kortene på siden kan slås fra og flyttes (overview-cards.js) ----
+   Kortene får deres plads med order. En tom kolonne skjules, så den anden får hele bredden. */
+#section-overview .is-off, #section-overview .ov-side.is-empty, #section-overview .overview-grid.is-empty{ display:none; }
+.overview-grid.is-single{ grid-template-columns:minmax(0, 1fr); }
+.cards-chooser-head{
+    margin:var(--s4) 0 var(--s2); font:600 11.5px var(--font-sans);
+    letter-spacing:0.14em; text-transform:uppercase; color:var(--subtle);
+}
+.cards-chooser-head:first-child{ margin-top:0; }
+.cards-chooser-head + .dialog-hint{ margin-bottom:var(--s2); }
+.ov-sections-chooser{ display:flex; flex-direction:column; border:1px solid var(--border); border-radius:var(--r-md); background:var(--panel-sunken); }
+.ov-section-row{ display:flex; align-items:center; gap:2px; padding:2px 6px 2px 14px; }
+.ov-section-row + .ov-section-row{ border-top:1px solid var(--border); }
+.ov-section-row .toggle-row{ flex:1 1 auto; min-width:0; align-items:center; min-height:40px; font-size:14.5px; font-weight:600; }
+.ov-section-row .toggle-row input[type=checkbox]{ margin:0; }
+.ov-section-row .toggle-row input[type=checkbox]:disabled{ opacity:0.5; cursor:default; }
+.ov-section-row.is-off .toggle-row span{ color:var(--subtle); font-weight:500; }
+.ov-section-move{
+    width:36px; height:36px; flex-shrink:0; display:grid; place-items:center; padding:0;
+    border:0; border-radius:var(--r-pill); background:transparent; color:var(--muted); font:500 17px var(--font-sans); cursor:pointer;
+}
+.ov-section-move:hover:not(:disabled){ color:var(--text); background:var(--panel-hover); }
+.ov-section-move:disabled{ opacity:0.25; cursor:default; }
 
 /* ---- Næste skridt: hvert skridt kan skjules med × (overview.js); uden skridt er kortet væk ---- */
 #ovNextPanel[hidden]{ display:none; }
