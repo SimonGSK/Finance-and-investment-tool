@@ -39,20 +39,6 @@ function stepLabel(step, withSpan = true){
 }
 
 /**
- * En lille kurve (inline SVG) over værdierne, farvet efter om udviklingen er god.
- * @param {number[]} values
- * @param {boolean} [inverse] en stigning er dårlig (gæld)
- * @returns {string} SVG-markup, eller '' med under to værdier
- */
-function sparkline(values, inverse = false){
-    if(values.length < 2) return '';
-    const w = 64, h = 18, min = Math.min(...values), max = Math.max(...values), range = max - min || 1;
-    const pts = values.map((v, i) => `${(i / (values.length - 1) * w).toFixed(1)},${(h - 2 - (v - min) / range * (h - 4)).toFixed(1)}`).join(' ');
-    const good = (values.at(-1) - values[0]) * (inverse ? -1 : 1);
-    return `<svg class="spark ${good > 0 ? 'is-up' : good < 0 ? 'is-down' : ''}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polyline points="${pts}"/></svg>`;
-}
-
-/**
  * Fylder års- og periodevælgeren ud fra de måneder, der har en månedsstatus.
  * @param {{years:number[], months:Object<number, number[]>}} options fra periodOptions
  */

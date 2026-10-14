@@ -2581,3 +2581,26 @@ test('guidet månedsstatus på telefon: ét felt ad gangen, Uændret med ét try
     await dialog.getByRole('button', { name: 'Hele skemaet' }).click();
     await expect(page.getByRole('dialog', { name: 'Månedsstatus' }).getByLabel('Bank- og opsparingskonti', { exact: true })).toHaveValue('70000');
 });
+
+test('Formue: små kurver over 12 måneder i nøgletallene, farvet efter udviklingen, uden at skubbe overskriften @mobil', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        const nw = (date, value, debt) => ({date, value, liquid: value * 0.6, netCatKontanter: value * 0.3, netCatAktier: value * 0.3, netCatPension: value * 0.4 + debt, netCatFrivaerdi: 0, netCatAndet: 0, debt});
+        localStorage.setItem('netWorthHistory', JSON.stringify([nw('2025-06-30', 300000, 10000), nw('2025-12-31', 400000, 30000), nw('2026-06-30', 450000, 40000), nw('2026-09-30', 500000, 50000)]));
+    });
+    await page.reload();
+    await page.evaluate(() => showSection('formue'));
+    const spark = id => page.locator(`#${id}`).locator('xpath=ancestor::div[contains(@class,"stat")][1]').locator('.stat-spark svg');
+    await expect(spark('netWorthTotal')).toHaveClass(/is-up/);
+    await expect(spark('netAssetsTotal')).toHaveClass(/is-up/);
+    await expect(spark('netDebtTotal')).toHaveClass(/is-down/);      // gælden steg: rød
+    // Kun de seneste 12 måneder (juni 2025 er med som start: præcis 12 måneder før).
+    expect(await spark('netWorthTotal').locator('polyline').getAttribute('points').then(p => p.trim().split(' ').length)).toBe(3);
+    // Overskrifterne står på én linje og rammes ikke af kurven.
+    const rows = await page.evaluate(() => [...document.querySelectorAll('.compact-stats .stat')].filter(s => s.offsetParent).map(st => {
+        const label = st.querySelector('.label').getBoundingClientRect();
+        const end = (st.querySelector('.help-tip') || st.querySelector('.label')).getBoundingClientRect().right;
+        return {oneLine: label.height < 26, clear: st.querySelector('.stat-spark').getBoundingClientRect().left >= end - 1};
+    }));
+    expect(rows.every(r => r.oneLine && r.clear)).toBe(true);
+});
