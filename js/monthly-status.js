@@ -421,6 +421,7 @@ async function saveMonthlyStatus(date, values, note = ''){
         if(!ok) return false;
     }
 
+    const undo = statusUndoSnapshot();
     writeNetWorthHistory(nw.history);
     writePortfolioHistory(pt.history);
     const {traded, deposit, dividend, ...balances} = values;
@@ -434,16 +435,60 @@ async function saveMonthlyStatus(date, values, note = ''){
             .forEach(([id, v]) => document.getElementById(id).value = v);
         updateNetWorth();
     }
+    refreshAfterStatusChange();
+    const summary = monthlyStatusSummary(readNetWorthHistory(), date);
+    const saved = statusUndoSnapshot();
+    notify(statusSummaryText(date, summary), {
+        actions: [
+            ...(summary && !summary.first ? [{label: 'Se måneden', onAction: () => showMonthOverview(Number(date.slice(0, 4)), Number(date.slice(5, 7)))}] : []),
+            {label: 'Fortryd', onAction: () => undoMonthlyStatus(date, undo, saved)}
+        ],
+        duration: 10000
+    });
+    return true;
+}
+
+// Det, en månedsstatus ændrer: begge historikker, de sidst brugte tal og Formue-felterne.
+const STATUS_UNDO_KEYS = ['netWorthHistory', 'portfolioHistory', 'monthlyStatusLast', 'netWorthData'];
+const STATUS_UNDO_FIELDS = ['netCatKontanter', 'netCatAktier', 'netCatPension', 'netCatFrivaerdi', 'netCatAndet', 'netDebt'];
+
+/** @returns {{stored:Object<string, string|null>, fields:Object<string, string>}} et øjebliksbillede, som en status kan fortrydes til */
+function statusUndoSnapshot(){
+    return {
+        stored: Object.fromEntries(STATUS_UNDO_KEYS.map(key => [key, localStorage.getItem(key)])),
+        fields: Object.fromEntries(STATUS_UNDO_FIELDS.map(id => [id, document.getElementById(id).value]))
+    };
+}
+
+/** Tegner alt, der bygger på historikkerne, igen. */
+function refreshAfterStatusChange(){
     renderNetWorthHistory();
     renderPortfolioHistory();
     if(typeof renderMonthOverview === 'function') renderMonthOverview();
-    const summary = monthlyStatusSummary(readNetWorthHistory(), date);
-    notify(statusSummaryText(date, summary), {
-        actionLabel: summary && !summary.first ? 'Se måneden' : undefined,
-        onAction: () => showMonthOverview(Number(date.slice(0, 4)), Number(date.slice(5, 7))),
-        duration: 9000
+    if(document.body.dataset.section === 'overview' && typeof renderOverview === 'function') renderOverview();
+}
+
+/**
+ * "Fortryd" i beskeden efter en gemt månedsstatus: alt bliver, som det var før. Er der
+ * ændret noget siden (fx gemt en status mere), fortrydes intet, så den ændring ikke går tabt.
+ * @param {string} date
+ * @param {ReturnType<typeof statusUndoSnapshot>} before før der blev gemt
+ * @param {ReturnType<typeof statusUndoSnapshot>} after lige efter
+ */
+function undoMonthlyStatus(date, before, after){
+    const now = statusUndoSnapshot();
+    if(STATUS_UNDO_KEYS.some(key => now.stored[key] !== after.stored[key])){
+        notify('Statussen kan ikke fortrydes, fordi der er ændret i dine tal siden.');
+        return;
+    }
+    STATUS_UNDO_FIELDS.forEach(id => { document.getElementById(id).value = before.fields[id]; });
+    STATUS_UNDO_KEYS.forEach(key => {
+        if(before.stored[key] === null) localStorage.removeItem(key);
+        else localStorage.setItem(key, before.stored[key]);
     });
-    return true;
+    updateNetWorth();
+    refreshAfterStatusChange();
+    notify(`Månedsstatus for ${formatDanishDate(date)} er fortrudt.`);
 }
 
 /**

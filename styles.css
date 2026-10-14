@@ -1024,6 +1024,7 @@ table.data-table td.is-negative{ color:var(--ask); }
     cursor:pointer;
 }
 .toast-action:hover{ text-decoration:underline; }
+.toast-actions{ flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; gap:var(--s2); }
 .toast-close{
     margin:-4px -6px -4px calc(-1 * var(--s2)); padding:2px 6px; border:0; background:transparent; cursor:pointer;
     color:var(--muted); font-size:20px; line-height:1;
@@ -1593,8 +1594,27 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
 /* ---- Indstillinger som dialog (som Hjælp og Feedback) ---- */
 .dialog.settings-dialog{ width:min(460px, calc(100vw - 32px)); }
 .settings-dialog .dialog-body .toggle-row + .toggle-row{ margin-top:var(--s3); }
-.settings-dialog .dialog-body .eyebrow{ margin-top:var(--s5); }
 .settings-dialog .btn + .btn{ margin-left:0; }
+/* Fire grupper, foldet sammen, med det nuværende valg til højre (navigation.js). */
+.settings-group + .settings-group{ border-top:1px solid var(--border); }
+.settings-group > summary{
+    display:flex; align-items:center; gap:var(--s3); min-height:50px; padding:4px 2px;
+    list-style:none; cursor:pointer; font-weight:600; font-size:15px; color:var(--text);
+}
+.settings-group > summary::-webkit-details-marker{ display:none; }
+.settings-group > summary::after{
+    content:''; width:7px; height:7px; flex-shrink:0; margin:0 4px 3px 0;
+    border-right:1.6px solid currentColor; border-bottom:1.6px solid currentColor;
+    transform:rotate(45deg); opacity:0.55; transition:transform 0.18s var(--ease);
+}
+.settings-group[open] > summary::after{ transform:rotate(-135deg); margin-bottom:-3px; }
+.settings-group-state{ margin-left:auto; font-size:13px; font-weight:500; color:var(--muted); text-align:right; }
+.settings-group-state.is-warn{ color:var(--cross); }
+.settings-group-body{ padding:2px 2px var(--s4); }
+.settings-group-body > .toggle-row{ margin-bottom:var(--s3); }
+.settings-group-body > .toggle-row + .calendar-btn{ margin-top:0; }
+.settings-text{ margin:0 0 var(--s3); font-size:13px; line-height:1.5; color:var(--muted); }
+#installAppRow{ margin-top:var(--s4); }
 
 @container budget (max-width:600px){
     #budgetCategoryList{ grid-template-columns:minmax(0, 1fr); }

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#0B0B0C">
     <!-- Sidens version (sættes af npm run stamp). Den åbne side tjekker, om der er en nyere (js/update-check.js). -->
-    <meta name="app-version" content="2b8f20f2">
+    <meta name="app-version" content="9a56cb75">
     <meta name="description" content="Budget, formue, investering og lån – danske økonomiværktøjer, hvor dine tal bliver på din egen enhed.">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
@@ -40,7 +40,7 @@
     <script>try{ if(localStorage.getItem('appLock')) document.documentElement.classList.add('is-locked'); }catch(e){}</script>
     <!-- Skjul beløb: sløres med det samme, før siden tegnes (se js/hide-amounts.js). -->
     <script>try{ if(localStorage.getItem('hideAmounts')) document.documentElement.classList.add('amounts-hidden'); }catch(e){}</script>
-    <link rel="stylesheet" href="styles.css?v=18787af8">
+    <link rel="stylesheet" href="styles.css?v=7e116654">
 </head>
 <body>
 
@@ -161,42 +161,61 @@
                         <button class="dialog-close" type="button" aria-label="Luk" onclick="toggleSettings(false)">×</button>
                     </div>
                     <div class="dialog-body">
-                <label class="toggle-row">
-                    <input type="checkbox" id="lightTheme">
-                    Lyst tema
-                </label>
-                <label class="toggle-row">
-                    <input type="checkbox" id="monthlyReminderToggle" checked>
-                    Påmind mig om månedsstatus ved hvert månedsskifte
-                </label>
-                <button class="btn btn-secondary btn-sm calendar-btn" type="button" onclick="downloadMonthlyReminder()"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/></svg>Tilføj påmindelse til din kalender</button>
-                <p class="calendar-hint">Den sidste dag i hver måned kl. 19 – så bliver du mindet om det, også når siden ikke er åben.</p>
+                <!-- Fire grupper, der er foldet sammen, til man åbner dem (kun én ad gangen). Til højre står,
+                     hvordan det er sat nu (navigation.js: renderSettingsSummaries). -->
+                <details class="settings-group" name="settings-group" data-group="look">
+                    <summary><span class="settings-group-title">Udseende og app</span><span class="settings-group-state" id="settingsLookState"></span></summary>
+                    <div class="settings-group-body">
+                        <label class="toggle-row">
+                            <input type="checkbox" id="lightTheme">
+                            Lyst tema
+                        </label>
+                        <div id="installAppRow">
+                            <p class="settings-text">Læg siden på din hjemmeskærm eller computer som en app. Den åbner i sit eget vindue og virker også uden internet.</p>
+                            <fieldset class="icon-choice">
+                                <legend>App-ikon</legend>
+                                <label class="icon-option"><input type="radio" name="appIcon" value="green" onchange="setAppIcon(this.value)"><img src="icons/icon-192.png" alt="" width="48" height="48">Grøn</label>
+                                <label class="icon-option"><input type="radio" name="appIcon" value="black" onchange="setAppIcon(this.value)"><img src="icons/black/icon-192.png" alt="" width="48" height="48">Sort</label>
+                                <label class="icon-option"><input type="radio" name="appIcon" value="white" onchange="setAppIcon(this.value)"><img src="icons/white/icon-192.png" alt="" width="48" height="48">Hvid</label>
+                            </fieldset>
+                            <p class="icon-choice-hint" id="appIconHint">Ikonet følger med, når du lægger appen på hjemmeskærmen. Vil du skifte senere, så fjern appen og læg den på igen.</p>
+                            <button class="btn btn-secondary" style="width:100%;" type="button" id="installAppBtn" onclick="installApp()">Installér som app</button>
+                        </div>
+                    </div>
+                </details>
 
-                <div class="eyebrow" style="margin-top:18px; margin-bottom:10px;">Kodelås</div>
-                <p class="explainer" style="margin:0 0 10px 0; padding-top:0; border-top:none;">Skjul dine tal bag en kode, når siden åbnes, og når du har været væk i mere end 5 minutter. Tallene ligger stadig i browseren, så låsen beskytter mod nysgerrige blikke – ikke mod en med teknisk adgang til din enhed.</p>
-                <div id="lockSettings"></div>
+                <details class="settings-group" name="settings-group" data-group="reminders">
+                    <summary><span class="settings-group-title">Påmindelser</span><span class="settings-group-state" id="settingsReminderState"></span></summary>
+                    <div class="settings-group-body">
+                        <label class="toggle-row">
+                            <input type="checkbox" id="monthlyReminderToggle" checked>
+                            Påmind mig om månedsstatus ved hvert månedsskifte
+                        </label>
+                        <button class="btn btn-secondary btn-sm calendar-btn" type="button" onclick="downloadMonthlyReminder()"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/></svg>Tilføj påmindelse til din kalender</button>
+                        <p class="calendar-hint">Den sidste dag i hver måned kl. 19 – så bliver du mindet om det, også når siden ikke er åben.</p>
+                    </div>
+                </details>
 
-                <div class="eyebrow" style="margin-top:18px; margin-bottom:10px;">Dine data og synkronisering</div>
-                <p class="explainer" style="margin:0 0 10px 0; padding-top:0; border-top:none;">Alt gemmes kun her i browseren. Gem dine data i én fil som backup – eller for at få de samme tal på telefon og computer: læg filen i fx Google Drive eller iCloud, og hent den på den anden enhed. Tallene flettes, så intet går tabt.</p>
-                <p class="backup-status" id="backupStatus"></p>
-                <button class="btn btn-secondary" style="width:100%; margin-bottom:8px;" type="button" onclick="exportAllData()">Gem mine data</button>
-                <button class="btn btn-secondary" style="width:100%;" type="button" onclick="document.getElementById('allDataUpload').click()">Hent data fra fil</button>
-                <input type="file" id="allDataUpload" accept=".json,application/json" style="display:none;" onchange="importAllData(event)">
-                <p class="backup-status" id="syncStatus"></p>
-                <button class="btn btn-secondary" style="width:100%; margin-top:8px;" type="button" onclick="printOverview()">Udskriv overblik (PDF)</button>
+                <details class="settings-group" name="settings-group" data-group="data">
+                    <summary><span class="settings-group-title">Data og backup</span><span class="settings-group-state" id="settingsDataState"></span></summary>
+                    <div class="settings-group-body">
+                        <p class="settings-text">Alt gemmes kun her i browseren. Gem dine data i én fil som backup – eller for at få de samme tal på telefon og computer: læg filen i fx Google Drive eller iCloud, og hent den på den anden enhed. Tallene flettes, så intet går tabt.</p>
+                        <p class="backup-status" id="backupStatus"></p>
+                        <button class="btn btn-secondary" style="width:100%; margin-bottom:8px;" type="button" onclick="exportAllData()">Gem mine data</button>
+                        <button class="btn btn-secondary" style="width:100%;" type="button" onclick="document.getElementById('allDataUpload').click()">Hent data fra fil</button>
+                        <input type="file" id="allDataUpload" accept=".json,application/json" style="display:none;" onchange="importAllData(event)">
+                        <p class="backup-status" id="syncStatus"></p>
+                        <button class="btn btn-secondary" style="width:100%; margin-top:8px;" type="button" onclick="printOverview()">Udskriv overblik (PDF)</button>
+                    </div>
+                </details>
 
-                <div id="installAppRow">
-                    <div class="eyebrow" style="margin-top:18px; margin-bottom:10px;">App</div>
-                    <p class="explainer" style="margin:0 0 10px 0; padding-top:0; border-top:none;">Læg siden på din hjemmeskærm eller computer som en app. Den åbner i sit eget vindue og virker også uden internet.</p>
-                    <fieldset class="icon-choice">
-                        <legend>App-ikon</legend>
-                        <label class="icon-option"><input type="radio" name="appIcon" value="green" onchange="setAppIcon(this.value)"><img src="icons/icon-192.png" alt="" width="48" height="48">Grøn</label>
-                        <label class="icon-option"><input type="radio" name="appIcon" value="black" onchange="setAppIcon(this.value)"><img src="icons/black/icon-192.png" alt="" width="48" height="48">Sort</label>
-                        <label class="icon-option"><input type="radio" name="appIcon" value="white" onchange="setAppIcon(this.value)"><img src="icons/white/icon-192.png" alt="" width="48" height="48">Hvid</label>
-                    </fieldset>
-                    <p class="icon-choice-hint" id="appIconHint">Ikonet følger med, når du lægger appen på hjemmeskærmen. Vil du skifte senere, så fjern appen og læg den på igen.</p>
-                    <button class="btn btn-secondary" style="width:100%;" type="button" id="installAppBtn" onclick="installApp()">Installér som app</button>
-                </div>
+                <details class="settings-group" name="settings-group" data-group="lock">
+                    <summary><span class="settings-group-title">Kodelås</span><span class="settings-group-state" id="settingsLockState"></span></summary>
+                    <div class="settings-group-body">
+                        <p class="settings-text">Skjul dine tal bag en kode, når siden åbnes, og når du har været væk i mere end 5 minutter. Tallene ligger stadig i browseren, så låsen beskytter mod nysgerrige blikke – ikke mod en med teknisk adgang til din enhed.</p>
+                        <div id="lockSettings"></div>
+                    </div>
+                </details>
                     </div>
                 </div>
             </dialog>
@@ -1883,7 +1902,7 @@
     <script src="js/calc.js?v=39b02743"></script>
     <script src="js/sync.js?v=27ea91b3"></script>
     <script src="js/shared.js?v=4e5f93df"></script>
-    <script src="js/ui.js?v=9520ce7b"></script>
+    <script src="js/ui.js?v=ae159094"></script>
     <script src="js/field-help.js?v=6a83e008"></script>
     <script src="js/number-fields.js?v=a35de4ce"></script>
     <script src="js/hide-amounts.js?v=8c823b8d"></script>
@@ -1899,20 +1918,20 @@
     <script src="js/loan-capacity.js?v=b4f645bb"></script>
     <script src="js/buy-vs-rent.js?v=75764a5e"></script>
     <script src="js/debt-payoff.js?v=d92e8193"></script>
-    <script src="js/navigation.js?v=a81cec57"></script>
+    <script src="js/navigation.js?v=a43baaa8"></script>
     <script src="js/bottom-nav.js?v=afbb212a"></script>
     <script src="js/shortcuts.js?v=3a09c9ed"></script>
-    <script src="js/app-lock.js?v=f08bdb28"></script>
+    <script src="js/app-lock.js?v=83667aad"></script>
     <script src="js/feedback.js?v=1b47a367"></script>
     <script src="js/update-check.js?v=4fead684"></script>
     <script src="js/pwa.js?v=70965acb"></script>
     <script src="js/report.js?v=d2fb079b"></script>
     <script src="js/overview-cards.js?v=e8d84d9e"></script>
-    <script src="js/overview.js?v=899e0fa7"></script>
+    <script src="js/overview.js?v=8635b6a5"></script>
     <script src="js/budget.js?v=9c9e0798"></script>
     <script src="js/net-worth.js?v=b6f76ec8"></script>
     <script src="js/month-overview.js?v=ac57d16a"></script>
-    <script src="js/monthly-status.js?v=f0bd9ccf"></script>
+    <script src="js/monthly-status.js?v=e4a96c39"></script>
     <script src="js/goals.js?v=8f90f572"></script>
     <script src="js/theme.js?v=f47f37be"></script>
     <script src="js/share.js?v=e0899adf"></script>
