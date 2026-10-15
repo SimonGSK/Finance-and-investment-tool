@@ -2014,10 +2014,23 @@ function unseenNews(entries, lastSeen, hasData){
     return entries.filter(e => e.date > lastSeen);
 }
 
+/**
+ * Det år, kortet "Dit år i tal" på Oversigt ser tilbage på: det forrige år, i hele januar,
+ * medmindre kortet er lukket for det år.
+ * @param {string} today ISO-dato
+ * @param {string|null} hiddenYear året, kortet sidst blev lukket for
+ * @returns {number|null} null uden for januar, eller når kortet er lukket
+ */
+function yearReviewYear(today, hiddenYear){
+    if(today.slice(5, 7) !== '01') return null;
+    const year = Number(today.slice(0, 4)) - 1;
+    return String(year) === String(hiddenYear) ? null : year;
+}
+
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
-        unseenNews, normalizeOverviewLayout, moveInList, OVERVIEW_SECTIONS, containsAmount, appVersionOf, adjacentPeriod, yearColors, monthlyStatusSummary, cleanNote, suspiciousAmounts, NOTE_MAX_LENGTH, addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
+        yearReviewYear, unseenNews, normalizeOverviewLayout, moveInList, OVERVIEW_SECTIONS, containsAmount, appVersionOf, adjacentPeriod, yearColors, monthlyStatusSummary, cleanNote, suspiciousAmounts, NOTE_MAX_LENGTH, addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
         periodChanges, bestPeriods,
         planSync, applySync,
         CAPITAL_INCOME_LIMIT,

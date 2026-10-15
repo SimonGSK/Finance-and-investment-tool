@@ -57,6 +57,7 @@ function renderOverview(){
     const latest = [nwHistory.at(-1)?.date, ptHistory.at(-1)?.date].filter(Boolean).sort().at(-1);
     document.getElementById('pageSub').textContent = latest ? `Seneste månedsstatus ${formatDanishDate(latest)} · alle beløb i DKK` : 'Alle beløb i DKK';
 
+    renderOverviewYearReview(nwHistory, ptHistory);
     renderOverviewChart(nwHistory);
     renderOverviewGoals();
     renderOverviewSplit(figures);
@@ -204,6 +205,58 @@ function renderOverviewSplit(figures){
             el('strong', {textContent: `${p.pct} %`}),
             el('span', {textContent: p.short})
         ])))
+    );
+}
+
+const YEAR_REVIEW_HIDDEN_KEY = 'yearReviewHidden';
+
+/**
+ * "Dit år i tal" øverst på Oversigt i januar: hvordan det forrige år gik (yearInNumbers i
+ * calc.js) - nettoformuen, den bedste måned, måneder med fremgang og porteføljens afkast.
+ * Herfra åbnes hele året i Månedsoverblik, eller det deles som billede. × skjuler kortet til
+ * næste januar.
+ * @param {Object[]} nwHistory sorteret efter dato
+ * @param {Object[]} ptHistory sorteret efter dato
+ * @param {string} [today] ISO-dato (til test)
+ */
+function renderOverviewYearReview(nwHistory, ptHistory, today = todayIso()){
+    const panel = document.getElementById('ovYearReview');
+    let hidden = null;
+    try{ hidden = localStorage.getItem(YEAR_REVIEW_HIDDEN_KEY); } catch(e){}
+    const year = yearReviewYear(today, hidden);
+    const info = year && yearInNumbers(nwHistory, ptHistory, year);
+    panel.hidden = !info;
+    if(!info) return;
+
+    const tone = n => n > 0 ? 'is-up' : n < 0 ? 'is-down' : '';
+    const fact = (label, value, cls = '') => el('div', {className: 'year-fact'}, [el('dt', {textContent: label}), el('dd', {className: cls, textContent: value})]);
+    const p = info.portfolio;
+    const verb = info.change > 0 ? 'steg' : info.change < 0 ? 'faldt' : 'stod stille';
+    const hide = () => {
+        try{ localStorage.setItem(YEAR_REVIEW_HIDDEN_KEY, String(year)); } catch(e){}
+        renderOverviewYearReview(nwHistory, ptHistory, today);
+        notify('Kortet er skjult til næste januar. Året står stadig i Månedsoverblik.', {actionLabel: 'Fortryd', onAction: () => {
+            try{ localStorage.setItem(YEAR_REVIEW_HIDDEN_KEY, hidden ?? ''); } catch(e){}
+            renderOverviewYearReview(nwHistory, ptHistory, today);
+        }});
+    };
+    panel.replaceChildren(
+        el('div', {className: 'panel-title-row'}, [
+            el('h2', {className: 'panel-title', id: 'ovYearReviewTitle', textContent: `Dit ${year} i tal`}),
+            el('button', {className: 'year-review-close', type: 'button', textContent: '×', attrs: {'aria-label': `Skjul Dit ${year} i tal`, title: 'Skjul'}, onclick: hide})
+        ]),
+        el('p', {className: 'year-lead'}, [`Din nettoformue ${verb} `,
+            el('strong', {className: tone(info.change), textContent: `${formatSignedKr(info.change).replace(/^[+−]/, '')}${info.pct !== null ? ` (${formatSignedPct(info.pct)})` : ''}`}),
+            ` i ${year}.`]),
+        el('dl', {className: 'year-facts'}, [
+            info.best ? fact('Bedste måned', stepLabel(info.best, false)) : '',
+            fact('Måneder med fremgang', `${info.ups} af ${info.steps}`),
+            p ? fact('Porteføljens afkast', p.pct !== null ? formatSignedPct(p.pct) : formatSignedKr(p.gain), tone(p.gain)) : ''
+        ].filter(Boolean)),
+        el('div', {className: 'year-review-actions'}, [
+            el('button', {className: 'btn btn-secondary btn-sm', type: 'button', textContent: `Se hele ${year}`, onclick: () => showMonthOverview(year, null)}),
+            el('button', {className: 'link-btn', type: 'button', textContent: 'Del som billede', onclick: () => openYearShare(info)})
+        ])
     );
 }
 

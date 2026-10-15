@@ -2254,6 +2254,26 @@ body[data-section="overview"] .app-header-actions .customize-btn{ display:grid; 
 .ov-section-move:hover:not(:disabled){ color:var(--text); background:var(--panel-hover); }
 .ov-section-move:disabled{ opacity:0.25; cursor:default; }
 
+/* ---- Dit år i tal på Oversigt i januar (overview.js) - altid øverst ---- */
+#section-overview > #ovYearReview{ order:-1; }
+#ovYearReview[hidden]{ display:none; }
+.year-review .panel-title-row{ align-items:center; }
+.year-review .year-lead{ margin-bottom:var(--s4); }
+.year-review-close{
+    width:30px; height:30px; flex-shrink:0; padding:0; border:0; border-radius:var(--r-pill); background:transparent;
+    color:var(--subtle); font-size:20px; line-height:1; cursor:pointer;
+}
+.year-review-close:hover{ color:var(--text); background:var(--panel-hover); }
+.year-review-actions{ display:flex; align-items:center; gap:var(--s4); margin-top:var(--s4); }
+@media (max-width:640px){
+    /* Tre tal på én række, så kortet ikke fylder halvdelen af skærmen. */
+    .year-review .year-lead{ font-size:15px; margin-bottom:var(--s3); }
+    .year-review .year-facts{ grid-template-columns:repeat(3, minmax(0, 1fr)); gap:var(--s3); }
+    .year-review .year-fact dt{ font-size:12px; line-height:1.3; }
+    .year-review .year-fact dd{ font-size:17px; }
+    .year-review-actions{ margin-top:var(--s3); }
+}
+
 /* ---- Nyt i Økonomis (whats-new.js) ---- */
 .whats-new-entry + .whats-new-entry{ margin-top:var(--s4); padding-top:var(--s4); border-top:1px solid var(--border); }
 .whats-new-date{

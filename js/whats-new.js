@@ -8,6 +8,9 @@
  */
 
 const WHATS_NEW = [
+    {date: '2026-10-15', items: [
+        'I januar ser Oversigt tilbage på dit forrige år: hvor meget formuen steg, din bedste måned og porteføljens afkast.'
+    ]},
     {date: '2026-10-14', items: [
         'Vælg, hvilke kort Oversigt viser, og i hvilken rækkefølge – under Tilpas oversigt.',
         'Fortryd en månedsstatus lige efter, du har gemt den.',
