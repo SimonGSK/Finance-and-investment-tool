@@ -1945,6 +1945,23 @@ function goalProgress(g){
 }
 
 /**
+ * Felterne, den guidede månedsstatus spørger om. En saldo, der var 0 sidst (og stadig er 0),
+ * springes over - fx fysiske kontanter eller friværdi, hvis man ingen har. Handler, indskud og
+ * udbytte springes over, når der hverken sidst eller nu er et aktiedepot. Uden en tidligere
+ * status spørges der om alt.
+ * @param {{key:string, flow?:boolean}[]} fields alle felter i skemaets rækkefølge
+ * @param {Object<string, number>} last tallene fra sidst
+ * @param {Object<string, number>} now tallene nu (fx en dato, der rettes)
+ * @param {boolean} hasHistory er der gemt en månedsstatus før
+ * @returns {string[]} nøglerne på de felter, der spørges om
+ */
+function guidedStatusKeys(fields, last, now, hasHistory){
+    const has = (obj, key) => (obj[key] || 0) !== 0;
+    const depot = ['stocks', 'depotCash'].some(k => has(last, k) || has(now, k));
+    return fields.filter(f => !hasHistory || has(now, f.key) || (f.flow ? depot : has(last, f.key))).map(f => f.key);
+}
+
+/**
  * Hvornår et mål nås i det nuværende tempo - til linjen under målet på Oversigt.
  * @param {{target:number, current:number, deadline?:string|null, today:string, trend?:number|null}} g som goalProgress
  * @returns {{kind:'reached'|'eta'|'noProgress'|'noTrend', months?:number, onTrack?:boolean|null}}
@@ -2045,7 +2062,7 @@ function yearReviewYear(today, hiddenYear){
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
-        goalPace, yearReviewYear, unseenNews, normalizeOverviewLayout, moveInList, OVERVIEW_SECTIONS, containsAmount, appVersionOf, adjacentPeriod, yearColors, monthlyStatusSummary, cleanNote, suspiciousAmounts, NOTE_MAX_LENGTH, addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
+        guidedStatusKeys, goalPace, yearReviewYear, unseenNews, normalizeOverviewLayout, moveInList, OVERVIEW_SECTIONS, containsAmount, appVersionOf, adjacentPeriod, yearColors, monthlyStatusSummary, cleanNote, suspiciousAmounts, NOTE_MAX_LENGTH, addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
         periodChanges, bestPeriods,
         planSync, applySync,
         CAPITAL_INCOME_LIMIT,

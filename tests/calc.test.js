@@ -1063,6 +1063,26 @@ describe('kalenderpåmindelse', () => {
     });
 });
 
+describe('guidedStatusKeys', () => {
+    const fields = [{key: 'bank'}, {key: 'physical'}, {key: 'depotCash'}, {key: 'stocks'}, {key: 'traded', flow: true}, {key: 'dividend', flow: true}, {key: 'homeEquity'}, {key: 'debt'}];
+    const zero = {traded: 0, dividend: 0};
+    test('springer saldi over, der var 0 sidst og stadig er 0', () => {
+        const last = {bank: 50000, physical: 0, depotCash: 0, stocks: 100000, homeEquity: 0, debt: 20000};
+        assert.deepEqual(calc.guidedStatusKeys(fields, last, {...last, ...zero}, true), ['bank', 'stocks', 'traded', 'dividend', 'debt']);
+    });
+    test('uden aktiedepot springes handler og udbytte også over', () => {
+        const last = {bank: 50000, physical: 0, depotCash: 0, stocks: 0, homeEquity: 0, debt: 0};
+        assert.deepEqual(calc.guidedStatusKeys(fields, last, {...last, ...zero}, true), ['bank']);
+    });
+    test('et tal på datoen, der rettes, spørges der altid om', () => {
+        const last = {bank: 50000, physical: 0, depotCash: 0, stocks: 0, homeEquity: 0, debt: 0};
+        assert.deepEqual(calc.guidedStatusKeys(fields, last, {...last, physical: 500, dividend: 200}, true), ['bank', 'physical', 'dividend']);
+    });
+    test('første gang spørges der om alt', () => {
+        assert.equal(calc.guidedStatusKeys(fields, {}, {}, false).length, fields.length);
+    });
+});
+
 describe('goalPace', () => {
     const today = '2026-10-15';
     test('i dit tempo: antal måneder til målet, og om det er før fristen', () => {
