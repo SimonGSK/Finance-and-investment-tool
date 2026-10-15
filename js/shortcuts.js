@@ -9,13 +9,13 @@
  */
 
 const SHORTCUTS = [
-    {key: '1', label: 'Oversigt', run: () => showSection('overview')},
-    {key: '2', label: 'Investering', run: () => showSection('tools')},
-    {key: '3', label: 'Bolig & lån', run: () => showSection('housing')},
-    {key: '4', label: 'Budget', run: () => showSection('budget')},
-    {key: '5', label: 'Formue', run: () => showSection('formue')},
-    {key: '6', label: 'Månedsoverblik', run: () => showSection('month')},
-    {key: '7', label: 'Portefølje', run: () => showSection('portfolio')},
+    {key: '1', label: 'Oversigt', section: 'overview', run: () => showSection('overview')},
+    {key: '2', label: 'Investering', section: 'tools', run: () => showSection('tools')},
+    {key: '3', label: 'Bolig & lån', section: 'housing', run: () => showSection('housing')},
+    {key: '4', label: 'Budget', section: 'budget', run: () => showSection('budget')},
+    {key: '5', label: 'Formue', section: 'formue', run: () => showSection('formue')},
+    {key: '6', label: 'Månedsoverblik', section: 'month', run: () => showSection('month')},
+    {key: '7', label: 'Portefølje', section: 'portfolio', run: () => showSection('portfolio')},
     {key: 'n', label: 'Ny månedsstatus', run: () => openMonthlyStatus()},
     {key: 'b', label: 'Skjul eller vis beløb', run: () => toggleAmountsHidden()},
     {key: '?', label: 'Vis genvejene', run: () => openShortcutsDialog()}
@@ -67,6 +67,8 @@ document.addEventListener('keydown', e => {
     }
     const shortcut = SHORTCUTS.find(s => s.key === e.key.toLowerCase());
     if(!shortcut) return;
+    // En side, man har skjult i menuen (Indstillinger › Værktøjer), åbnes heller ikke med en genvej.
+    if(shortcut.section && document.querySelector(`#sidebar .nav-item[data-section="${shortcut.section}"]`)?.hidden) return;
     e.preventDefault();
     shortcut.run();
 });

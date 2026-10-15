@@ -58,11 +58,12 @@ function navSheetIcon(source){
 /** @returns {HTMLElement[]} arket "Værktøjer": de tre grupper fra menukortet */
 function toolsSheetContent(){
     const current = document.body.dataset.section;
+    // Værktøjer, man har skjult (Indstillinger › Værktøjer), er heller ikke med her.
     const groups = [...document.querySelectorAll('#sidebar .nav-item')]
-        .filter(btn => TOOL_SECTIONS.includes(btn.dataset.section))
+        .filter(btn => TOOL_SECTIONS.includes(btn.dataset.section) && !btn.hidden)
         .map(btn => {
             const section = btn.dataset.section;
-            const sub = btn.classList.contains('nav-group') ? [...btn.nextElementSibling.querySelectorAll('.tab-btn')] : [btn];
+            const sub = btn.classList.contains('nav-group') ? [...btn.nextElementSibling.querySelectorAll('.tab-btn:not([hidden])')] : [btn];
             const title = [...btn.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim();
             return el('section', {className: 'nav-sheet-group'}, [
                 el('h3', {className: 'nav-sheet-label', textContent: title}),
@@ -70,7 +71,7 @@ function toolsSheetContent(){
                     current === section && (item === btn || item.classList.contains('active'))))
             ]);
         });
-    return groups;
+    return groups.length ? groups : [el('p', {className: 'nav-sheet-empty', textContent: 'Alle værktøjer er skjult. Vis dem igen under Indstillinger › Værktøjer.'})];
 }
 
 /** @returns {HTMLElement[]} arket "Trackers": Formue, Portefølje og Månedsoverblik */

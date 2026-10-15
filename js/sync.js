@@ -334,3 +334,44 @@ function renderSyncStatus(){
     node.textContent = last ? `Sidst hentet fra fil: ${formatDateTime(last.at)}${last.device ? ' (fra ' + last.device + ')' : ''}` : '';
 }
 document.addEventListener('DOMContentLoaded', renderSyncStatus);
+
+// ---- Slet alle data ----
+
+/**
+ * "Slet alle data" (Indstillinger › Data og backup): alt, hvad Økonomis har gemt på enheden,
+ * slettes, efter en tydelig bekræftelse, der tilbyder en backup først. Kun temaet bliver, så
+ * skærmen ikke skifter farve. Siden genindlæses som for en ny bruger.
+ */
+function confirmDeleteAllData(){
+    const content = el('div', {className: 'delete-all-text'}, [
+        el('p', {className: 'dialog-text', textContent: 'Alle dine tal på denne enhed slettes: formue, månedsstatusser, portefølje, budget, lån, mål, noter og indstillinger. Det kan ikke fortrydes.'}),
+        el('p', {className: 'dialog-text', textContent: 'Vil du kunne hente dem igen, så gem en backup først.'})
+    ]);
+    openDialog({
+        title: 'Slet alle data?',
+        content,
+        actions: [
+            {label: 'Gem backup først', variant: 'secondary', onClick: () => { exportAllData(); return false; }},
+            {label: 'Slet alt', variant: 'danger', onClick: () => { deleteAllData(); }}
+        ]
+    });
+}
+
+/** Sletter alt i localStorage og sessionStorage (undtagen temaet) og starter forfra. */
+function deleteAllData(){
+    const theme = localStorage.getItem('theme');
+    try{
+        localStorage.clear();
+        sessionStorage.clear();
+        if(theme) localStorage.setItem('theme', theme);
+        sessionStorage.setItem('dataJustDeleted', '1');
+    } catch(e){}
+    location.reload();
+}
+
+// Efter en sletning: en kort besked på den tomme side.
+document.addEventListener('DOMContentLoaded', () => {
+    if(sessionStorage.getItem('dataJustDeleted') !== '1') return;
+    sessionStorage.removeItem('dataJustDeleted');
+    notify('Alle dine data er slettet.');
+});

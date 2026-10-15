@@ -296,7 +296,7 @@ if(!localStorage.getItem('hasSeenIntroBanner')){
  * Åbner eller lukker indstillingspanelet under tandhjulet. Esc eller et klik
  * uden for panelet lukker det også.
  * @param {boolean} [open] tving åben/lukket; udeladt skifter
- * @param {'look'|'reminders'|'data'|'lock'} [group] åbn panelet med denne gruppe foldet ud
+ * @param {'look'|'tools'|'reminders'|'data'|'lock'} [group] åbn panelet med denne gruppe foldet ud
  */
 function toggleSettings(open, group){
     const dialog = document.getElementById('settingsPanel');
@@ -314,7 +314,7 @@ function toggleSettings(open, group){
 
 /**
  * Det, der står til højre for hver gruppe i indstillingerne, så man kan se, hvordan det er
- * sat, uden at folde gruppen ud: tema, påmindelse, seneste backup og kodelås.
+ * sat, uden at folde gruppen ud: tema, værktøjer, påmindelse, seneste backup og kodelås.
  */
 function renderSettingsSummaries(){
     const set = (id, text, warn = false) => {
@@ -324,6 +324,7 @@ function renderSettingsSummaries(){
     };
     set('settingsLookState', document.getElementById('lightTheme').checked ? 'Lyst tema' : 'Mørkt tema');
     set('settingsReminderState', document.getElementById('monthlyReminderToggle').checked ? 'Til' : 'Fra');
+    if(typeof toolSettingsState === 'function') set('settingsToolsState', toolSettingsState());
     const last = readTimestamp('lastBackupAt');
     const days = last ? Math.floor((Date.now() - last) / DAY_MS) : null;
     set('settingsDataState', days === null ? (hasUserData() ? 'Ingen backup' : '')
