@@ -1945,6 +1945,21 @@ function goalProgress(g){
 }
 
 /**
+ * Hvornår et mål nås i det nuværende tempo - til linjen under målet på Oversigt.
+ * @param {{target:number, current:number, deadline?:string|null, today:string, trend?:number|null}} g som goalProgress
+ * @returns {{kind:'reached'|'eta'|'noProgress'|'noTrend', months?:number, onTrack?:boolean|null}}
+ *   eta: months = hele måneder fra i dag; onTrack = før fristen (null uden frist).
+ *   noProgress: værdien er ikke steget det seneste år. noTrend: for få månedsstatusser til et tempo.
+ */
+function goalPace(g){
+    const p = goalProgress(g);
+    if(p.reached) return {kind: 'reached'};
+    if(g.trend === null || g.trend === undefined) return {kind: 'noTrend'};
+    if(p.monthsAtTrend === null) return {kind: 'noProgress'};
+    return {kind: 'eta', months: Math.ceil(p.monthsAtTrend), onTrack: g.deadline ? p.onTrack : null};
+}
+
+/**
  * Står der et beløb i teksten? Bruges af "Skjul beløb" til at finde det, der skal sløres.
  * Et beløb er et tal med tusindtalspunktum (12.500), et tal med "kr." efter (86 kr.)
  * eller med "mio."/"mia." efter. Datoer (28. sep. 2026), årstal og procenter tæller ikke.
@@ -2030,7 +2045,7 @@ function yearReviewYear(today, hiddenYear){
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
-        yearReviewYear, unseenNews, normalizeOverviewLayout, moveInList, OVERVIEW_SECTIONS, containsAmount, appVersionOf, adjacentPeriod, yearColors, monthlyStatusSummary, cleanNote, suspiciousAmounts, NOTE_MAX_LENGTH, addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
+        goalPace, yearReviewYear, unseenNews, normalizeOverviewLayout, moveInList, OVERVIEW_SECTIONS, containsAmount, appVersionOf, adjacentPeriod, yearColors, monthlyStatusSummary, cleanNote, suspiciousAmounts, NOTE_MAX_LENGTH, addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
         periodChanges, bestPeriods,
         planSync, applySync,
         CAPITAL_INCOME_LIMIT,

@@ -2868,3 +2868,30 @@ test('Dit år i tal på Oversigt i januar: årets tal, hele året i Månedsoverb
     await page.reload();
     await expect(card).toBeHidden();
 });
+
+test('Mine mål på Oversigt: hvornår du når målet i dit tempo, før eller efter fristen', async ({ page }) => {
+    await page.clock.setFixedTime(new Date('2026-10-15T12:00:00'));
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        localStorage.setItem('netWorthGoals', JSON.stringify([
+            {id: 'a', name: 'Første million', metric: 'value', target: 1000000, deadline: null},
+            {id: 'b', name: 'Snart', metric: 'value', target: 600000, deadline: '2035-12-31'},
+            {id: 'c', name: 'Travlt', metric: 'value', target: 900000, deadline: '2027-01-31'}
+        ]));
+        const nw = (date, value) => ({date, value, liquid: value, netCatKontanter: value, netCatAktier: 0, netCatPension: 0, netCatFrivaerdi: 0, netCatAndet: 0, debt: 0});
+        localStorage.setItem('netWorthHistory', JSON.stringify([nw('2025-09-30', 400000), nw('2026-09-30', 520000)]));
+    });
+    await page.reload();
+    const pace = page.locator('#ovGoals .ov-goal-pace');
+    // Ca. 10.000 kr. om måneden: 480.000, 80.000 og 380.000 kr. mangler -> 48, 8 og 38 måneder fra oktober 2026.
+    await expect(pace).toHaveText(['I dit tempo: okt. 2030', 'I dit tempo: jun. 2027 – før fristen', 'I dit tempo: dec. 2029 – efter fristen']);
+    await expect(pace.nth(1)).toHaveClass(/is-up/);
+    await expect(pace.nth(2)).toHaveClass(/is-down/);
+
+    // Én status giver intet tempo; et nået mål siger det.
+    await page.evaluate(() => {
+        localStorage.setItem('netWorthHistory', JSON.stringify([{date: '2026-09-30', value: 650000, liquid: 650000, netCatKontanter: 650000, netCatAktier: 0, netCatPension: 0, netCatFrivaerdi: 0, netCatAndet: 0, debt: 0}]));
+    });
+    await page.reload();
+    await expect(pace).toHaveText(['Dit tempo vises efter to månedsstatusser', 'Målet er nået', 'Dit tempo vises efter to månedsstatusser']);
+});

@@ -159,10 +159,29 @@ function paintOverviewSelection(){
     );
 }
 
-/** "Mine mål" på oversigten: de første tre mål med fremskridt, eller en opfordring til at sætte ét. */
+/**
+ * Linjen under et mål: hvornår det nås i dit tempo det seneste år (goalPace i calc.js), fx
+ * "I dit tempo: jun. 2029" - kort, så den står ved beløbet på en telefon. Med en frist står
+ * det, om det er før eller efter den.
+ * @returns {HTMLElement}
+ */
+function goalPaceEl(pace){
+    const [text, tone] =
+        pace.kind === 'reached' ? ['Målet er nået', 'is-up']
+        : pace.kind === 'noTrend' ? ['Dit tempo vises efter to månedsstatusser', '']
+        : pace.kind === 'noProgress' ? ['Ingen fremgang det seneste år', '']
+        : pace.months > 600 ? ['I dit tempo: over 50 år', pace.onTrack === false ? 'is-down' : '']
+        : [`I dit tempo: ${monthsFromNow(pace.months)}${pace.onTrack === true ? ' – før fristen' : pace.onTrack === false ? ' – efter fristen' : ''}`,
+            pace.onTrack === true ? 'is-up' : pace.onTrack === false ? 'is-down' : ''];
+    return el('span', {className: 'ov-goal-pace' + (tone ? ' ' + tone : ''), textContent: text,
+        attrs: pace.kind === 'eta' ? {title: 'Hvornår du når målet, hvis det fortsætter som det seneste år'} : {}});
+}
+
+/** "Mine mål" på oversigten: de første tre mål med fremskridt og tempo, eller en opfordring til at sætte ét. */
 function renderOverviewGoals(){
     const box = document.getElementById('ovGoals');
     const goals = loadGoals().slice(0, 3);
+    const history = readNetWorthHistory().slice().sort((a, b) => a.date.localeCompare(b.date));
     if(!goals.length){
         box.replaceChildren(el('p', {className:'empty-note'}, ['Sæt et mål, fx din første million, og følg hvor langt du er. ',
             el('button', {className:'link-btn', type:'button', textContent:'Sæt et mål', onclick: () => { showSection('formue'); openGoalDialog(); }})]));
@@ -174,7 +193,8 @@ function renderOverviewGoals(){
         return el('div', {className:'ov-goal'}, [
             el('div', {className:'ov-row'}, [el('span', {textContent: goal.name}), el('strong', {textContent: `${Math.round(pct * 100)} %`})]),
             el('div', {className:'progress-track'}, [el('div', {className:'progress-fill' + (pct >= 1 ? ' is-done' : ''), attrs:{style:`width:${pct * 100}%`}})]),
-            el('div', {className:'ov-goal-sub', textContent: `${DK.format(current)} af ${DK.format(goal.target)} kr.`})
+            el('div', {className:'ov-goal-sub'}, [el('span', {textContent: `${DK.format(current)} af ${DK.format(goal.target)} kr.`}),
+                goalPaceEl(goalPace({target: goal.target, current, deadline: goal.deadline, today: todayIso(), trend: monthlyTrend(history, goal.metric)}))])
         ]);
     }));
 }
