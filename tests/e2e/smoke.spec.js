@@ -2833,3 +2833,38 @@ test('Nyt i Økonomis: nyhederne står med den nyeste først og har hver sin dat
     expect(dates).toEqual([...dates].sort().reverse());
     expect(new Set(dates).size).toBe(dates.length);
 });
+
+test('Dit år i tal på Oversigt i januar: årets tal, hele året i Månedsoverblik, og × skjuler det til næste år', async ({ page }) => {
+    await page.clock.setFixedTime(new Date('2027-01-10T12:00:00'));
+    await page.goto('/index.html');
+    await expect(page.locator('#ovYearReview')).toBeHidden();      // ingen tal endnu
+    await page.evaluate(() => {
+        const nw = (date, value) => ({date, value, liquid: value, netCatKontanter: value, netCatAktier: 0, netCatPension: 0, netCatFrivaerdi: 0, netCatAndet: 0, debt: 0});
+        localStorage.setItem('netWorthHistory', JSON.stringify([nw('2025-12-31', 100000), nw('2026-03-31', 130000), nw('2026-06-30', 125000), nw('2026-12-31', 150000)]));
+    });
+    await page.reload();
+    const card = page.locator('#ovYearReview');
+    await expect(card.getByRole('heading', { name: 'Dit 2026 i tal' })).toBeVisible();
+    await expect(card.locator('.year-lead')).toHaveText('Din nettoformue steg 50.000 kr. (+50,0 %) i 2026.');
+    await expect(card.locator('.year-fact')).toHaveText(['Bedste månedjan.–mar.', 'Måneder med fremgang2 af 3']);
+    // Kortet står øverst - også over grafen og nøgletallene.
+    const top = sel => page.locator(sel).evaluate(n => n.getBoundingClientRect().top);
+    expect(await top('#ovYearReview')).toBeLessThan(Math.min(await top('#ovKpis'), await top('.ov-chart-panel')));
+
+    await card.getByRole('button', { name: 'Se hele 2026' }).click();
+    expect(await page.evaluate(() => document.body.dataset.section)).toBe('month');
+    await expect(page.locator('#monthYear')).toHaveValue('2026');
+    await expect(page.locator('#monthPeriod')).toHaveValue('0');
+
+    await page.evaluate(() => showSection('overview'));
+    await card.getByRole('button', { name: 'Skjul Dit 2026 i tal' }).click();
+    await expect(card).toBeHidden();
+    await page.reload();
+    await expect(card).toBeHidden();
+
+    // Uden for januar står kortet der ikke.
+    await page.evaluate(() => localStorage.removeItem('yearReviewHidden'));
+    await page.clock.setFixedTime(new Date('2027-02-01T12:00:00'));
+    await page.reload();
+    await expect(card).toBeHidden();
+});

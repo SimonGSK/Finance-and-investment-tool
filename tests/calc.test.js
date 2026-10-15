@@ -1063,6 +1063,18 @@ describe('kalenderpåmindelse', () => {
     });
 });
 
+describe('yearReviewYear', () => {
+    test('i januar ser kortet tilbage på det forrige år', () => {
+        assert.equal(calc.yearReviewYear('2027-01-01', null), 2026);
+        assert.equal(calc.yearReviewYear('2027-01-31', '2025'), 2026);
+    });
+    test('ikke uden for januar, og ikke når kortet er lukket for året', () => {
+        assert.equal(calc.yearReviewYear('2027-02-01', null), null);
+        assert.equal(calc.yearReviewYear('2026-12-31', null), null);
+        assert.equal(calc.yearReviewYear('2027-01-10', '2026'), null);
+    });
+});
+
 describe('unseenNews', () => {
     const news = [{date: '2026-10-14'}, {date: '2026-10-09'}, {date: '2026-10-04'}];
     test('viser de nyheder, der er kommet siden sidst', () => {
