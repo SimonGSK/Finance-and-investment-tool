@@ -1063,6 +1063,22 @@ describe('kalenderpåmindelse', () => {
     });
 });
 
+describe('goalPace', () => {
+    const today = '2026-10-15';
+    test('i dit tempo: antal måneder til målet, og om det er før fristen', () => {
+        assert.deepEqual(calc.goalPace({target: 1000000, current: 600000, today, trend: 10000}), {kind: 'eta', months: 40, onTrack: null});
+        assert.deepEqual(calc.goalPace({target: 1000000, current: 600000, today, trend: 10000, deadline: '2030-12-31'}), {kind: 'eta', months: 40, onTrack: true});
+        assert.deepEqual(calc.goalPace({target: 1000000, current: 600000, today, trend: 10000, deadline: '2027-12-31'}), {kind: 'eta', months: 40, onTrack: false});
+        assert.equal(calc.goalPace({target: 1000, current: 999, today, trend: 7}).months, 1);   // en del af en måned tæller som en hel
+    });
+    test('nået, ingen fremgang eller for få statusser', () => {
+        assert.deepEqual(calc.goalPace({target: 100, current: 100, today, trend: null}), {kind: 'reached'});
+        assert.deepEqual(calc.goalPace({target: 100, current: 50, today, trend: 0}), {kind: 'noProgress'});
+        assert.deepEqual(calc.goalPace({target: 100, current: 50, today, trend: -5}), {kind: 'noProgress'});
+        assert.deepEqual(calc.goalPace({target: 100, current: 50, today, trend: null}), {kind: 'noTrend'});
+    });
+});
+
 describe('yearReviewYear', () => {
     test('i januar ser kortet tilbage på det forrige år', () => {
         assert.equal(calc.yearReviewYear('2027-01-01', null), 2026);

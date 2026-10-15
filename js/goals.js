@@ -64,7 +64,7 @@ function renderGoals(){
                 parts.push(`Dit tempo det seneste år (${metric.label.toLowerCase()}): ${trend >= 0 ? '+' : '−'}${DK.format(Math.abs(trend))} kr./md.`);
                 if(g.onTrack === true){ parts.push('Du er på sporet.'); statusClass = 'is-good'; }
                 else if(g.onTrack === false){ parts.push('Det rækker ikke helt.'); statusClass = 'is-bad'; }
-                else if(g.monthsAtTrend !== null) parts.push(`I det tempo når du det om ca. ${formatDuration(Math.ceil(g.monthsAtTrend))}.`);
+                else if(g.monthsAtTrend !== null) parts.push(`I det tempo når du det om ca. ${formatDuration(Math.ceil(g.monthsAtTrend))} (${monthsFromNow(Math.ceil(g.monthsAtTrend))}).`);
             } else {
                 parts.push('Gem din månedsstatus over mindst en måned for at se dit tempo.');
             }
