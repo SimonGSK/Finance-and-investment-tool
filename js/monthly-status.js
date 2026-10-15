@@ -522,8 +522,10 @@ function statusSummaryText(date, s){
 /**
  * Månedsstatus ét felt ad gangen - til telefoner, hvor det lange skema fylder. Dato → hvert
  * felt (med sidste tal udfyldt; "Uændret"/"Ingen" er ét tryk) → note → opsummering og gem.
- * Under hvert felt står ændringen siden sidst og en advarsel, hvis tallet ligner en tastefejl.
- * "Hele skemaet" skifter til det almindelige skema med det, man har skrevet.
+ * Felter, der var 0 sidst, springes over (guidedStatusKeys i calc.js); opsummeringen siger
+ * hvilke, og "Udfyld dem" tager dem med. Under hvert felt står ændringen siden sidst og en
+ * advarsel, hvis tallet ligner en tastefejl. "Hele skemaet" skifter til det almindelige
+ * skema med det, man har skrevet.
  * @param {string} [initialDate] ISO-dato; ellers i dag
  */
 function openGuidedStatus(initialDate){
@@ -532,7 +534,14 @@ function openGuidedStatus(initialDate){
     const hasHistory = !!latestStatusDate();
     const fields = MONTHLY_STATUS_SECTIONS.flatMap(sec => sec.fields.map(f => ({...f, section: sec.title})));
     const balanceKeys = fields.filter(f => !f.flow).map(f => f.key);
-    const NOTE_STEP = fields.length + 1, SUMMARY_STEP = fields.length + 2;
+    let active = fields;                // felterne, der spørges om (sættes, når datoen er valgt)
+    let showAll = false;                // "Udfyld dem": også felterne, der var 0 sidst
+    const noteStepNo = () => active.length + 1, summaryStepNo = () => active.length + 2;
+    const chooseFields = () => {
+        const keys = showAll ? fields.map(f => f.key) : guidedStatusKeys(fields, baseline, values, hasHistory);
+        active = fields.filter(f => keys.includes(f.key));
+    };
+    chooseFields();
     let date = (typeof initialDate === 'string' && initialDate) || todayIso();
     let loadedDate = null;
     let note = '';
@@ -555,7 +564,7 @@ function openGuidedStatus(initialDate){
     function topBar(){
         return el('div', {className: 'guided-top'}, [
             step > 0 ? el('button', {className: 'guided-back', type: 'button', textContent: '‹', attrs: {'aria-label': 'Tilbage'}, onclick: () => go(step - 1)}) : el('span'),
-            el('span', {className: 'guided-progress', textContent: `${step + 1} af ${SUMMARY_STEP + 1}`}),
+            el('span', {className: 'guided-progress', textContent: `${step + 1} af ${summaryStepNo() + 1}`}),
             el('button', {className: 'link-btn', type: 'button', textContent: 'Hele skemaet', onclick: () => {
                 handle.close();
                 openMonthlyStatus(date, {full: true, values: {...values}, note});
@@ -578,6 +587,7 @@ function openGuidedStatus(initialDate){
             if(!d){ error.textContent = 'Vælg en gyldig dato.'; input.focus(); return; }
             date = d;
             loadDate();
+            chooseFields();
             go(1);
         };
         return [el('label', {className: 'guided-label', htmlFor: 'guidedInput', textContent: 'Hvilken dato gælder tallene?'}), input, error, existing,
@@ -627,12 +637,12 @@ function openGuidedStatus(initialDate){
         const input = el('input', {type: 'text', className: 'number-input note-input guided-input', id: 'guidedInput', value: note, maxLength: NOTE_MAX_LENGTH,
             autocomplete: 'off', placeholder: 'Fx bonus, købte bil, flyttede'});
         input.addEventListener('input', () => { note = input.value; });
-        input.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); go(SUMMARY_STEP); } });
+        input.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); go(summaryStepNo()); } });
         return [
             el('label', {className: 'guided-label', htmlFor: 'guidedInput', textContent: 'Note til måneden (valgfri)'}),
             el('p', {className: 'guided-help', textContent: 'Vises ved punktet på formuegrafen og i Månedsoverblik.'}),
             input,
-            el('div', {className: 'guided-actions'}, [button('Spring over', 'secondary', () => { note = ''; go(SUMMARY_STEP); }), button('Næste', 'primary', () => go(SUMMARY_STEP))])
+            el('div', {className: 'guided-actions'}, [button('Spring over', 'secondary', () => { note = ''; go(summaryStepNo()); }), button('Næste', 'primary', () => go(summaryStepNo()))])
         ];
     }
 
@@ -641,9 +651,23 @@ function openGuidedStatus(initialDate){
         const item = (label, value, strong) => el('div', {}, [el('dt', {textContent: label}), el('dd', {className: strong ? 'is-strong' : '', textContent: DK.format(value) + ' kr.'})]);
         const changed = hasHistory ? balanceKeys.filter(k => (values[k] || 0) !== (baseline[k] || 0)).length : null;
         const warnings = hasHistory ? suspiciousAmounts(baseline, values, balanceKeys) : [];
+        const skipped = fields.filter(f => !active.includes(f));
+        // En hel gruppe, der er sprunget over (fx aktiedepotet), nævnes ved gruppens navn.
+        const names = MONTHLY_STATUS_SECTIONS.flatMap(sec => sec.fields.every(f => skipped.some(x => x.key === f.key))
+            ? [sec.title.toLowerCase()] : sec.fields.filter(f => skipped.some(x => x.key === f.key)).map(f => f.label.toLowerCase()));
+        const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} og ${names.at(-1)}` : names[0];
         return [
             el('div', {className: 'guided-label', textContent: `Status for ${formatDanishDate(date)}`}),
             changed !== null ? el('p', {className: 'guided-help', textContent: changed ? `${changed} tal er ændret siden sidst.` : 'Alle tal er som sidst.'}) : '',
+            // Felterne, der var 0 sidst, er sprunget over - de kan stadig udfyldes.
+            skipped.length ? el('p', {className: 'guided-help guided-skipped'}, [
+                `Sprunget over, fordi de var 0 sidst: ${list}. `,
+                el('button', {className: 'link-btn', type: 'button', textContent: 'Udfyld dem', onclick: () => {
+                    showAll = true;
+                    chooseFields();
+                    go(fields.indexOf(skipped[0]) + 1);
+                }})
+            ]) : '',
             el('dl', {className: 'status-summary'}, [
                 item('Kontanter i alt', netWorth.netCatKontanter), item('Likvid formue', netWorth.liquid),
                 item('Porteføljeværdi', portfolio.portfolioValue), item('Nettoformue', netWorth.value, true)
@@ -665,7 +689,7 @@ function openGuidedStatus(initialDate){
     }
 
     function render(){
-        const content = step === 0 ? dateStep() : step === NOTE_STEP ? noteStep() : step === SUMMARY_STEP ? summaryStep() : fieldStep(fields[step - 1]);
+        const content = step === 0 ? dateStep() : step === noteStepNo() ? noteStep() : step === summaryStepNo() ? summaryStep() : fieldStep(active[step - 1]);
         body.replaceChildren(topBar(), ...content);
         const input = body.querySelector('#guidedInput');
         if(input){ input.focus({preventScroll: true}); if(input.select && input.type !== 'date') input.select(); }

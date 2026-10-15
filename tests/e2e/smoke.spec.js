@@ -2652,7 +2652,8 @@ test('guidet månedsstatus på telefon: ét felt ad gangen, Uændret med ét try
     await page.getByRole('navigation', { name: 'Bundmenu' }).getByRole('button', { name: /Status/ }).click();
     const dialog = page.getByRole('dialog', { name: 'Månedsstatus' });
     const progress = dialog.locator('.guided-progress');
-    await expect(progress).toHaveText('1 af 14');
+    // Fysiske kontanter og friværdi var 0 sidst og springes over: 12 trin i stedet for 14.
+    await expect(progress).toHaveText('1 af 12');
     await dialog.getByLabel('Hvilken dato gælder tallene?').fill('2026-10-31');
     await dialog.getByRole('button', { name: 'Næste' }).click();
 
@@ -2672,19 +2673,32 @@ test('guidet månedsstatus på telefon: ét felt ad gangen, Uændret med ét try
     }
     await field.fill('280000');
     await dialog.getByRole('button', { name: 'Næste' }).click();
-    for(let i = 0; i < 3; i++) await dialog.getByRole('button', { name: 'Uændret' }).click();
+    for(let i = 0; i < 2; i++) await dialog.getByRole('button', { name: 'Uændret' }).click();   // Andet og Gæld (Friværdi springes over)
     await expect(dialog.locator('.guided-label')).toHaveText('Note til måneden (valgfri)');
     await field.fill('Bonus');
     await dialog.getByRole('button', { name: 'Næste' }).click();
 
     // Opsummering og gem.
-    await expect(progress).toHaveText('14 af 14');
+    await expect(progress).toHaveText('12 af 12');
     await expect(dialog).toContainText('2 tal er ændret siden sidst.');
     await expect(dialog).toContainText('Note: Bonus');
+    await expect(dialog.locator('.guided-skipped')).toHaveText('Sprunget over, fordi de var 0 sidst: fysiske kontanter og friværdi i bolig. Udfyld dem');
+    // "Udfyld dem" går til det første af dem, og nu er alle 14 trin med.
+    await dialog.getByRole('button', { name: 'Udfyld dem' }).click();
+    await expect(dialog.locator('.guided-label')).toHaveText('Fysiske kontanter');
+    await expect(progress).toHaveText('3 af 14');
+    await field.fill('500');
+    await dialog.getByRole('button', { name: 'Næste' }).click();
+    while(!(await dialog.locator('.guided-label').textContent()).startsWith('Note')){
+        await dialog.getByRole('button', { name: 'Næste' }).click();
+    }
+    await dialog.getByRole('button', { name: 'Næste' }).click();
+    await expect(progress).toHaveText('14 af 14');
+    await expect(dialog.locator('.guided-skipped')).toHaveCount(0);
     await dialog.getByRole('button', { name: 'Gem i begge' }).click();
     await expect(dialog).toBeHidden();
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('netWorthHistory')).at(-1));
-    expect(saved).toMatchObject({date: '2026-10-31', netCatKontanter: 66000, netCatPension: 280000, netCatAndet: 15000, debt: 40000, note: 'Bonus'});
+    expect(saved).toMatchObject({date: '2026-10-31', netCatKontanter: 66500, netCatPension: 280000, netCatAndet: 15000, debt: 40000, note: 'Bonus'});
     await expect(page.locator('.toast').last()).toContainText('Din formue steg');
 
     // "Hele skemaet" skifter til det almindelige skema med det, man har skrevet.

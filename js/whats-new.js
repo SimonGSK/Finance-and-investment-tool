@@ -9,6 +9,7 @@
 
 const WHATS_NEW = [
     {date: '2026-10-15', items: [
+        'Månedsstatus på telefonen springer de felter over, der var 0 sidst – fx friværdi, hvis du ingen har.',
         'Under dine mål på Oversigt står nu, hvornår du når dem i dit tempo.',
         'I januar ser Oversigt tilbage på dit forrige år: hvor meget formuen steg, din bedste måned og porteføljens afkast.'
     ]},
