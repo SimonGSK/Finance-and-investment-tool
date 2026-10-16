@@ -1632,6 +1632,14 @@ table.data-table td.empty-cell{ text-align:left; color:var(--muted); white-space
 .settings-group-body > .toggle-row + .calendar-btn{ margin-top:0; }
 .settings-text{ margin:0 0 var(--s3); font-size:13px; line-height:1.5; color:var(--muted); }
 #installAppRow{ margin-top:var(--s4); }
+/* Vælg dine værktøjer (menu-tools.js) og Slet alle data (sync.js). */
+.tool-choice{ border:0; margin:0; padding:0; min-width:0; display:flex; flex-direction:column; gap:var(--s2); }
+.tool-choice + .tool-choice{ margin-top:var(--s4); }
+.tool-choice legend{ padding:0; margin-bottom:var(--s2); font-size:13.5px; font-weight:600; color:var(--text); }
+.settings-dialog .tool-choice .toggle-row + .toggle-row{ margin-top:0; }
+.delete-all-btn{ display:block; margin:var(--s4) auto 0; color:var(--cross); }
+.delete-all-text .dialog-text + .dialog-text{ margin-top:var(--s3); }
+.nav-sheet-empty{ margin:var(--s2) 0; font-size:14px; color:var(--muted); }
 
 @container budget (max-width:600px){
     #budgetCategoryList{ grid-template-columns:minmax(0, 1fr); }

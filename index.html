@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#0B0B0C">
     <!-- Sidens version (sættes af npm run stamp). Den åbne side tjekker, om der er en nyere (js/update-check.js). -->
-    <meta name="app-version" content="699c1eae">
+    <meta name="app-version" content="6b289687">
     <meta name="description" content="Budget, formue, investering og lån – danske økonomiværktøjer, hvor dine tal bliver på din egen enhed.">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
@@ -40,7 +40,7 @@
     <script>try{ if(localStorage.getItem('appLock')) document.documentElement.classList.add('is-locked'); }catch(e){}</script>
     <!-- Skjul beløb: sløres med det samme, før siden tegnes (se js/hide-amounts.js). -->
     <script>try{ if(localStorage.getItem('hideAmounts')) document.documentElement.classList.add('amounts-hidden'); }catch(e){}</script>
-    <link rel="stylesheet" href="styles.css?v=7e78ad61">
+    <link rel="stylesheet" href="styles.css?v=bb454f79">
 </head>
 <body>
 
@@ -162,7 +162,7 @@
                         <button class="dialog-close" type="button" aria-label="Luk" onclick="toggleSettings(false)">×</button>
                     </div>
                     <div class="dialog-body">
-                <!-- Fire grupper, der er foldet sammen, til man åbner dem (kun én ad gangen). Til højre står,
+                <!-- Grupper, der er foldet sammen, til man åbner dem (kun én ad gangen). Til højre står,
                      hvordan det er sat nu (navigation.js: renderSettingsSummaries). -->
                 <details class="settings-group" name="settings-group" data-group="look">
                     <summary><span class="settings-group-title">Udseende og app</span><span class="settings-group-state" id="settingsLookState"></span></summary>
@@ -182,6 +182,14 @@
                             <p class="icon-choice-hint" id="appIconHint">Ikonet følger med, når du lægger appen på hjemmeskærmen. Vil du skifte senere, så fjern appen og læg den på igen.</p>
                             <button class="btn btn-secondary" style="width:100%;" type="button" id="installAppBtn" onclick="installApp()">Installér som app</button>
                         </div>
+                    </div>
+                </details>
+
+                <details class="settings-group" name="settings-group" data-group="tools">
+                    <summary><span class="settings-group-title">Værktøjer</span><span class="settings-group-state" id="settingsToolsState"></span></summary>
+                    <div class="settings-group-body">
+                        <p class="settings-text">Vælg de værktøjer, du bruger. De andre forsvinder fra menuen og fra Oversigt.</p>
+                        <div id="toolSettings"></div>
                     </div>
                 </details>
 
@@ -207,6 +215,7 @@
                         <input type="file" id="allDataUpload" accept=".json,application/json" style="display:none;" onchange="importAllData(event)">
                         <p class="backup-status" id="syncStatus"></p>
                         <button class="btn btn-secondary" style="width:100%; margin-top:8px;" type="button" onclick="printOverview()">Udskriv overblik (PDF)</button>
+                        <button class="link-btn delete-all-btn" type="button" onclick="confirmDeleteAllData()">Slet alle data</button>
                     </div>
                 </details>
 
@@ -1903,7 +1912,7 @@
         </div>
     </template>
     <script src="js/calc.js?v=a5a60049"></script>
-    <script src="js/sync.js?v=27ea91b3"></script>
+    <script src="js/sync.js?v=03e10417"></script>
     <script src="js/shared.js?v=4e5f93df"></script>
     <script src="js/ui.js?v=ae83f690"></script>
     <script src="js/field-help.js?v=6a83e008"></script>
@@ -1921,13 +1930,14 @@
     <script src="js/loan-capacity.js?v=b4f645bb"></script>
     <script src="js/buy-vs-rent.js?v=75764a5e"></script>
     <script src="js/debt-payoff.js?v=d92e8193"></script>
-    <script src="js/navigation.js?v=a43baaa8"></script>
-    <script src="js/bottom-nav.js?v=1974e742"></script>
-    <script src="js/shortcuts.js?v=3a09c9ed"></script>
+    <script src="js/navigation.js?v=0e6c25fd"></script>
+    <script src="js/menu-tools.js?v=73a055e8"></script>
+    <script src="js/bottom-nav.js?v=60b8f459"></script>
+    <script src="js/shortcuts.js?v=350d3e57"></script>
     <script src="js/app-lock.js?v=83667aad"></script>
     <script src="js/feedback.js?v=1b47a367"></script>
     <script src="js/update-check.js?v=4fead684"></script>
-    <script src="js/whats-new.js?v=ea075b38"></script>
+    <script src="js/whats-new.js?v=2aa6b3bb"></script>
     <script src="js/pwa.js?v=70965acb"></script>
     <script src="js/report.js?v=d2fb079b"></script>
     <script src="js/overview-cards.js?v=e8d84d9e"></script>

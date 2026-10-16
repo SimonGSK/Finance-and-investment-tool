@@ -2166,12 +2166,12 @@ test('månedsstatus kan fortrydes fra beskeden: historikken, Formue-felterne og 
     expect(await page.evaluate(() => JSON.parse(localStorage.getItem('netWorthHistory')).length)).toBe(2);
 });
 
-test('indstillinger: fire grupper, foldet sammen, med valget til højre, og kun én åben ad gangen', async ({ page }) => {
+test('indstillinger: grupper, foldet sammen, med valget til højre, og kun én åben ad gangen', async ({ page }) => {
     await page.goto('/index.html');
     await page.locator('#settingsBtn').click();
     const dialog = page.getByRole('dialog', { name: 'Indstillinger' });
     const summaries = dialog.locator('summary');
-    await expect(summaries).toHaveText([/^Udseende og app(Mørkt|Lyst) tema$/, 'PåmindelserTil', 'Data og backup', 'KodelåsFra']);
+    await expect(summaries).toHaveText([/^Udseende og app(Mørkt|Lyst) tema$/, 'VærktøjerAlle', 'PåmindelserTil', 'Data og backup', 'KodelåsFra']);
     await expect(dialog.getByRole('button', { name: 'Gem mine data' })).toBeHidden();
 
     await summaries.filter({ hasText: 'Påmindelser' }).click();
@@ -2908,4 +2908,70 @@ test('Mine mål på Oversigt: hvornår du når målet i dit tempo, før eller ef
     });
     await page.reload();
     await expect(pace).toHaveText(['Dit tempo vises efter to månedsstatusser', 'Målet er nået', 'Dit tempo vises efter to månedsstatusser']);
+});
+
+test('vælg dine værktøjer: skjulte værktøjer forsvinder fra menuen, Oversigt og genvejene, og kommer igen', async ({ page }) => {
+    await page.goto('/index.html');
+    const dialog = page.getByRole('dialog', { name: 'Indstillinger' });
+    await openSettings(page, 'Værktøjer');
+    await expect(dialog.locator('#settingsToolsState')).toHaveText('Alle');
+    await dialog.getByLabel('ASK vs. Aktiedepot').uncheck();
+    for(const name of ['Hvor meget kan jeg låne?', 'Køb eller leje?', 'Gældsafvikling']) await dialog.getByLabel(name).uncheck();
+    await expect(dialog.locator('#settingsToolsState')).toHaveText('6 af 10');
+    await page.keyboard.press('Escape');
+
+    // Menuen: Bolig & lån er væk, og Investering står på det første synlige værktøj.
+    await expect(page.locator('#sidebar .nav-group[data-section="housing"]')).toBeHidden();
+    await expect(page.locator('#tabBtn1')).toBeHidden();
+    await expect(page.locator('#tabBtn2')).toHaveClass(/active/);
+    // Oversigt: kun de synlige værktøjer (og Porteføljetrackeren).
+    await expect(page.locator('.ov-tool:visible strong')).toHaveText(['Aktiedepot: fast + månedligt', 'FIRE-beregner', 'Pension', 'Porteføljetracker', 'Skattegrænse', 'Tips & viden']);
+    // Genvejen til en skjult side gør intet.
+    await page.keyboard.press('3');
+    expect(await page.evaluate(() => document.body.dataset.section)).toBe('overview');
+
+    // Valget huskes, og værktøjerne kan vises igen.
+    await page.reload();
+    await expect(page.locator('#sidebar .nav-group[data-section="housing"]')).toBeHidden();
+    await openSettings(page, 'Værktøjer');
+    await dialog.getByLabel('Gældsafvikling').check();
+    await expect(page.locator('#sidebar .nav-group[data-section="housing"]')).toBeAttached();
+    expect(await page.locator('#sidebar .nav-group[data-section="housing"]').evaluate(n => n.hidden)).toBe(false);
+    await expect(page.locator('#housingTabBtn3')).toHaveClass(/active/);
+});
+
+test('vælg dine værktøjer: arket Værktøjer i bundmenuen viser kun de valgte @mobil', async ({ page }) => {
+    await page.goto('/index.html');
+    const phone = await page.evaluate(() => window.innerWidth <= 640);
+    test.skip(!phone, 'bundmenuen findes kun på telefoner');
+    await page.evaluate(() => localStorage.setItem('hiddenTools', JSON.stringify(['tabBtn1', 'tabBtn2', 'tabBtn3', 'tabBtn5', 'tabBtn7', 'tabBtn6', 'budget'])));
+    await page.reload();
+    await page.getByRole('navigation', { name: 'Bundmenu' }).getByRole('button', { name: 'Værktøjer' }).click();
+    const sheet = page.locator('#navSheet');
+    await expect(sheet.locator('.nav-sheet-label')).toHaveText(['Bolig & lån']);
+    await expect(sheet.locator('.nav-sheet-item')).toHaveText(['Hvor meget kan jeg låne?', 'Køb eller leje?', 'Gældsafvikling']);
+});
+
+test('Slet alle data: en tydelig bekræftelse, og bagefter er alt væk undtagen temaet', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        localStorage.setItem('netWorthHistory', JSON.stringify([{date: '2026-09-30', value: 1000, liquid: 1000, netCatKontanter: 1000, netCatAktier: 0, netCatPension: 0, netCatFrivaerdi: 0, netCatAndet: 0, debt: 0}]));
+        localStorage.setItem('theme', 'light');
+    });
+    await page.reload();
+    await openSettings(page, 'Data og backup');
+    await page.getByRole('button', { name: 'Slet alle data' }).click();
+    const confirm = page.getByRole('dialog', { name: 'Slet alle data?' });
+    await expect(confirm).toContainText('Det kan ikke fortrydes.');
+    // Annullér med krydset: intet slettes.
+    await confirm.getByRole('button', { name: 'Luk' }).click();
+    expect(await page.evaluate(() => localStorage.getItem('netWorthHistory'))).not.toBeNull();
+
+    await page.getByRole('button', { name: 'Slet alle data' }).click();
+    await page.getByRole('dialog', { name: 'Slet alle data?' }).getByRole('button', { name: 'Slet alt' }).click();
+    await page.waitForLoadState('load');
+    await expect(page.locator('.toast').last()).toHaveText('Alle dine data er slettet.');
+    expect(await page.evaluate(() => localStorage.getItem('netWorthHistory'))).toBeNull();
+    expect(await page.evaluate(() => localStorage.getItem('theme'))).toBe('light');
+    await expect(page.locator('#ovNetWorth')).toHaveText('–');
 });

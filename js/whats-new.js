@@ -8,6 +8,10 @@
  */
 
 const WHATS_NEW = [
+    {date: '2026-10-16', items: [
+        'Vælg dine værktøjer: skjul dem, du ikke bruger, under Indstillinger › Værktøjer.',
+        'Slet alle data og start forfra under Indstillinger › Data og backup.'
+    ]},
     {date: '2026-10-15', items: [
         'Månedsstatus på telefonen springer de felter over, der var 0 sidst – fx friværdi, hvis du ingen har.',
         'Under dine mål på Oversigt står nu, hvornår du når dem i dit tempo.',
