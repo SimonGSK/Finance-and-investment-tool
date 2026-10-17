@@ -1652,6 +1652,27 @@ function periodReturn(history, year, month){
 }
 
 /**
+ * Opsparing og afkast: hvor meget af nettoformuens ændring i en måned eller et år, der er
+ * porteføljens afkast (markedet: værdien minus egne indskud, se periodReturn), og hvor meget
+ * der er resten - det, man har sparet op, afdrag på gæld og ændringer i pension, bolig og andet.
+ * Regnes kun, når porteføljen har punkter på samme datoer som formuens start og slut (som når
+ * begge gemmes med en månedsstatus), så de to dele dækker præcis samme periode.
+ * @param {{date:string, value:number}[]} nwHistory
+ * @param {{date:string, portfolioValue:number, deposit?:number}[]} ptHistory
+ * @param {number} year
+ * @param {number|null} month null = hele året
+ * @returns {{from:string, to:string, change:number, returns:number, savings:number}|null}
+ */
+function savingsVsReturns(nwHistory, ptHistory, year, month){
+    const bounds = periodBounds(nwHistory, year, month);
+    if(!bounds || !bounds.start) return null;
+    const ret = periodReturn(ptHistory, year, month);
+    if(!ret || ret.startDate !== bounds.start.date || ret.endDate !== bounds.end.date) return null;
+    const change = (bounds.end.value || 0) - (bounds.start.value || 0);
+    return {from: bounds.start.date, to: bounds.end.date, change, returns: ret.gain, savings: change - ret.gain};
+}
+
+/**
  * Hele måneder mellem to ISO-datoer, fx 31. jul. → 30. sep. = 2.
  * @param {string} fromIso
  * @param {string} toIso
@@ -2062,7 +2083,7 @@ function yearReviewYear(today, hiddenYear){
 // Node-eksport, så tests kan importere funktionerne. Ignoreres i browseren.
 if(typeof module !== 'undefined' && module.exports){
     module.exports = {
-        guidedStatusKeys, goalPace, yearReviewYear, unseenNews, normalizeOverviewLayout, moveInList, OVERVIEW_SECTIONS, containsAmount, appVersionOf, adjacentPeriod, yearColors, monthlyStatusSummary, cleanNote, suspiciousAmounts, NOTE_MAX_LENGTH, addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
+        savingsVsReturns, guidedStatusKeys, goalPace, yearReviewYear, unseenNews, normalizeOverviewLayout, moveInList, OVERVIEW_SECTIONS, containsAmount, appVersionOf, adjacentPeriod, yearColors, monthlyStatusSummary, cleanNote, suspiciousAmounts, NOTE_MAX_LENGTH, addMonthsIso, periodChoices, yearSummary, periodBounds, periodRows, periodReturn, periodOptions, monthSpan, yearInNumbers, portfolioTotals, recentChange, fireProgress, taxLimitStatus, projectTrend, projectionReaches,
         periodChanges, bestPeriods,
         planSync, applySync,
         CAPITAL_INCOME_LIMIT,
