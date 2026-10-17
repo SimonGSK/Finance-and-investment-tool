@@ -1063,6 +1063,30 @@ describe('kalenderpåmindelse', () => {
     });
 });
 
+describe('savingsVsReturns', () => {
+    const nw = (date, value) => ({date, value});
+    const pt = (date, portfolioValue, deposit = 0) => ({date, portfolioValue, deposit});
+    const nwH = [nw('2025-12-31', 400000), nw('2026-06-30', 470000), nw('2026-12-31', 520000)];
+    const ptH = [pt('2025-12-31', 200000), pt('2026-06-30', 250000, 24000), pt('2026-12-31', 300000, 24000)];
+    test('deler årets stigning i afkast (værdi minus indskud) og resten', () => {
+        // Porteføljen: +100.000 i værdi, heraf 48.000 indskud -> 52.000 afkast. Formuen: +120.000.
+        assert.deepEqual(calc.savingsVsReturns(nwH, ptH, 2026, null), {from: '2025-12-31', to: '2026-12-31', change: 120000, returns: 52000, savings: 68000});
+    });
+    test('en måned', () => {
+        assert.deepEqual(calc.savingsVsReturns(nwH, ptH, 2026, 12), {from: '2026-06-30', to: '2026-12-31', change: 50000, returns: 26000, savings: 24000});
+    });
+    test('et fald i markedet kan trække ned, mens opsparingen trækker op', () => {
+        const down = [pt('2025-12-31', 200000), pt('2026-12-31', 190000, 20000)];
+        assert.deepEqual(calc.savingsVsReturns([nw('2025-12-31', 400000), nw('2026-12-31', 405000)], down, 2026, null),
+            {from: '2025-12-31', to: '2026-12-31', change: 5000, returns: -30000, savings: 35000});
+    });
+    test('kun når porteføljen har punkter på de samme datoer', () => {
+        assert.equal(calc.savingsVsReturns(nwH, [pt('2026-01-15', 1), pt('2026-12-31', 2)], 2026, null), null);
+        assert.equal(calc.savingsVsReturns(nwH, [], 2026, null), null);
+        assert.equal(calc.savingsVsReturns([nw('2026-12-31', 1)], ptH, 2026, null), null);   // intet at sammenligne med
+    });
+});
+
 describe('guidedStatusKeys', () => {
     const fields = [{key: 'bank'}, {key: 'physical'}, {key: 'depotCash'}, {key: 'stocks'}, {key: 'traded', flow: true}, {key: 'dividend', flow: true}, {key: 'homeEquity'}, {key: 'debt'}];
     const zero = {traded: 0, dividend: 0};

@@ -8,6 +8,9 @@
  */
 
 const WHATS_NEW = [
+    {date: '2026-10-17', items: [
+        'Opsparing og afkast i Månedsoverblik: hvor meget af din fremgang der kom fra det, du sparer op, og hvor meget fra markedet.'
+    ]},
     {date: '2026-10-16', items: [
         'Vælg dine værktøjer: skjul dem, du ikke bruger, under Indstillinger › Værktøjer.',
         'Slet alle data og start forfra under Indstillinger › Data og backup.'
