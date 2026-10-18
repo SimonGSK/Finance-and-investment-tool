@@ -2286,6 +2286,20 @@ body[data-section="overview"] .app-header-actions .customize-btn{ display:grid; 
     .year-review-actions{ margin-top:var(--s3); }
 }
 
+/* ---- Opsparing og afkast i Månedsoverblik (month-overview.js) ---- */
+.savings-split-bar{ display:flex; gap:2px; height:12px; margin-bottom:var(--s3); border-radius:var(--r-pill); overflow:hidden; }
+.savings-split-seg{ flex-basis:0; min-width:3px; }
+.savings-split-seg.is-savings, .savings-split-dot.is-savings{ background:color-mix(in srgb, var(--akt) 45%, transparent); }
+.savings-split-seg.is-returns, .savings-split-dot.is-returns{ background:var(--akt); }
+.savings-split-rows{ display:flex; flex-direction:column; gap:var(--s2); margin:0; }
+.savings-split-row{ display:flex; align-items:baseline; justify-content:space-between; gap:var(--s3); }
+.savings-split-row dt{ display:flex; align-items:center; gap:var(--s2); font-size:14px; color:var(--muted); }
+.savings-split-row dd{ margin:0; display:flex; align-items:baseline; gap:var(--s2); font-family:var(--font-display); font-size:18px; font-weight:600; font-variant-numeric:lining-nums tabular-nums; }
+.savings-split-row dd .is-up{ color:var(--pos); }
+.savings-split-row dd .is-down{ color:var(--cross); }
+.savings-split-pct{ min-width:3.2em; text-align:right; font-family:var(--font-sans); font-size:13px; font-weight:500; color:var(--subtle); }
+.savings-split-dot{ width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+
 /* ---- Nyt i Økonomis (whats-new.js) ---- */
 .whats-new-entry + .whats-new-entry{ margin-top:var(--s4); padding-top:var(--s4); border-top:1px solid var(--border); }
 .whats-new-date{

@@ -232,7 +232,8 @@ const YEAR_REVIEW_HIDDEN_KEY = 'yearReviewHidden';
 
 /**
  * "Dit år i tal" øverst på Oversigt i januar: hvordan det forrige år gik (yearInNumbers i
- * calc.js) - nettoformuen, den bedste måned, måneder med fremgang og porteføljens afkast.
+ * calc.js) - nettoformuen og hvor meget af den var afkast, den bedste måned, måneder med
+ * fremgang og porteføljens afkast.
  * Herfra åbnes hele året i Månedsoverblik, eller det deles som billede. × skjuler kortet til
  * næste januar.
  * @param {Object[]} nwHistory sorteret efter dato
@@ -251,6 +252,7 @@ function renderOverviewYearReview(nwHistory, ptHistory, today = todayIso()){
     const tone = n => n > 0 ? 'is-up' : n < 0 ? 'is-down' : '';
     const fact = (label, value, cls = '') => el('div', {className: 'year-fact'}, [el('dt', {textContent: label}), el('dd', {className: cls, textContent: value})]);
     const p = info.portfolio;
+    const split = savingsVsReturns(nwHistory, ptHistory, year, null);
     const verb = info.change > 0 ? 'steg' : info.change < 0 ? 'faldt' : 'stod stille';
     const hide = () => {
         try{ localStorage.setItem(YEAR_REVIEW_HIDDEN_KEY, String(year)); } catch(e){}
@@ -267,7 +269,8 @@ function renderOverviewYearReview(nwHistory, ptHistory, today = todayIso()){
         ]),
         el('p', {className: 'year-lead'}, [`Din nettoformue ${verb} `,
             el('strong', {className: tone(info.change), textContent: `${formatSignedKr(info.change).replace(/^[+−]/, '')}${info.pct !== null ? ` (${formatSignedPct(info.pct)})` : ''}`}),
-            ` i ${year}.`]),
+            // Hvor meget af stigningen var afkast (savingsVsReturns i calc.js) - kun når det er en del af den.
+            split && split.returns > 0 && split.returns < info.change ? ` i ${year} – ${DK.format(split.returns)} kr. af det var afkast.` : ` i ${year}.`]),
         el('dl', {className: 'year-facts'}, [
             info.best ? fact('Bedste måned', stepLabel(info.best, false)) : '',
             fact('Måneder med fremgang', `${info.ups} af ${info.steps}`),

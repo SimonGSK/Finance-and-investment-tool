@@ -208,6 +208,8 @@ function renderMonthOverview(){
         ? `${ret.pct !== null ? formatSignedPct(ret.pct) + ' · ' : ''}${ret.flows ? `${formatSignedKr(ret.flows)} indskudt` : 'ingen indskud'}${ret.dividends ? ` · ${DK.format(ret.dividends)} kr. i udbytte` : ''}`
         : 'Kræver to datapunkter i Porteføljetrackeren';
 
+    renderSavingsSplit(savingsVsReturns(history, readPortfolioHistory(), year, month));
+
     // Årets tal: "Dit år i tal" ved hele året, ellers årets bedste og værste måned.
     const yearInfo = yearInNumbers(history, readPortfolioHistory(), year);
     renderYearPanel(month ? null : yearInfo);
@@ -229,6 +231,32 @@ function renderMonthOverview(){
             + `<td class="change-cell ${tone}" data-csv="${r.change ?? ''}">${r.change === null ? '–' : formatSignedKr(r.change)}${r.pct === null ? '' : `<span class="month-sub">${formatSignedPct(r.pct)}</span>`}</td>`
             + `<td class="change-cell ${tone}">${r.pct === null ? '–' : formatSignedPct(r.pct)}</td></tr>`;
     }).join('');
+}
+
+/**
+ * "Opsparing og afkast": hvor meget af nettoformuens ændring i perioden, der kom fra
+ * porteføljens afkast, og hvor meget fra resten (opsparing, afdrag, pension, bolig ...).
+ * Er begge dele positive, vises de som én søjle med procenter; ellers som to tal med fortegn,
+ * fx når markedet faldt, mens opsparingen steg.
+ * @param {ReturnType<typeof savingsVsReturns>} split null skjuler kortet
+ */
+function renderSavingsSplit(split){
+    const panel = document.getElementById('monthSplitPanel');
+    panel.hidden = !split || (split.savings === 0 && split.returns === 0);
+    if(panel.hidden) return;
+    const parts = [['savings', 'Opsparing m.m.', split.savings], ['returns', 'Afkast', split.returns]];
+    const total = split.savings + split.returns;
+    const asBar = split.savings >= 0 && split.returns >= 0 && total > 0;
+    const pct = v => `${Math.round(v / total * 100)} %`;
+    const tone = v => v > 0 ? 'is-up' : v < 0 ? 'is-down' : '';
+    document.getElementById('monthSplit').replaceChildren(
+        asBar ? el('div', {className: 'savings-split-bar', attrs: {role: 'img', 'aria-label': parts.map(([, label, v]) => `${label}: ${pct(v)}`).join(', ')}},
+            parts.filter(([, , v]) => v > 0).map(([key, , v]) => el('span', {className: `savings-split-seg is-${key}`, attrs: {style: `flex-grow:${v}`}}))) : '',
+        el('dl', {className: 'savings-split-rows'}, parts.map(([key, label, v]) => el('div', {className: 'savings-split-row'}, [
+            el('dt', {}, [el('i', {className: `savings-split-dot is-${key}`, attrs: {'aria-hidden': 'true'}}), label]),
+            el('dd', {}, [el('span', {className: tone(v), textContent: formatSignedKr(v)}), asBar ? el('span', {className: 'savings-split-pct', textContent: pct(v)}) : ''])
+        ])))
+    );
 }
 
 /**

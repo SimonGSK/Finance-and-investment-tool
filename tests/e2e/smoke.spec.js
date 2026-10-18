@@ -2975,3 +2975,42 @@ test('Slet alle data: en tydelig bekræftelse, og bagefter er alt væk undtagen 
     expect(await page.evaluate(() => localStorage.getItem('theme'))).toBe('light');
     await expect(page.locator('#ovNetWorth')).toHaveText('–');
 });
+
+test('Opsparing og afkast i Månedsoverblik: stigningen delt i afkast og resten, også når markedet faldt', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        const nw = (date, value) => ({date, value, liquid: value, netCatKontanter: value, netCatAktier: 0, netCatPension: 0, netCatFrivaerdi: 0, netCatAndet: 0, debt: 0});
+        const pt = (date, portfolioValue, deposit) => ({date, portfolioValue, stockValue: portfolioValue, cash: 0, deposit, traded: deposit, dividend: 0});
+        localStorage.setItem('netWorthHistory', JSON.stringify([nw('2025-12-31', 400000), nw('2026-06-30', 470000), nw('2026-12-31', 450000)]));
+        localStorage.setItem('portfolioHistory', JSON.stringify([pt('2025-12-31', 200000, 0), pt('2026-06-30', 260000, 20000), pt('2026-12-31', 250000, 20000)]));
+    });
+    await page.reload();
+    await page.evaluate(() => showMonthOverview(2026, null));
+    const panel = page.locator('#monthSplitPanel');
+    // Året: +50.000 i alt; porteføljen +50.000 i værdi minus 40.000 indskud = 10.000 afkast, resten 40.000.
+    await expect(panel.locator('.savings-split-row')).toHaveText(['Opsparing m.m.+40.000 kr.80 %', 'Afkast+10.000 kr.20 %']);
+    await expect(panel.locator('.savings-split-bar')).toHaveAttribute('aria-label', 'Opsparing m.m.: 80 %, Afkast: 20 %');
+
+    // December: formuen faldt 20.000, porteføljen −10.000 i værdi med 20.000 indskudt = −30.000 afkast.
+    await page.locator('#monthPeriod').selectOption('12');
+    await expect(panel.locator('.savings-split-row')).toHaveText(['Opsparing m.m.+10.000 kr.', 'Afkast−30.000 kr.']);
+    await expect(panel.locator('.savings-split-bar')).toHaveCount(0);
+    await expect(panel.locator('.savings-split-row dd span').nth(1)).toHaveClass(/is-down/);
+
+    // Uden porteføljepunkter på de samme datoer er kortet væk.
+    await page.evaluate(() => { localStorage.setItem('portfolioHistory', '[]'); renderMonthOverview(); });
+    await expect(panel).toBeHidden();
+});
+
+test('Dit år i tal i januar fortæller, hvor meget af stigningen der var afkast', async ({ page }) => {
+    await page.clock.setFixedTime(new Date('2027-01-10T12:00:00'));
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+        const nw = (date, value) => ({date, value, liquid: value, netCatKontanter: value, netCatAktier: 0, netCatPension: 0, netCatFrivaerdi: 0, netCatAndet: 0, debt: 0});
+        const pt = (date, portfolioValue, deposit) => ({date, portfolioValue, stockValue: portfolioValue, cash: 0, deposit, traded: deposit, dividend: 0});
+        localStorage.setItem('netWorthHistory', JSON.stringify([nw('2025-12-31', 400000), nw('2026-12-31', 500000)]));
+        localStorage.setItem('portfolioHistory', JSON.stringify([pt('2025-12-31', 200000, 0), pt('2026-12-31', 280000, 30000)]));
+    });
+    await page.reload();
+    await expect(page.locator('#ovYearReview .year-lead')).toHaveText('Din nettoformue steg 100.000 kr. (+25,0 %) i 2026 – 50.000 kr. af det var afkast.');
+});
